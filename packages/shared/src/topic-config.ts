@@ -42,6 +42,8 @@ export const topicConfigSchema = z.object({
         .prefault({}),
       /** Sources without a kind hint. */
       default_hours: intervalHours.default(24),
+      /** Older entries are ignored, so that a new feed does not flood the board with its archive. */
+      max_age_days: z.number().int().min(1).max(365).default(30),
     })
     .prefault({}),
   schedule: z

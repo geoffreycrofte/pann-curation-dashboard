@@ -36,7 +36,8 @@ with ws as (
     },
     "collection": {
       "intervals_hours": { "news": 24, "legal": 48, "tool": 168, "resource": 72 },
-      "default_hours": 24
+      "default_hours": 24,
+      "max_age_days": 30
     },
     "schedule": {
       "timezone": "Europe/Luxembourg",
@@ -52,9 +53,9 @@ with ws as (
 insert into public.sources (topic_id, type, label, config, default_kind)
 select topic.id, s.type::public.source_type, s.label, s.config::jsonb, s.kind::public.item_kind
 from topic, (values
-  ('github', 'GitHub topic: accessibility', '{"query": "topic:accessibility", "sort": "updated"}', 'tool'),
-  ('github', 'GitHub topic: a11y',          '{"query": "topic:a11y", "sort": "updated"}', 'tool'),
-  ('github', 'GitHub topic: wcag',          '{"query": "topic:wcag", "sort": "updated"}', 'tool'),
+  ('github', 'GitHub topic: accessibility', '{"query": "topic:accessibility", "min_stars": 20}', 'tool'),
+  ('github', 'GitHub topic: a11y',          '{"query": "topic:a11y", "min_stars": 20}', 'tool'),
+  ('github', 'GitHub topic: wcag',          '{"query": "topic:wcag", "min_stars": 20}', 'tool'),
   ('exa',    'Exa: accessibility legal news', '{"query": "European Accessibility Act enforcement news", "num_results": 10}', 'legal'),
   ('exa',    'Exa: WCAG updates',             '{"query": "WCAG W3C WAI new publication", "num_results": 10}', 'news')
 ) as s(type, label, config, kind);

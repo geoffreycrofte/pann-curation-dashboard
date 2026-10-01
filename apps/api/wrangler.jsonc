@@ -16,13 +16,12 @@
   "vars": {
     "SUPABASE_URL": "http://127.0.0.1:54321",
   },
-  // Secrets (wrangler secret put / .dev.vars): SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY
+  // Secrets (wrangler secret put / .dev.vars): SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY,
+  // EXA_API_KEY, GITHUB_TOKEN (optional)
 
   "observability": { "enabled": true },
 
-  // Step 2 (collect) will add an hourly cron; each run only collects the sources
-  // that are due (see isSourceDue in packages/shared/src/schedule.ts):
-  // "triggers": { "crons": ["7 * * * *"] },
-  // "queues": { "producers": [{ "binding": "TRIAGE_QUEUE", "queue": "pann-triage" }],
-  //             "consumers": [{ "queue": "pann-triage", "dead_letter_queue": "pann-dlq" }] }
+  // Hourly; each run only collects the sources that are due (isSourceDue).
+  // Keep in sync with COLLECT_CRON in src/jobs/scheduled.ts.
+  "triggers": { "crons": ["7 * * * *"] },
 }

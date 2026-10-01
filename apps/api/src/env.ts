@@ -7,6 +7,10 @@ export interface Env {
   SUPABASE_PUBLISHABLE_KEY: string
   /** Secret key (service role): background jobs only, bypasses RLS. Never used for user requests. */
   SUPABASE_SECRET_KEY: string
+  /** Collection (optional: sources of a missing provider fail with a clear error). */
+  EXA_API_KEY?: string
+  /** Optional, raises the GitHub API rate limit (fine-grained token, no permission needed). */
+  GITHUB_TOKEN?: string
 }
 
 export interface AuthUser {

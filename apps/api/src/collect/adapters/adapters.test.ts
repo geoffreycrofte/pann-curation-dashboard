@@ -1,0 +1,157 @@
+import { parseTopicConfig } from '@pann/shared'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { CollectSource } from '../types'
+import { exaAdapter } from './exa'
+import { githubAdapter } from './github'
+import { rssAdapter } from './rss'
+
+const since = new Date('2026-09-01T00:00:00Z')
+const base: CollectSource = {
+  id: 's',
+  topic_id: 't',
+  workspace_id: 'w',
+  type: 'rss',
+  label: 'x',
+  config: {},
+  active: true,
+  default_kind: null,
+  interval_hours: null,
+  last_run_at: null,
+  run_requested_at: null,
+  topic_config: parseTopicConfig({}),
+}
+
+type Handler = (url: string, init?: RequestInit) => Response
+function stubFetch(handler: Handler) {
+  const calls: { url: string; init?: RequestInit }[] = []
+  vi.stubGlobal('fetch', async (input: URL | string, init?: RequestInit) => {
+    const url = input.toString()
+    calls.push({ url, init })
+    const res = handler(url, init)
+    Object.defineProperty(res, 'url', { value: url })
+    return res
+  })
+  return calls
+}
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status })
+
+afterEach(() => vi.unstubAllGlobals())
+
+describe('rssAdapter', () => {
+  it('keeps recent and undated entries, with the source kind and feed language', async () => {
+    stubFetch(
+      () =>
+        new Response(`<rss><channel><language>fr</language>
+          <item><title>Old</title><link>https://e.org/old</link><pubDate>Mon, 03 Aug 2026 10:00:00 GMT</pubDate></item>
+          <item><title>New</title><link>https://e.org/new</link><pubDate>Mon, 28 Sep 2026 10:00:00 GMT</pubDate></item>
+          <item><title>Undated</title><link>https://e.org/undated</link></item>
+        </channel></rss>`),
+    )
+    const { items } = await rssAdapter(
+      { ...base, config: { url: 'https://e.org/rss' }, default_kind: 'legal' },
+      { since, secrets: {} },
+    )
+    expect(items.map((i) => [i.title, i.kind, i.source_lang])).toEqual([
+      ['New', 'legal', 'fr'],
+      ['Undated', 'legal', 'fr'],
+    ])
+  })
+
+  it('reports HTTP errors as source errors', async () => {
+    stubFetch(() => new Response('', { status: 503 }))
+    await expect(
+      rssAdapter({ ...base, config: { url: 'https://e.org/rss' } }, { since, secrets: {} }),
+    ).rejects.toThrow('HTTP 503')
+  })
+})
+
+describe('exaAdapter', () => {
+  it('requires a key', async () => {
+    await expect(
+      exaAdapter({ ...base, type: 'exa', config: { query: 'q' } }, { since, secrets: {} }),
+    ).rejects.toThrow('EXA_API_KEY')
+  })
+
+  it('sends the documented request and logs the real cost', async () => {
+    const calls = stubFetch(() =>
+      json({
+        results: [
+          {
+            url: 'https://n.org/a',
+            title: 'EAA news',
+            publishedDate: '2026-09-30T00:00:00.000Z',
+            text: 'Body',
+          },
+        ],
+        costDollars: { total: 0.012 },
+      }),
+    )
+    const result = await exaAdapter(
+      { ...base, type: 'exa', default_kind: 'legal', config: { query: 'EAA', num_results: 5 } },
+      { since, secrets: { EXA_API_KEY: 'k' } },
+    )
+    const call = calls[0]!
+    expect(call.url).toBe('https://api.exa.ai/search')
+    expect((call.init?.headers as Record<string, string>)['x-api-key']).toBe('k')
+    expect(JSON.parse(call.init?.body as string)).toMatchObject({
+      query: 'EAA',
+      numResults: 5,
+      startPublishedDate: '2026-09-01T00:00:00.000Z',
+      contents: { text: { maxCharacters: 6000 } },
+    })
+    expect(result.items).toEqual([
+      {
+        url: 'https://n.org/a',
+        title: 'EAA news',
+        content: 'Body',
+        published_at: '2026-09-30T00:00:00.000Z',
+        kind: 'legal',
+      },
+    ])
+    expect(result.usage?.[0]?.cost_usd).toBe(0.012)
+  })
+})
+
+describe('githubAdapter', () => {
+  it('searches popular recently pushed repos and uses the latest release as signature', async () => {
+    const calls = stubFetch((url) => {
+      if (url.includes('/search/repositories')) {
+        return json({
+          items: [
+            {
+              full_name: 'o/tool',
+              html_url: 'https://github.com/o/tool',
+              description: 'A11y linter',
+              topics: ['a11y'],
+              stargazers_count: 120,
+              pushed_at: '2026-09-20T00:00:00Z',
+            },
+            {
+              full_name: 'o/lib',
+              html_url: 'https://github.com/o/lib',
+              description: null,
+              topics: [],
+              stargazers_count: 30,
+              pushed_at: '2026-09-21T00:00:00Z',
+            },
+          ],
+        })
+      }
+      if (url.endsWith('/o/tool/releases/latest'))
+        return json({ tag_name: 'v2.1.0', published_at: '2026-09-19T00:00:00Z' })
+      return json({ message: 'Not Found' }, 404)
+    })
+    const { items } = await githubAdapter(
+      { ...base, type: 'github', config: { query: 'topic:a11y' } },
+      { since, secrets: { GITHUB_TOKEN: 't' } },
+    )
+    const search = new URL(calls[0]!.url)
+    expect(search.searchParams.get('q')).toBe('topic:a11y pushed:>=2026-09-01 stars:>=20')
+    expect(search.searchParams.get('sort')).toBe('stars')
+    expect((calls[0]!.init?.headers as Record<string, string>).Authorization).toBe('Bearer t')
+    expect(items.map((i) => [i.title, i.change_signature, i.published_at, i.kind])).toEqual([
+      ['o/tool: A11y linter', 'v2.1.0', '2026-09-19T00:00:00Z', 'tool'],
+      ['o/lib', null, '2026-09-21T00:00:00Z', 'tool'],
+    ])
+  })
+})

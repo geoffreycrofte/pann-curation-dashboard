@@ -4,16 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --test-scheduled",
     "deploy": "wrangler deploy",
     "build": "wrangler deploy --dry-run --outdir dist",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "collect:local": "curl -s \"http://127.0.0.1:8787/__scheduled?cron=7+*+*+*+*\""
   },
   "dependencies": {
     "@pann/shared": "workspace:*",
     "@supabase/supabase-js": "^2.75.0",
+    "fast-xml-parser": "^5.11.2",
     "hono": "^4.10.0",
     "zod": "^4.1.12"
   },

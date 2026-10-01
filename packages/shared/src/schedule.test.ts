@@ -37,6 +37,12 @@ describe('isSourceDue', () => {
     expect(isSourceDue({ ...legal, last_run_at: hoursAgo(47.95) }, config, now)).toBe(true)
   })
 
+  it('runs a source the user asked to collect since its last run', () => {
+    const source = { ...legal, last_run_at: hoursAgo(1) }
+    expect(isSourceDue({ ...source, run_requested_at: hoursAgo(0.5) }, config, now)).toBe(true)
+    expect(isSourceDue({ ...source, run_requested_at: hoursAgo(2) }, config, now)).toBe(false)
+  })
+
   it('never runs an inactive source', () => {
     expect(isSourceDue({ ...legal, active: false, last_run_at: null }, config, now)).toBe(false)
   })

@@ -41,6 +41,18 @@ pnpm dev:board                    # http://127.0.0.1:5173
 
 Connexion : saisir `dev@pann.local` sur l'écran de connexion, puis ouvrir le lien reçu dans Mailpit (URL donnée par `supabase status`).
 
+Collecte en local : `pnpm dev:api` lance Wrangler avec `--test-scheduled`. Pour déclencher un passage du cron :
+
+```sh
+pnpm --filter @pann/api collect:local
+```
+
+Le résultat (sources traitées, items nouveaux, doublons, erreurs) s'affiche dans la console de Wrangler. Sans `EXA_API_KEY` dans `apps/api/.dev.vars`, les sources Exa passent en erreur « EXA_API_KEY is not configured », les autres sont collectées normalement.
+
+### Tester contre le projet Supabase distant
+
+Dans `apps/api/.dev.vars`, renseigner la clé publishable et la clé secrète du projet (Project Settings, API Keys), et dans `apps/api/wrangler.jsonc` remplacer temporairement `SUPABASE_URL` par l'URL du projet (ou lancer `pnpm --filter @pann/api exec wrangler dev --test-scheduled --var SUPABASE_URL:https://<ref>.supabase.co`). Côté board, `apps/board/.env.local` avec l'URL du projet et la clé publishable.
+
 ## Vérifications
 
 ```sh
@@ -61,14 +73,14 @@ Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, 
 
 - Secrets GitHub : `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 - Variables GitHub : `SUPABASE_PROJECT_REF`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
-- Secrets du Worker : `wrangler secret put SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_SECRET_KEY`.
+- Secrets du Worker : `wrangler secret put` pour `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `EXA_API_KEY`, `GITHUB_TOKEN` (facultatif).
 - Supabase Auth (projet distant) : désactiver les inscriptions publiques, inviter son adresse, définir l'URL du site et les URLs de redirection.
 
 ## Avancement (plan de `docs/CONTEXT.md`, section 9)
 
 - [x] 1. Socle : monorepo, schéma, topic accessibilité, Worker Hono, auth, board squelette, CI
 - [x] Saisie manuelle : flux RSS (avec auto-découverte), articles et outils ; fréquence de collecte par type de contenu et par source
-- [ ] 2. Collecte : adaptateurs RSS, Exa, GitHub ; déduplication ; Cron + Queues
+- [x] 2. Collecte : adaptateurs RSS, Exa, GitHub ; déduplication ; cron horaire
 - [ ] 3. Tri IA (Haiku)
 - [ ] 4. Rédaction IA (Sonnet), `usage_log`, plafond de coût
 - [ ] 5. Publication CheckFox

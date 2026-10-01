@@ -55,6 +55,20 @@ const { mutate: update, isLoading: updating } = useMutation({
   onError: (err) => report(t('common.error', { message: err.message }), true),
 })
 
+const { mutate: requestCollection, isLoading: requesting } = useMutation({
+  mutation: (source: Source) => api.requestCollection(props.topicId, source.id),
+  async onSuccess(source) {
+    report(t('sources.collectRequested', { label: source.label }))
+    await queryCache.invalidateQueries({ key: ['sources', props.topicId] })
+  },
+  onError: (err) => report(t('common.error', { message: err.message }), true),
+})
+
+function collectionPending(source: Source): boolean {
+  if (!source.run_requested_at) return false
+  return !source.last_run_at || Date.parse(source.run_requested_at) > Date.parse(source.last_run_at)
+}
+
 const { mutate: remove } = useMutation({
   mutation: (source: Source) => api.deleteSource(props.topicId, source.id).then(() => source),
   async onSuccess(source) {
@@ -142,6 +156,7 @@ function feedUrl(source: Source): string | undefined {
                 ? d(new Date(source.last_run_at), { dateStyle: 'short', timeStyle: 'short' })
                 : t('common.never')
             }}
+            <p v-if="collectionPending(source)" class="hint">{{ t('sources.pending') }}</p>
           </td>
           <td>
             <input
@@ -155,7 +170,16 @@ function feedUrl(source: Source): string | undefined {
               "
             />
           </td>
-          <td>
+          <td class="row-actions">
+            <button
+              type="button"
+              class="button"
+              :aria-label="t('sources.collectLabel', { label: source.label })"
+              :disabled="requesting || collectionPending(source) || !source.active"
+              @click="requestCollection(source)"
+            >
+              {{ t('sources.collect') }}
+            </button>
             <AlertDialogRoot>
               <AlertDialogTrigger as-child>
                 <button
@@ -217,6 +241,12 @@ thead th {
 
 tbody th {
   font-weight: 600;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .check {

@@ -1,3 +1,8 @@
 # Copy to .dev.vars. Values printed by `supabase status` for the local stack.
 SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
+
+# Collection. Exa: https://dashboard.exa.ai. GitHub: optional fine-grained token
+# without any permission (public data only), raises the rate limit.
+EXA_API_KEY=
+GITHUB_TOKEN=

@@ -7,7 +7,7 @@ import { resolveFeed } from '../lib/feeds'
 import { parseJson } from '../lib/validation'
 
 const SOURCE_COLUMNS =
-  'id, topic_id, type, label, config, active, default_kind, interval_hours, last_run_at, last_error, created_at'
+  'id, topic_id, type, label, config, active, default_kind, interval_hours, last_run_at, last_error, run_requested_at, created_at'
 
 const interval = z.number().int().min(MIN_INTERVAL_HOURS).max(MAX_INTERVAL_HOURS).nullable()
 
@@ -73,6 +73,20 @@ export const sources = new Hono<AppEnv>()
     const { data, error } = await c.var.db
       .from('sources')
       .update(body)
+      .eq('topic_id', c.req.param('topicId')!)
+      .eq('id', c.req.param('sourceId'))
+      .select(SOURCE_COLUMNS)
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Source not found' })
+    return c.json(data)
+  })
+
+  /** "Collect at next run": the hourly cron picks the source up (user requests never collect). */
+  .post('/:sourceId/collect', async (c) => {
+    const { data, error } = await c.var.db
+      .from('sources')
+      .update({ run_requested_at: new Date().toISOString() })
       .eq('topic_id', c.req.param('topicId')!)
       .eq('id', c.req.param('sourceId'))
       .select(SOURCE_COLUMNS)

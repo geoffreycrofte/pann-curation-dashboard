@@ -6,6 +6,8 @@ export interface SchedulableSource {
   default_kind: ItemKind | null
   interval_hours: number | null
   last_run_at: string | null
+  /** Set by the user ("collect at next run"). */
+  run_requested_at?: string | null
 }
 
 /** Source override, else the topic interval for the source's kind, else the topic default. */
@@ -26,6 +28,11 @@ export function isSourceDue(
 ): boolean {
   if (!source.active) return false
   if (!source.last_run_at) return true
+  if (
+    source.run_requested_at &&
+    Date.parse(source.run_requested_at) > Date.parse(source.last_run_at)
+  )
+    return true
   const elapsedMs = now.getTime() - new Date(source.last_run_at).getTime()
   const toleranceMs = 5 * 60 * 1000
   return elapsedMs + toleranceMs >= effectiveIntervalHours(source, config) * 3600 * 1000

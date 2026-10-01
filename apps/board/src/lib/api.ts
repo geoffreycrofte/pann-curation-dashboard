@@ -89,6 +89,8 @@ export const api = {
     request<AddRssResult>(`/topics/${topicId}/sources/rss`, json('POST', input)),
   updateSource: (topicId: string, sourceId: string, patch: SourcePatch) =>
     request<Source>(`/topics/${topicId}/sources/${sourceId}`, json('PATCH', patch)),
+  requestCollection: (topicId: string, sourceId: string) =>
+    request<Source>(`/topics/${topicId}/sources/${sourceId}/collect`, { method: 'POST' }),
   deleteSource: (topicId: string, sourceId: string) =>
     request<void>(`/topics/${topicId}/sources/${sourceId}`, { method: 'DELETE' }),
 }

@@ -85,5 +85,6 @@ export interface Source {
   interval_hours: number | null
   last_run_at: string | null
   last_error: string | null
+  run_requested_at: string | null
   created_at: string
 }

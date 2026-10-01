@@ -33,3 +33,21 @@ Complète `docs/CONTEXT.md`. Une entrée par décision, la plus récente en bas.
 **Ajout manuel d'articles et d'outils.** Validés par défaut (case à décocher pour les envoyer dans « À trier »). Le titre est récupéré depuis la page s'il n'est pas fourni. L'insertion passe par la fonction `public.add_manual_item` (security definer, contrôle d'accès au topic explicite), ce qui évite d'utiliser la clé secrète pour une requête utilisateur. Les items manuels portent `origin = 'manual'` : comme `items` est partagé entre workspaces, les collecteurs devront rafraîchir leur titre et leur contenu au lieu de faire confiance à la saisie.
 
 **Récupération de pages par l'API.** Délai de 8 s, 512 Ko maximum, adresses locales et privées refusées.
+
+## 2026-10-03 : collecte (étape 2)
+
+**Un cron horaire, des sources « dues ».** Le cron `7 * * * *` (minute 7 pour éviter l'engorgement de l'heure pile) ne traite que les sources dont la fréquence est échue, au plus 10 par passage (temps et sous-requêtes Workers bornés), les plus anciennes d'abord. Une source en erreur n'arrête pas les autres ; l'erreur est affichée dans la page Sources.
+
+**« Collecter au prochain passage ».** Le board pose `sources.run_requested_at` (requête utilisateur, RLS) ; seul le cron collecte, avec la clé secrète. Pas de Queue Cloudflare pour l'instant : inutile tant que le tri IA n'existe pas, les items à trier se repèrent par `relevance_score is null`.
+
+**Fenêtre de collecte.** Premier passage : `collection.max_age_days` (30 jours par défaut), pour qu'un nouveau flux n'inonde pas le board avec ses archives. Ensuite : depuis le dernier passage moins 2 jours de recouvrement (articles publiés en retard), la déduplication absorbant les doublons.
+
+**Ingestion atomique en base.** `public.ingest_items` (réservée au rôle service) applique toutes les règles en une transaction : unicité par URL canonique ; déduplication de second niveau par `pg_trgm` (similarité ≥ 0,9, autre domaine, publication à 7 jours près, hors outils) pour les reprises d'un même article ; jamais de reproposition d'un item déjà rattaché au topic, quel que soit son statut, sauf un outil publié dont le tag de release a changé ; titre et contenu des liens ajoutés à la main rafraîchis une fois.
+
+**Adaptateurs.**
+
+- RSS / Atom / RDF : `fast-xml-parser` (Workers n'a pas de `DOMParser`), 50 entrées max par passage, les entrées sans date sont gardées (la déduplication les filtre ensuite).
+- Exa : `POST /search` (`type: auto`, `startPublishedDate`, texte limité à 6 000 caractères pour le tri). Le coût réel renvoyé par Exa (`costDollars.total`) est enregistré dans `usage_log`.
+- GitHub : dépôts du topic poussés pendant la fenêtre, triés par étoiles, avec un seuil (`min_stars`, 20 par défaut) pour écarter les dépôts personnels. Le dernier tag de release sert de `change_signature`. Une requête de release par dépôt : limiter `max_results` (15 par défaut). Un `GITHUB_TOKEN` (fine-grained, sans permission) relève la limite d'API.
+
+**Plan Workers.** Le plan gratuit limite à 50 sous-requêtes par invocation : une source GitHub en consomme jusqu'à 16. Le plan Paid prévu (1 000 sous-requêtes) est nécessaire dès plusieurs sources GitHub dans un même passage.
