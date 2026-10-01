@@ -1,0 +1,49 @@
+<script setup lang="ts">
+/** Pann mark: a gold pan seen at an angle, a nugget in the wet sand, grains washed away. */
+defineProps<{ size?: number }>()
+</script>
+
+<template>
+  <svg
+    class="pann-mark"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 64 64"
+    :width="size ?? 40"
+    :height="size ?? 40"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <rect width="64" height="64" rx="16" fill="#141414" />
+    <!-- The pan (batée), tilted as in the panning motion -->
+    <g transform="rotate(-14 32 36)">
+      <!-- outer wall, in shadow -->
+      <ellipse cx="32" cy="38.5" rx="23" ry="13" fill="#B88A00" />
+      <!-- rim -->
+      <ellipse cx="32" cy="34.5" rx="23" ry="11.5" fill="#FFC72C" />
+      <!-- wet sand in the hollow -->
+      <ellipse cx="32" cy="35" rx="18" ry="8" fill="#4A3906" />
+      <!-- swirl of water -->
+      <path
+        d="M18.5 35.5c3 3.4 9.5 4.8 15.5 3.6"
+        fill="none"
+        stroke="#FFC72C"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        opacity=".6"
+      />
+      <!-- the nugget -->
+      <path d="M28 34.5l2.6-5 6-.7 3.4 3.9-2.2 4.6-6.2 1z" fill="#FFD84D" />
+      <path
+        d="M30.6 29.5l2.4 3.8 7-.6"
+        fill="none"
+        stroke="#B88A00"
+        stroke-width="1.1"
+        stroke-linejoin="round"
+      />
+    </g>
+    <!-- grains of sand washed over the rim -->
+    <circle cx="53" cy="23" r="2.3" fill="#FFC72C" />
+    <circle cx="57.5" cy="17.5" r="1.6" fill="#FFC72C" opacity=".7" />
+    <circle cx="54" cy="12.5" r="1.1" fill="#FFC72C" opacity=".45" />
+  </svg>
+</template>

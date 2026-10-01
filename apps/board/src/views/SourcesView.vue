@@ -203,89 +203,84 @@ function feedUrl(source: Source): string | undefined {
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
   <p v-else-if="!sources?.length">{{ t('sources.empty') }}</p>
-  <div
-    v-else
-    class="table-wrapper"
-    tabindex="0"
-    role="region"
-    :aria-label="t('sources.tableCaption')"
-  >
-    <table>
-      <caption class="visually-hidden">
-        {{
-          t('sources.tableCaption')
-        }}
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">{{ t('sources.name') }}</th>
-          <th scope="col">{{ t('sources.type') }}</th>
-          <th scope="col">{{ t('sources.kind') }}</th>
-          <th scope="col">{{ t('sources.frequency') }}</th>
-          <th scope="col">{{ t('sources.lastRun') }}</th>
-          <th scope="col">{{ t('sources.active') }}</th>
-          <th scope="col">{{ t('sources.actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="source in sources" :key="source.id">
-          <th scope="row">
-            <a
-              v-if="feedUrl(source)"
-              :href="feedUrl(source)"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {{ source.label }}
-            </a>
-            <template v-else>{{ source.label }}</template>
-            <p v-if="source.last_error" class="hint error">
-              {{ t('sources.lastError', { message: describeError(source.last_error, t).text }) }}
-              <RouterLink v-if="describeError(source.last_error, t).provider" to="/connections">
-                {{ t('errors.fixInConnections') }}
-              </RouterLink>
+  <ul v-else class="sources" :aria-label="t('sources.tableCaption')">
+    <li v-for="source in sources" :key="source.id">
+      <article
+        class="card source"
+        :aria-labelledby="`source-${source.id}`"
+        :data-active="source.active"
+      >
+        <div class="source-head">
+          <div class="source-title">
+            <h2 :id="`source-${source.id}`">
+              <a
+                v-if="feedUrl(source)"
+                :href="feedUrl(source)"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{ source.label }}
+              </a>
+              <template v-else>{{ source.label }}</template>
+            </h2>
+            <ul class="chips">
+              <li class="chip chip-strong">{{ t(`sourceType.${source.type}`) }}</li>
+              <li class="chip">
+                {{ source.default_kind ? t(`kind.${source.default_kind}`) : t('kindSelect.none') }}
+              </li>
+            </ul>
+          </div>
+          <div class="source-run">
+            <p class="run-date">
+              <span class="hint">{{ t('sources.lastRun') }}</span>
+              {{
+                source.last_run_at
+                  ? d(new Date(source.last_run_at), { dateStyle: 'short', timeStyle: 'short' })
+                  : t('common.never')
+              }}
             </p>
-          </th>
-          <td>{{ t(`sourceType.${source.type}`) }}</td>
-          <td>
-            {{ source.default_kind ? t(`kind.${source.default_kind}`) : t('kindSelect.none') }}
-          </td>
-          <td>
-            <IntervalSelect
-              :model-value="source.interval_hours"
-              :inherited-hours="inheritedHours(source)"
-              :aria-label="t('sources.frequencyLabel', { label: source.label })"
-              :disabled="updating"
-              @update:model-value="(v) => update({ source, patch: { interval_hours: v } })"
-            />
-          </td>
-          <td>
-            {{
-              source.last_run_at
-                ? d(new Date(source.last_run_at), { dateStyle: 'short', timeStyle: 'short' })
-                : t('common.never')
-            }}
             <p v-if="collectionPending(source)" class="hint">{{ t('sources.pending') }}</p>
             <p v-else-if="source.last_run_stats" class="hint">
               {{ formatStats(source.last_run_stats) }}
             </p>
-          </td>
-          <td>
+          </div>
+        </div>
+
+        <p v-if="source.last_error" class="error source-error">
+          {{ t('sources.lastError', { message: describeError(source.last_error, t).text }) }}
+          <RouterLink v-if="describeError(source.last_error, t).provider" to="/connections">
+            {{ t('errors.fixInConnections') }}
+          </RouterLink>
+        </p>
+
+        <div class="source-controls">
+          <div class="form-row">
+            <label :for="`freq-${source.id}`" class="hint">{{ t('sources.frequency') }}</label>
+            <IntervalSelect
+              :id="`freq-${source.id}`"
+              :model-value="source.interval_hours"
+              :inherited-hours="inheritedHours(source)"
+              :disabled="updating"
+              @update:model-value="(v) => update({ source, patch: { interval_hours: v } })"
+            />
+          </div>
+          <div class="form-check active-check">
             <input
+              :id="`active-${source.id}`"
               type="checkbox"
-              class="check"
               :checked="source.active"
-              :aria-label="t('sources.activeLabel', { label: source.label })"
               :disabled="updating"
               @change="
                 update({ source, patch: { active: ($event.target as HTMLInputElement).checked } })
               "
             />
-          </td>
-          <td class="row-actions">
+            <label :for="`active-${source.id}`">{{ t('sources.activeShort') }}</label>
+          </div>
+          <div class="row-actions">
             <button
               type="button"
               class="button"
+              data-variant="primary"
               :aria-label="t('sources.collectLabel', { label: source.label })"
               :disabled="collectionPending(source) || !source.active"
               @click="collectNow(source)"
@@ -318,52 +313,122 @@ function feedUrl(source: Source): string | undefined {
                 </AlertDialogContent>
               </AlertDialogPortal>
             </AlertDialogRoot>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+          </div>
+        </div>
+      </article>
+    </li>
+  </ul>
   <p role="status" :class="{ error: isError }">{{ message }}</p>
 
   <AddRssForm v-if="topic" :topic-id="topicId" :config="topic.config" />
 </template>
 
 <style scoped>
-.table-wrapper {
-  overflow-x: auto;
+.sources {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.source {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
 }
 
-th,
-td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--color-border);
-  text-align: start;
-  vertical-align: middle;
+.source[data-active='false'] {
+  background: var(--color-surface-2);
 }
 
-thead th {
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
+.source-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
 }
 
-tbody th {
-  font-weight: 600;
+.source-title {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.source-title h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.source-title h2 a {
+  color: var(--color-text);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.125rem var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.chip-strong {
+  border-color: var(--color-text);
+}
+
+.source-run {
+  text-align: end;
+}
+
+.source-run p {
+  margin: 0;
+}
+
+.run-date {
+  display: grid;
+  font-weight: 650;
+}
+
+.source-error {
+  margin: 0;
+}
+
+.source-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-4) var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.active-check {
+  min-height: 2.75rem;
 }
 
 .row-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  margin-inline-start: auto;
 }
 
-.check {
-  width: 1.5rem;
-  height: 1.5rem;
-  accent-color: var(--color-accent-text);
+@media (max-width: 40rem) {
+  .source-run {
+    text-align: start;
+  }
+
+  .row-actions {
+    margin-inline-start: 0;
+  }
 }
 </style>

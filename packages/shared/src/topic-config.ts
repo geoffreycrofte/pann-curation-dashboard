@@ -76,7 +76,6 @@ export const topicConfigSchema = z.object({
       z.object({
         channel: z.enum(CHANNELS),
         account_ref: z.string(),
-        bilingual_single_post: z.boolean().default(false),
       }),
     )
     .default([]),

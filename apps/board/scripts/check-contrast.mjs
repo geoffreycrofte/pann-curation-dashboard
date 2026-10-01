@@ -28,11 +28,21 @@ function ratio(a, b) {
 const PAIRS = [
   ['color-text', 'color-bg', 4.5],
   ['color-text', 'color-surface', 4.5],
+  ['color-text', 'color-surface-2', 4.5],
+  ['color-text', 'color-accent-soft', 4.5],
   ['color-text-muted', 'color-bg', 4.5],
   ['color-text-muted', 'color-surface', 4.5],
+  ['color-text-muted', 'color-surface-2', 4.5],
   ['color-accent-text', 'color-bg', 4.5],
   ['color-accent-text', 'color-surface', 4.5],
+  ['color-accent-text', 'color-surface-2', 4.5],
   ['color-on-accent', 'color-accent-fill', 4.5],
+  ['color-text-muted', 'color-accent-soft', 4.5],
+  ['color-surface', 'color-text', 4.5],
+  ['color-danger', 'color-surface-2', 4.5],
+  ['color-on-ink', 'color-ink', 4.5],
+  ['color-on-ink-muted', 'color-ink', 4.5],
+  ['color-accent-on-ink', 'color-ink', 4.5],
   ['color-success', 'color-surface', 4.5],
   ['color-danger', 'color-surface', 4.5],
   ['color-success', 'color-bg', 4.5],
@@ -41,6 +51,8 @@ const PAIRS = [
   ['color-border', 'color-surface', 3],
   ['color-focus', 'color-bg', 3],
   ['color-focus', 'color-surface', 3],
+  ['color-focus-on-ink', 'color-ink', 3],
+  ['color-accent-fill', 'color-ink', 3],
 ]
 
 let failed = false

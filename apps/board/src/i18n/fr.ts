@@ -14,6 +14,8 @@ export default {
     never: 'Jamais',
   },
   auth: {
+    pitch: 'Beaucoup de collecte, peu de sélection : ne gardez que l’essentiel de votre veille.',
+    intro: 'Recevez un lien de connexion par e-mail, sans mot de passe.',
     title: 'Connexion',
     email: 'Adresse e-mail',
     submit: 'Recevoir un lien de connexion',
@@ -23,6 +25,8 @@ export default {
     signOut: 'Se déconnecter',
   },
   nav: {
+    menu: 'Menu',
+    workspace: 'Espace de travail',
     label: 'Navigation principale',
     topics: 'Thèmes',
     connections: 'Connexions',
@@ -240,6 +244,7 @@ export default {
     topicDefault: 'Réglage du thème ({value})',
   },
   sources: {
+    activeShort: 'Collecte active',
     heading: 'Sources : {topic}',
     title: 'Sources',
     tableCaption: 'Sources collectées pour ce thème',

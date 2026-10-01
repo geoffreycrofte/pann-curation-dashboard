@@ -129,16 +129,18 @@ async function savePost(postId: string, text: string) {
         <figcaption class="hint">{{ t('draft.excerpt') }}</figcaption>
         <blockquote :lang="detail.item.source_lang ?? undefined">{{ excerpt }}</blockquote>
       </figure>
-      <template v-for="lang in LANGS" :key="lang">
-        <TextSaver
-          v-if="detail.summaries.find((s) => s.lang === lang)"
-          :label="t('draft.summaryLabel', { lang: t(`draft.langs.${lang}`) })"
-          :value="detail.summaries.find((s) => s.lang === lang)!.summary"
-          :lang="lang"
-          :edited="detail.summaries.find((s) => s.lang === lang)!.edited_by_human"
-          :save="(text) => saveSummary(lang, text)"
-        />
-      </template>
+      <div class="pair">
+        <template v-for="lang in LANGS" :key="lang">
+          <TextSaver
+            v-if="detail.summaries.find((s) => s.lang === lang)"
+            :label="t('draft.summaryLabel', { lang: t(`draft.langs.${lang}`) })"
+            :value="detail.summaries.find((s) => s.lang === lang)!.summary"
+            :lang="lang"
+            :edited="detail.summaries.find((s) => s.lang === lang)!.edited_by_human"
+            :save="(text) => saveSummary(lang, text)"
+          />
+        </template>
+      </div>
     </section>
 
     <section v-if="detail.posts.length" class="block" aria-labelledby="posts">
@@ -149,22 +151,27 @@ async function savePost(postId: string, text: string) {
         :aria-labelledby="`posts-${channel}`"
       >
         <h3 :id="`posts-${channel}`">{{ t(`draft.channels.${channel}`) }}</h3>
-        <template v-for="post in detail.posts.filter((p) => p.channel === channel)" :key="post.id">
-          <TextSaver
-            :label="
-              t('draft.postLabel', {
-                channel: t(`draft.channels.${channel}`),
-                lang: t(`draft.langs.${post.lang}`),
-              })
-            "
-            :value="post.body"
-            :lang="post.lang ?? undefined"
-            :limit="POST_LIMITS[channel]"
-            :limit-name="t(`draft.channels.${channel}`)"
-            :edited="post.edited_by_human"
-            :save="(text) => savePost(post.id, text)"
-          />
-        </template>
+        <div class="pair">
+          <template
+            v-for="post in detail.posts.filter((p) => p.channel === channel)"
+            :key="post.id"
+          >
+            <TextSaver
+              :label="
+                t('draft.postLabel', {
+                  channel: t(`draft.channels.${channel}`),
+                  lang: t(`draft.langs.${post.lang}`),
+                })
+              "
+              :value="post.body"
+              :lang="post.lang ?? undefined"
+              :limit="POST_LIMITS[channel]"
+              :limit-name="t(`draft.channels.${channel}`)"
+              :edited="post.edited_by_human"
+              :save="(text) => savePost(post.id, text)"
+            />
+          </template>
+        </div>
       </section>
     </section>
     <p v-else-if="detail.draft_status !== 'pending'" class="hint">{{ t('draft.empty') }}</p>
@@ -185,10 +192,11 @@ async function savePost(postId: string, text: string) {
   display: grid;
   gap: var(--space-4);
   margin-top: var(--space-6);
-  padding: var(--space-4) var(--space-6);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .block h2,
@@ -207,6 +215,19 @@ async function savePost(postId: string, text: string) {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
+}
+
+.pair {
+  display: grid;
+  gap: var(--space-5);
+}
+
+/* French and English side by side on wide screens, easier to compare. */
+@media (min-width: 64rem) {
+  .pair {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
 }
 
 .excerpt {

@@ -16,6 +16,8 @@ export default {
     never: 'Never',
   },
   auth: {
+    pitch: 'Collect a lot, keep little: only the essentials of your watch.',
+    intro: 'Get a sign-in link by email, no password needed.',
     title: 'Sign in',
     email: 'Email address',
     submit: 'Send me a sign-in link',
@@ -25,6 +27,8 @@ export default {
     signOut: 'Sign out',
   },
   nav: {
+    menu: 'Menu',
+    workspace: 'Workspace',
     label: 'Main navigation',
     topics: 'Topics',
     connections: 'Connections',
@@ -239,6 +243,7 @@ export default {
     topicDefault: 'Topic setting ({value})',
   },
   sources: {
+    activeShort: 'Collection on',
     heading: 'Sources: {topic}',
     title: 'Sources',
     tableCaption: 'Sources collected for this topic',

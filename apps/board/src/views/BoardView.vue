@@ -72,16 +72,19 @@ const announcement = ref('')
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
-/* Selected state does not rely on the gold fill alone (low contrast on white). */
+.tab {
+  border-color: var(--color-border-subtle);
+}
+
+/* Current tab: ink fill, light text and bold (not color alone). */
 .tab[data-state='active'] {
-  border-color: var(--color-accent-text);
-  background: var(--color-accent-fill);
-  color: var(--color-on-accent);
-  font-weight: 700;
-  box-shadow: inset 0 -3px 0 var(--color-on-accent);
+  border-color: var(--color-text);
+  background: var(--color-text);
+  color: var(--color-surface);
+  font-weight: 750;
 }
 
 @media (forced-colors: active) {

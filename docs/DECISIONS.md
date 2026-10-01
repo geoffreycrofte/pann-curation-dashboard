@@ -108,3 +108,16 @@ Complète `docs/CONTEXT.md`. Une entrée par décision, la plus récente en bas.
 **Ce qui reste intégré** : le fonctionnement de l'outil, valable pour tout thème et tout utilisateur (résumer uniquement à partir de la source, ne rien inventer, signaler un contenu insuffisant, extrait mot pour mot, attribution des contenus commerciaux, reformulation plutôt que paraphrase, français et anglais rédigés chacun nativement, limites de caractères des réseaux, lien ajouté à part). Un test vérifie qu'aucune règle de style ou de thème n'est écrite en dur.
 
 Prompts passés en `draft-v2` et `triage-v2`. Le thème accessibilité est prérempli avec les anciennes règles (`docs/topics/accessibilite.md`).
+
+## 2026-10-03 : réponses aux questions ouvertes (diffusion)
+
+- **CheckFox** : mis de côté pour le moment (étape 5 reportée).
+- **LinkedIn** : jamais de post bilingue (cela casse la traduction automatique de LinkedIn) : un post par langue, comme sur les autres réseaux. L'option `channels[].bilingual_single_post` de la config est retirée.
+- **Créneaux** : 9 h et 16 h, heure de Luxembourg (valeurs par défaut de la config).
+- **Newsletter** : une liste Brevo par langue.
+
+## 2026-10-03 : identité visuelle
+
+Logo (batée inclinée et pépite), palette noir d'encre et or, typographies Bricolage Grotesque (titres) et Plus Jakarta Sans (texte), hébergées avec l'app plutôt que chargées depuis Google Fonts (aucune donnée envoyée à un tiers). Détails : `docs/brand/README.md`.
+
+Mise en page : barre latérale noire (thèmes, Connexions, langue), qui devient un menu repliable sur petit écran ; cartes arrondies ; tuile de score sur chaque élément ; contrôles segmentés pour les sections d'un thème ; sources en cartes plutôt qu'en tableau (sept colonnes illisibles à cette largeur) ; résumés et posts FR/EN côte à côte sur grand écran. Thèmes clair et sombre ; 54 couples de contraste vérifiés (27 combinaisons en clair et en sombre) ; audit axe-core sans violation sur toutes les pages.

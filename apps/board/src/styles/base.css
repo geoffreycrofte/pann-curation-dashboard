@@ -1,3 +1,5 @@
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/bricolage-grotesque';
 @import './tokens.css';
 
 *,
@@ -8,19 +10,55 @@
 
 html {
   font-family: var(--font-sans);
-  line-height: 1.5;
+  font-size: 100%;
+  line-height: 1.55;
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   margin: 0;
 }
 
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h1 {
+  margin: 0 0 var(--space-4);
+  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
+  font-weight: 800;
+}
+
+h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+p {
+  text-wrap: pretty;
+}
+
 a {
   color: var(--color-accent-text);
-  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
 }
 
 :focus-visible {
@@ -42,51 +80,89 @@ h1[tabindex='-1']:focus {
   white-space: nowrap;
 }
 
+/* ---------------------------------------------------------------------------
+ * Buttons: pills. Primary = gold fill with ink text.
+ * ------------------------------------------------------------------------- */
 .button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
   min-height: 2.75rem; /* 44px target size */
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-bg);
+  padding: var(--space-2) var(--space-5);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
   cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--color-text);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .button[data-variant='primary'] {
-  border-color: var(--color-accent-text);
+  border-color: var(--color-accent-fill);
   background: var(--color-accent-fill);
   color: var(--color-on-accent);
-  font-weight: 600;
+}
+
+.button[data-variant='primary']:hover:not(:disabled) {
+  border-color: var(--color-on-accent);
+}
+
+.button[data-variant='danger'] {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 .button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
+/* ---------------------------------------------------------------------------
+ * Cards and sections
+ * ------------------------------------------------------------------------- */
+.card {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
-@media (forced-colors: active) {
-  .button[data-variant='primary'] {
-    border: 2px solid ButtonText;
-  }
+/* Information banner: the text carries the message, the gold edge only marks it. */
+.notice {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-inline-start: 6px solid var(--color-accent-fill);
+  border-radius: var(--radius);
+  background: var(--color-accent-soft);
+  color: var(--color-text);
 }
 
-/* Forms */
+.notice p {
+  margin: var(--space-1) 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Forms
+ * ------------------------------------------------------------------------- */
 .form {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .form-row {
@@ -96,7 +172,7 @@ h1[tabindex='-1']:focus {
 
 .form-row > label,
 .form-label {
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .form-check {
@@ -119,11 +195,19 @@ h1[tabindex='-1']:focus {
 .field {
   min-height: 2.75rem;
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius);
-  background: var(--color-bg);
+  background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
+}
+
+.field:hover {
+  border-color: var(--color-text);
+}
+
+.field:focus-visible {
+  outline-offset: 1px;
 }
 
 .hint {
@@ -138,27 +222,27 @@ h1[tabindex='-1']:focus {
 
 fieldset {
   margin: 0;
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  padding: var(--space-5) var(--space-6) var(--space-6);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 legend {
   padding: 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
   font-weight: 700;
 }
 
-.button[data-variant='danger'] {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-  font-weight: 600;
-}
-
-/* Dialogs (Reka UI AlertDialog) */
+/* ---------------------------------------------------------------------------
+ * Dialogs (Reka UI AlertDialog)
+ * ------------------------------------------------------------------------- */
 .dialog-overlay {
   position: fixed;
   inset: 0;
-  background: rgb(0 0 0 / 0.5);
+  background: rgb(10 10 10 / 0.55);
 }
 
 .dialog {
@@ -167,35 +251,43 @@ legend {
   left: 50%;
   width: min(32rem, calc(100vw - 2rem));
   padding: var(--space-6);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
   color: var(--color-text);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.25);
   transform: translate(-50%, -50%);
 }
 
 .dialog-title {
   margin-top: 0;
-  font-size: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
 }
 
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-2);
-  margin-top: var(--space-4);
+  margin-top: var(--space-5);
 }
 
-/* Information banner (missing key…): the text carries the message, the gold border only marks it. */
-.notice {
-  margin: 0 0 var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-left: 6px solid var(--color-accent-fill);
-  border-radius: var(--radius);
-  background: var(--color-surface);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-.notice p {
-  margin: var(--space-1) 0;
+@media (forced-colors: active) {
+  .button[data-variant='primary'] {
+    border: 2px solid ButtonText;
+  }
+
+  .card,
+  fieldset,
+  .notice {
+    border: 1px solid CanvasText;
+  }
 }

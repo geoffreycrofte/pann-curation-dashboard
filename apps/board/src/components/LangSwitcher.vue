@@ -25,12 +25,18 @@ const { t, locale } = useI18n()
 <style scoped>
 .lang-switcher {
   display: flex;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
+.lang-switcher .button {
+  flex: 1;
+  padding-inline: var(--space-3);
+}
+
+/* Selected language: filled, not color alone (aria-pressed is announced). */
 .button[aria-pressed='true'] {
-  border-color: var(--color-accent-text);
-  box-shadow: inset 0 -3px 0 var(--color-accent-text);
-  font-weight: 600;
+  border-color: var(--color-text);
+  background: var(--color-text);
+  color: var(--color-surface);
 }
 </style>

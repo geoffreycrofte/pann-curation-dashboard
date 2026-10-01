@@ -167,10 +167,7 @@ const { mutate: remove } = useMutation({
 .card {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-6);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
+  padding: var(--space-5) var(--space-6);
 }
 
 .card > p {
