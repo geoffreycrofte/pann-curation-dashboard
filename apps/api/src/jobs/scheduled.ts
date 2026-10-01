@@ -6,7 +6,7 @@ import type { Env } from '../env'
  */
 export async function runScheduled(controller: ScheduledController, _env: Env): Promise<void> {
   switch (controller.cron) {
-    // Step 2: case '0 */6 * * *': return collect(env)
+    // Step 2: case '7 * * * *': return collect(env) // sources filtered with isSourceDue
     default:
       console.warn(`No job bound to cron "${controller.cron}"`)
   }

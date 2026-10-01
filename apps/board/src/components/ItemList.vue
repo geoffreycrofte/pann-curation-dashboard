@@ -25,7 +25,7 @@ const { mutate, isLoading } = useMutation({
   mutation: (vars: { item: BoardItem; to: ItemTopicStatus }) =>
     api.setStatus(props.topicId, vars.item.item_id, vars.to),
   async onSuccess(_data, { item, to }) {
-    emit('announce', t('board.statusChanged', { title: item.title, status: t(`status.${to}`) }))
+    emit('announce', t('board.statusChanged', { title: item.title, status: t(`statusOne.${to}`) }))
     // Keep keyboard focus in the list: move to the next card, or the list itself.
     const cards = [...(listEl.value?.querySelectorAll<HTMLElement>('[data-item-id]') ?? [])]
     const index = cards.findIndex((el) => el.dataset.itemId === item.item_id)

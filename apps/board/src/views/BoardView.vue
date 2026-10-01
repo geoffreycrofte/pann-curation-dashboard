@@ -1,23 +1,20 @@
 <script setup lang="ts">
 import { ITEM_TOPIC_STATUSES, type ItemTopicStatus } from '@pann/shared'
-import { useQuery } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import AddItemForm from '../components/AddItemForm.vue'
 import ItemList from '../components/ItemList.vue'
-import { api } from '../lib/api'
+import TopicNav from '../components/TopicNav.vue'
+import { useTopicName } from '../lib/topic-name'
 
 const props = defineProps<{ topicId: string }>()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
-const { data: topics } = useQuery({ key: ['topics'], query: api.topics })
-const topic = computed(() => topics.value?.find((tp) => tp.id === props.topicId))
-const topicName = computed(() =>
-  topic.value ? (locale.value === 'fr' ? topic.value.name_fr : topic.value.name_en) : '',
-)
+const topicName = useTopicName(() => props.topicId)
 
 const status = computed<ItemTopicStatus>({
   get: () => {
@@ -34,6 +31,8 @@ const announcement = ref('')
 
 <template>
   <h1 tabindex="-1">{{ topicName }}</h1>
+  <TopicNav :topic-id="topicId" />
+  <AddItemForm :topic-id="topicId" />
 
   <TabsRoot v-model="status" activation-mode="manual">
     <TabsList :aria-label="t('board.statusFilter')" class="tabs">

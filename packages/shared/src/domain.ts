@@ -18,8 +18,14 @@ export const ITEM_TOPIC_STATUSES = [
 ] as const
 export type ItemTopicStatus = (typeof ITEM_TOPIC_STATUSES)[number]
 
-/** Statuses that must never be proposed again in the board (see "anti-reproposition"). */
+/**
+ * Statuses that collection jobs must never reset to `new` (anti-reproposition).
+ * The user can still move a rejected item manually; tools re-open on change_signature.
+ */
 export const LOCKED_STATUSES: readonly ItemTopicStatus[] = ['published', 'rejected']
+
+export const ITEM_ORIGINS = ['collected', 'manual'] as const
+export type ItemOrigin = (typeof ITEM_ORIGINS)[number]
 
 export const SOURCE_TYPES = ['rss', 'exa', 'github'] as const
 export type SourceType = (typeof SOURCE_TYPES)[number]
@@ -60,9 +66,24 @@ export interface BoardItem {
   title: string
   source_lang: string | null
   kind: ItemKind | null
+  origin: ItemOrigin
   published_at: string | null
   discovered_at: string
   relevance_score: number | null
   status: ItemTopicStatus
   validated_at: string | null
+}
+
+export interface Source {
+  id: string
+  topic_id: string
+  type: SourceType
+  label: string
+  config: Record<string, unknown>
+  active: boolean
+  default_kind: ItemKind | null
+  interval_hours: number | null
+  last_run_at: string | null
+  last_error: string | null
+  created_at: string
 }

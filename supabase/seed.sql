@@ -34,6 +34,10 @@ with ws as (
       "editorial_rules": "",
       "prompt_version": "v1"
     },
+    "collection": {
+      "intervals_hours": { "news": 24, "legal": 48, "tool": 168, "resource": 72 },
+      "default_hours": 24
+    },
     "schedule": {
       "timezone": "Europe/Luxembourg",
       "posts_per_day": 2,
@@ -45,15 +49,15 @@ with ws as (
   from ws
   returning id
 )
-insert into public.sources (topic_id, type, label, config)
-select topic.id, s.type::public.source_type, s.label, s.config::jsonb
+insert into public.sources (topic_id, type, label, config, default_kind)
+select topic.id, s.type::public.source_type, s.label, s.config::jsonb, s.kind::public.item_kind
 from topic, (values
-  ('github', 'GitHub topic: accessibility', '{"query": "topic:accessibility", "sort": "updated"}'),
-  ('github', 'GitHub topic: a11y',          '{"query": "topic:a11y", "sort": "updated"}'),
-  ('github', 'GitHub topic: wcag',          '{"query": "topic:wcag", "sort": "updated"}'),
-  ('exa',    'Exa: accessibility legal news', '{"query": "European Accessibility Act enforcement news", "num_results": 10}'),
-  ('exa',    'Exa: WCAG updates',             '{"query": "WCAG W3C WAI new publication", "num_results": 10}')
-) as s(type, label, config);
+  ('github', 'GitHub topic: accessibility', '{"query": "topic:accessibility", "sort": "updated"}', 'tool'),
+  ('github', 'GitHub topic: a11y',          '{"query": "topic:a11y", "sort": "updated"}', 'tool'),
+  ('github', 'GitHub topic: wcag',          '{"query": "topic:wcag", "sort": "updated"}', 'tool'),
+  ('exa',    'Exa: accessibility legal news', '{"query": "European Accessibility Act enforcement news", "num_results": 10}', 'legal'),
+  ('exa',    'Exa: WCAG updates',             '{"query": "WCAG W3C WAI new publication", "num_results": 10}', 'news')
+) as s(type, label, config, kind);
 
--- RSS sources (W3C WAI, DINUM/RGAA, EUR-Lex, Luxembourg RAWeb…) are intentionally
--- not seeded: each feed URL must be checked by hand before being added.
+-- RSS sources are intentionally not seeded: add them from the board (Sources page),
+-- which fetches and verifies each feed. Candidates: docs/sources/accessibilite.md.

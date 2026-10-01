@@ -20,8 +20,9 @@
 
   "observability": { "enabled": true },
 
-  // Step 2 (collect) will add:
-  // "triggers": { "crons": ["0 */6 * * *"] },
+  // Step 2 (collect) will add an hourly cron; each run only collects the sources
+  // that are due (see isSourceDue in packages/shared/src/schedule.ts):
+  // "triggers": { "crons": ["7 * * * *"] },
   // "queues": { "producers": [{ "binding": "TRIAGE_QUEUE", "queue": "pann-triage" }],
   //             "consumers": [{ "queue": "pann-triage", "dead_letter_queue": "pann-dlq" }] }
 }

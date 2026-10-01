@@ -50,6 +50,10 @@ pnpm format:check
 pnpm db:reset      # rejoue toutes les migrations et le seed
 ```
 
+## MCP Supabase (poste local)
+
+`.mcp.json` déclare le serveur MCP Supabase du projet. Dans un terminal : `claude /mcp`, choisir `supabase`, puis « Authenticate ».
+
 ## Déploiement
 
 Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, `wrangler deploy`.
@@ -63,6 +67,7 @@ Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, 
 ## Avancement (plan de `docs/CONTEXT.md`, section 9)
 
 - [x] 1. Socle : monorepo, schéma, topic accessibilité, Worker Hono, auth, board squelette, CI
+- [x] Saisie manuelle : flux RSS (avec auto-découverte), articles et outils ; fréquence de collecte par type de contenu et par source
 - [ ] 2. Collecte : adaptateurs RSS, Exa, GitHub ; déduplication ; Cron + Queues
 - [ ] 3. Tri IA (Haiku)
 - [ ] 4. Rédaction IA (Sonnet), `usage_log`, plafond de coût

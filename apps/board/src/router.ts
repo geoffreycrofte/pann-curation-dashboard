@@ -17,6 +17,18 @@ export const router = createRouter({
       component: () => import('./views/BoardView.vue'),
       props: true,
     },
+    {
+      path: '/t/:topicId/sources',
+      name: 'sources',
+      component: () => import('./views/SourcesView.vue'),
+      props: true,
+    },
+    {
+      path: '/t/:topicId/settings',
+      name: 'settings',
+      component: () => import('./views/SettingsView.vue'),
+      props: true,
+    },
   ],
 })
 

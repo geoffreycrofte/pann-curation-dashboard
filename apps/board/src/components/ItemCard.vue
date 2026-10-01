@@ -34,6 +34,7 @@ const actions = computed(() =>
     </h2>
     <ul class="meta">
       <li v-if="item.kind" class="kind">{{ t(`kind.${item.kind}`) }}</li>
+      <li v-if="item.origin === 'manual'">{{ t('board.manual') }}</li>
       <li>
         {{
           item.relevance_score === null

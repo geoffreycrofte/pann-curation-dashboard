@@ -35,6 +35,8 @@ const PAIRS = [
   ['color-on-accent', 'color-accent-fill', 4.5],
   ['color-success', 'color-surface', 4.5],
   ['color-danger', 'color-surface', 4.5],
+  ['color-success', 'color-bg', 4.5],
+  ['color-danger', 'color-bg', 4.5],
   ['color-border', 'color-bg', 3],
   ['color-border', 'color-surface', 3],
   ['color-focus', 'color-bg', 3],

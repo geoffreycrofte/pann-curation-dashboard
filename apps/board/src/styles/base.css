@@ -82,3 +82,106 @@ h1[tabindex='-1']:focus {
     border: 2px solid ButtonText;
   }
 }
+
+/* Forms */
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.form-row {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.form-row > label,
+.form-label {
+  font-weight: 600;
+}
+
+.form-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--space-2);
+}
+
+.form-check input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-accent-text);
+}
+
+.form-check .hint {
+  grid-column: 2;
+}
+
+.field {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+fieldset {
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+legend {
+  padding: 0 var(--space-2);
+  font-weight: 700;
+}
+
+.button[data-variant='danger'] {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/* Dialogs (Reka UI AlertDialog) */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.5);
+}
+
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(32rem, calc(100vw - 2rem));
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transform: translate(-50%, -50%);
+}
+
+.dialog-title {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}

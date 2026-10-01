@@ -1,6 +1,11 @@
 import { z } from 'zod'
 import { CHANNELS, DRAFT_MODES, LANGS } from './domain'
 
+/** Interval bounds, in hours: 1 hour to 90 days. */
+export const MIN_INTERVAL_HOURS = 1
+export const MAX_INTERVAL_HOURS = 2160
+const intervalHours = z.number().int().min(MIN_INTERVAL_HOURS).max(MAX_INTERVAL_HOURS)
+
 /** HH:MM, 24-hour clock. */
 const timeSlot = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
 
@@ -22,6 +27,21 @@ export const topicConfigSchema = z.object({
       relevance_criteria: z.string().default(''),
       editorial_rules: z.string().default(''),
       prompt_version: z.string().default('v1'),
+    })
+    .prefault({}),
+  /** How often sources are collected, by the kind of content they produce. */
+  collection: z
+    .object({
+      intervals_hours: z
+        .object({
+          news: intervalHours.default(24),
+          legal: intervalHours.default(48),
+          tool: intervalHours.default(168),
+          resource: intervalHours.default(72),
+        })
+        .prefault({}),
+      /** Sources without a kind hint. */
+      default_hours: intervalHours.default(24),
     })
     .prefault({}),
   schedule: z
