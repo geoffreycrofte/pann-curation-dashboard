@@ -1,4 +1,10 @@
-import { isSourceDue, normalizeUrl } from '@pann/shared'
+import {
+  isSourceDue,
+  normalizeUrl,
+  parseErrorCode,
+  type Provider,
+  type SourceRunStats,
+} from '@pann/shared'
 import {
   SourceError,
   type Adapter,
@@ -29,8 +35,15 @@ export interface IngestStats {
 /** Persistence used by the collector (Supabase with the secret key in production). */
 export interface CollectStore {
   activeSources(): Promise<CollectSource[]>
+  /** Decrypted keys of a workspace (Connections page). */
+  credentials(workspaceId: string): Promise<CollectSecrets>
+  /** A provider rejected the workspace key: shown on the Connections page. */
+  markCredentialInvalid(workspaceId: string, provider: Provider): Promise<void>
   ingest(topicId: string, rows: IngestRow[]): Promise<IngestStats>
-  finishRun(sourceId: string, result: { at: Date; error: string | null }): Promise<void>
+  finishRun(
+    sourceId: string,
+    result: { at: Date; error: string | null; stats: SourceRunStats | null },
+  ): Promise<void>
   logUsage(source: CollectSource, usage: UsageEntry[]): Promise<void>
 }
 
@@ -46,6 +59,10 @@ export interface SourceReport {
 export const MAX_SOURCES_PER_RUN = 10
 /** Re-read a little before the last run, for entries published late or dated in the past. */
 const OVERLAP_MS = 2 * 24 * 3600 * 1000
+
+function emptyStats(): IngestStats {
+  return { new_items: 0, linked: 0, duplicates: 0, reopened: 0, known: 0 }
+}
 
 export function collectionWindowStart(source: CollectSource, now: Date): Date {
   const maxAge = new Date(
@@ -86,35 +103,60 @@ export function toIngestRows(items: CollectedItem[]): IngestRow[] {
 export async function collect(deps: {
   store: CollectStore
   adapters: Record<string, Adapter>
-  secrets: CollectSecrets
   now?: Date
   maxSources?: number
+  /** "Collect now": run these sources whatever their schedule. */
+  onlySourceIds?: string[]
 }): Promise<SourceReport[]> {
   const now = deps.now ?? new Date()
+  const only = deps.onlySourceIds
   const due = (await deps.store.activeSources())
-    .filter((s) => isSourceDue(s, s.topic_config, now))
+    .filter((s) => (only ? only.includes(s.id) : isSourceDue(s, s.topic_config, now)))
     .sort((a, b) => (a.last_run_at ?? '').localeCompare(b.last_run_at ?? ''))
     .slice(0, deps.maxSources ?? MAX_SOURCES_PER_RUN)
+
+  const secretsByWorkspace = new Map<string, Promise<CollectSecrets>>()
+  const secretsOf = (workspaceId: string) => {
+    let secrets = secretsByWorkspace.get(workspaceId)
+    if (!secrets) {
+      secrets = deps.store.credentials(workspaceId)
+      secretsByWorkspace.set(workspaceId, secrets)
+    }
+    return secrets
+  }
 
   const reports: SourceReport[] = []
   for (const source of due) {
     const report: SourceReport = { source_id: source.id, label: source.label, collected: 0 }
     try {
       const adapter = deps.adapters[source.type]
-      if (!adapter) throw new SourceError(`No adapter for ${source.type}`)
+      if (!adapter) throw new SourceError('invalid_config')
       const result = await adapter(source, {
         since: collectionWindowStart(source, now),
-        secrets: deps.secrets,
+        secrets: await secretsOf(source.workspace_id),
       })
       if (result.usage?.length) await deps.store.logUsage(source, result.usage)
       const rows = toIngestRows(result.items)
       report.collected = rows.length
-      if (rows.length) report.stats = await deps.store.ingest(source.topic_id, rows)
-      await deps.store.finishRun(source.id, { at: now, error: null })
+      const stats = rows.length ? await deps.store.ingest(source.topic_id, rows) : emptyStats()
+      report.stats = stats
+      await deps.store.finishRun(source.id, {
+        at: now,
+        error: null,
+        stats: { collected: rows.length, ...stats },
+      })
     } catch (err) {
-      report.error = err instanceof SourceError ? err.message : 'Unexpected error'
+      report.error = err instanceof SourceError ? err.message : 'unexpected'
       if (!(err instanceof SourceError)) console.error(`collect ${source.id}`, err)
-      await deps.store.finishRun(source.id, { at: now, error: report.error.slice(0, 500) })
+      const parsed = parseErrorCode(report.error)
+      if (parsed?.code === 'invalid_credential' && parsed.detail) {
+        await deps.store.markCredentialInvalid(source.workspace_id, parsed.detail as Provider)
+      }
+      await deps.store.finishRun(source.id, {
+        at: now,
+        error: report.error.slice(0, 500),
+        stats: null,
+      })
     }
     reports.push(report)
   }

@@ -51,3 +51,17 @@ Complète `docs/CONTEXT.md`. Une entrée par décision, la plus récente en bas.
 - GitHub : dépôts du topic poussés pendant la fenêtre, triés par étoiles, avec un seuil (`min_stars`, 20 par défaut) pour écarter les dépôts personnels. Le dernier tag de release sert de `change_signature`. Une requête de release par dépôt : limiter `max_results` (15 par défaut). Un `GITHUB_TOKEN` (fine-grained, sans permission) relève la limite d'API.
 
 **Plan Workers.** Le plan gratuit limite à 50 sous-requêtes par invocation : une source GitHub en consomme jusqu'à 16. Le plan Paid prévu (1 000 sous-requêtes) est nécessaire dès plusieurs sources GitHub dans un même passage.
+
+## 2026-10-03 : clés des services réglées dans l'app
+
+**Les clés Anthropic, Exa et GitHub sont par workspace, saisies dans l'app (page Connexions).** Objectif : qu'un nouvel utilisateur (SaaS) puisse tout configurer sans toucher à un fichier. Seules les 3 valeurs Supabase restent dans la configuration locale, écrites par `pnpm configure` (assistant interactif).
+
+**Stockage : Supabase Vault.** Table `workspace_credentials` (fournisseur, 4 derniers caractères, statut) ; le secret est dans `vault.secrets`, chiffré. Écriture par fonctions `security definer` réservées au propriétaire du workspace ; lecture en clair uniquement par `workspace_credentials_for_jobs`, réservée au rôle service. Le navigateur ne peut jamais relire une clé.
+
+**Vérification à l'enregistrement, gratuite.** Anthropic : liste des modèles ; GitHub : `/rate_limit`. Exa n'a pas d'appel gratuit : la clé est vérifiée à la première collecte, et une clé refusée par un service pendant la collecte passe au statut « refusée » sur la page Connexions.
+
+**« Collecter maintenant ».** La requête utilisateur prouve l'accès à la source par la RLS (mise à jour de `run_requested_at`), puis lance la collecte de cette source en tâche de fond (`waitUntil`, clé secrète). Le board interroge la source toutes les 2,5 s jusqu'à son nouveau `last_run_at` et affiche le bilan (`sources.last_run_stats`). La règle « jamais de clé secrète pour une requête utilisateur » devient : jamais directement ; une requête peut déclencher un job après contrôle d'accès.
+
+**Erreurs sous forme de codes.** `missing_credential:exa`, `http:503`, `no_feed`… stockés en base et renvoyés par l'API, traduits par le board, avec un lien vers Connexions quand la solution est une clé.
+
+**Modèles.** Identifiant de tri corrigé en `claude-haiku-4-5` (l'identifiant officiel actuel, sans suffixe de date). Tarifs Claude vérifiés le 2026-10-01 : Haiku 4.5 à 1 $ / 5 $, Sonnet 5.5 à 2 $ / 10 $ par million de tokens (et non 3 $ / 15 $ comme supposé dans le CONTEXT).

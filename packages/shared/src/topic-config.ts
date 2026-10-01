@@ -20,7 +20,7 @@ export const topicConfigSchema = z.object({
   output_langs: z.array(z.enum(LANGS)).min(1).default(['fr', 'en']),
   ai: z
     .object({
-      triage_model: z.string().default('claude-haiku-4-5-20251001'),
+      triage_model: z.string().default('claude-haiku-4-5'),
       draft_model: z.string().default('claude-sonnet-5-5'),
       draft_mode: z.enum(DRAFT_MODES).default('on_validate'),
       relevance_threshold: z.number().int().min(0).max(100).default(50),

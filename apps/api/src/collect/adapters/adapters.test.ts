@@ -61,7 +61,7 @@ describe('rssAdapter', () => {
     stubFetch(() => new Response('', { status: 503 }))
     await expect(
       rssAdapter({ ...base, config: { url: 'https://e.org/rss' } }, { since, secrets: {} }),
-    ).rejects.toThrow('HTTP 503')
+    ).rejects.toThrow('http:503')
   })
 })
 
@@ -69,7 +69,7 @@ describe('exaAdapter', () => {
   it('requires a key', async () => {
     await expect(
       exaAdapter({ ...base, type: 'exa', config: { query: 'q' } }, { since, secrets: {} }),
-    ).rejects.toThrow('EXA_API_KEY')
+    ).rejects.toThrow('missing_credential:exa')
   })
 
   it('sends the documented request and logs the real cost', async () => {
@@ -88,7 +88,7 @@ describe('exaAdapter', () => {
     )
     const result = await exaAdapter(
       { ...base, type: 'exa', default_kind: 'legal', config: { query: 'EAA', num_results: 5 } },
-      { since, secrets: { EXA_API_KEY: 'k' } },
+      { since, secrets: { exa: 'k' } },
     )
     const call = calls[0]!
     expect(call.url).toBe('https://api.exa.ai/search')
@@ -112,7 +112,29 @@ describe('exaAdapter', () => {
   })
 })
 
+describe('exaAdapter errors', () => {
+  it('reports a rejected key as an invalid credential', async () => {
+    stubFetch(() => json({ error: 'unauthorized' }, 401))
+    await expect(
+      exaAdapter(
+        { ...base, type: 'exa', config: { query: 'q' } },
+        { since, secrets: { exa: 'bad' } },
+      ),
+    ).rejects.toThrow('invalid_credential:exa')
+  })
+})
+
 describe('githubAdapter', () => {
+  it('reports the rate limit so the board can suggest a token', async () => {
+    stubFetch(() => json({ message: 'API rate limit exceeded' }, 403))
+    await expect(
+      githubAdapter(
+        { ...base, type: 'github', config: { query: 'topic:a11y' } },
+        { since, secrets: {} },
+      ),
+    ).rejects.toThrow('rate_limited:github')
+  })
+
   it('searches popular recently pushed repos and uses the latest release as signature', async () => {
     const calls = stubFetch((url) => {
       if (url.includes('/search/repositories')) {
@@ -143,7 +165,7 @@ describe('githubAdapter', () => {
     })
     const { items } = await githubAdapter(
       { ...base, type: 'github', config: { query: 'topic:a11y' } },
-      { since, secrets: { GITHUB_TOKEN: 't' } },
+      { since, secrets: { github: 't' } },
     )
     const search = new URL(calls[0]!.url)
     expect(search.searchParams.get('q')).toBe('topic:a11y pushed:>=2026-09-01 stars:>=20')

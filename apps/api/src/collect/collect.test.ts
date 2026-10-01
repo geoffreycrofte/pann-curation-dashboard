@@ -34,8 +34,13 @@ function memoryStore(sources: CollectSource[]) {
   const ingested: Record<string, IngestRow[]> = {}
   const runs: Record<string, string | null> = {}
   const usage: unknown[] = []
+  const invalid: string[] = []
   const store: CollectStore = {
     activeSources: async () => sources,
+    credentials: async (workspaceId) => (workspaceId === 'w' ? { exa: 'key' } : {}),
+    markCredentialInvalid: async (workspaceId, provider) => {
+      invalid.push(`${workspaceId}/${provider}`)
+    },
     ingest: async (topicId, rows) => {
       ingested[topicId] = [...(ingested[topicId] ?? []), ...rows]
       return { new_items: rows.length, linked: rows.length, duplicates: 0, reopened: 0, known: 0 }
@@ -47,7 +52,7 @@ function memoryStore(sources: CollectSource[]) {
       usage.push(...entries)
     },
   }
-  return { store, ingested, runs, usage }
+  return { store, ingested, runs, usage, invalid }
 }
 
 describe('toIngestRows', () => {
@@ -78,18 +83,44 @@ describe('collect', () => {
       source({ id: 'recent', type: 'rss', last_run_at: '2026-10-10T11:00:00Z' }),
       source({ id: 'inactive', type: 'rss', active: false }),
     ]
-    const { store, ingested, runs, usage } = memoryStore(sources)
+    const { store, ingested, runs, usage, invalid } = memoryStore(sources)
     const rss: Adapter = async () => ({ items: [{ url: 'https://example.org/x', title: 'X' }] })
     const exa: Adapter = async () => {
-      throw new SourceError('Exa: HTTP 401')
+      throw new SourceError('invalid_credential', 'exa')
     }
 
-    const reports = await collect({ store, adapters: { rss, exa }, secrets: {}, now })
+    const reports = await collect({ store, adapters: { rss, exa }, now })
 
     expect(reports.map((r) => r.source_id).sort()).toEqual(['failing', 'never-ran'])
-    expect(runs).toEqual({ 'never-ran': null, failing: 'Exa: HTTP 401' })
+    expect(runs).toEqual({ 'never-ran': null, failing: 'invalid_credential:exa' })
+    expect(invalid).toEqual(['w/exa'])
     expect(ingested.t?.map((r) => r.canonical_url)).toEqual(['https://example.org/x'])
     expect(usage).toEqual([])
+  })
+
+  it('passes the workspace keys to the adapters', async () => {
+    const { store } = memoryStore([source({ id: 'a', type: 'exa' })])
+    let received: unknown
+    const exa: Adapter = async (_source, ctx) => {
+      received = ctx.secrets
+      return { items: [] }
+    }
+    await collect({ store, adapters: { exa }, now })
+    expect(received).toEqual({ exa: 'key' })
+  })
+
+  it('"collect now" runs the requested source even when it is not due', async () => {
+    const { store, runs } = memoryStore([
+      source({ id: 'recent', last_run_at: '2026-10-10T11:30:00Z' }),
+      source({ id: 'due' }),
+    ])
+    await collect({
+      store,
+      adapters: { rss: async () => ({ items: [] }) },
+      now,
+      onlySourceIds: ['recent'],
+    })
+    expect(Object.keys(runs)).toEqual(['recent'])
   })
 
   it('logs provider usage and hides unexpected error details', async () => {
@@ -106,10 +137,10 @@ describe('collect', () => {
     }
     const errors = console.error
     console.error = () => {}
-    await collect({ store, adapters: { exa, github }, secrets: {}, now })
+    await collect({ store, adapters: { exa, github }, now })
     console.error = errors
     expect(usage).toHaveLength(1)
-    expect(runs).toEqual({ a: null, b: 'Unexpected error' })
+    expect(runs).toEqual({ a: null, b: 'unexpected' })
   })
 
   it('caps the number of sources per run, oldest first', async () => {
@@ -120,7 +151,6 @@ describe('collect', () => {
     const reports = await collect({
       store,
       adapters: { rss: async () => ({ items: [] }) },
-      secrets: {},
       now,
       maxSources: 2,
     })

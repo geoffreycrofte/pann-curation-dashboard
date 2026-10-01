@@ -3,6 +3,7 @@ import type { ItemKind } from '@pann/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { describeError } from '../lib/errors'
 import { api } from '../lib/api'
 import KindSelect from './KindSelect.vue'
 
@@ -42,7 +43,7 @@ const { mutate, isLoading } = useMutation({
   },
   onError(err) {
     isError.value = true
-    message.value = t('common.error', { message: err.message })
+    message.value = describeError(err.message, t).text
   },
 })
 </script>

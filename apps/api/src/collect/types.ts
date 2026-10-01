@@ -1,4 +1,11 @@
-import type { ItemKind, SourceType, TopicConfig } from '@pann/shared'
+import {
+  errorCode,
+  type ErrorCode,
+  type ItemKind,
+  type Provider,
+  type SourceType,
+  type TopicConfig,
+} from '@pann/shared'
 
 /** An entry as returned by an adapter, before URL normalisation. */
 export interface CollectedItem {
@@ -25,10 +32,8 @@ export interface AdapterResult {
   usage?: UsageEntry[]
 }
 
-export interface CollectSecrets {
-  EXA_API_KEY?: string
-  GITHUB_TOKEN?: string
-}
+/** Keys of the source's workspace, set from the board (Connections page). */
+export type CollectSecrets = Partial<Record<Provider, string>>
 
 export interface AdapterContext {
   /** Entries published before this date are ignored. */
@@ -53,5 +58,9 @@ export interface CollectSource {
 
 export type Adapter = (source: CollectSource, ctx: AdapterContext) => Promise<AdapterResult>
 
-/** Raised for problems worth showing as the source's last error. */
-export class SourceError extends Error {}
+/** Raised for problems shown as the source's last error. `message` is an error code (@pann/shared). */
+export class SourceError extends Error {
+  constructor(code: ErrorCode, detail?: string | number) {
+    super(errorCode(code, detail))
+  }
+}

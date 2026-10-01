@@ -6,7 +6,7 @@ Pann : outil de curation de veille multi-thèmes. Contexte produit : `docs/CONTE
 
 - `pnpm typecheck`, `pnpm test`, `pnpm format:check` : à faire passer avant tout commit.
 - `pnpm db:reset` : rejoue migrations + seed sur la stack locale.
-- `pnpm dev:api` / `pnpm dev:board`.
+- `pnpm configure` (une fois), puis `pnpm dev` : API et board ensemble.
 
 ## Règles
 
@@ -14,7 +14,9 @@ Pann : outil de curation de veille multi-thèmes. Contexte produit : `docs/CONTE
 - Code, tables, statuts et API en vocabulaire technique neutre (`items`, `validated`). La métaphore de l'orpaillage ne vit que dans les traductions du board.
 - Tout libellé d'interface passe par `apps/board/src/i18n/fr.ts` et `en.ts` (FR est la référence de typage).
 - Multi-tenant : toute nouvelle table exposée aux utilisateurs a la RLS activée et une politique basée sur `private.is_member` / `private.can_access_topic`.
-- Les jobs utilisent la clé secrète ; les requêtes utilisateur, jamais.
+- Les jobs utilisent la clé secrète ; les requêtes utilisateur, jamais directement. Une requête utilisateur peut déclencher un job (`waitUntil`) après avoir prouvé, via la RLS, que l'utilisateur a accès à la ressource.
+- Les clés des services externes sont par workspace, réglées dans l'app (page Connexions, Supabase Vault). Jamais de clé de service dans les variables d'environnement : seules les clés Supabase y figurent (`pnpm configure`).
+- Les erreurs renvoyées par l'API et stockées en base sont des codes (`packages/shared/src/providers.ts`), traduits par le board (`errors.*`).
 - Toute modification des transitions de statut se fait à la fois dans `packages/shared/src/status.ts` et dans le trigger SQL `private.check_item_topic_transition`.
 - Migrations : nouveau fichier horodaté dans `supabase/migrations/`, ne jamais modifier une migration déjà appliquée en production.
 - Accessibilité : le board doit être exemplaire (WCAG 2.2 AA). Nouvelles couleurs = nouveaux tokens dans `tokens.css`, ajoutés au contrôle de `scripts/check-contrast.mjs`.

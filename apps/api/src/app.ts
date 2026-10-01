@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from './env'
 import { requireUser } from './middleware/auth'
+import { credentials } from './routes/credentials'
 import { me } from './routes/me'
 import { sources } from './routes/sources'
 import { topics } from './routes/topics'
@@ -14,6 +15,7 @@ app.use('/*', async (c, next) => (c.req.path === '/api/health' ? next() : requir
 app.route('/me', me)
 app.route('/topics', topics)
 app.route('/topics/:topicId/sources', sources)
+app.route('/workspaces/:workspaceId/credentials', credentials)
 
 app.notFound((c) => c.json({ error: 'Not found' }, 404))
 

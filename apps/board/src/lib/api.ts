@@ -1,4 +1,13 @@
-import type { BoardItem, ItemKind, ItemTopicStatus, Source, Topic, TopicConfig } from '@pann/shared'
+import type {
+  BoardItem,
+  ItemKind,
+  ItemTopicStatus,
+  Provider,
+  Source,
+  Topic,
+  TopicConfig,
+  WorkspaceCredential,
+} from '@pann/shared'
 import { supabase } from './supabase'
 
 export class ApiError extends Error {
@@ -69,7 +78,23 @@ export type SourcePatch = Partial<
   Pick<Source, 'label' | 'active' | 'default_kind' | 'interval_hours'>
 >
 
+export interface Me {
+  user: { id: string; email?: string }
+  workspaces: { role: 'owner' | 'editor'; workspace: { id: string; name: string } }[]
+}
+
 export const api = {
+  me: () => request<Me>('/me'),
+  credentials: (workspaceId: string) =>
+    request<WorkspaceCredential[]>(`/workspaces/${workspaceId}/credentials`),
+  setCredential: (workspaceId: string, provider: Provider, secret: string) =>
+    request<WorkspaceCredential>(
+      `/workspaces/${workspaceId}/credentials/${provider}`,
+      json('PUT', { secret }),
+    ),
+  deleteCredential: (workspaceId: string, provider: Provider) =>
+    request<void>(`/workspaces/${workspaceId}/credentials/${provider}`, { method: 'DELETE' }),
+
   topics: () => request<Topic[]>('/topics'),
   topic: (topicId: string) => request<TopicWithConfig>(`/topics/${topicId}`),
   updateConfig: (topicId: string, patch: Partial<TopicConfig>) =>
@@ -89,7 +114,7 @@ export const api = {
     request<AddRssResult>(`/topics/${topicId}/sources/rss`, json('POST', input)),
   updateSource: (topicId: string, sourceId: string, patch: SourcePatch) =>
     request<Source>(`/topics/${topicId}/sources/${sourceId}`, json('PATCH', patch)),
-  requestCollection: (topicId: string, sourceId: string) =>
+  collectNow: (topicId: string, sourceId: string) =>
     request<Source>(`/topics/${topicId}/sources/${sourceId}/collect`, { method: 'POST' }),
   deleteSource: (topicId: string, sourceId: string) =>
     request<void>(`/topics/${topicId}/sources/${sourceId}`, { method: 'DELETE' }),

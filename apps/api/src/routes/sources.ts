@@ -5,9 +5,10 @@ import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { resolveFeed } from '../lib/feeds'
 import { parseJson } from '../lib/validation'
+import { collectSourceNow } from '../jobs/scheduled'
 
 const SOURCE_COLUMNS =
-  'id, topic_id, type, label, config, active, default_kind, interval_hours, last_run_at, last_error, run_requested_at, created_at'
+  'id, topic_id, type, label, config, active, default_kind, interval_hours, last_run_at, last_error, run_requested_at, last_run_stats, created_at'
 
 const interval = z.number().int().min(MIN_INTERVAL_HOURS).max(MAX_INTERVAL_HOURS).nullable()
 
@@ -82,7 +83,11 @@ export const sources = new Hono<AppEnv>()
     return c.json(data)
   })
 
-  /** "Collect at next run": the hourly cron picks the source up (user requests never collect). */
+  /**
+   * "Collect now". RLS first proves the user can access the source (the update only
+   * matches their own sources); the collection itself then runs in the background
+   * as a job, with the secret key. The board polls until last_run_at moves.
+   */
   .post('/:sourceId/collect', async (c) => {
     const { data, error } = await c.var.db
       .from('sources')
@@ -93,7 +98,8 @@ export const sources = new Hono<AppEnv>()
       .maybeSingle()
     if (error) throw error
     if (!data) throw new HTTPException(404, { message: 'Source not found' })
-    return c.json(data)
+    c.executionCtx.waitUntil(collectSourceNow(c.env, data.id))
+    return c.json(data, 202)
   })
 
   .delete('/:sourceId', async (c) => {

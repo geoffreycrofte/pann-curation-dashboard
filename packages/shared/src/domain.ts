@@ -86,5 +86,15 @@ export interface Source {
   last_run_at: string | null
   last_error: string | null
   run_requested_at: string | null
+  last_run_stats: SourceRunStats | null
   created_at: string
+}
+
+export interface SourceRunStats {
+  collected: number
+  new_items: number
+  linked: number
+  duplicates: number
+  reopened: number
+  known: number
 }

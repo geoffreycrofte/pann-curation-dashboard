@@ -54,7 +54,7 @@ async function latestRelease(fullName: string, token?: string) {
  */
 export const githubAdapter: Adapter = async (source, { since, secrets }) => {
   const config = configSchema.safeParse(source.config)
-  if (!config.success) throw new SourceError('Invalid GitHub source configuration')
+  if (!config.success) throw new SourceError('invalid_config')
   const { query, min_stars, max_results } = config.data
 
   const qualifiers = [query, `pushed:>=${since.toISOString().slice(0, 10)}`]
@@ -67,16 +67,19 @@ export const githubAdapter: Adapter = async (source, { since, secrets }) => {
   })
 
   const res = await fetch(`${API}/search/repositories?${params}`, {
-    headers: headers(secrets.GITHUB_TOKEN),
+    headers: headers(secrets.github),
     signal: AbortSignal.timeout(15_000),
   })
-  if (!res.ok) throw new SourceError(`GitHub: HTTP ${res.status}`)
+  if (res.status === 401) throw new SourceError('invalid_credential', 'github')
+  // GitHub answers 403 or 429 when the rate limit is exhausted (unauthenticated: 10 searches/min).
+  if (res.status === 403 || res.status === 429) throw new SourceError('rate_limited', 'github')
+  if (!res.ok) throw new SourceError('http', res.status)
   const body = searchSchema.safeParse(await res.json())
-  if (!body.success) throw new SourceError('GitHub: unexpected response')
+  if (!body.success) throw new SourceError('provider_response', 'github')
 
   const items = []
   for (const repo of body.data.items) {
-    const release = await latestRelease(repo.full_name, secrets.GITHUB_TOKEN)
+    const release = await latestRelease(repo.full_name, secrets.github)
     items.push({
       url: repo.html_url,
       title: repo.description ? `${repo.full_name}: ${repo.description}` : repo.full_name,

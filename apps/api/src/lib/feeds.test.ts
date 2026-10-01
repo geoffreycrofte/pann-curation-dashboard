@@ -54,19 +54,19 @@ describe('resolveFeed', () => {
     serve({ 'https://example.org/': '<html><head><title>x</title></head></html>' })
     expect(await resolveFeed('https://example.org/')).toEqual({
       kind: 'none',
-      reason: 'No feed declared on this page',
+      reason: 'no_feed',
     })
     expect(await resolveFeed('https://example.org/missing')).toEqual({
       kind: 'none',
-      reason: 'HTTP 404',
+      reason: 'http:404',
     })
   })
 })
 
 describe('fetchText', () => {
   it('refuses private addresses', async () => {
-    await expect(fetchText('http://127.0.0.1:8787/api/health')).rejects.toThrow('Private address')
-    await expect(fetchText('http://192.168.1.1/')).rejects.toThrow('Private address')
-    await expect(fetchText('http://localhost/')).rejects.toThrow('Private address')
+    await expect(fetchText('http://127.0.0.1:8787/api/health')).rejects.toThrow('private_address')
+    await expect(fetchText('http://192.168.1.1/')).rejects.toThrow('private_address')
+    await expect(fetchText('http://localhost/')).rejects.toThrow('private_address')
   })
 })

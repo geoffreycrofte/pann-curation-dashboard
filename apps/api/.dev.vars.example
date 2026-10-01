@@ -1,8 +1,5 @@
-# Copy to .dev.vars. Values printed by `supabase status` for the local stack.
+# Written by "pnpm configure" (recommended). Values: Supabase dashboard, Project Settings, API Keys.
+SUPABASE_URL=
 SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
-
-# Collection. Exa: https://dashboard.exa.ai. GitHub: optional fine-grained token
-# without any permission (public data only), raises the rate limit.
-EXA_API_KEY=
-GITHUB_TOKEN=
+# Service keys (Anthropic, Exa, GitHub) are not set here: use the "Connexions" page of the app.

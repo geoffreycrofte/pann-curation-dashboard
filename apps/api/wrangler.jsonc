@@ -16,8 +16,9 @@
   "vars": {
     "SUPABASE_URL": "http://127.0.0.1:54321",
   },
-  // Secrets (wrangler secret put / .dev.vars): SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY,
-  // EXA_API_KEY, GITHUB_TOKEN (optional)
+  // Local values come from .dev.vars (written by "pnpm configure") and override "vars".
+  // Production secrets (wrangler secret put): SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY.
+  // Service keys (Anthropic, Exa, GitHub) are per workspace, set in the app (Connexions).
 
   "observability": { "enabled": true },
 

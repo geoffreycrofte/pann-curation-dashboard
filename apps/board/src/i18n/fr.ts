@@ -22,6 +22,109 @@ export default {
     error: "Le lien n'a pas pu être envoyé : {message}",
     signOut: 'Se déconnecter',
   },
+  nav: {
+    label: 'Navigation principale',
+    topics: 'Thèmes',
+    connections: 'Connexions',
+  },
+  connections: {
+    title: 'Connexions aux services',
+    intro:
+      'Pann utilise des services externes pour collecter et trier la veille. Chaque service demande une clé, propre à votre workspace.',
+    security:
+      'Les clés sont chiffrées dans la base de données (Supabase Vault). Pann ne les réaffiche jamais : seuls les 4 derniers caractères restent visibles.',
+    ownerOnly: 'Seul le propriétaire du workspace peut ajouter, remplacer ou supprimer une clé.',
+    status: {
+      none: 'Non configuré',
+      ok: 'Clé vérifiée',
+      unchecked: 'Clé enregistrée, pas encore vérifiée',
+      invalid: 'Clé refusée par le service',
+    },
+    hint: 'Se termine par {hint}',
+    need: {
+      required: 'Indispensable',
+      source: 'Nécessaire pour certaines sources',
+      optional: 'Facultatif, recommandé',
+    },
+    howTo: 'Où trouver cette clé ?',
+    keyLabel: 'Clé {provider}',
+    keyLabelReplace: 'Nouvelle clé {provider}',
+    save: 'Vérifier et enregistrer',
+    saving: 'Vérification…',
+    remove: 'Supprimer la clé',
+    removeLabel: 'Supprimer la clé {provider}',
+    confirmTitle: 'Supprimer la clé {provider} ?',
+    confirmText: 'Les sources qui en dépendent ne pourront plus être collectées.',
+    saved: 'Clé {provider} enregistrée. {status}.',
+    removed: 'Clé {provider} supprimée.',
+    detail: {
+      no_free_check:
+        'Ce service ne propose pas de vérification gratuite : la clé sera vérifiée à la première collecte.',
+      provider_unreachable:
+        'Le service ne répondait pas : la clé sera vérifiée à la première utilisation.',
+      rejected_during_collection: 'La clé a été refusée lors de la dernière collecte.',
+    },
+    providers: {
+      anthropic: {
+        name: 'Anthropic (Claude)',
+        purpose:
+          'Tri et rédaction par IA : score de pertinence, résumés en français et en anglais, brouillons de posts.',
+        steps: [
+          'Connectez-vous à la Claude Console (platform.claude.com) et configurez la facturation si ce n’est pas déjà fait.',
+          'Ouvrez Settings, puis API keys.',
+          'Cliquez sur « Create key » et donnez-lui un nom, par exemple « Pann ».',
+          'Copiez la clé (elle commence par sk-ant-) : elle ne s’affiche qu’une seule fois.',
+        ],
+        cost: 'Payant à l’usage. Pann enregistre le coût de chaque appel.',
+        link: 'Guide officiel : obtenir une clé API Claude',
+      },
+      exa: {
+        name: 'Exa',
+        purpose:
+          'Recherche web sémantique : trouve des articles récents à partir des requêtes de vos sources « Recherche Exa ».',
+        steps: [
+          'Créez un compte sur exa.ai.',
+          'Dans le tableau de bord Exa, ouvrez « API Keys ».',
+          'Cliquez sur « Create API Key », donnez-lui un nom, puis copiez-la : elle ne s’affiche qu’une seule fois.',
+        ],
+        cost: 'Payant à la recherche. Pann enregistre le coût réel de chaque recherche.',
+        link: 'Ouvrir la page des clés Exa',
+      },
+      github: {
+        name: 'GitHub',
+        purpose:
+          'Veille outils : dépôts populaires du thème et détection de leurs nouvelles versions.',
+        steps: [
+          'Sur github.com, ouvrez Settings, puis Developer settings (en bas du menu).',
+          'Choisissez Personal access tokens, puis Fine-grained tokens, puis « Generate new token ».',
+          'Donnez un nom et une date d’expiration. Laissez l’accès « Public repositories » : aucune permission n’est nécessaire, Pann ne lit que des données publiques.',
+          'Générez le jeton et copiez-le (il commence par github_pat_).',
+        ],
+        cost: 'Gratuit. Sans jeton, GitHub limite fortement le nombre de recherches et la collecte échoue vite.',
+        link: 'Guide officiel GitHub : gérer ses jetons d’accès',
+      },
+    },
+  },
+  errors: {
+    missing_credential: 'Clé {provider} manquante.',
+    invalid_credential: 'Clé {provider} refusée par le service.',
+    rate_limited: 'Limite de requêtes {provider} atteinte. Réessayez plus tard.',
+    provider_response: 'Réponse inattendue de {provider}.',
+    http: 'Le site a répondu par une erreur ({detail}).',
+    timeout: 'Le site met trop de temps à répondre.',
+    unreachable: 'Site injoignable.',
+    private_address: 'Adresse locale ou privée refusée.',
+    unsupported_protocol: 'Seules les adresses http et https sont acceptées.',
+    not_a_feed: 'Cette adresse ne renvoie plus un flux RSS ou Atom.',
+    no_feed:
+      'Aucun flux RSS ou Atom n’est déclaré sur cette page. Cherchez l’adresse du flux sur le site et collez-la directement.',
+    declared_feed_invalid: 'La page déclare un flux, mais il n’est pas au format RSS ou Atom.',
+    invalid_config: 'Configuration de la source invalide.',
+    unexpected: 'Erreur inattendue.',
+    feed_exists: 'Ce flux est déjà une source de ce thème.',
+    owner_only: 'Seul le propriétaire du workspace peut gérer les clés.',
+    fixInConnections: 'Configurer dans Connexions',
+  },
   topicNav: {
     label: 'Sections du thème',
     board: 'Tri',
@@ -100,10 +203,17 @@ export default {
     deleteLabel: 'Supprimer « {label} »',
     empty: 'Aucune source pour ce thème.',
     updated: 'Source « {label} » mise à jour.',
-    collect: 'Collecter au prochain passage',
-    collectLabel: 'Collecter « {label} » au prochain passage',
-    collectRequested: "Collecte de « {label} » demandée. Elle aura lieu dans l'heure.",
-    pending: 'Collecte demandée',
+    collect: 'Collecter maintenant',
+    collectLabel: 'Collecter « {label} » maintenant',
+    collectRequested: 'Collecte de « {label} » lancée.',
+    collectDone: 'Collecte de « {label} » terminée : {stats}',
+    collectFailed: 'Collecte de « {label} » en échec : {error}',
+    stats: '{added} ajoutés au tri, {known} déjà vus',
+    missingKey:
+      'Des sources « {type} » sont actives, mais aucune clé {provider} n’est configurée : elles ne seront pas collectées.',
+    githubNoToken:
+      'Sans jeton GitHub, les recherches GitHub sont très limitées et risquent d’échouer.',
+    pending: 'Collecte en cours…',
     deleted: 'Source « {label} » supprimée.',
     confirmTitle: 'Supprimer la source « {label} » ?',
     confirmText: 'Les éléments déjà collectés sont conservés. Cette action est définitive.',

@@ -1,7 +1,17 @@
+import { errorCode, type ErrorCode } from '@pann/shared'
+
 export const USER_AGENT =
   'PannBot/0.1 (content curation; +https://github.com/geoffreycrofte/pann-curation-dashboard)'
 
-export class FetchTextError extends Error {}
+/** `message` is the full error code from @pann/shared (timeout, unreachable, http:404…). */
+export class FetchTextError extends Error {
+  constructor(
+    readonly code: ErrorCode,
+    readonly detail?: string | number,
+  ) {
+    super(errorCode(code, detail))
+  }
+}
 
 const PRIVATE_HOST =
   /^(localhost|.*\.local|.*\.internal|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|169\.254\.\d+\.\d+|0\.0\.0\.0|\[?::1\]?|\[?f[cd][0-9a-f]*:.*)$/i
@@ -23,8 +33,8 @@ export async function fetchText(
 ): Promise<FetchedText> {
   const url = new URL(input)
   if (url.protocol !== 'https:' && url.protocol !== 'http:')
-    throw new FetchTextError('Unsupported protocol')
-  if (PRIVATE_HOST.test(url.hostname)) throw new FetchTextError('Private address')
+    throw new FetchTextError('unsupported_protocol')
+  if (PRIVATE_HOST.test(url.hostname)) throw new FetchTextError('private_address')
 
   let res: Response
   try {
@@ -39,10 +49,10 @@ export async function fetchText(
     })
   } catch (err) {
     throw new FetchTextError(
-      err instanceof Error && err.name === 'TimeoutError' ? 'Timed out' : 'Unreachable',
+      err instanceof Error && err.name === 'TimeoutError' ? 'timeout' : 'unreachable',
     )
   }
-  if (!res.ok) throw new FetchTextError(`HTTP ${res.status}`)
+  if (!res.ok) throw new FetchTextError('http', res.status)
 
   const reader = res.body?.getReader()
   const chunks: Uint8Array[] = []

@@ -26,14 +26,15 @@ const responseSchema = z.object({
 })
 
 export const exaAdapter: Adapter = async (source, { since, secrets }) => {
-  if (!secrets.EXA_API_KEY) throw new SourceError('EXA_API_KEY is not configured')
+  const key = secrets.exa
+  if (!key) throw new SourceError('missing_credential', 'exa')
   const config = configSchema.safeParse(source.config)
-  if (!config.success) throw new SourceError('Invalid Exa source configuration')
+  if (!config.success) throw new SourceError('invalid_config')
   const { query, num_results, include_domains, exclude_domains, max_characters } = config.data
 
   const res = await fetch(EXA_SEARCH_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': secrets.EXA_API_KEY },
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key },
     body: JSON.stringify({
       query,
       type: 'auto',
@@ -45,10 +46,12 @@ export const exaAdapter: Adapter = async (source, { since, secrets }) => {
     }),
     signal: AbortSignal.timeout(30_000),
   })
-  if (!res.ok) throw new SourceError(`Exa: HTTP ${res.status}`)
+  if (res.status === 401 || res.status === 403) throw new SourceError('invalid_credential', 'exa')
+  if (res.status === 429) throw new SourceError('rate_limited', 'exa')
+  if (!res.ok) throw new SourceError('http', res.status)
 
   const body = responseSchema.safeParse(await res.json())
-  if (!body.success) throw new SourceError('Exa: unexpected response')
+  if (!body.success) throw new SourceError('provider_response', 'exa')
 
   return {
     items: body.data.results.map((r) => ({

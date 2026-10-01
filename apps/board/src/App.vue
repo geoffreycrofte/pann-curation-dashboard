@@ -21,6 +21,16 @@ async function signOut() {
       <span class="brand-name">{{ t('app.name') }}</span>
       <span class="brand-tagline">{{ t('app.tagline') }}</span>
     </RouterLink>
+    <nav v-if="session" :aria-label="t('nav.label')" class="main-nav">
+      <ul>
+        <li>
+          <RouterLink to="/">{{ t('nav.topics') }}</RouterLink>
+        </li>
+        <li>
+          <RouterLink to="/connections">{{ t('nav.connections') }}</RouterLink>
+        </li>
+      </ul>
+    </nav>
     <div class="header-tools">
       <LangSwitcher />
       <button v-if="session" type="button" class="button" @click="signOut">
@@ -70,6 +80,29 @@ async function signOut() {
 .brand-tagline {
   font-size: 0.875rem;
   color: var(--color-text-muted);
+}
+
+.main-nav ul {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-nav a {
+  display: inline-block;
+  padding: var(--space-2) 0;
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.main-nav a[aria-current='page'] {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.3em;
 }
 
 .header-tools {

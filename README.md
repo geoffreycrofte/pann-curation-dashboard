@@ -20,38 +20,31 @@ supabase/
   seed.sql    Données locales : utilisateur dev@pann.local, topic « accessibilité ».
 ```
 
-## Prérequis
+## Démarrer en local
 
-- Node 22+, pnpm 10 (`corepack enable`)
-- Docker (pour la stack Supabase locale)
-
-## Démarrage local
+Prérequis : [Node.js 22](https://nodejs.org) ou plus récent. Ensuite, dans un terminal, à la racine du projet :
 
 ```sh
-pnpm install
-pnpm db:start                     # stack Supabase locale (Docker), applique migrations + seed
-pnpm exec supabase status         # affiche l'URL, la clé publishable et la clé secrète
-
-cp apps/api/.dev.vars.example apps/api/.dev.vars       # renseigner les deux clés
-cp apps/board/.env.example apps/board/.env.local       # renseigner la clé publishable
-
-pnpm dev:api                      # http://127.0.0.1:8787/api/health
-pnpm dev:board                    # http://127.0.0.1:5173
+corepack enable     # une seule fois : active pnpm, fourni avec Node.js
+pnpm install        # installe les dépendances
+pnpm configure      # une seule fois : 3 questions sur votre projet Supabase
+pnpm dev            # démarre l'app
 ```
 
-Connexion : saisir `dev@pann.local` sur l'écran de connexion, puis ouvrir le lien reçu dans Mailpit (URL donnée par `supabase status`).
+Ouvrez ensuite http://127.0.0.1:5173 et connectez-vous avec votre adresse e-mail (lien magique).
 
-Collecte en local : `pnpm dev:api` lance Wrangler avec `--test-scheduled`. Pour déclencher un passage du cron :
+`pnpm configure` explique où trouver chaque information dans le tableau de bord Supabase. Côté Supabase (Authentication, URL Configuration), l'URL du site et les URL de redirection doivent contenir `http://127.0.0.1:5173`.
 
-```sh
-pnpm --filter @pann/api collect:local
-```
+**Tout le reste se règle dans l'app :**
 
-Le résultat (sources traitées, items nouveaux, doublons, erreurs) s'affiche dans la console de Wrangler. Sans `EXA_API_KEY` dans `apps/api/.dev.vars`, les sources Exa passent en erreur « EXA_API_KEY is not configured », les autres sont collectées normalement.
+- **Connexions** : les clés Anthropic, Exa et GitHub, avec pour chacune l'explication de l'endroit où la créer. Les clés sont chiffrées dans Supabase (Vault) et ne sont jamais réaffichées.
+- **Sources** (dans chaque thème) : ajout de flux RSS, et bouton « Collecter maintenant » pour voir le résultat tout de suite, sans attendre le passage automatique.
+- **Réglages** (dans chaque thème) : fréquence de collecte par type de contenu.
 
-### Tester contre le projet Supabase distant
+### Pour aller plus loin
 
-Dans `apps/api/.dev.vars`, renseigner la clé publishable et la clé secrète du projet (Project Settings, API Keys), et dans `apps/api/wrangler.jsonc` remplacer temporairement `SUPABASE_URL` par l'URL du projet (ou lancer `pnpm --filter @pann/api exec wrangler dev --test-scheduled --var SUPABASE_URL:https://<ref>.supabase.co`). Côté board, `apps/board/.env.local` avec l'URL du projet et la clé publishable.
+- Stack Supabase entièrement locale (Docker) : `pnpm db:start`, puis `pnpm configure` avec l'adresse `http://127.0.0.1:54321` et les clés affichées par `pnpm exec supabase status`. Utilisateur de test : `dev@pann.local` (lien de connexion dans Mailpit, adresse donnée par `supabase status`).
+- Passage automatique de collecte (toutes les heures en production) déclenché à la main : `pnpm --filter @pann/api collect:local` pendant que `pnpm dev` tourne.
 
 ## Vérifications
 
@@ -73,14 +66,15 @@ Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, 
 
 - Secrets GitHub : `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 - Variables GitHub : `SUPABASE_PROJECT_REF`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
-- Secrets du Worker : `wrangler secret put` pour `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `EXA_API_KEY`, `GITHUB_TOKEN` (facultatif).
+- Secrets du Worker : `wrangler secret put` pour `SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_SECRET_KEY`. Les clés des services se règlent dans l'app (Connexions).
 - Supabase Auth (projet distant) : désactiver les inscriptions publiques, inviter son adresse, définir l'URL du site et les URLs de redirection.
 
 ## Avancement (plan de `docs/CONTEXT.md`, section 9)
 
 - [x] 1. Socle : monorepo, schéma, topic accessibilité, Worker Hono, auth, board squelette, CI
 - [x] Saisie manuelle : flux RSS (avec auto-découverte), articles et outils ; fréquence de collecte par type de contenu et par source
-- [x] 2. Collecte : adaptateurs RSS, Exa, GitHub ; déduplication ; cron horaire
+- [x] 2. Collecte : adaptateurs RSS, Exa, GitHub ; déduplication ; cron horaire ; « Collecter maintenant »
+- [x] Connexions : clés des services par workspace, réglées dans l'app (Supabase Vault)
 - [ ] 3. Tri IA (Haiku)
 - [ ] 4. Rédaction IA (Sonnet), `usage_log`, plafond de coût
 - [ ] 5. Publication CheckFox

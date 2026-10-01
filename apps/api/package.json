@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --test-scheduled",
+    "dev": "node -e \"require('fs').mkdirSync('../board/dist',{recursive:true})\" && wrangler dev --test-scheduled",
     "deploy": "wrangler deploy",
     "build": "wrangler deploy --dry-run --outdir dist",
     "typecheck": "tsc -p tsconfig.json",
@@ -13,6 +13,7 @@
     "collect:local": "curl -s \"http://127.0.0.1:8787/__scheduled?cron=7+*+*+*+*\""
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
     "@pann/shared": "workspace:*",
     "@supabase/supabase-js": "^2.75.0",
     "fast-xml-parser": "^5.11.2",

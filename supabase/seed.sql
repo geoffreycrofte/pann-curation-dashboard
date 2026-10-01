@@ -26,7 +26,7 @@ with ws as (
     ],
     "output_langs": ["fr", "en"],
     "ai": {
-      "triage_model": "claude-haiku-4-5-20251001",
+      "triage_model": "claude-haiku-4-5",
       "draft_model": "claude-sonnet-5-5",
       "draft_mode": "on_validate",
       "relevance_threshold": 50,
