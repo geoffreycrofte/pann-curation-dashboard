@@ -49,6 +49,7 @@ export interface CollectStore {
 
 export interface SourceReport {
   source_id: string
+  topic_id: string
   label: string
   collected: number
   stats?: IngestStats
@@ -127,7 +128,12 @@ export async function collect(deps: {
 
   const reports: SourceReport[] = []
   for (const source of due) {
-    const report: SourceReport = { source_id: source.id, label: source.label, collected: 0 }
+    const report: SourceReport = {
+      source_id: source.id,
+      topic_id: source.topic_id,
+      label: source.label,
+      collected: 0,
+    }
     try {
       const adapter = deps.adapters[source.type]
       if (!adapter) throw new SourceError('invalid_config')

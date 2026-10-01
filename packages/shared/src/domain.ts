@@ -70,6 +70,8 @@ export interface BoardItem {
   published_at: string | null
   discovered_at: string
   relevance_score: number | null
+  is_commercial: boolean | null
+  triage_reason: string | null
   status: ItemTopicStatus
   validated_at: string | null
 }

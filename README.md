@@ -75,7 +75,7 @@ Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, 
 - [x] Saisie manuelle : flux RSS (avec auto-découverte), articles et outils ; fréquence de collecte par type de contenu et par source
 - [x] 2. Collecte : adaptateurs RSS, Exa, GitHub ; déduplication ; cron horaire ; « Collecter maintenant »
 - [x] Connexions : clés des services par workspace, réglées dans l'app (Supabase Vault)
-- [ ] 3. Tri IA (Haiku)
+- [x] 3. Tri IA (Haiku) : pertinence, type, contenu promotionnel, explication ; archivage sous le seuil
 - [ ] 4. Rédaction IA (Sonnet), `usage_log`, plafond de coût
 - [ ] 5. Publication CheckFox
 - [ ] 6. Diffusion sociale

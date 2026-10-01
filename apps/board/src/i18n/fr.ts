@@ -132,6 +132,11 @@ export default {
     settings: 'Réglages',
   },
   board: {
+    reason: 'Analyse : {reason}',
+    commercial: 'Contenu promotionnel',
+    triagePending: 'En attente du tri IA',
+    noAnthropicKey:
+      'Le tri par IA est en attente : aucune clé Anthropic n’est configurée. Les éléments arrivent sans score de pertinence.',
     topics: 'Thèmes',
     noTopic: "Aucun thème pour l'instant.",
     statusFilter: 'Filtrer par statut',
@@ -236,6 +241,10 @@ export default {
     untitled: 'Sans titre',
   },
   settings: {
+    triage: 'Tri par IA',
+    threshold: 'Seuil de pertinence (0 à 100)',
+    thresholdHint:
+      'Les éléments notés sous ce seuil sont archivés automatiquement : ils restent consultables dans l’onglet « Archivés ».',
     heading: 'Réglages : {topic}',
     title: 'Réglages',
     collection: 'Fréquence de collecte par type de contenu',

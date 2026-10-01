@@ -80,7 +80,7 @@ export const topics = new Hono<AppEnv>()
     const { data, error } = await c.var.db
       .from('item_topics')
       .select(
-        'item_id, topic_id, relevance_score, status, validated_at, ' +
+        'item_id, topic_id, relevance_score, is_commercial, triage_reason, status, validated_at, ' +
           'item:items (canonical_url, title, source_lang, kind, origin, published_at, discovered_at)',
       )
       .eq('topic_id', c.req.param('topicId'))

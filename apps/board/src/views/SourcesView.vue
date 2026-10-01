@@ -355,19 +355,6 @@ tbody th {
   font-weight: 600;
 }
 
-.notice {
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-left: 6px solid var(--color-accent-fill);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-}
-
-.notice p {
-  margin: var(--space-1) 0;
-}
-
 .row-actions {
   display: flex;
   flex-wrap: wrap;

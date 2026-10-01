@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
+import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
 
 const props = defineProps<{ topicId: string }>()
@@ -25,10 +26,13 @@ const {
 
 /** Local copy edited by the form. */
 const collection = ref<TopicConfig['collection']>()
+const ai = ref<TopicConfig['ai']>()
 watch(
   topic,
   (value) => {
-    if (value) collection.value = structuredClone(value.config.collection)
+    if (!value) return
+    collection.value = structuredClone(value.config.collection)
+    ai.value = structuredClone(value.config.ai)
   },
   { immediate: true },
 )
@@ -36,7 +40,7 @@ watch(
 const message = ref('')
 const isError = ref(false)
 const { mutate, isLoading } = useMutation({
-  mutation: () => api.updateConfig(props.topicId, { collection: collection.value }),
+  mutation: () => api.updateConfig(props.topicId, { collection: collection.value, ai: ai.value }),
   async onSuccess() {
     isError.value = false
     message.value = t('common.saved')
@@ -45,7 +49,7 @@ const { mutate, isLoading } = useMutation({
   },
   onError(err) {
     isError.value = true
-    message.value = t('common.error', { message: err.message })
+    message.value = describeError(err.message, t).text
   },
 })
 </script>
@@ -79,6 +83,24 @@ const { mutate, isLoading } = useMutation({
         </div>
       </div>
     </fieldset>
+    <fieldset v-if="ai">
+      <legend>{{ t('settings.triage') }}</legend>
+      <div class="form-row">
+        <label :for="`${id}-threshold`">{{ t('settings.threshold') }}</label>
+        <input
+          :id="`${id}-threshold`"
+          v-model.number="ai.relevance_threshold"
+          class="field threshold"
+          type="number"
+          min="0"
+          max="100"
+          step="1"
+          required
+          :aria-describedby="`${id}-threshold-hint`"
+        />
+        <p :id="`${id}-threshold-hint`" class="hint">{{ t('settings.thresholdHint') }}</p>
+      </div>
+    </fieldset>
     <div>
       <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
         {{ isLoading ? t('common.saving') : t('common.save') }}
@@ -91,6 +113,10 @@ const { mutate, isLoading } = useMutation({
 <style scoped>
 .settings {
   max-width: 40rem;
+}
+
+.threshold {
+  max-width: 8rem;
 }
 
 .grid {

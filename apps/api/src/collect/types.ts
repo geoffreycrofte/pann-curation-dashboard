@@ -23,7 +23,7 @@ export interface UsageEntry {
   provider: string
   model?: string
   operation: string
-  units: Record<string, number>
+  units: Record<string, number | string>
   cost_usd: number
 }
 

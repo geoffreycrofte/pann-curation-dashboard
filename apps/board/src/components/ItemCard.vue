@@ -35,10 +35,11 @@ const actions = computed(() =>
     <ul class="meta">
       <li v-if="item.kind" class="kind">{{ t(`kind.${item.kind}`) }}</li>
       <li v-if="item.origin === 'manual'">{{ t('board.manual') }}</li>
+      <li v-if="item.is_commercial" class="commercial">{{ t('board.commercial') }}</li>
       <li>
         {{
           item.relevance_score === null
-            ? t('board.noScore')
+            ? t('board.triagePending')
             : t('board.relevance', { score: item.relevance_score })
         }}
       </li>
@@ -48,6 +49,9 @@ const actions = computed(() =>
         }}
       </li>
     </ul>
+    <p v-if="item.triage_reason" class="reason">
+      {{ t('board.reason', { reason: item.triage_reason }) }}
+    </p>
     <div
       v-if="actions.length"
       class="actions"
@@ -97,6 +101,15 @@ const actions = computed(() =>
 }
 
 .kind {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.reason {
+  margin: 0;
+}
+
+.commercial {
   font-weight: 600;
   color: var(--color-text);
 }

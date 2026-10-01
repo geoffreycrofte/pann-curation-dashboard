@@ -132,6 +132,11 @@ export default {
     settings: 'Settings',
   },
   board: {
+    reason: 'Analysis: {reason}',
+    commercial: 'Promotional content',
+    triagePending: 'Waiting for AI triage',
+    noAnthropicKey:
+      'AI triage is waiting: no Anthropic key is set. Items arrive without a relevance score.',
     topics: 'Topics',
     noTopic: 'No topic yet.',
     statusFilter: 'Filter by status',
@@ -235,6 +240,10 @@ export default {
     untitled: 'Untitled',
   },
   settings: {
+    triage: 'AI triage',
+    threshold: 'Relevance threshold (0 to 100)',
+    thresholdHint:
+      'Items scored below this threshold are archived automatically: they stay available in the “Archived” tab.',
     heading: 'Settings: {topic}',
     title: 'Settings',
     collection: 'Collection frequency by content type',

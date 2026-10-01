@@ -65,3 +65,17 @@ Complète `docs/CONTEXT.md`. Une entrée par décision, la plus récente en bas.
 **Erreurs sous forme de codes.** `missing_credential:exa`, `http:503`, `no_feed`… stockés en base et renvoyés par l'API, traduits par le board, avec un lien vers Connexions quand la solution est une clé.
 
 **Modèles.** Identifiant de tri corrigé en `claude-haiku-4-5` (l'identifiant officiel actuel, sans suffixe de date). Tarifs Claude vérifiés le 2026-10-01 : Haiku 4.5 à 1 $ / 5 $, Sonnet 5.5 à 2 $ / 10 $ par million de tokens (et non 3 $ / 15 $ comme supposé dans le CONTEXT).
+
+## 2026-10-03 : tri par IA (étape 3)
+
+**Quand.** Après chaque collecte : le passage horaire trie tout ce qui attend (25 éléments maximum par passage) ; « Collecter maintenant » trie aussitôt les nouveaux éléments du thème. Sans clé Anthropic, les éléments arrivent sans score et le board l'indique.
+
+**Comment.** Un appel par élément à `claude-haiku-4-5` (identifiant réglable par thème), avec sorties structurées (`messages.parse` + schéma Zod) : langue, type, pertinence 0-100, caractère promotionnel, une phrase d'explication dans la première langue de sortie du thème. Contenu tronqué à 6 000 caractères. La consigne est construite uniquement à partir de la configuration du thème (`relevance_criteria`), versionnée (`triage-v1`, enregistrée avec le coût).
+
+**Archivage sous le seuil.** Un élément noté sous `ai.relevance_threshold` (50 par défaut, réglable dans Réglages) passe en « Archivés » : hors du tri, toujours consultable.
+
+**Erreurs.** Clé refusée : signalée sur la page Connexions, plus aucun appel pour ce workspace pendant le passage. Limite de débit : on réessaie au passage suivant. Refus ou réponse invalide : une tentative comptée, abandon après 3.
+
+**Ni lots ni cache, pour l'instant.** Le traitement par lots (-50 %) rend la réponse jusqu'à 24 h plus tard, incompatible avec « Collecter maintenant » ; au volume du scénario A (environ 60 éléments par jour, ~1 500 tokens d'entrée chacun), l'écart est d'environ 1,50 $ par mois. Il pourra servir pour le passage horaire si le volume grandit. Le cache de prompt ne s'active sur Haiku 4.5 qu'à partir de 4 096 tokens de préfixe : la consigne de tri est bien plus courte.
+
+**Coût.** Calculé à partir des tokens renvoyés par l'API et des tarifs de `packages/shared/src/pricing.ts` (Haiku 4.5 : 1 $ / 5 $ par million de tokens), enregistré dans `usage_log`.
