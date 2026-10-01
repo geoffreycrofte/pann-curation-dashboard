@@ -1,0 +1,27 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "pann",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // The board (apps/board) is served as static assets by this same Worker.
+  // Only /api/* reaches the Worker code; everything else is the SPA.
+  "assets": {
+    "directory": "../board/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+
+  "vars": {
+    "SUPABASE_URL": "http://127.0.0.1:54321",
+  },
+  // Secrets (wrangler secret put / .dev.vars): SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY
+
+  "observability": { "enabled": true },
+
+  // Step 2 (collect) will add:
+  // "triggers": { "crons": ["0 */6 * * *"] },
+  // "queues": { "producers": [{ "binding": "TRIAGE_QUEUE", "queue": "pann-triage" }],
+  //             "consumers": [{ "queue": "pann-triage", "dead_letter_queue": "pann-dlq" }] }
+}

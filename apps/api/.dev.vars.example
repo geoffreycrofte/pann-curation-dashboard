@@ -1,0 +1,3 @@
+# Copy to .dev.vars. Values printed by `supabase status` for the local stack.
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=

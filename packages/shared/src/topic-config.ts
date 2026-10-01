@@ -1,0 +1,55 @@
+import { z } from 'zod'
+import { CHANNELS, DRAFT_MODES, LANGS } from './domain'
+
+/** HH:MM, 24-hour clock. */
+const timeSlot = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+
+/**
+ * Everything that is specific to a theme lives here (stored in topics.config, jsonb).
+ * Nothing about "accessibility" is hard-coded in the application.
+ */
+export const topicConfigSchema = z.object({
+  categories: z
+    .array(z.object({ key: z.string().min(1), label_fr: z.string(), label_en: z.string() }))
+    .default([]),
+  output_langs: z.array(z.enum(LANGS)).min(1).default(['fr', 'en']),
+  ai: z
+    .object({
+      triage_model: z.string().default('claude-haiku-4-5-20251001'),
+      draft_model: z.string().default('claude-sonnet-5-5'),
+      draft_mode: z.enum(DRAFT_MODES).default('on_validate'),
+      relevance_threshold: z.number().int().min(0).max(100).default(50),
+      relevance_criteria: z.string().default(''),
+      editorial_rules: z.string().default(''),
+      prompt_version: z.string().default('v1'),
+    })
+    .prefault({}),
+  schedule: z
+    .object({
+      timezone: z.string().default('Europe/Luxembourg'),
+      posts_per_day: z.number().int().min(0).max(10).default(2),
+      slots: z.array(timeSlot).default(['09:00', '16:00']),
+      digest: z
+        .object({
+          weekday: z.number().int().min(0).max(6).default(5),
+          time: timeSlot.default('08:00'),
+        })
+        .prefault({}),
+    })
+    .prefault({}),
+  channels: z
+    .array(
+      z.object({
+        channel: z.enum(CHANNELS),
+        account_ref: z.string(),
+        bilingual_single_post: z.boolean().default(false),
+      }),
+    )
+    .default([]),
+})
+
+export type TopicConfig = z.infer<typeof topicConfigSchema>
+
+export function parseTopicConfig(raw: unknown): TopicConfig {
+  return topicConfigSchema.parse(raw ?? {})
+}
