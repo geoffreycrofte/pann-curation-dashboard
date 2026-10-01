@@ -67,6 +67,7 @@ Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, 
 - Secrets GitHub : `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 - Variables GitHub : `SUPABASE_PROJECT_REF`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
 - Secrets du Worker : `wrangler secret put` pour `SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_SECRET_KEY`. Les clés des services se règlent dans l'app (Connexions).
+- Files de tâches (une fois) : `wrangler queues create pann-jobs` et `wrangler queues create pann-jobs-dlq`.
 - Supabase Auth (projet distant) : désactiver les inscriptions publiques, inviter son adresse, définir l'URL du site et les URLs de redirection.
 
 ## Avancement (plan de `docs/CONTEXT.md`, section 9)
@@ -76,7 +77,7 @@ Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, 
 - [x] 2. Collecte : adaptateurs RSS, Exa, GitHub ; déduplication ; cron horaire ; « Collecter maintenant »
 - [x] Connexions : clés des services par workspace, réglées dans l'app (Supabase Vault)
 - [x] 3. Tri IA (Haiku) : pertinence, type, contenu promotionnel, explication ; archivage sous le seuil
-- [ ] 4. Rédaction IA (Sonnet), `usage_log`, plafond de coût
+- [x] 4. Rédaction IA (Sonnet) : résumés FR/EN, extrait, brouillons de posts modifiables ; plafond de coût mensuel
 - [ ] 5. Publication CheckFox
 - [ ] 6. Diffusion sociale
 - [ ] 7. Newsletter (Brevo)

@@ -72,6 +72,8 @@ export interface BoardItem {
   relevance_score: number | null
   is_commercial: boolean | null
   triage_reason: string | null
+  draft_status: 'none' | 'pending' | 'ready' | 'failed'
+  draft_error: string | null
   status: ItemTopicStatus
   validated_at: string | null
 }

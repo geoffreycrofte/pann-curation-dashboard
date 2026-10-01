@@ -5,7 +5,6 @@ import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { resolveFeed } from '../lib/feeds'
 import { parseJson } from '../lib/validation'
-import { collectSourceNow } from '../jobs/scheduled'
 
 const SOURCE_COLUMNS =
   'id, topic_id, type, label, config, active, default_kind, interval_hours, last_run_at, last_error, run_requested_at, last_run_stats, created_at'
@@ -85,8 +84,8 @@ export const sources = new Hono<AppEnv>()
 
   /**
    * "Collect now". RLS first proves the user can access the source (the update only
-   * matches their own sources); the collection itself then runs in the background
-   * as a job, with the secret key. The board polls until last_run_at moves.
+   * matches their own sources); the collection itself then runs as a queued job,
+   * with the secret key. The board polls until last_run_at moves.
    */
   .post('/:sourceId/collect', async (c) => {
     const { data, error } = await c.var.db
@@ -98,7 +97,7 @@ export const sources = new Hono<AppEnv>()
       .maybeSingle()
     if (error) throw error
     if (!data) throw new HTTPException(404, { message: 'Source not found' })
-    c.executionCtx.waitUntil(collectSourceNow(c.env, data.id))
+    await c.env.JOBS.send({ type: 'collect-source', sourceId: data.id })
     return c.json(data, 202)
   })
 

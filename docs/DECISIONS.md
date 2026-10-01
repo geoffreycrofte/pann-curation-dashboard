@@ -79,3 +79,19 @@ Complète `docs/CONTEXT.md`. Une entrée par décision, la plus récente en bas.
 **Ni lots ni cache, pour l'instant.** Le traitement par lots (-50 %) rend la réponse jusqu'à 24 h plus tard, incompatible avec « Collecter maintenant » ; au volume du scénario A (environ 60 éléments par jour, ~1 500 tokens d'entrée chacun), l'écart est d'environ 1,50 $ par mois. Il pourra servir pour le passage horaire si le volume grandit. Le cache de prompt ne s'active sur Haiku 4.5 qu'à partir de 4 096 tokens de préfixe : la consigne de tri est bien plus courte.
 
 **Coût.** Calculé à partir des tokens renvoyés par l'API et des tarifs de `packages/shared/src/pricing.ts` (Haiku 4.5 : 1 $ / 5 $ par million de tokens), enregistré dans `usage_log`.
+
+## 2026-10-03 : rédaction par IA et plafond de coût (étape 4)
+
+**Quand.** Mode `on_validate` par défaut : valider un élément met sa rédaction en file (trigger SQL `queue_draft_on_validate`) et l'API envoie aussitôt une tâche. Mode `on_display` (réglable) : tout élément gardé par le tri est rédigé avant décision. Le passage horaire rattrape les rédactions en attente.
+
+**File de tâches Cloudflare Queues.** `waitUntil` après une réponse est coupé au bout de 30 secondes, trop court pour une rédaction ou une collecte suivie du tri. Les requêtes utilisateur (« Collecter maintenant », validation, « Relancer la rédaction ») déposent une tâche dans la file `pann-jobs` ; le consommateur dispose de 15 minutes, avec 2 nouvelles tentatives puis la file `pann-jobs-dlq`. Wrangler simule la file en local.
+
+**Modèle.** `claude-sonnet-5-5` (réglable par thème), effort `low` (point de départ recommandé pour la génération de contenu, réglable : `ai.draft_effort`), sorties structurées, consigne système mise en cache (identique pour tous les éléments d'un thème ; seuil de cache de 512 tokens sur Sonnet 5.5). Modèle de secours côté serveur activé (`fallbacks: "default"`, bêta `server-side-fallback-2026-07-01`) : en cas de refus pour certaines catégories, la requête est relancée sur un autre modèle ; le coût est calculé avec le modèle qui a réellement répondu.
+
+**Contenu.** La consigne reprend les règles éditoriales du CONTEXT (véracité, versions exactes, directive ou transposition, typographie française, inclusivité, expressions bannies), suivies des règles propres au thème (`ai.editorial_rules`). Si le contenu stocké fait moins de 600 caractères (lien ajouté à la main, flux qui ne donne qu'un extrait), la page est récupérée et son texte principal extrait (`<article>`, sinon `<main>`). Contenu insuffisant : pas de résumé inventé, l'élément l'indique.
+
+**Textes modifiés à la main.** Un résumé ou un post modifié dans la fiche est marqué `edited_by_human` et n'est jamais écrasé par une nouvelle rédaction. Limites de longueur affichées et vérifiées dans le board : LinkedIn 3 000, Bluesky 300 (graphèmes), Mastodon 500 (valeur par défaut de mastodon.social).
+
+**Plafond mensuel par thème.** Avant chaque rédaction, le coût du mois (UTC, `usage_log`) est comparé à `topics.monthly_budget_usd` : au-delà, la rédaction s'arrête jusqu'au mois suivant, le tri continue (CONTEXT, section 8). Le budget et les dépenses par opération sont visibles et réglables dans Réglages.
+
+**Alertes Supabase acceptées.** Les fonctions `security definer` appelables par un utilisateur connecté (`add_manual_item`, `set_workspace_credential`, `delete_workspace_credential`, `request_draft`) sont voulues : chacune vérifie elle-même l'accès (`can_access_topic`, `is_owner`).

@@ -59,6 +59,11 @@ export const ERROR_CODES = [
   'no_feed',
   'declared_feed_invalid',
   'invalid_config',
+  'insufficient_content',
+  'budget_exceeded',
+  'refusal',
+  'invalid_output',
+  'provider_error',
   'unexpected',
 ] as const
 export type ErrorCode = (typeof ERROR_CODES)[number]

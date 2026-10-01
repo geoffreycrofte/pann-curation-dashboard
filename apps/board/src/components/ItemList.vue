@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { BoardItem, ItemTopicStatus } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
-import { nextTick, ref } from 'vue'
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import ItemCard from './ItemCard.vue'
@@ -20,6 +20,22 @@ const {
   key: () => ['items', props.topicId, props.status],
   query: () => api.items(props.topicId, props.status),
 })
+
+// Drafting runs in the background: refresh while an item of the list is being drafted.
+let poller: ReturnType<typeof setInterval> | undefined
+watch(items, (list) => {
+  const drafting = list?.some((i) => i.draft_status === 'pending')
+  if (drafting && !poller) {
+    poller = setInterval(
+      () => queryCache.invalidateQueries({ key: ['items', props.topicId, props.status] }),
+      4000,
+    )
+  } else if (!drafting && poller) {
+    clearInterval(poller)
+    poller = undefined
+  }
+})
+onBeforeUnmount(() => poller && clearInterval(poller))
 
 const { mutate, isLoading } = useMutation({
   mutation: (vars: { item: BoardItem; to: ItemTopicStatus }) =>

@@ -23,6 +23,12 @@ export const router = createRouter({
       props: true,
     },
     {
+      path: '/t/:topicId/items/:itemId',
+      name: 'item',
+      component: () => import('./views/ItemView.vue'),
+      props: true,
+    },
+    {
       path: '/t/:topicId/sources',
       name: 'sources',
       component: () => import('./views/SourcesView.vue'),

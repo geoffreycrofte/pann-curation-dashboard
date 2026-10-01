@@ -91,6 +91,16 @@ export function supabaseTriageStore(db: SupabaseClient): TriageStore {
         .eq('topic_id', item.topic_id)
         .eq('status', 'new') // the user may have moved it meanwhile
       if (error) throw error
+      // "on_display" mode: draft every item kept in the board, before any decision.
+      if (!decision.archived && item.topic_config.ai.draft_mode === 'on_display') {
+        const { error: queueError } = await db
+          .from('item_topics')
+          .update({ draft_status: 'pending' })
+          .eq('item_id', item.item_id)
+          .eq('topic_id', item.topic_id)
+          .eq('draft_status', 'none')
+        if (queueError) throw queueError
+      }
       // Item-level facts: only fill what the collector did not know.
       const patch: Record<string, string> = {}
       if (!item.item_kind) patch.kind = decision.kind

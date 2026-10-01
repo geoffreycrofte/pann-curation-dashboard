@@ -25,4 +25,18 @@
   // Hourly; each run only collects the sources that are due (isSourceDue).
   // Keep in sync with COLLECT_CRON in src/jobs/scheduled.ts.
   "triggers": { "crons": ["7 * * * *"] },
+
+  // Background jobs (jobs/queue.ts). Simulated locally by "wrangler dev"; in production,
+  // create them once: wrangler queues create pann-jobs && wrangler queues create pann-jobs-dlq
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "pann-jobs" }],
+    "consumers": [
+      {
+        "queue": "pann-jobs",
+        "max_batch_size": 1,
+        "max_retries": 2,
+        "dead_letter_queue": "pann-jobs-dlq",
+      },
+    ],
+  },
 }

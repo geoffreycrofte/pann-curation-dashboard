@@ -3,6 +3,7 @@ import type { BoardItem, ItemTopicStatus } from '@pann/shared'
 import { canTransition } from '@pann/shared'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { describeError } from '../lib/errors'
 
 const props = defineProps<{ item: BoardItem; busy: boolean }>()
 const emit = defineEmits<{ setStatus: [status: ItemTopicStatus] }>()
@@ -49,6 +50,24 @@ const actions = computed(() =>
         }}
       </li>
     </ul>
+    <p v-if="item.draft_status !== 'none'" class="draft-status">
+      {{
+        item.draft_error
+          ? t('draft.statusWithError', {
+              status: t(`draft.status.${item.draft_status}`),
+              error: describeError(item.draft_error, t).text,
+            })
+          : t(`draft.status.${item.draft_status}`)
+      }}
+    </p>
+    <p class="detail-link">
+      <RouterLink
+        :to="{ name: 'item', params: { topicId: item.topic_id, itemId: item.item_id } }"
+        :aria-label="t('board.openDetailLabel', { title: item.title })"
+      >
+        {{ t('board.openDetail') }}
+      </RouterLink>
+    </p>
     <p v-if="item.triage_reason" class="reason">
       {{ t('board.reason', { reason: item.triage_reason }) }}
     </p>
@@ -103,6 +122,11 @@ const actions = computed(() =>
 .kind {
   font-weight: 600;
   color: var(--color-text);
+}
+
+.draft-status,
+.detail-link {
+  margin: 0;
 }
 
 .reason {

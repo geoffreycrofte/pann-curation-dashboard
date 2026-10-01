@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ITEM_KINDS, type TopicConfig } from '@pann/shared'
+import { DRAFT_MODES, ITEM_KINDS, type TopicConfig } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import BudgetSection from '../components/BudgetSection.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
@@ -100,6 +101,20 @@ const { mutate, isLoading } = useMutation({
         />
         <p :id="`${id}-threshold-hint`" class="hint">{{ t('settings.thresholdHint') }}</p>
       </div>
+      <div class="form-row">
+        <label :for="`${id}-draft-mode`">{{ t('settings.draftMode') }}</label>
+        <select
+          :id="`${id}-draft-mode`"
+          v-model="ai.draft_mode"
+          class="field"
+          :aria-describedby="`${id}-draft-mode-hint`"
+        >
+          <option v-for="mode in DRAFT_MODES" :key="mode" :value="mode">
+            {{ t(`settings.draftModes.${mode}`) }}
+          </option>
+        </select>
+        <p :id="`${id}-draft-mode-hint`" class="hint">{{ t('settings.draftModeHint') }}</p>
+      </div>
     </fieldset>
     <div>
       <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
@@ -108,6 +123,8 @@ const { mutate, isLoading } = useMutation({
     </div>
   </form>
   <p role="status" :class="{ error: isError }">{{ message }}</p>
+
+  <BudgetSection :topic-id="topicId" />
 </template>
 
 <style scoped>

@@ -1,5 +1,6 @@
 import {
   canTransition,
+  LANGS,
   extractPageTitle,
   ITEM_KINDS,
   ITEM_TOPIC_STATUSES,
@@ -28,6 +29,13 @@ const statusBody = z.object({ status: z.enum(ITEM_TOPIC_STATUSES) })
 /** Top-level keys of the topic config are replaced as a whole, then the result is validated. */
 const configPatch = z.record(z.string(), z.unknown())
 
+const topicPatch = z.object({ monthly_budget_usd: z.number().min(0).max(10_000) })
+const textBody = (max: number) => z.object({ text: z.string().trim().min(1).max(max) })
+
+const DETAIL_COLUMNS =
+  'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, drafted_at, status, validated_at, ' +
+  'item:items (canonical_url, title, source_lang, kind, origin, published_at, discovered_at)'
+
 const manualItemBody = z.object({
   url: z.url({ protocol: /^https?$/ }),
   title: z.string().trim().max(500).optional(),
@@ -51,6 +59,42 @@ export const topics = new Hono<AppEnv>()
     if (error) throw error
     if (!data) throw new HTTPException(404, { message: 'Topic not found' })
     return c.json({ ...data, config: parseTopicConfig(data.config) })
+  })
+
+  .patch('/:topicId', async (c) => {
+    const body = await parseJson(topicPatch, c.req.raw)
+    const { data, error } = await c.var.db
+      .from('topics')
+      .update(body)
+      .eq('id', c.req.param('topicId'))
+      .select(TOPIC_COLUMNS)
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Topic not found' })
+    return c.json(data)
+  })
+
+  /** Spending of the current month, by operation, against the topic budget. */
+  .get('/:topicId/usage', async (c) => {
+    const topicId = c.req.param('topicId')
+    const [{ data: topic, error: topicError }, { data: usage, error }] = await Promise.all([
+      c.var.db.from('topics').select('monthly_budget_usd').eq('id', topicId).maybeSingle(),
+      c.var.db.rpc('topic_month_usage', { p_topic_id: topicId }),
+    ])
+    if (topicError) throw topicError
+    if (error) throw error
+    if (!topic) throw new HTTPException(404, { message: 'Topic not found' })
+    const rows = (usage ?? []) as { operation: string; cost_usd: number | string; calls: number }[]
+    const byOperation = rows.map((r) => ({
+      operation: r.operation,
+      cost_usd: Number(r.cost_usd),
+      calls: Number(r.calls),
+    }))
+    return c.json({
+      budget_usd: Number(topic.monthly_budget_usd),
+      month_cost_usd: byOperation.reduce((sum, r) => sum + r.cost_usd, 0),
+      by_operation: byOperation,
+    })
   })
 
   .patch('/:topicId/config', async (c) => {
@@ -80,7 +124,7 @@ export const topics = new Hono<AppEnv>()
     const { data, error } = await c.var.db
       .from('item_topics')
       .select(
-        'item_id, topic_id, relevance_score, is_commercial, triage_reason, status, validated_at, ' +
+        'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, ' +
           'item:items (canonical_url, title, source_lang, kind, origin, published_at, discovered_at)',
       )
       .eq('topic_id', c.req.param('topicId'))
@@ -122,6 +166,80 @@ export const topics = new Hono<AppEnv>()
     return c.json({ ...data, canonical_url: canonicalUrl, title }, data.created ? 201 : 200)
   })
 
+  /** One item with its summaries (current workspace) and post drafts. */
+  .get('/:topicId/items/:itemId', async (c) => {
+    const { topicId, itemId } = c.req.param()
+    const { data: row, error } = await c.var.db
+      .from('item_topics')
+      .select(DETAIL_COLUMNS)
+      .eq('topic_id', topicId)
+      .eq('item_id', itemId)
+      .maybeSingle()
+    if (error) throw error
+    if (!row) throw new HTTPException(404, { message: 'Item not found in this topic' })
+    const [{ data: summaries, error: sError }, { data: posts, error: pError }] = await Promise.all([
+      c.var.db
+        .from('summaries')
+        .select('lang, summary, key_excerpt, source_nature, edited_by_human, model, updated_at')
+        .eq('item_id', itemId),
+      c.var.db
+        .from('posts')
+        .select('id, channel, lang, body, status, edited_by_human')
+        .eq('item_id', itemId)
+        .eq('topic_id', topicId)
+        .order('channel'),
+    ])
+    if (sError) throw sError
+    if (pError) throw pError
+    return c.json({ ...(row as unknown as Record<string, unknown>), summaries, posts })
+  })
+
+  /** Queue a new drafting (validated or published items). Edited texts are kept. */
+  .post('/:topicId/items/:itemId/draft', async (c) => {
+    const { topicId, itemId } = c.req.param()
+    const { data: queued, error } = await c.var.db.rpc('request_draft', {
+      p_topic_id: topicId,
+      p_item_id: itemId,
+    })
+    if (error?.code === '42501') throw new HTTPException(404, { message: 'Topic not found' })
+    if (error) throw error
+    if (!queued) throw new HTTPException(409, { message: 'Only validated items can be drafted' })
+    await c.env.JOBS.send({ type: 'draft', topicId, itemId })
+    return c.json({ draft_status: 'pending' }, 202)
+  })
+
+  .patch('/:topicId/items/:itemId/summaries/:lang', async (c) => {
+    const { itemId, lang } = c.req.param()
+    if (!(LANGS as readonly string[]).includes(lang))
+      throw new HTTPException(404, { message: 'Unknown language' })
+    const { text } = await parseJson(textBody(2000), c.req.raw)
+    const { data, error } = await c.var.db
+      .from('summaries')
+      .update({ summary: text, edited_by_human: true, updated_at: new Date().toISOString() })
+      .eq('item_id', itemId)
+      .eq('lang', lang)
+      .select('lang, summary, key_excerpt, source_nature, edited_by_human, model, updated_at')
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Summary not found' })
+    return c.json(data)
+  })
+
+  .patch('/:topicId/posts/:postId', async (c) => {
+    const { text } = await parseJson(textBody(3000), c.req.raw)
+    const { data, error } = await c.var.db
+      .from('posts')
+      .update({ body: text, edited_by_human: true, updated_at: new Date().toISOString() })
+      .eq('topic_id', c.req.param('topicId'))
+      .eq('id', c.req.param('postId'))
+      .eq('status', 'draft')
+      .select('id, channel, lang, body, status, edited_by_human')
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Draft not found' })
+    return c.json(data)
+  })
+
   .patch('/:topicId/items/:itemId', async (c) => {
     const { status: target } = await parseJson(statusBody, c.req.raw)
     const { topicId, itemId } = c.req.param()
@@ -149,5 +267,7 @@ export const topics = new Hono<AppEnv>()
       .maybeSingle()
     if (error) throw error
     if (!data) throw new HTTPException(409, { message: 'Status changed meanwhile, reload' })
+    // Validation queues the drafting in the database (trigger); run it now.
+    if (target === 'validated') await c.env.JOBS.send({ type: 'draft', topicId, itemId })
     return c.json(data)
   })

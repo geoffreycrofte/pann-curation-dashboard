@@ -7,6 +7,8 @@ import type {
   Topic,
   TopicConfig,
   WorkspaceCredential,
+  PostDraft,
+  Summary,
 } from '@pann/shared'
 import { supabase } from './supabase'
 
@@ -83,6 +85,19 @@ export interface Me {
   workspaces: { role: 'owner' | 'editor'; workspace: { id: string; name: string } }[]
 }
 
+export type ItemDetail = Omit<BoardItem, ItemFields> & {
+  item: Pick<BoardItem, ItemFields>
+  drafted_at: string | null
+  summaries: Summary[]
+  posts: PostDraft[]
+}
+
+export interface TopicUsage {
+  budget_usd: number
+  month_cost_usd: number
+  by_operation: { operation: string; cost_usd: number; calls: number }[]
+}
+
 export const api = {
   me: () => request<Me>('/me'),
   credentials: (workspaceId: string) =>
@@ -108,6 +123,23 @@ export const api = {
     request<AddItemResult>(`/topics/${topicId}/items`, json('POST', input)),
   setStatus: (topicId: string, itemId: string, status: ItemTopicStatus) =>
     request(`/topics/${topicId}/items/${itemId}`, json('PATCH', { status })),
+
+  item: (topicId: string, itemId: string) =>
+    request<ItemDetail>(`/topics/${topicId}/items/${itemId}`),
+  requestDraft: (topicId: string, itemId: string) =>
+    request<{ draft_status: string }>(`/topics/${topicId}/items/${itemId}/draft`, {
+      method: 'POST',
+    }),
+  updateSummary: (topicId: string, itemId: string, lang: string, text: string) =>
+    request<Summary>(
+      `/topics/${topicId}/items/${itemId}/summaries/${lang}`,
+      json('PATCH', { text }),
+    ),
+  updatePost: (topicId: string, postId: string, text: string) =>
+    request<PostDraft>(`/topics/${topicId}/posts/${postId}`, json('PATCH', { text })),
+  usage: (topicId: string) => request<TopicUsage>(`/topics/${topicId}/usage`),
+  updateTopic: (topicId: string, patch: { monthly_budget_usd: number }) =>
+    request<Topic>(`/topics/${topicId}`, json('PATCH', patch)),
 
   sources: (topicId: string) => request<Source[]>(`/topics/${topicId}/sources`),
   addRss: (topicId: string, input: AddRssInput) =>

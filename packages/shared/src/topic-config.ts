@@ -23,6 +23,8 @@ export const topicConfigSchema = z.object({
       triage_model: z.string().default('claude-haiku-4-5'),
       draft_model: z.string().default('claude-sonnet-5-5'),
       draft_mode: z.enum(DRAFT_MODES).default('on_validate'),
+      /** low: recommended starting point for content generation on Sonnet 5.5. */
+      draft_effort: z.enum(['low', 'medium', 'high']).default('low'),
       relevance_threshold: z.number().int().min(0).max(100).default(50),
       relevance_criteria: z.string().default(''),
       editorial_rules: z.string().default(''),

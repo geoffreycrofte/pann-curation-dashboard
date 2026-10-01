@@ -1,7 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { JobMessage } from './jobs/queue'
 
 export interface Env {
   ASSETS: Fetcher
+  /** Background work (collect now, drafting). See jobs/queue.ts. */
+  JOBS: Queue<JobMessage>
   SUPABASE_URL: string
   /** Public key (anon / publishable): requests run with the user's JWT and RLS applies. */
   SUPABASE_PUBLISHABLE_KEY: string
