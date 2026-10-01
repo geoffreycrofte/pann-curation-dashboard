@@ -288,6 +288,24 @@ export default {
     untitled: 'Sans titre',
   },
   settings: {
+    criteria: 'Critères de pertinence',
+    criteriaHint:
+      'Décrivez ce qui rend un élément utile pour ce thème : sujets, normes, publics, ce qu’il faut écarter. L’IA s’en sert pour noter chaque élément.',
+    criteriaPlaceholder:
+      'Exemple : actualités réglementaires et outils pour les équipes produit ; écarter les offres d’emploi.',
+    drafting: 'Rédaction par IA',
+    draftingHint:
+      'Pann résume toujours à partir de la source seule et signale un contenu insuffisant. Les règles ci-dessous, facultatives, adaptent le résultat à votre thème et à votre style.',
+    editorialRules: 'Règles propres au thème',
+    editorialRulesHint:
+      'Précisions de fond : versions de normes à citer exactement, nuances juridiques, sources à traiter avec prudence.',
+    editorialRulesPlaceholder: 'Exemple : toujours citer la version exacte d’une norme.',
+    styleRules: 'Style et ton des résumés',
+    styleRulesHint: 'Longueur, ton, typographie, vocabulaire à employer ou à éviter.',
+    styleRulesPlaceholder: 'Exemple : 2 à 3 phrases courtes, ton factuel, pas de jargon.',
+    postRules: 'Règles pour les posts',
+    postRulesHint: 'Hashtags, emoji, mentions, appel à l’action.',
+    postRulesPlaceholder: 'Exemple : 2 hashtags au maximum, pas d’emoji.',
     budget: 'Budget mensuel de ce thème',
     budgetLabel: 'Plafond mensuel (en dollars US)',
     budgetHint:

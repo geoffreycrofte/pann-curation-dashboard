@@ -138,7 +138,8 @@ describe('prompt', () => {
   it('builds the system prompt from the topic config only', () => {
     const system = triageSystemPrompt({ name_en: 'Digital accessibility', config })
     expect(system).toContain('Relevance criteria: Digital accessibility')
-    expect(system).toContain('Write the reason in French')
+    expect(system).toContain('Write the reason in French.')
+    expect(system).not.toContain('em dash')
   })
 
   it('truncates the content sent for triage', () => {

@@ -87,6 +87,19 @@ const { mutate, isLoading } = useMutation({
     <fieldset v-if="ai">
       <legend>{{ t('settings.triage') }}</legend>
       <div class="form-row">
+        <label :for="`${id}-criteria`">{{ t('settings.criteria') }}</label>
+        <textarea
+          :id="`${id}-criteria`"
+          v-model="ai.relevance_criteria"
+          class="field"
+          rows="4"
+          maxlength="4000"
+          :placeholder="t('settings.criteriaPlaceholder')"
+          :aria-describedby="`${id}-criteria-hint`"
+        ></textarea>
+        <p :id="`${id}-criteria-hint`" class="hint">{{ t('settings.criteriaHint') }}</p>
+      </div>
+      <div class="form-row">
         <label :for="`${id}-threshold`">{{ t('settings.threshold') }}</label>
         <input
           :id="`${id}-threshold`"
@@ -101,6 +114,10 @@ const { mutate, isLoading } = useMutation({
         />
         <p :id="`${id}-threshold-hint`" class="hint">{{ t('settings.thresholdHint') }}</p>
       </div>
+    </fieldset>
+    <fieldset v-if="ai" :aria-describedby="`${id}-drafting-hint`">
+      <legend>{{ t('settings.drafting') }}</legend>
+      <p :id="`${id}-drafting-hint`" class="hint">{{ t('settings.draftingHint') }}</p>
       <div class="form-row">
         <label :for="`${id}-draft-mode`">{{ t('settings.draftMode') }}</label>
         <select
@@ -114,6 +131,47 @@ const { mutate, isLoading } = useMutation({
           </option>
         </select>
         <p :id="`${id}-draft-mode-hint`" class="hint">{{ t('settings.draftModeHint') }}</p>
+      </div>
+      <div class="form-row">
+        <label :for="`${id}-editorial_rules`">{{ t('settings.editorialRules') }}</label>
+        <textarea
+          :id="`${id}-editorial_rules`"
+          v-model="ai.editorial_rules"
+          class="field"
+          rows="5"
+          maxlength="4000"
+          :placeholder="t('settings.editorialRulesPlaceholder')"
+          :aria-describedby="`${id}-editorial_rules-hint`"
+        ></textarea>
+        <p :id="`${id}-editorial_rules-hint`" class="hint">
+          {{ t('settings.editorialRulesHint') }}
+        </p>
+      </div>
+      <div class="form-row">
+        <label :for="`${id}-style_rules`">{{ t('settings.styleRules') }}</label>
+        <textarea
+          :id="`${id}-style_rules`"
+          v-model="ai.style_rules"
+          class="field"
+          rows="5"
+          maxlength="4000"
+          :placeholder="t('settings.styleRulesPlaceholder')"
+          :aria-describedby="`${id}-style_rules-hint`"
+        ></textarea>
+        <p :id="`${id}-style_rules-hint`" class="hint">{{ t('settings.styleRulesHint') }}</p>
+      </div>
+      <div class="form-row">
+        <label :for="`${id}-post_rules`">{{ t('settings.postRules') }}</label>
+        <textarea
+          :id="`${id}-post_rules`"
+          v-model="ai.post_rules"
+          class="field"
+          rows="5"
+          maxlength="4000"
+          :placeholder="t('settings.postRulesPlaceholder')"
+          :aria-describedby="`${id}-post_rules-hint`"
+        ></textarea>
+        <p :id="`${id}-post_rules-hint`" class="hint">{{ t('settings.postRulesHint') }}</p>
       </div>
     </fieldset>
     <div>
@@ -130,6 +188,16 @@ const { mutate, isLoading } = useMutation({
 <style scoped>
 .settings {
   max-width: 40rem;
+}
+
+fieldset {
+  display: grid;
+  gap: var(--space-4);
+}
+
+textarea.field {
+  width: 100%;
+  resize: vertical;
 }
 
 .threshold {

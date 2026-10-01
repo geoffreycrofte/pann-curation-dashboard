@@ -5,7 +5,9 @@ import type { DraftModel } from './model'
 import type { DraftOutput } from './prompt'
 import { draftSystemPrompt } from './prompt'
 
-const config = parseTopicConfig({ ai: { editorial_rules: 'Always name the country.' } })
+const config = parseTopicConfig({
+  ai: { editorial_rules: 'Always name the country.', post_rules: 'No hashtags.' },
+})
 
 const output: DraftOutput = {
   insufficient_content: false,
@@ -132,11 +134,19 @@ describe('draft', () => {
 })
 
 describe('draft prompt', () => {
-  it('carries the editorial rules and the topic rules last', () => {
+  it('only adds the rule sections the topic defines, after the built-in ones', () => {
     const system = draftSystemPrompt({ name_en: 'Digital accessibility', config })
-    expect(system).toContain('never use an em dash')
-    expect(system).toContain('RGAA 4.1 and RGAA 5 are different texts')
-    expect(system.trim().endsWith('Always name the country.')).toBe(true)
+    expect(system).toContain('# Topic rules\nAlways name the country.')
+    expect(system).toContain('# Post rules\nNo hashtags.')
+    expect(system).not.toContain('# Style rules')
+    expect(system.trim().endsWith('No hashtags.')).toBe(true)
+  })
+
+  it('has no style or topic-specific rule built in', () => {
+    const system = draftSystemPrompt({ name_en: 'Anything', config: parseTopicConfig({}) })
+    for (const hardCoded of ['RGAA', 'em dash', 'handicap', 'CamelCase', 'emoji']) {
+      expect(system).not.toContain(hardCoded)
+    }
   })
 
   it('maps the model output to storage rows', () => {

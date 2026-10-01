@@ -286,6 +286,24 @@ export default {
     untitled: 'Untitled',
   },
   settings: {
+    criteria: 'Relevance criteria',
+    criteriaHint:
+      'Describe what makes an item useful for this topic: subjects, standards, audiences, what to leave out. The AI uses it to score each item.',
+    criteriaPlaceholder:
+      'Example: regulatory news and tools for product teams; leave out job offers.',
+    drafting: 'AI drafting',
+    draftingHint:
+      'Pann always summarises from the source only and reports thin content. The optional rules below adapt the result to your topic and style.',
+    editorialRules: 'Topic rules',
+    editorialRulesHint:
+      'Substance: versions of standards to quote exactly, legal nuances, sources to handle with care.',
+    editorialRulesPlaceholder: 'Example: always quote the exact version of a standard.',
+    styleRules: 'Style and tone of summaries',
+    styleRulesHint: 'Length, tone, typography, words to use or avoid.',
+    styleRulesPlaceholder: 'Example: 2 to 3 short sentences, factual tone, no jargon.',
+    postRules: 'Rules for posts',
+    postRulesHint: 'Hashtags, emoji, mentions, call to action.',
+    postRulesPlaceholder: 'Example: at most 2 hashtags, no emoji.',
     budget: 'Monthly budget of this topic',
     budgetLabel: 'Monthly cap (US dollars)',
     budgetHint: 'Beyond it, AI drafting stops until next month. Triage goes on: it costs little.',

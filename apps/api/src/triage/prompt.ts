@@ -2,7 +2,7 @@ import { ITEM_KINDS, type Lang, type TopicConfig } from '@pann/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes, to compare and re-run. Stored with each triage. */
-export const TRIAGE_PROMPT_VERSION = 'triage-v1'
+export const TRIAGE_PROMPT_VERSION = 'triage-v2'
 
 /** Characters of content sent to the model: triage does not need the whole article. */
 export const TRIAGE_CONTENT_CHARS = 6000
@@ -16,10 +16,7 @@ export const triageOutputSchema = z.object({
 })
 export type TriageOutput = z.infer<typeof triageOutputSchema>
 
-const LANG_RULES: Record<Lang, string> = {
-  fr: 'Write the reason in French: short factual sentence, non-breaking space before : ; ! ?, never an em dash.',
-  en: 'Write the reason in English: short factual sentence.',
-}
+const LANG_NAMES: Record<Lang, string> = { fr: 'French', en: 'English' }
 
 export interface TriageTopic {
   name_en: string
@@ -47,7 +44,7 @@ For each item, return:
 - reason: one short sentence explaining the score.
 
 Judge only from the content provided, never from memory. If the content is missing or too short, judge from the title and URL and lower the relevance. Lower the relevance of commercial items unless they announce a substantial new tool or fact.
-${LANG_RULES[lang]}`
+Write the reason in ${LANG_NAMES[lang]}.`
 }
 
 export interface TriageItem {

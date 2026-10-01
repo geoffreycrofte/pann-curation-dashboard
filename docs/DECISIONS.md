@@ -95,3 +95,16 @@ Complète `docs/CONTEXT.md`. Une entrée par décision, la plus récente en bas.
 **Plafond mensuel par thème.** Avant chaque rédaction, le coût du mois (UTC, `usage_log`) est comparé à `topics.monthly_budget_usd` : au-delà, la rédaction s'arrête jusqu'au mois suivant, le tri continue (CONTEXT, section 8). Le budget et les dépenses par opération sont visibles et réglables dans Réglages.
 
 **Alertes Supabase acceptées.** Les fonctions `security definer` appelables par un utilisateur connecté (`add_manual_item`, `set_workspace_credential`, `delete_workspace_credential`, `request_draft`) sont voulues : chacune vérifie elle-même l'accès (`can_access_topic`, `is_owner`).
+
+## 2026-10-03 : règles éditoriales réglables, pas en dur
+
+**Correction de l'étape 4.** La consigne de rédaction contenait les règles de `voice.md` (typographie française, inclusivité, expressions bannies) et des règles propres à l'accessibilité (versions de RGAA, directive ou transposition), écrites en dur. Ce sont des préférences d'utilisateur et de thème : elles passent dans les réglages du thème, page Réglages, section « Rédaction par IA » :
+
+- `ai.editorial_rules` : règles de fond propres au thème ;
+- `ai.style_rules` : style et ton des résumés ;
+- `ai.post_rules` : conventions des posts ;
+- et `ai.relevance_criteria` (tri), jusqu'ici modifiable seulement en base.
+
+**Ce qui reste intégré** : le fonctionnement de l'outil, valable pour tout thème et tout utilisateur (résumer uniquement à partir de la source, ne rien inventer, signaler un contenu insuffisant, extrait mot pour mot, attribution des contenus commerciaux, reformulation plutôt que paraphrase, français et anglais rédigés chacun nativement, limites de caractères des réseaux, lien ajouté à part). Un test vérifie qu'aucune règle de style ou de thème n'est écrite en dur.
+
+Prompts passés en `draft-v2` et `triage-v2`. Le thème accessibilité est prérempli avec les anciennes règles (`docs/topics/accessibilite.md`).

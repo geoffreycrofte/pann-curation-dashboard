@@ -26,8 +26,18 @@ export const topicConfigSchema = z.object({
       /** low: recommended starting point for content generation on Sonnet 5.5. */
       draft_effort: z.enum(['low', 'medium', 'high']).default('low'),
       relevance_threshold: z.number().int().min(0).max(100).default(50),
-      relevance_criteria: z.string().default(''),
-      editorial_rules: z.string().default(''),
+      /** What makes an item relevant for this topic (triage). */
+      relevance_criteria: z.string().max(4000).default(''),
+      /**
+       * Drafting rules, all optional and written by the user (Settings). Nothing about
+       * style, voice or a specific topic is hard-coded in the prompts.
+       */
+      /** Accuracy rules specific to the topic (versions of standards, legal nuances…). */
+      editorial_rules: z.string().max(4000).default(''),
+      /** Style and voice of the summaries (length, tone, typography, vocabulary…). */
+      style_rules: z.string().max(4000).default(''),
+      /** Conventions for social posts (hashtags, emoji, mentions…). */
+      post_rules: z.string().max(4000).default(''),
       prompt_version: z.string().default('v1'),
     })
     .prefault({}),

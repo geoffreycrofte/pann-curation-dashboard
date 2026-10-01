@@ -11,6 +11,8 @@ Pann : outil de curation de veille multi-thèmes. Contexte produit : `docs/CONTE
 ## Règles
 
 - Aucun thème codé en dur : tout ce qui est propre à un sujet va dans `topics.config` (schéma : `packages/shared/src/topic-config.ts`).
+- Les prompts IA ne contiennent que le fonctionnement de l'outil (ancrage dans la source, format de sortie, limites techniques). Style, ton, typographie, vocabulaire, règles propres à un thème : réglages de l'utilisateur (`ai.relevance_criteria`, `ai.editorial_rules`, `ai.style_rules`, `ai.post_rules`), jamais en dur. Penser SaaS : ce qui varie d'un utilisateur à l'autre se règle dans l'app.
+- Les règles de typographie française ci-dessous valent pour les textes de l'interface, pas pour les contenus générés.
 - Code, tables, statuts et API en vocabulaire technique neutre (`items`, `validated`). La métaphore de l'orpaillage ne vit que dans les traductions du board.
 - Tout libellé d'interface passe par `apps/board/src/i18n/fr.ts` et `en.ts` (FR est la référence de typage).
 - Multi-tenant : toute nouvelle table exposée aux utilisateurs a la RLS activée et une politique basée sur `private.is_member` / `private.can_access_topic`.

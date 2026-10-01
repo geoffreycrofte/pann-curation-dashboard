@@ -31,7 +31,9 @@ with ws as (
       "draft_mode": "on_validate",
       "relevance_threshold": 50,
       "relevance_criteria": "Digital accessibility: WCAG, RGAA, RAWeb, EN 301 549, European Accessibility Act (Directive (EU) 2019/882) and national transpositions, assistive technologies, inclusive design, accessibility tooling and audits.",
-      "editorial_rules": "",
+      "editorial_rules": "- Distinguish a European directive from its national transposition, and name the country when the text concerns one.\n- For a standard or reference framework (WCAG, RGAA, RAWeb, EN 301 549), quote the exact version given in the source: RGAA 4.1 and RGAA 5 are different texts.",
+      "style_rules": "- Summaries: 2 to 3 short sentences, factual tone.\n- French: never use an em dash or a double hyphen; non-breaking space before : ; ! ? and inside « ».\n- Inclusive language: no \"point médian\"; prefer neutral wording (\"l'équipe de développement\"); say \"personnes handicapées\" or \"personnes en situation de handicap\" (EN: \"disabled people\" or \"people with disabilities\").\n- Banned expressions: \"personne avec des besoins spécifiques\" and its variants, \"au jour d'aujourd'hui\".",
+      "post_rules": "- At most 2 hashtags on Bluesky and Mastodon, at most 3 on LinkedIn, written in CamelCase for screen readers (#DigitalAccessibility).\n- No emoji used as bullet points or to replace words.\n- LinkedIn: aim for 400 to 900 characters.",
       "prompt_version": "v1"
     },
     "collection": {
