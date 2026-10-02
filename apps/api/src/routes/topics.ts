@@ -2,6 +2,7 @@ import {
   canTransition,
   LANGS,
   extractPageTitle,
+  newFeedKey,
   ITEM_KINDS,
   ITEM_TOPIC_STATUSES,
   normalizeUrl,
@@ -28,6 +29,8 @@ const statusBody = z.object({ status: z.enum(ITEM_TOPIC_STATUSES) })
 
 /** Top-level keys of the topic config are replaced as a whole, then the result is validated. */
 const configPatch = z.record(z.string(), z.unknown())
+
+const feedBody = z.object({ enabled: z.boolean(), regenerate: z.boolean().default(false) })
 
 const topicPatch = z.object({ monthly_budget_usd: z.number().min(0).max(10_000) })
 const textBody = (max: number) => z.object({ text: z.string().trim().min(1).max(max) })
@@ -56,12 +59,36 @@ export const topics = new Hono<AppEnv>()
   .get('/:topicId', async (c) => {
     const { data, error } = await c.var.db
       .from('topics')
-      .select(`${TOPIC_COLUMNS}, config`)
+      .select(`${TOPIC_COLUMNS}, config, feed_key`)
       .eq('id', c.req.param('topicId'))
       .maybeSingle()
     if (error) throw error
     if (!data) throw new HTTPException(404, { message: 'Topic not found' })
     return c.json({ ...data, config: parseTopicConfig(data.config) })
+  })
+
+  /**
+   * Public feeds of the topic: on (a new random address, or a new one replacing the
+   * old when `regenerate`), or off (the address stops working).
+   */
+  .post('/:topicId/feed', async (c) => {
+    const { enabled, regenerate } = await parseJson(feedBody, c.req.raw)
+    const topicId = c.req.param('topicId')
+    const { data: current, error: readError } = await c.var.db
+      .from('topics')
+      .select('feed_key')
+      .eq('id', topicId)
+      .maybeSingle()
+    if (readError) throw readError
+    if (!current) throw new HTTPException(404, { message: 'Topic not found' })
+    const feedKey = !enabled
+      ? null
+      : regenerate || !current.feed_key
+        ? newFeedKey()
+        : current.feed_key
+    const { error } = await c.var.db.from('topics').update({ feed_key: feedKey }).eq('id', topicId)
+    if (error) throw error
+    return c.json({ feed_key: feedKey })
   })
 
   .patch('/:topicId', async (c) => {

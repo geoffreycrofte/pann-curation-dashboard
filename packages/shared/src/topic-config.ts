@@ -109,6 +109,20 @@ export const topicConfigSchema = z.object({
     })
     .prefault({}),
   /**
+   * Public feeds (RSS and JSON Feed), turned on per topic from the board. The feed
+   * address itself (topics.feed_key) is not part of the config.
+   */
+  feed: z
+    .object({
+      title_fr: z.string().trim().max(120).default(''),
+      title_en: z.string().trim().max(120).default(''),
+      description_fr: z.string().trim().max(500).default(''),
+      description_en: z.string().trim().max(500).default(''),
+      /** Page that presents the feed (e.g. a curation page on a website). */
+      site_url: z.union([z.url({ protocol: /^https?$/ }), z.literal('')]).default(''),
+    })
+    .prefault({}),
+  /**
    * Where the posts of this topic go: one entry per account, with the languages it
    * publishes (never a bilingual post: one post per language). LinkedIn and Bluesky
    * accounts are Zernio account ids; Mastodon uses the workspace's Mastodon account.

@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     port: 5173,
     // API runs with `wrangler dev` (apps/api); same origin in production.
-    proxy: { '/api': 'http://127.0.0.1:8787' },
+    // The API and the public feeds are served by the Worker (wrangler dev).
+    proxy: { '/api': 'http://127.0.0.1:8787', '/feeds': 'http://127.0.0.1:8787' },
   },
 })

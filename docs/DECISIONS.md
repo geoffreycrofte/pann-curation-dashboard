@@ -157,3 +157,13 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 **E-mail accessible** : `lang` déclaré, contenu enveloppé dans `role="article"` étiqueté par l'objet (recommandation de l'Email Markup Consortium, car les webmails retirent `<html lang>`), tableaux de mise en page en `role="presentation"`, vrais titres, liens soulignés, contraste du texte supérieur à 7:1, aucun texte dans une image.
 
 **Envoi** : vérifié toutes les 5 minutes avec la publication ; une lettre automatique n'est plus envoyée si elle a plus de 6 heures de retard (panne). Erreurs gérées : clé refusée, crédits Brevo épuisés (402), liste ou expéditeur manquant. Brevo peut bloquer les IP inconnues : la vérification de la clé le détecte et l'interface explique comment lever ce blocage (Cloudflare n'a pas d'IP fixe).
+
+## 2026-10-02 : flux publics RSS et JSON Feed
+
+**Un flux par thème et par langue**, en RSS 2.0 (`/feeds/<clé>/fr.xml`) et en JSON Feed 1.1 (`/feeds/<clé>/fr.json`) : les éléments validés (ou publiés), du plus récent au plus ancien (50 au plus), avec leur résumé dans la langue du flux. Un élément sans résumé dans cette langue n'y figure pas encore.
+
+**Désactivé par défaut, adresse non devinable.** Activer les flux crée une clé aléatoire de 192 bits (`topics.feed_key`) ; « Changer d'adresse » la remplace et coupe l'ancienne ; désactiver la supprime. Pas de compte pour lire un flux : c'est le principe d'un flux, et la clé fait office d'accès.
+
+**Lecture anonyme sans clé secrète.** Les lecteurs de flux ne sont pas connectés : le Worker lit la base avec la clé publique et une fonction `public.topic_feed` (security definer, accordée à `anon`) qui ne renvoie que ce que le flux montre (nom du thème, réglages du flux, éléments validés et résumés), et rien pour une clé inconnue. La règle « jamais la clé secrète pour une requête » est respectée.
+
+**Cache de 15 minutes** (en-têtes et cache de Cloudflare) : un flux coupé ou une adresse changée peut encore répondre pendant ce délai. `Access-Control-Allow-Origin: *` pour qu'une page de veille (CheckFox) puisse lire le JSON depuis le navigateur ; `X-Robots-Tag: noindex` pour que les moteurs n'indexent pas l'adresse. Titre, description et page de présentation du flux se règlent par thème.

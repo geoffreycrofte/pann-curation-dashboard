@@ -49,7 +49,8 @@ type ItemFields =
 /** Shape returned by GET /topics/:id/items (item fields nested under `item`). */
 type ItemRow = Omit<BoardItem, ItemFields> & { item: Pick<BoardItem, ItemFields> }
 
-export type TopicWithConfig = Topic & { config: TopicConfig }
+/** feed_key: random part of the public feed addresses; null when the feeds are off. */
+export type TopicWithConfig = Topic & { config: TopicConfig; feed_key: string | null }
 
 export type AddRssResult =
   | { status: 'created'; source: Source }
@@ -165,6 +166,11 @@ export const api = {
 
   topics: () => request<Topic[]>('/topics'),
   topic: (topicId: string) => request<TopicWithConfig>(`/topics/${topicId}`),
+  setFeed: (topicId: string, enabled: boolean, regenerate = false) =>
+    request<{ feed_key: string | null }>(
+      `/topics/${topicId}/feed`,
+      json('POST', { enabled, regenerate }),
+    ),
   updateConfig: (topicId: string, patch: Partial<TopicConfig>) =>
     request<TopicConfig>(`/topics/${topicId}/config`, json('PATCH', patch)),
 

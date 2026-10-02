@@ -5,6 +5,7 @@ import { ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BudgetSection from '../components/BudgetSection.vue'
 import DiffusionSettings from '../components/DiffusionSettings.vue'
+import FeedSettings from '../components/FeedSettings.vue'
 import NewsletterSettings from '../components/NewsletterSettings.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import TopicNav from '../components/TopicNav.vue'
@@ -186,6 +187,12 @@ const { mutate, isLoading } = useMutation({
 
   <DiffusionSettings v-if="topic" :topic-id="topicId" :config="topic.config" />
   <NewsletterSettings v-if="topic" :topic-id="topicId" :config="topic.config" />
+  <FeedSettings
+    v-if="topic"
+    :topic-id="topicId"
+    :config="topic.config"
+    :feed-key="topic.feed_key"
+  />
 
   <BudgetSection :topic-id="topicId" />
 </template>

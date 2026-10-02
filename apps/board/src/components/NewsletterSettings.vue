@@ -206,6 +206,10 @@ const { mutate, isLoading } = useMutation({
   gap: var(--space-4);
 }
 
+.lang-block legend::first-letter {
+  text-transform: uppercase;
+}
+
 textarea.field {
   width: 100%;
   resize: vertical;

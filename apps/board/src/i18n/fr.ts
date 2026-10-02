@@ -548,5 +548,30 @@ export default {
     newsletterIntroHint: 'Texte en haut de chaque newsletter. Facultatif.',
     noBrevo:
       'Ajoutez d’abord une clé Brevo dans Connexions pour choisir l’expéditeur et les listes.',
+    feed: 'Flux public',
+    feedHint:
+      'Flux RSS et JSON des éléments validés, avec leur résumé, un par langue. À brancher sur un lecteur de flux ou sur une page de veille (CheckFox, par exemple).',
+    feedOff: 'Les flux sont désactivés : aucune adresse publique.',
+    feedEnable: 'Activer les flux publics',
+    feedDisable: 'Désactiver les flux',
+    feedPrivacy:
+      'Toute personne qui connaît l’adresse peut lire le flux. Changer d’adresse coupe l’ancienne (comptez jusqu’à 15 minutes, le temps du cache).',
+    feedUrls: 'Adresses des flux',
+    feedUrl: '{format} en {lang}',
+    feedCopy: 'Copier',
+    feedCopyLabel: 'Copier l’adresse {format} en {lang}',
+    feedCopied: 'Adresse copiée.',
+    feedRegenerate: 'Changer d’adresse',
+    feedRegenerateTitle: 'Changer l’adresse des flux ?',
+    feedRegenerateText:
+      'Les anciennes adresses cesseront de fonctionner. Il faudra donner les nouvelles aux lecteurs et aux sites qui les utilisent.',
+    feedEnabled: 'Flux activés.',
+    feedDisabled: 'Flux désactivés : les adresses ne fonctionnent plus.',
+    feedRegenerated: 'Nouvelle adresse créée : les anciennes ne fonctionnent plus.',
+    feedTitle: 'Titre du flux en {lang}',
+    feedTitleHint: 'Laissé vide, le nom du thème est utilisé.',
+    feedDescription: 'Description du flux en {lang}',
+    feedSiteUrl: 'Page qui présente la veille',
+    feedSiteUrlHint: 'Facultatif. Adresse complète, par exemple https://checkfox.eu/veille.',
   },
 }
