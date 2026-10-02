@@ -1,4 +1,4 @@
-import { parseErrorCode, PROVIDERS, type Provider } from '@pann/shared'
+import { DRAFT_CHANNELS, LANGS, parseErrorCode, PROVIDERS, type Provider } from '@pann/shared'
 
 type Translate = (key: string, params?: Record<string, unknown>) => string
 
@@ -18,10 +18,21 @@ export function describeError(value: string, t: Translate): DescribedError {
   const provider = (PROVIDERS as readonly string[]).includes(parsed.detail ?? '')
     ? (parsed.detail as Provider)
     : undefined
-  const text = t(`errors.${parsed.code}`, {
+  // Diffusion errors carry "channel" or "channel/lang".
+  const [channel, lang] = (parsed.detail ?? '').split('/')
+  const params = {
     detail: parsed.detail,
     provider: provider ? t(`connections.providers.${provider}.name`) : parsed.detail,
-  })
+    channel: (DRAFT_CHANNELS as readonly string[]).includes(channel ?? '')
+      ? t(`draft.channels.${channel}`)
+      : channel,
+    lang: (LANGS as readonly string[]).includes(lang ?? '') ? t(`draft.langs.${lang}`) : lang,
+  }
+  let key = `errors.${parsed.code}`
+  if (parsed.code === 'provider_error' && provider) key = 'errors.providerErrorNamed'
+  if (parsed.code === 'channel_not_configured' && !parsed.detail) key = 'errors.noChannel'
+  const text = t(key, params)
+  if (parsed.code === 'account_disconnected') return { text, provider: 'zernio' }
   const fixable = ['missing_credential', 'invalid_credential', 'rate_limited'].includes(parsed.code)
   return { text, provider: fixable ? provider : undefined }
 }

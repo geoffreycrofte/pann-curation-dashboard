@@ -5,6 +5,9 @@ import { supabaseCollectStore } from '../collect/store'
 import { claudeDraftModel } from '../draft/model'
 import { supabaseDraftStore } from '../draft/store'
 import { draft } from '../draft/draft'
+import { publishWithZernio, publishToMastodon } from '../publish/networks'
+import { publish } from '../publish/publish'
+import { refreshZernioAccounts, supabasePublishStore } from '../publish/store'
 import { claudeTriageModel } from '../triage/model'
 import { supabaseTriageStore } from '../triage/store'
 import { triage } from '../triage/triage'
@@ -16,7 +19,13 @@ import { jobClient } from './client'
  * waitUntil after a response, which is cut after 30 seconds.
  */
 export type JobMessage =
-  { type: 'collect-source'; sourceId: string } | { type: 'draft'; topicId: string; itemId: string }
+  | { type: 'collect-source'; sourceId: string }
+  | { type: 'draft'; topicId: string; itemId: string }
+  /** Publish what is due now (after "publish now", or a retry). */
+  | { type: 'publish' }
+  | { type: 'refresh-zernio-accounts'; workspaceId: string }
+
+export const networks = { zernio: publishWithZernio, mastodon: publishToMastodon }
 
 export async function runJob(message: JobMessage, env: Env): Promise<void> {
   const db = jobClient(env)
@@ -53,6 +62,15 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
         limit: 1,
       })
       console.log(JSON.stringify({ job: 'draft', item: message.itemId, report }))
+      return
+    }
+    case 'publish': {
+      const report = await publish({ store: supabasePublishStore(db), networks })
+      console.log(JSON.stringify({ job: 'publish-now', report }))
+      return
+    }
+    case 'refresh-zernio-accounts': {
+      await refreshZernioAccounts(db, message.workspaceId)
       return
     }
   }

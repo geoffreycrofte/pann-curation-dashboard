@@ -38,6 +38,8 @@ export default {
     security:
       'Les clés sont chiffrées dans la base de données (Supabase Vault). Pann ne les réaffiche jamais : seuls les 4 derniers caractères restent visibles.',
     ownerOnly: 'Seul le propriétaire du workspace peut ajouter, remplacer ou supprimer une clé.',
+    groupCollect: 'Collecte et IA',
+    groupDiffusion: 'Diffusion sur les réseaux',
     status: {
       none: 'Non configuré',
       ok: 'Clé vérifiée',
@@ -49,6 +51,7 @@ export default {
       required: 'Indispensable',
       source: 'Nécessaire pour certaines sources',
       optional: 'Facultatif, recommandé',
+      diffusion: 'Nécessaire pour publier sur les réseaux',
     },
     howTo: 'Où trouver cette clé ?',
     keyLabel: 'Clé {provider}',
@@ -61,12 +64,23 @@ export default {
     confirmText: 'Les sources qui en dépendent ne pourront plus être collectées.',
     saved: 'Clé {provider} enregistrée. {status}.',
     removed: 'Clé {provider} supprimée.',
+    instanceLabel: 'Adresse de votre instance Mastodon',
+    instanceHint: 'Par exemple mastodon.social ou piaille.fr.',
+    accountsTitle: 'Comptes connectés dans Zernio',
+    noAccounts: 'Aucun compte LinkedIn ou Bluesky connecté dans Zernio pour l’instant.',
+    inactive: 'inactif',
+    accountLine: '{network} : {name}',
+    refreshAccounts: 'Actualiser la liste des comptes',
+    refreshRequested: 'Actualisation demandée : la liste se met à jour dans quelques secondes.',
+    mastodonAccount: 'Compte : {acct}',
+    mastodonLimit: 'Longueur maximale d’un post sur cette instance : {count} caractères.',
     detail: {
       no_free_check:
         'Ce service ne propose pas de vérification gratuite : la clé sera vérifiée à la première collecte.',
       provider_unreachable:
         'Le service ne répondait pas : la clé sera vérifiée à la première utilisation.',
       rejected_during_collection: 'La clé a été refusée lors de la dernière collecte.',
+      rejected_during_publication: 'La clé a été refusée lors de la dernière publication.',
     },
     providers: {
       anthropic: {
@@ -107,6 +121,34 @@ export default {
         cost: 'Gratuit. Sans jeton, GitHub limite fortement le nombre de recherches et la collecte échoue vite.',
         link: 'Guide officiel GitHub : gérer ses jetons d’accès',
       },
+      zernio: {
+        name: 'Zernio',
+        purpose:
+          'Publication sur LinkedIn et Bluesky. Vos comptes se connectent dans Zernio, Pann publie à travers lui.',
+        steps: [
+          'Créez un compte sur zernio.com.',
+          'Dans Zernio, connectez vos comptes LinkedIn et Bluesky.',
+          'Ouvrez la page « API keys » du tableau de bord, puis cliquez sur « Create API key ».',
+          'Copiez la clé (elle commence par sk_) : elle ne s’affiche qu’une seule fois.',
+          'Après l’enregistrement, choisissez dans les réglages de chaque thème quel compte publie quelle langue.',
+        ],
+        cost: 'Selon l’abonnement Zernio. Pann ne publie que les posts que vous avez programmés.',
+        link: 'Ouvrir la page des clés Zernio',
+      },
+      mastodon: {
+        name: 'Mastodon',
+        purpose:
+          'Publication sur Mastodon, directement sur votre instance, avec la langue de chaque post.',
+        steps: [
+          'Sur votre instance Mastodon, ouvrez Préférences, puis Développement.',
+          'Cliquez sur « Nouvelle application » et donnez-lui un nom, par exemple « Pann ».',
+          'Dans les autorisations, ne cochez que read:accounts et write:statuses, puis enregistrez.',
+          'Ouvrez l’application créée et copiez « Votre jeton d’accès ».',
+          'Collez ici le jeton et l’adresse de votre instance.',
+        ],
+        cost: 'Gratuit.',
+        link: 'Documentation Mastodon : jetons d’accès',
+      },
     },
   },
   errors: {
@@ -135,6 +177,18 @@ export default {
     feed_exists: 'Ce flux est déjà une source de ce thème.',
     owner_only: 'Seul le propriétaire du workspace peut gérer les clés.',
     fixInConnections: 'Configurer dans Connexions',
+    providerErrorNamed: 'Le service {provider} n’a pas pu répondre. Nouvel essai automatique.',
+    account_disconnected: 'Le compte {channel} doit être reconnecté dans Zernio.',
+    post_rejected: '{channel} a refusé ce post. Modifiez-le, puis programmez-le de nouveau.',
+    post_too_long: 'Le post {channel} en {lang} est trop long, lien compris. Raccourcissez-le.',
+    channel_not_configured:
+      'Aucun compte de publication pour {channel} en {lang}. Choisissez-en un dans les réglages du thème.',
+    noChannel:
+      'Aucun compte de publication n’est réglé pour ce thème. Choisissez vos comptes dans les réglages du thème.',
+    no_slot:
+      'Aucun créneau de publication : le nombre de posts par jour est à 0 dans les réglages.',
+    slot_taken: 'Ce créneau vient d’être pris. Réessayez.',
+    nothing_to_schedule: 'Aucun post à programmer pour cet élément.',
   },
   draft: {
     statusWithError: '{status} : {error}',
@@ -174,11 +228,50 @@ export default {
     empty: 'Aucun texte rédigé pour l’instant.',
     model: 'Rédigé par {model}',
   },
+  diffusion: {
+    title: 'Diffusion',
+    intro:
+      'Un post par langue, publié sur le compte choisi pour chaque réseau. Le lien vers la source est ajouté à la fin de chaque post.',
+    notReady: 'La diffusion est possible une fois l’élément validé et rédigé.',
+    noAccount: 'Aucun compte de publication n’est réglé pour ce thème.',
+    configure: 'Choisir les comptes dans les réglages',
+    scheduledFor: 'Programmé le {date}',
+    schedule: 'Programmer au prochain créneau',
+    publishNow: 'Publier maintenant',
+    unschedule: 'Retirer de la file',
+    retry: 'Programmer de nouveau les posts en échec',
+    confirmNowTitle: 'Publier maintenant ?',
+    confirmNowText:
+      'Les posts partent tout de suite sur les comptes choisis. Une fois publié, un post ne peut pas être retiré depuis Pann.',
+    scheduled: 'Programmé le {date}.',
+    unscheduled: 'Retiré de la file : les posts redeviennent des brouillons.',
+    publishing: 'Publication demandée : le statut se met à jour dans quelques instants.',
+    postStatus: { draft: 'Brouillon', scheduled: 'Programmé', sent: 'Publié', failed: 'Échec' },
+    claimed: 'Publication en cours',
+    noAccountFor: 'Aucun compte pour ce réseau et cette langue : ce post ne sera pas publié.',
+    sentOn: 'Publié le {date}',
+    view: 'Voir le post',
+    viewLabel: 'Voir le post {channel} en {lang}',
+    lengthWithLink: '{count} caractères sur {limit}, lien compris',
+    queueTitle: 'Diffusion',
+    queueHeading: 'Diffusion : {topic}',
+    queueSlots: 'Créneaux : {slots} ({timezone}).',
+    queuePaused:
+      'File en pause : aucun post par jour. Les éléments peuvent toujours être publiés tout de suite.',
+    queueHint: 'Les éléments validés et rédigés se programment depuis leur fiche.',
+    upcoming: 'À venir',
+    recent: 'Publiés ces 14 derniers jours',
+    emptyUpcoming: 'Rien de programmé.',
+    emptyRecent: 'Rien de publié ces 14 derniers jours.',
+    postsLabel: 'Posts de « {title} »',
+    postLine: '{channel} en {lang} : {status}',
+  },
   topicNav: {
     label: 'Sections du thème',
     board: 'Tri',
     sources: 'Sources',
     settings: 'Réglages',
+    diffusion: 'Diffusion',
   },
   board: {
     openDetail: 'Fiche et rédaction',
@@ -200,6 +293,7 @@ export default {
     manual: 'Ajouté à la main',
     actions: 'Actions pour {title}',
     statusChanged: '« {title} » : {status}',
+    scheduledFor: 'Programmé le {date}',
   },
   addItem: {
     toggle: 'Ajouter un lien',
@@ -344,5 +438,24 @@ export default {
     collectionHint:
       "S'applique aux sources qui n'ont pas leur propre fréquence. Les sources sans type de contenu utilisent la valeur « Autres ».",
     other: 'Autres',
+    diffusion: 'Diffusion sur les réseaux',
+    diffusionHint:
+      'Un élément par créneau. Chaque post part dans sa langue, sur le compte choisi : jamais de post bilingue.',
+    postsPerDay: 'Posts par jour',
+    postsPerDayHint:
+      '0 met la file en pause. Les premiers créneaux, dans l’ordre des heures, sont utilisés.',
+    slots: 'Créneaux de publication',
+    slotsHint: 'Heures au format 24 h, séparées par des virgules. Exemple : 09:00, 16:00.',
+    slotsInvalid: 'Créneaux invalides : utilisez le format HH:MM, séparés par des virgules.',
+    timezone: 'Fuseau horaire',
+    accounts: 'Comptes de publication',
+    accountsHint:
+      'Cochez les langues que publie chaque compte. Un seul compte par réseau et par langue.',
+    noAccounts:
+      'Aucun compte disponible. Ajoutez une clé Zernio (LinkedIn, Bluesky) ou Mastodon dans Connexions.',
+    accountLangs: 'Langues publiées par {account}',
+    accountConflict: 'Deux comptes publient {channel} en {lang} : n’en gardez qu’un.',
+    accountMissing:
+      'Compte introuvable dans Zernio : {account}. Actualisez la liste dans Connexions.',
   },
 }

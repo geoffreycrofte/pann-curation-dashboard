@@ -1,11 +1,31 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { CredentialStatus, Provider } from '@pann/shared'
-import { USER_AGENT } from './fetch-text'
+import type { CredentialMeta, CredentialStatus, Provider } from '@pann/shared'
+import { checkMastodon, listZernioAccounts } from '../publish/networks'
+import { PRIVATE_HOST, USER_AGENT } from './fetch-text'
 
 export interface CredentialCheck {
   status: CredentialStatus
   /** Why it is not "ok": invalid_key, provider_unreachable, no_free_check. */
   detail: string | null
+  /** Not secret, stored with the key: Zernio accounts, Mastodon account. */
+  meta?: CredentialMeta
+}
+
+/**
+ * Base URL of a Mastodon instance typed by the user ("mastodon.social", a profile
+ * URL…). Public https hosts only. Null when it is not usable.
+ */
+export function mastodonInstance(input: string): string | null {
+  try {
+    const url = new URL(
+      /^https?:\/\//i.test(input.trim()) ? input.trim() : `https://${input.trim()}`,
+    )
+    if (url.protocol !== 'https:' || PRIVATE_HOST.test(url.hostname) || !url.hostname.includes('.'))
+      return null
+    return url.origin
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -15,8 +35,38 @@ export interface CredentialCheck {
 export async function checkCredential(
   provider: Provider,
   secret: string,
+  options: { instance?: string } = {},
 ): Promise<CredentialCheck> {
   try {
+    if (provider === 'zernio') {
+      const result = await listZernioAccounts(secret)
+      if (result.ok)
+        return {
+          status: 'ok',
+          detail: null,
+          meta: { accounts: result.accounts, refreshed_at: new Date().toISOString() },
+        }
+      return result.invalid
+        ? { status: 'invalid', detail: 'invalid_key' }
+        : { status: 'unchecked', detail: 'provider_unreachable', meta: { accounts: [] } }
+    }
+    if (provider === 'mastodon') {
+      const instance = options.instance ?? ''
+      const result = await checkMastodon({ instance, token: secret })
+      if (result.ok)
+        return {
+          status: 'ok',
+          detail: null,
+          meta: {
+            instance,
+            acct: result.acct,
+            ...(result.max_characters ? { max_characters: result.max_characters } : {}),
+          },
+        }
+      return result.invalid
+        ? { status: 'invalid', detail: 'invalid_key' }
+        : { status: 'unchecked', detail: 'provider_unreachable', meta: { instance } }
+    }
     if (provider === 'anthropic') {
       const client = new Anthropic({ apiKey: secret, maxRetries: 0, timeout: 10_000 })
       await client.models.list({ limit: 1 })

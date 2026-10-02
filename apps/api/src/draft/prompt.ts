@@ -1,8 +1,8 @@
-import { POST_LIMITS, SOURCE_NATURES_LIST, type TopicConfig } from '@pann/shared'
+import { bodyLimit, DRAFT_CHANNELS, SOURCE_NATURES_LIST, type TopicConfig } from '@pann/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes. Stored with each summary (summaries.prompt_version). */
-export const DRAFT_PROMPT_VERSION = 'draft-v2'
+export const DRAFT_PROMPT_VERSION = 'draft-v3'
 
 /** Characters of the source sent for drafting. */
 export const DRAFT_CONTENT_CHARS = 24_000
@@ -53,8 +53,9 @@ For one source item, you produce a summary in French, a summary in English, a sh
 - French and English are each written natively, not as a word-for-word translation of the other.
 
 # Posts
-- Each post presents the item and why it matters. Do not include the link: it is added separately.
-- Respect the length limits, counting every character: LinkedIn ${POST_LIMITS.linkedin}, Bluesky ${POST_LIMITS.bluesky}, Mastodon ${POST_LIMITS.mastodon}.${section('Topic rules', editorial_rules)}${section('Style rules', style_rules)}${section('Post rules', post_rules)}`
+- Each post presents the item and why it matters. Do not include the link: it is appended after the text, separated by a blank line.
+- One post per language: the French post is entirely in French, the English post entirely in English.
+- Respect the length limits given with the item for the text of each post, counting every character (they already leave room for the link).${section('Topic rules', editorial_rules)}${section('Style rules', style_rules)}${section('Post rules', post_rules)}`
 }
 
 export interface DraftSource {
@@ -71,6 +72,9 @@ export function draftUserMessage(item: DraftSource): string {
     `URL: ${item.canonical_url}`,
     item.published_at ? `Published: ${item.published_at.slice(0, 10)}` : null,
     item.source_lang ? `Source language: ${item.source_lang}` : null,
+    `Maximum length of the text of each post: ${DRAFT_CHANNELS.map(
+      (channel) => `${channel} ${bodyLimit(channel, item.canonical_url)}`,
+    ).join(', ')} characters.`,
     '',
     'Source content:',
     item.content.slice(0, DRAFT_CONTENT_CHARS).trim() || '(no content available)',

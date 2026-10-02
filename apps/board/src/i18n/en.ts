@@ -40,6 +40,8 @@ export default {
     security:
       'Keys are encrypted in the database (Supabase Vault). Pann never shows them again: only the last 4 characters stay visible.',
     ownerOnly: 'Only the workspace owner can add, replace or delete a key.',
+    groupCollect: 'Collection and AI',
+    groupDiffusion: 'Diffusion on social networks',
     status: {
       none: 'Not configured',
       ok: 'Key verified',
@@ -51,6 +53,7 @@ export default {
       required: 'Required',
       source: 'Needed by some sources',
       optional: 'Optional, recommended',
+      diffusion: 'Needed to publish on social networks',
     },
     howTo: 'Where do I find this key?',
     keyLabel: '{provider} key',
@@ -63,11 +66,22 @@ export default {
     confirmText: 'Sources that depend on it will no longer be collected.',
     saved: '{provider} key saved. {status}.',
     removed: '{provider} key deleted.',
+    instanceLabel: 'Address of your Mastodon instance',
+    instanceHint: 'For example mastodon.social or fosstodon.org.',
+    accountsTitle: 'Accounts connected in Zernio',
+    noAccounts: 'No LinkedIn or Bluesky account connected in Zernio yet.',
+    inactive: 'inactive',
+    accountLine: '{network}: {name}',
+    refreshAccounts: 'Refresh the list of accounts',
+    refreshRequested: 'Refresh requested: the list updates in a few seconds.',
+    mastodonAccount: 'Account: {acct}',
+    mastodonLimit: 'Maximum length of a post on this instance: {count} characters.',
     detail: {
       no_free_check:
         'This service has no free check: the key will be verified on the first collection.',
       provider_unreachable: 'The service did not answer: the key will be verified on first use.',
       rejected_during_collection: 'The key was rejected during the last collection.',
+      rejected_during_publication: 'The key was rejected during the last publication.',
     },
     providers: {
       anthropic: {
@@ -107,6 +121,34 @@ export default {
         cost: 'Free. Without a token, GitHub strongly limits searches and collection fails quickly.',
         link: 'GitHub guide: managing your access tokens',
       },
+      zernio: {
+        name: 'Zernio',
+        purpose:
+          'Publication on LinkedIn and Bluesky. Your accounts are connected in Zernio, and Pann publishes through it.',
+        steps: [
+          'Create an account on zernio.com.',
+          'In Zernio, connect your LinkedIn and Bluesky accounts.',
+          'Open the “API keys” page of the dashboard, then click “Create API key”.',
+          'Copy the key (it starts with sk_): it is shown only once.',
+          'Once saved, choose in the settings of each topic which account publishes which language.',
+        ],
+        cost: 'Depends on your Zernio plan. Pann only publishes the posts you scheduled.',
+        link: 'Open the Zernio keys page',
+      },
+      mastodon: {
+        name: 'Mastodon',
+        purpose:
+          'Publication on Mastodon, straight to your instance, with the language of each post.',
+        steps: [
+          'On your Mastodon instance, open Preferences, then Development.',
+          'Click “New application” and give it a name, for example “Pann”.',
+          'In the scopes, only tick read:accounts and write:statuses, then save.',
+          'Open the new application and copy “Your access token”.',
+          'Paste the token and the address of your instance here.',
+        ],
+        cost: 'Free.',
+        link: 'Mastodon documentation: access tokens',
+      },
     },
   },
   errors: {
@@ -134,6 +176,17 @@ export default {
     feed_exists: 'This feed is already a source of this topic.',
     owner_only: 'Only the workspace owner can manage keys.',
     fixInConnections: 'Set up in Connections',
+    providerErrorNamed: '{provider} did not respond. It will be retried automatically.',
+    account_disconnected: 'The {channel} account must be reconnected in Zernio.',
+    post_rejected: '{channel} refused this post. Edit it, then schedule it again.',
+    post_too_long: 'The {channel} post in {lang} is too long, link included. Shorten it.',
+    channel_not_configured:
+      'No publishing account for {channel} in {lang}. Choose one in the topic settings.',
+    noChannel:
+      'No publishing account is set for this topic. Choose your accounts in the topic settings.',
+    no_slot: 'No publishing slot: posts per day is set to 0 in the settings.',
+    slot_taken: 'This slot was just taken. Try again.',
+    nothing_to_schedule: 'No post to schedule for this item.',
   },
   draft: {
     statusWithError: '{status}: {error}',
@@ -173,11 +226,49 @@ export default {
     empty: 'Nothing drafted yet.',
     model: 'Written by {model}',
   },
+  diffusion: {
+    title: 'Diffusion',
+    intro:
+      'One post per language, published on the account chosen for each network. The link to the source is added at the end of each post.',
+    notReady: 'Diffusion is possible once the item is validated and drafted.',
+    noAccount: 'No publishing account is set for this topic.',
+    configure: 'Choose the accounts in the settings',
+    scheduledFor: 'Scheduled for {date}',
+    schedule: 'Schedule on the next slot',
+    publishNow: 'Publish now',
+    unschedule: 'Remove from the queue',
+    retry: 'Schedule the failed posts again',
+    confirmNowTitle: 'Publish now?',
+    confirmNowText:
+      'The posts go out right away on the chosen accounts. Once published, a post cannot be removed from Pann.',
+    scheduled: 'Scheduled for {date}.',
+    unscheduled: 'Removed from the queue: the posts are drafts again.',
+    publishing: 'Publication requested: the status updates in a few moments.',
+    postStatus: { draft: 'Draft', scheduled: 'Scheduled', sent: 'Published', failed: 'Failed' },
+    claimed: 'Being published',
+    noAccountFor: 'No account for this network and language: this post will not be published.',
+    sentOn: 'Published on {date}',
+    view: 'View the post',
+    viewLabel: 'View the {channel} post in {lang}',
+    lengthWithLink: '{count} of {limit} characters, link included',
+    queueTitle: 'Diffusion',
+    queueHeading: 'Diffusion: {topic}',
+    queueSlots: 'Slots: {slots} ({timezone}).',
+    queuePaused: 'Queue paused: no posts per day. Items can still be published right away.',
+    queueHint: 'Validated and drafted items are scheduled from their page.',
+    upcoming: 'Upcoming',
+    recent: 'Published in the last 14 days',
+    emptyUpcoming: 'Nothing scheduled.',
+    emptyRecent: 'Nothing published in the last 14 days.',
+    postsLabel: 'Posts of “{title}”',
+    postLine: '{channel} in {lang}: {status}',
+  },
   topicNav: {
     label: 'Topic sections',
     board: 'Sorting',
     sources: 'Sources',
     settings: 'Settings',
+    diffusion: 'Diffusion',
   },
   board: {
     openDetail: 'Details and drafts',
@@ -199,6 +290,7 @@ export default {
     manual: 'Added by hand',
     actions: 'Actions for {title}',
     statusChanged: '“{title}”: {status}',
+    scheduledFor: 'Scheduled for {date}',
   },
   addItem: {
     toggle: 'Add a link',
@@ -336,5 +428,22 @@ export default {
     collectionHint:
       'Applies to sources without their own frequency. Sources without a content type use the “Other” value.',
     other: 'Other',
+    diffusion: 'Diffusion on social networks',
+    diffusionHint:
+      'One item per slot. Each post goes out in its language, on the chosen account: never a bilingual post.',
+    postsPerDay: 'Posts per day',
+    postsPerDayHint: '0 pauses the queue. The first slots, in time order, are used.',
+    slots: 'Publishing slots',
+    slotsHint: 'Times in 24-hour format, separated by commas. Example: 09:00, 16:00.',
+    slotsInvalid: 'Invalid slots: use the HH:MM format, separated by commas.',
+    timezone: 'Time zone',
+    accounts: 'Publishing accounts',
+    accountsHint:
+      'Tick the languages each account publishes. One account per network and language.',
+    noAccounts:
+      'No account available. Add a Zernio key (LinkedIn, Bluesky) or a Mastodon key in Connections.',
+    accountLangs: 'Languages published by {account}',
+    accountConflict: 'Two accounts publish {channel} in {lang}: keep only one.',
+    accountMissing: 'Account not found in Zernio: {account}. Refresh the list in Connections.',
   },
 } satisfies typeof fr

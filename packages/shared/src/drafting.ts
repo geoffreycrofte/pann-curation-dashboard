@@ -43,6 +43,12 @@ export interface PostDraft {
   body: string
   status: 'draft' | 'scheduled' | 'sent' | 'failed'
   edited_by_human: boolean
+  scheduled_at: string | null
+  sent_at: string | null
+  published_url: string | null
+  last_error: string | null
+  /** Set while a job publishes the post: it can no longer be edited or unscheduled. */
+  claimed_at: string | null
 }
 
 /** Visible length of a post: counts grapheme clusters (emoji, accents) like Bluesky. */

@@ -1,10 +1,20 @@
 import { z } from 'zod'
-import { CHANNELS, DRAFT_MODES, LANGS } from './domain'
+import { DRAFT_MODES, LANGS } from './domain'
+import { DRAFT_CHANNELS } from './drafting'
 
 /** Interval bounds, in hours: 1 hour to 90 days. */
 export const MIN_INTERVAL_HOURS = 1
 export const MAX_INTERVAL_HOURS = 2160
 const intervalHours = z.number().int().min(MIN_INTERVAL_HOURS).max(MAX_INTERVAL_HOURS)
+
+function isTimeZone(value: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: value })
+    return true
+  } catch {
+    return false
+  }
+}
 
 /** HH:MM, 24-hour clock. */
 const timeSlot = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
@@ -60,9 +70,11 @@ export const topicConfigSchema = z.object({
     .prefault({}),
   schedule: z
     .object({
-      timezone: z.string().default('Europe/Luxembourg'),
+      timezone: z.string().refine(isTimeZone).default('Europe/Luxembourg'),
+      /** 0 pauses the queue (items can still be published "now"). */
       posts_per_day: z.number().int().min(0).max(10).default(2),
-      slots: z.array(timeSlot).default(['09:00', '16:00']),
+      /** Daily publication times, in `timezone`. One item per slot. */
+      slots: z.array(timeSlot).max(10).default(['09:00', '16:00']),
       digest: z
         .object({
           weekday: z.number().int().min(0).max(6).default(5),
@@ -71,14 +83,40 @@ export const topicConfigSchema = z.object({
         .prefault({}),
     })
     .prefault({}),
-  channels: z
-    .array(
-      z.object({
-        channel: z.enum(CHANNELS),
-        account_ref: z.string(),
-      }),
-    )
-    .default([]),
+  /**
+   * Where the posts of this topic go: one entry per account, with the languages it
+   * publishes (never a bilingual post: one post per language). LinkedIn and Bluesky
+   * accounts are Zernio account ids; Mastodon uses the workspace's Mastodon account.
+   */
+  channels: z.preprocess(
+    // Entries written by an older version (account_ref, no languages) are dropped.
+    (value) =>
+      Array.isArray(value)
+        ? value.filter((e) => typeof e === 'object' && e !== null && 'account_id' in e)
+        : value,
+    z
+      .array(
+        z.object({
+          channel: z.enum(DRAFT_CHANNELS),
+          account_id: z.string().min(1).max(200),
+          langs: z.array(z.enum(LANGS)).min(1),
+        }),
+      )
+      .refine(
+        (entries) => {
+          const seen = new Set<string>()
+          for (const entry of entries)
+            for (const lang of entry.langs) {
+              const key = `${entry.channel}/${lang}`
+              if (seen.has(key)) return false
+              seen.add(key)
+            }
+          return true
+        },
+        { message: 'One account per channel and language' },
+      )
+      .default([]),
+  ),
 })
 
 export type TopicConfig = z.infer<typeof topicConfigSchema>

@@ -5,13 +5,18 @@ import { claudeDraftModel } from '../draft/model'
 import { supabaseDraftStore } from '../draft/store'
 import { draft } from '../draft/draft'
 import type { Env } from '../env'
+import { publish } from '../publish/publish'
+import { supabasePublishStore } from '../publish/store'
 import { claudeTriageModel } from '../triage/model'
 import { supabaseTriageStore } from '../triage/store'
 import { triage } from '../triage/triage'
 import { jobClient } from './client'
+import { networks } from './queue'
 
 /** Must match wrangler.jsonc triggers.crons. */
 export const COLLECT_CRON = '7 * * * *'
+/** Slots are minutes apart at most: posts go out within 5 minutes of their time. */
+export const PUBLISH_CRON = '*/5 * * * *'
 
 /** Hourly: collect the due sources, triage what waits, catch up on pending drafts. */
 export async function runScheduled(controller: ScheduledController, env: Env): Promise<void> {
@@ -24,6 +29,12 @@ export async function runScheduled(controller: ScheduledController, env: Env): P
       console.log(JSON.stringify({ job: 'triage', report: triaged }))
       const drafted = await draft({ store: supabaseDraftStore(db), model: claudeDraftModel })
       console.log(JSON.stringify({ job: 'draft', report: drafted }))
+      return
+    }
+    case PUBLISH_CRON: {
+      const report = await publish({ store: supabasePublishStore(jobClient(env)), networks })
+      if (report.sent || report.failed || report.retried)
+        console.log(JSON.stringify({ job: 'publish', report }))
       return
     }
     default:

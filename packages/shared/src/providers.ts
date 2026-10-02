@@ -1,7 +1,7 @@
 import type { SourceType } from './domain'
 
 /** External services whose keys are set per workspace, from the board. */
-export const PROVIDERS = ['anthropic', 'exa', 'github'] as const
+export const PROVIDERS = ['anthropic', 'exa', 'github', 'zernio', 'mastodon'] as const
 export type Provider = (typeof PROVIDERS)[number]
 
 export const CREDENTIAL_STATUSES = ['unchecked', 'ok', 'invalid'] as const
@@ -15,11 +15,36 @@ export interface WorkspaceCredential {
   status_detail: string | null
   checked_at: string | null
   updated_at: string
+  /** Not secret: Zernio accounts, Mastodon instance and account. */
+  meta: CredentialMeta
+}
+
+/** Social accounts reachable through Zernio (only the channels Pann publishes to). */
+export interface ZernioAccount {
+  id: string
+  platform: 'linkedin' | 'bluesky'
+  username: string
+  active: boolean
+}
+
+export interface CredentialMeta {
+  /** zernio: accounts listed when the key was checked or refreshed. */
+  accounts?: ZernioAccount[]
+  /** mastodon: instance base URL (https://mastodon.social). */
+  instance?: string
+  /** mastodon: account handle (user@instance). */
+  acct?: string
+  /** mastodon: maximum length of a post on this instance. */
+  max_characters?: number
+  refreshed_at?: string
 }
 
 export interface ProviderInfo {
-  /** required: nothing works without it; source: needed by the sources of that type; optional: improves things. */
-  need: 'required' | 'source' | 'optional'
+  /**
+   * required: nothing works without it; source: needed by the sources of that type;
+   * optional: improves things; diffusion: needed to publish on social networks.
+   */
+  need: 'required' | 'source' | 'optional' | 'diffusion'
   /** Source type that needs this key, if any. */
   sourceType?: SourceType
   /** Where the key is created (checked 2026-10-01). Help text is in the board translations. */
@@ -34,6 +59,9 @@ export const PROVIDER_INFO: Record<Provider, ProviderInfo> = {
     sourceType: 'github',
     url: 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens',
   },
+  // Checked 2026-10-02 (docs.zernio.com, docs.joinmastodon.org).
+  zernio: { need: 'diffusion', url: 'https://zernio.com/dashboard/api-keys' },
+  mastodon: { need: 'diffusion', url: 'https://docs.joinmastodon.org/client/token/' },
 }
 
 /** Provider whose key a source type needs to run (GitHub works without, but is rate limited). */
@@ -64,6 +92,13 @@ export const ERROR_CODES = [
   'refusal',
   'invalid_output',
   'provider_error',
+  'account_disconnected', // :channel (reconnect the account in Zernio)
+  'post_rejected', // :channel (content refused by the network)
+  'post_too_long', // :channel/lang
+  'channel_not_configured', // :channel/lang (no account set in the topic settings)
+  'no_slot', // no daily slot (posts per day at 0)
+  'slot_taken',
+  'nothing_to_schedule',
   'unexpected',
 ] as const
 export type ErrorCode = (typeof ERROR_CODES)[number]

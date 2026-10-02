@@ -22,9 +22,10 @@
 
   "observability": { "enabled": true },
 
-  // Hourly; each run only collects the sources that are due (isSourceDue).
-  // Keep in sync with COLLECT_CRON in src/jobs/scheduled.ts.
-  "triggers": { "crons": ["7 * * * *"] },
+  // Hourly collection; each run only collects the sources that are due (isSourceDue).
+  // Every 5 minutes: publication of the posts whose slot has come.
+  // Keep in sync with COLLECT_CRON and PUBLISH_CRON in src/jobs/scheduled.ts.
+  "triggers": { "crons": ["7 * * * *", "*/5 * * * *"] },
 
   // Background jobs (jobs/queue.ts). Simulated locally by "wrangler dev"; in production,
   // create them once: wrangler queues create pann-jobs && wrangler queues create pann-jobs-dlq

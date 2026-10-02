@@ -6,6 +6,7 @@ const { t } = useI18n()
 
 const links = [
   { name: 'board', label: 'topicNav.board' },
+  { name: 'diffusion', label: 'topicNav.diffusion' },
   { name: 'sources', label: 'topicNav.sources' },
   { name: 'settings', label: 'topicNav.settings' },
 ] as const

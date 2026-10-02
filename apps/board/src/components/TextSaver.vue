@@ -11,6 +11,11 @@ const props = defineProps<{
   limit?: number
   limitName?: string
   edited?: boolean
+  /** Counts the published length (e.g. post plus link); defaults to the text alone. */
+  measure?: (text: string) => number
+  /** Translation key of the length line ({count}, {limit}). */
+  lengthKey?: string
+  readonly?: boolean
   save: (text: string) => Promise<unknown>
 }>()
 const { t } = useI18n()
@@ -24,7 +29,7 @@ watch(
   },
 )
 const dirty = computed(() => text.value !== props.value)
-const length = computed(() => postLength(text.value))
+const length = computed(() => (props.measure ?? postLength)(text.value))
 const over = computed(() => (props.limit ? length.value - props.limit : 0))
 
 const saving = ref(false)
@@ -54,17 +59,18 @@ async function submit() {
       class="field"
       :lang="lang"
       rows="5"
+      :readonly="readonly"
       :aria-describedby="`${id}-meta`"
       :aria-invalid="over > 0 || undefined"
     ></textarea>
     <p :id="`${id}-meta`" class="hint">
-      <span v-if="limit">{{ t('draft.length', { count: length, limit }) }}</span>
+      <span v-if="limit">{{ t(lengthKey ?? 'draft.length', { count: length, limit }) }}</span>
       <span v-if="over > 0" class="error">
         {{ t('draft.tooLong', { over, channel: limitName }) }}</span
       >
       <span v-if="edited"> {{ t('draft.edited') }}</span>
     </p>
-    <div class="row">
+    <div v-if="!readonly" class="row">
       <button type="submit" class="button" :disabled="saving || !dirty">
         {{ t('draft.save') }}
       </button>

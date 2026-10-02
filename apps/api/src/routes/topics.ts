@@ -33,8 +33,11 @@ const topicPatch = z.object({ monthly_budget_usd: z.number().min(0).max(10_000) 
 const textBody = (max: number) => z.object({ text: z.string().trim().min(1).max(max) })
 
 const DETAIL_COLUMNS =
-  'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, drafted_at, status, validated_at, ' +
+  'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, drafted_at, status, validated_at, publish_at, ' +
   'item:items (canonical_url, title, source_lang, kind, origin, published_at, discovered_at)'
+
+const POST_COLUMNS =
+  'id, channel, lang, body, status, edited_by_human, scheduled_at, sent_at, published_url, last_error, claimed_at'
 
 const manualItemBody = z.object({
   url: z.url({ protocol: /^https?$/ }),
@@ -124,7 +127,7 @@ export const topics = new Hono<AppEnv>()
     const { data, error } = await c.var.db
       .from('item_topics')
       .select(
-        'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, ' +
+        'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, publish_at, ' +
           'item:items (canonical_url, title, source_lang, kind, origin, published_at, discovered_at)',
       )
       .eq('topic_id', c.req.param('topicId'))
@@ -184,7 +187,7 @@ export const topics = new Hono<AppEnv>()
         .eq('item_id', itemId),
       c.var.db
         .from('posts')
-        .select('id, channel, lang, body, status, edited_by_human')
+        .select(POST_COLUMNS)
         .eq('item_id', itemId)
         .eq('topic_id', topicId)
         .order('channel'),
@@ -225,6 +228,7 @@ export const topics = new Hono<AppEnv>()
     return c.json(data)
   })
 
+  /** Drafts and scheduled posts can be edited until a job starts publishing them. */
   .patch('/:topicId/posts/:postId', async (c) => {
     const { text } = await parseJson(textBody(3000), c.req.raw)
     const { data, error } = await c.var.db
@@ -232,8 +236,9 @@ export const topics = new Hono<AppEnv>()
       .update({ body: text, edited_by_human: true, updated_at: new Date().toISOString() })
       .eq('topic_id', c.req.param('topicId'))
       .eq('id', c.req.param('postId'))
-      .eq('status', 'draft')
-      .select('id, channel, lang, body, status, edited_by_human')
+      .in('status', ['draft', 'scheduled', 'failed'])
+      .is('claimed_at', null)
+      .select(POST_COLUMNS)
       .maybeSingle()
     if (error) throw error
     if (!data) throw new HTTPException(404, { message: 'Draft not found' })

@@ -92,6 +92,24 @@ export type ItemDetail = Omit<BoardItem, ItemFields> & {
   posts: PostDraft[]
 }
 
+export interface QueueItem {
+  item_id: string
+  status: ItemTopicStatus
+  publish_at: string
+  item: { title: string; canonical_url: string; source_lang: string | null }
+  posts: Pick<
+    PostDraft,
+    | 'id'
+    | 'channel'
+    | 'lang'
+    | 'status'
+    | 'scheduled_at'
+    | 'sent_at'
+    | 'published_url'
+    | 'last_error'
+  >[]
+}
+
 export interface TopicUsage {
   budget_usd: number
   month_cost_usd: number
@@ -102,11 +120,13 @@ export const api = {
   me: () => request<Me>('/me'),
   credentials: (workspaceId: string) =>
     request<WorkspaceCredential[]>(`/workspaces/${workspaceId}/credentials`),
-  setCredential: (workspaceId: string, provider: Provider, secret: string) =>
+  setCredential: (workspaceId: string, provider: Provider, secret: string, instance?: string) =>
     request<WorkspaceCredential>(
       `/workspaces/${workspaceId}/credentials/${provider}`,
-      json('PUT', { secret }),
+      json('PUT', { secret, instance }),
     ),
+  refreshZernioAccounts: (workspaceId: string) =>
+    request<void>(`/workspaces/${workspaceId}/credentials/zernio/refresh`, { method: 'POST' }),
   deleteCredential: (workspaceId: string, provider: Provider) =>
     request<void>(`/workspaces/${workspaceId}/credentials/${provider}`, { method: 'DELETE' }),
 
@@ -137,6 +157,14 @@ export const api = {
     ),
   updatePost: (topicId: string, postId: string, text: string) =>
     request<PostDraft>(`/topics/${topicId}/posts/${postId}`, json('PATCH', { text })),
+  schedule: (topicId: string, itemId: string, when: 'next_slot' | 'now') =>
+    request<{ publish_at: string }>(
+      `/topics/${topicId}/items/${itemId}/schedule`,
+      json('POST', { when }),
+    ),
+  unschedule: (topicId: string, itemId: string) =>
+    request<void>(`/topics/${topicId}/items/${itemId}/schedule`, { method: 'DELETE' }),
+  queue: (topicId: string) => request<QueueItem[]>(`/topics/${topicId}/queue`),
   usage: (topicId: string) => request<TopicUsage>(`/topics/${topicId}/usage`),
   updateTopic: (topicId: string, patch: { monthly_budget_usd: number }) =>
     request<Topic>(`/topics/${topicId}`, json('PATCH', patch)),

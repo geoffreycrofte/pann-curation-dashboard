@@ -13,7 +13,7 @@ export class FetchTextError extends Error {
   }
 }
 
-const PRIVATE_HOST =
+export const PRIVATE_HOST =
   /^(localhost|.*\.local|.*\.internal|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|169\.254\.\d+\.\d+|0\.0\.0\.0|\[?::1\]?|\[?f[cd][0-9a-f]*:.*)$/i
 
 export interface FetchedText {

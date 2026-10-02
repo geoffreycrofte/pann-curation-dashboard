@@ -129,3 +129,19 @@ Le premier logo (batée en perspective, pépite cubique) évoquait une poêle av
 ## 2026-10-02 : logo, batée vue de dessus et favicon pépite
 
 Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D) pour le logo et l'icône d'app, la **pépite seule** (piste A) pour le favicon. Remplace le monogramme P. Ajout d'un manifeste d'app web et des icônes d'écran d'accueil (iOS, Android, maskable).
+
+## 2026-10-02 : diffusion sur les réseaux (étape 6)
+
+**File d'attente tenue par Pann, publication immédiate chez les réseaux.** Chaque élément validé prend un créneau du thème (`schedule.slots`, `posts_per_day`, `timezone`) ; un index unique sur `item_topics (topic_id, publish_at)` garantit un seul élément par créneau. Un cron toutes les 5 minutes publie les posts dont l'heure est venue. Zernio sait aussi programmer, mais Mastodon passe par sa propre API : une seule file pour tous les réseaux reste plus simple, et les posts restent modifiables dans Pann jusqu'à leur départ.
+
+**Validation humaine des textes.** Valider un élément ne programme rien : la personne relit les posts, puis choisit « Programmer au prochain créneau » ou « Publier maintenant » (avec confirmation). Rien ne sort sans ce geste.
+
+**Comptes et langues.** `channels` devient une liste `{ channel, account_id, langs }` : chaque compte publie les langues cochées dans les réglages du thème, jamais de post bilingue. Un seul compte par réseau et par langue. LinkedIn et Bluesky : identifiant de compte Zernio (liste lue avec la clé et actualisable depuis Connexions, via un job). Mastodon : le compte de la clé Mastodon du workspace (jeton et adresse d'instance).
+
+**Lien et longueur.** Le lien vers la source est ajouté après le texte, séparé par une ligne vide. Les limites envoyées à l'IA tiennent compte du lien (prompt `draft-v3`), Mastodon compte chaque lien pour 23 caractères, et sa limite réelle vient de l'instance. Un post trop long, lien compris, bloque la programmation.
+
+**Fiabilité.** Les posts dus sont réservés par `claim_due_posts` (`for update skip locked`), puis repris après 10 minutes si le job s'arrête. Chaque envoi porte une clé d'idempotence (`pann-<post>-<essai>`) reconnue par Zernio (24 h) et Mastodon (1 h) : une réponse perdue ne crée pas de doublon. Erreurs passagères : 3 essais espacés ; clé refusée, compte à reconnecter ou post refusé : échec immédiat, affiché sur la fiche, puis « Programmer de nouveau ». Un élément passe en `published` quand tous ses posts sont partis ou en échec et qu'au moins un est publié.
+
+**Droits.** Les utilisateurs ne modifient plus que le texte d'un post (droits par colonne) ; programmation et retrait passent par `schedule_item` et `unschedule_item`, qui vérifient l'accès au thème. Un élément qui quitte `validated` sort de la file.
+
+**W Social** : toujours aucune API de publication documentée au 02/10/2026 (réseau sur AT Protocol, ouvert en bêta publique le 17/06/2026). Non branché.

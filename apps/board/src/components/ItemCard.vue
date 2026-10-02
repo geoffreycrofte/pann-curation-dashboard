@@ -79,6 +79,13 @@ const actions = computed(() =>
             })
           }}
         </li>
+        <li v-if="item.publish_at && Date.parse(item.publish_at) > Date.now()">
+          {{
+            t('board.scheduledFor', {
+              date: d(new Date(item.publish_at), { dateStyle: 'medium', timeStyle: 'short' }),
+            })
+          }}
+        </li>
         <li v-if="item.draft_status !== 'none'" :class="{ error: item.draft_error }">
           {{
             item.draft_error

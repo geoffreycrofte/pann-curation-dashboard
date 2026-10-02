@@ -35,6 +35,12 @@ export const router = createRouter({
       props: true,
     },
     {
+      path: '/t/:topicId/diffusion',
+      name: 'diffusion',
+      component: () => import('./views/QueueView.vue'),
+      props: true,
+    },
+    {
       path: '/t/:topicId/settings',
       name: 'settings',
       component: () => import('./views/SettingsView.vue'),

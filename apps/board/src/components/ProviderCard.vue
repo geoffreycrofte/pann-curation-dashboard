@@ -35,6 +35,7 @@ const steps = computed(() =>
 const status = computed(() => props.credential?.status ?? 'none')
 
 const secret = ref('')
+const instance = ref(props.credential?.meta.instance?.replace(/^https:\/\//, '') ?? '')
 const message = ref('')
 const isError = ref(false)
 
@@ -43,7 +44,13 @@ async function refresh() {
 }
 
 const { mutate: save, isLoading: saving } = useMutation({
-  mutation: () => api.setCredential(props.workspaceId, props.provider, secret.value),
+  mutation: () =>
+    api.setCredential(
+      props.workspaceId,
+      props.provider,
+      secret.value,
+      props.provider === 'mastodon' ? instance.value : undefined,
+    ),
   async onSuccess(credential) {
     secret.value = ''
     isError.value = false
@@ -56,6 +63,20 @@ const { mutate: save, isLoading: saving } = useMutation({
         status: t(`connections.status.${credential.status}`),
       }) + detail
     await refresh()
+  },
+  onError(err) {
+    isError.value = true
+    message.value = describeError(err.message, t).text
+  },
+})
+
+// The accounts are listed by a job: read them again a few seconds later.
+const { mutate: refreshAccounts, isLoading: refreshing } = useMutation({
+  mutation: () => api.refreshZernioAccounts(props.workspaceId),
+  onSuccess() {
+    isError.value = false
+    message.value = t('connections.refreshRequested')
+    setTimeout(refresh, 4000)
   },
   onError(err) {
     isError.value = true
@@ -80,7 +101,7 @@ const { mutate: remove } = useMutation({
 <template>
   <section class="card" :aria-labelledby="`${id}-name`">
     <header class="card-header">
-      <h2 :id="`${id}-name`">{{ name }}</h2>
+      <h3 :id="`${id}-name`">{{ name }}</h3>
       <p class="need">{{ t(`connections.need.${info.need}`) }}</p>
     </header>
 
@@ -93,6 +114,33 @@ const { mutate: remove } = useMutation({
     <p v-if="credential?.status_detail" class="hint">
       {{ t(`connections.detail.${credential.status_detail}`) }}
     </p>
+
+    <template v-if="provider === 'zernio' && credential">
+      <h4 :id="`${id}-accounts`" class="sub-title">{{ t('connections.accountsTitle') }}</h4>
+      <ul v-if="credential.meta.accounts?.length" :aria-labelledby="`${id}-accounts`">
+        <li v-for="account in credential.meta.accounts" :key="account.id">
+          {{
+            t('connections.accountLine', {
+              network: t(`draft.channels.${account.platform}`),
+              name: account.username,
+            })
+          }}
+          <span v-if="!account.active">({{ t('connections.inactive') }})</span>
+        </li>
+      </ul>
+      <p v-else>{{ t('connections.noAccounts') }}</p>
+      <div>
+        <button type="button" class="button" :disabled="refreshing" @click="refreshAccounts()">
+          {{ t('connections.refreshAccounts') }}
+        </button>
+      </div>
+    </template>
+    <template v-if="provider === 'mastodon' && credential?.meta.acct">
+      <p>{{ t('connections.mastodonAccount', { acct: credential.meta.acct }) }}</p>
+      <p v-if="credential.meta.max_characters" class="hint">
+        {{ t('connections.mastodonLimit', { count: credential.meta.max_characters }) }}
+      </p>
+    </template>
 
     <details class="how-to">
       <summary>{{ t('connections.howTo') }}</summary>
@@ -126,6 +174,21 @@ const { mutate: remove } = useMutation({
           required
           minlength="8"
         />
+      </div>
+      <div v-if="provider === 'mastodon'" class="form-row">
+        <label :for="`${id}-instance`">{{ t('connections.instanceLabel') }}</label>
+        <input
+          :id="`${id}-instance`"
+          v-model="instance"
+          class="field"
+          type="text"
+          inputmode="url"
+          autocomplete="off"
+          spellcheck="false"
+          required
+          :aria-describedby="`${id}-instance-hint`"
+        />
+        <p :id="`${id}-instance-hint`" class="hint">{{ t('connections.instanceHint') }}</p>
       </div>
       <div class="actions">
         <button type="submit" class="button" data-variant="primary" :disabled="saving">
@@ -182,9 +245,19 @@ const { mutate: remove } = useMutation({
   gap: var(--space-2);
 }
 
-.card-header h2 {
+.card-header h3 {
   margin: 0;
   font-size: 1.25rem;
+}
+
+.sub-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.card ul {
+  margin: 0;
+  padding-inline-start: var(--space-6);
 }
 
 .need {

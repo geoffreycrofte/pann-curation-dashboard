@@ -76,6 +76,8 @@ export interface BoardItem {
   draft_error: string | null
   status: ItemTopicStatus
   validated_at: string | null
+  /** Slot of the item in the diffusion queue. */
+  publish_at: string | null
 }
 
 export interface Source {

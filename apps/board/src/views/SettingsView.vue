@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BudgetSection from '../components/BudgetSection.vue'
+import DiffusionSettings from '../components/DiffusionSettings.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
@@ -181,6 +182,8 @@ const { mutate, isLoading } = useMutation({
     </div>
   </form>
   <p role="status" :class="{ error: isError }">{{ message }}</p>
+
+  <DiffusionSettings v-if="topic" :topic-id="topicId" :config="topic.config" />
 
   <BudgetSection :topic-id="topicId" />
 </template>
