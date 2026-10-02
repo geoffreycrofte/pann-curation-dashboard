@@ -121,3 +121,7 @@ Prompts passés en `draft-v2` et `triage-v2`. Le thème accessibilité est prér
 Logo (batée inclinée et pépite), palette noir d'encre et or, typographies Bricolage Grotesque (titres) et Plus Jakarta Sans (texte), hébergées avec l'app plutôt que chargées depuis Google Fonts (aucune donnée envoyée à un tiers). Détails : `docs/brand/README.md`.
 
 Mise en page : barre latérale noire (thèmes, Connexions, langue), qui devient un menu repliable sur petit écran ; cartes arrondies ; tuile de score sur chaque élément ; contrôles segmentés pour les sections d'un thème ; sources en cartes plutôt qu'en tableau (sept colonnes illisibles à cette largeur) ; résumés et posts FR/EN côte à côte sur grand écran. Thèmes clair et sombre ; 54 couples de contraste vérifiés (27 combinaisons en clair et en sombre) ; audit axe-core sans violation sur toutes les pages.
+
+## 2026-10-02 : logo, monogramme P
+
+Le premier logo (batée en perspective, pépite cubique) évoquait une poêle avec du beurre. Quatre pistes comparées (`docs/brand/logo-explorations.png`) : pépite seule (pop-corn), tamis (panier), batée vue de dessus (assiette), monogramme P. Retenu : le **monogramme P**, dont la boucle est la batée, avec un éclat or pâle à l'intérieur et deux grains de sable sous la hampe. Net jusqu'à 16 px et sans évocation culinaire : dès qu'on dessine le récipient, on pense cuisine.

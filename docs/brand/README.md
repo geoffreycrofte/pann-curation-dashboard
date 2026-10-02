@@ -2,9 +2,11 @@
 
 ## Logo
 
-`pann-mark.svg` : une **batée** (la poêle de l'orpailleur) vue de trois quarts, inclinée comme dans le geste du lavage, avec une **pépite** posée dans le sable mouillé. Le remous de l'eau et les grains qui s'échappent par le bord disent ce que fait Pann : beaucoup de collecte, peu de sélection.
+`pann-mark.svg` : un **monogramme P** dont la boucle est la batée. Dedans, un **éclat** : ce qu'on trouve en lavant beaucoup de sable. Deux grains sous la hampe rappellent le sable qu'on laisse partir. L'or est réservé à la lettre, l'éclat est or pâle, le sable est gris.
 
-- Tuile noir d'encre, batée et pépite en or. Lisible jusqu'à 16 px (favicon).
+Pistes écartées (2026-10-02) : la batée en perspective avec une pépite cubique (une poêle avec du beurre), la pépite seule (du pop-corn), le tamis (un panier), la batée vue de dessus (une assiette). Leçon : dès qu'on dessine le récipient, on pense cuisine.
+
+- Tuile noir d'encre, lettre en or. Lisible jusqu'à 16 px (favicon).
 - Dans l'app : composant `apps/board/src/components/PannMark.vue` (décoratif, `aria-hidden`), toujours accompagné du nom « Pann » en texte.
 - Nom : Bricolage Grotesque, graisse 800, interlettrage serré.
 
