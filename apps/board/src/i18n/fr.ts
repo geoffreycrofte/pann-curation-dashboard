@@ -40,7 +40,7 @@ export default {
     ownerOnly: 'Seul le propriétaire du workspace peut ajouter, remplacer ou supprimer une clé.',
     groupCollect: 'Collecte et IA',
     groupDiffusion: 'Diffusion sur les réseaux',
-    groupNewsletter: 'Lettre d’information',
+    groupNewsletter: 'Newsletter',
     status: {
       none: 'Non configuré',
       ok: 'Clé vérifiée',
@@ -53,7 +53,7 @@ export default {
       source: 'Nécessaire pour certaines sources',
       optional: 'Facultatif, recommandé',
       diffusion: 'Nécessaire pour publier sur les réseaux',
-      newsletter: 'Nécessaire pour envoyer la lettre',
+      newsletter: 'Nécessaire pour envoyer la newsletter',
     },
     howTo: 'Où trouver cette clé ?',
     keyLabel: 'Clé {provider}',
@@ -90,7 +90,7 @@ export default {
         'Le service ne répondait pas : la clé sera vérifiée à la première utilisation.',
       rejected_during_collection: 'La clé a été refusée lors de la dernière collecte.',
       rejected_during_publication: 'La clé a été refusée lors de la dernière publication.',
-      rejected_during_newsletter: 'La clé a été refusée lors du dernier envoi de la lettre.',
+      rejected_during_newsletter: 'La clé a été refusée lors du dernier envoi de la newsletter.',
       ip_not_authorized:
         'Brevo bloque les appels venant d’adresses IP inconnues. Désactivez ce blocage dans Brevo (Sécurité, IP autorisées) : Pann tourne sur Cloudflare, dont les adresses changent.',
     },
@@ -164,7 +164,7 @@ export default {
       brevo: {
         name: 'Brevo',
         purpose:
-          'Envoi de la lettre d’information hebdomadaire, une campagne par langue, à la liste de contacts de cette langue.',
+          'Envoi de la newsletter hebdomadaire, une campagne par langue, à la liste de contacts de cette langue.',
         steps: [
           'Créez un compte sur brevo.com, puis une liste de contacts par langue (Contacts, puis Listes).',
           'Ajoutez et validez votre adresse d’expédition (Expéditeurs, domaines et IP dédiées).',
@@ -217,9 +217,9 @@ export default {
     slot_taken: 'Ce créneau vient d’être pris. Réessayez.',
     nothing_to_schedule: 'Aucun post à programmer pour cet élément.',
     newsletter_not_configured:
-      'Lettre en {lang} non configurée : choisissez l’expéditeur et la liste dans les réglages du thème.',
+      'Newsletter en {lang} non configurée : choisissez l’expéditeur et la liste dans les réglages du thème.',
     credits_exhausted: 'Crédits {provider} épuisés : l’envoi a été refusé.',
-    empty_digest: 'Rien de nouveau depuis la lettre précédente : rien n’a été envoyé.',
+    empty_digest: 'Rien de nouveau depuis la newsletter précédente : rien n’a été envoyé.',
   },
   draft: {
     statusWithError: '{status} : {error}',
@@ -298,31 +298,31 @@ export default {
     postLine: '{channel} en {lang} : {status}',
   },
   newsletter: {
-    heading: 'Lettre : {topic}',
+    heading: 'Newsletter : {topic}',
     intro:
-      'Chaque lettre reprend les éléments validés depuis la lettre précédente, avec leur résumé dans la langue de la lettre. Une campagne Brevo par langue.',
+      'Chaque newsletter reprend les éléments validés depuis la précédente, avec leur résumé dans sa langue. Une campagne Brevo par langue.',
     nextAuto: 'Prochain envoi automatique : {date}.',
     manual:
-      'Envoi automatique désactivé : la lettre part quand vous cliquez sur « Envoyer maintenant ».',
-    settingsLink: 'Régler la lettre',
-    preview: 'Prochaine lettre en {lang}',
+      'Envoi automatique désactivé : la newsletter part quand vous cliquez sur « Envoyer maintenant ».',
+    settingsLink: 'Régler la newsletter',
+    preview: 'Prochaine newsletter en {lang}',
     period: 'Éléments validés depuis le {date}',
     count: 'Aucun élément | Un élément | {n} éléments',
     withoutSummary:
-      'Un élément validé n’a pas encore de résumé en {lang} : il attendra la prochaine lettre. | {n} éléments validés n’ont pas encore de résumé en {lang} : ils attendront la prochaine lettre.',
+      'Un élément validé n’a pas encore de résumé en {lang} : il attendra la prochaine newsletter. | {n} éléments validés n’ont pas encore de résumé en {lang} : ils attendront la prochaine newsletter.',
     subject: 'Objet : {subject}',
     notConfigured:
-      'Lettre en {lang} non configurée : choisissez l’expéditeur et la liste dans les réglages.',
-    frameTitle: 'Aperçu de la lettre en {lang}',
+      'Newsletter en {lang} non configurée : choisissez l’expéditeur et la liste dans les réglages.',
+    frameTitle: 'Aperçu de la newsletter en {lang}',
     send: 'Envoyer maintenant',
-    sendLabel: 'Envoyer maintenant la lettre en {lang}',
-    confirmTitle: 'Envoyer la lettre en {lang} ?',
+    sendLabel: 'Envoyer maintenant la newsletter en {lang}',
+    confirmTitle: 'Envoyer la newsletter en {lang} ?',
     confirmText:
       'La campagne part tout de suite vers toute la liste. Un e-mail envoyé ne peut pas être rappelé.',
     sending: 'Envoi demandé : l’historique se met à jour dans quelques secondes.',
-    history: 'Lettres envoyées',
-    historyCaption: 'Dernières lettres de ce thème',
-    empty: 'Aucune lettre pour l’instant.',
+    history: 'Newsletters envoyées',
+    historyCaption: 'Dernières newsletters de ce thème',
+    empty: 'Aucune newsletter pour l’instant.',
     date: 'Date',
     lang: 'Langue',
     items: 'Éléments',
@@ -341,7 +341,7 @@ export default {
     sources: 'Sources',
     settings: 'Réglages',
     diffusion: 'Diffusion',
-    newsletter: 'Lettre',
+    newsletter: 'Newsletter',
   },
   board: {
     openDetail: 'Fiche et rédaction',
@@ -527,11 +527,12 @@ export default {
     accountConflict: 'Deux comptes publient {channel} en {lang} : n’en gardez qu’un.',
     accountMissing:
       'Compte introuvable dans Zernio : {account}. Actualisez la liste dans Connexions.',
-    newsletter: 'Lettre d’information',
+    newsletter: 'Newsletter',
     newsletterHint:
-      'Une campagne Brevo par langue, avec les éléments validés depuis la lettre précédente. Le nom et l’introduction sont les vôtres.',
+      'Une campagne Brevo par langue, avec les éléments validés depuis la newsletter précédente. Le nom et l’introduction sont les vôtres.',
     autoSend: 'Envoyer automatiquement chaque semaine',
-    autoSendHint: 'Sinon, la lettre ne part que depuis l’onglet « Lettre », quand vous le décidez.',
+    autoSendHint:
+      'Sinon, la newsletter ne part que depuis l’onglet « Newsletter », quand vous le décidez.',
     weekday: 'Jour d’envoi',
     weekdays: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
     time: 'Heure d’envoi',
@@ -541,10 +542,10 @@ export default {
     senderInactive: '{sender} (non validé)',
     list: 'Liste des abonnés en {lang}',
     noList: 'Aucune liste',
-    newsletterTitle: 'Nom de la lettre en {lang}',
+    newsletterTitle: 'Nom de la newsletter en {lang}',
     newsletterTitleHint: 'Laissé vide, le nom du thème est utilisé.',
     newsletterIntro: 'Introduction en {lang}',
-    newsletterIntroHint: 'Texte en haut de chaque lettre. Facultatif.',
+    newsletterIntroHint: 'Texte en haut de chaque newsletter. Facultatif.',
     noBrevo:
       'Ajoutez d’abord une clé Brevo dans Connexions pour choisir l’expéditeur et les listes.',
   },

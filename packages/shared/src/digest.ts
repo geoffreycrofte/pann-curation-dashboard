@@ -73,7 +73,7 @@ export const DIGEST_STRINGS: Record<Lang, { mirror: string; unsubscribe: string;
     fr: {
       mirror: 'Voir dans le navigateur',
       unsubscribe: 'Se désabonner',
-      reason: 'Vous recevez cette lettre suite à votre inscription.',
+      reason: 'Vous recevez cette newsletter suite à votre inscription.',
     },
     en: {
       mirror: 'View in your browser',
