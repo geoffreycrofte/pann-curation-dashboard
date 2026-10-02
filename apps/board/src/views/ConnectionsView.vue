@@ -11,12 +11,19 @@ const groups = [
   {
     key: 'collect',
     label: 'connections.groupCollect',
-    providers: PROVIDERS.filter((p) => PROVIDER_INFO[p].need !== 'diffusion'),
+    providers: PROVIDERS.filter(
+      (p) => !['diffusion', 'newsletter'].includes(PROVIDER_INFO[p].need),
+    ),
   },
   {
     key: 'diffusion',
     label: 'connections.groupDiffusion',
     providers: PROVIDERS.filter((p) => PROVIDER_INFO[p].need === 'diffusion'),
+  },
+  {
+    key: 'newsletter',
+    label: 'connections.groupNewsletter',
+    providers: PROVIDERS.filter((p) => PROVIDER_INFO[p].need === 'newsletter'),
   },
 ] as const
 const { workspaceId, isOwner, error: workspaceError } = useWorkspace()

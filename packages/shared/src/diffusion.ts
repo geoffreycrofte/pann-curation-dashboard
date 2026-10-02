@@ -102,7 +102,7 @@ export function zonedTimeToUtc(day: string, time: string, timeZone: string): Dat
   return new Date(wall - offsetMs(new Date(first), timeZone))
 }
 
-function addDays(day: string, days: number): string {
+export function addDays(day: string, days: number): string {
   const [y, m, d] = day.split('-').map(Number) as [number, number, number]
   const date = new Date(Date.UTC(y, m - 1, d + days))
   return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`

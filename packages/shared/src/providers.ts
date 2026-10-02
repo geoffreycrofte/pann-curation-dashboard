@@ -1,7 +1,7 @@
 import type { SourceType } from './domain'
 
 /** External services whose keys are set per workspace, from the board. */
-export const PROVIDERS = ['anthropic', 'exa', 'github', 'zernio', 'mastodon'] as const
+export const PROVIDERS = ['anthropic', 'exa', 'github', 'zernio', 'mastodon', 'brevo'] as const
 export type Provider = (typeof PROVIDERS)[number]
 
 export const CREDENTIAL_STATUSES = ['unchecked', 'ok', 'invalid'] as const
@@ -36,15 +36,32 @@ export interface CredentialMeta {
   acct?: string
   /** mastodon: maximum length of a post on this instance. */
   max_characters?: number
+  /** brevo: contact lists and senders, to choose them in the topic settings. */
+  lists?: BrevoList[]
+  senders?: BrevoSender[]
   refreshed_at?: string
+}
+
+export interface BrevoList {
+  id: number
+  name: string
+  subscribers: number | null
+}
+
+export interface BrevoSender {
+  id: number
+  name: string
+  email: string
+  active: boolean
 }
 
 export interface ProviderInfo {
   /**
    * required: nothing works without it; source: needed by the sources of that type;
-   * optional: improves things; diffusion: needed to publish on social networks.
+   * optional: improves things; diffusion: needed to publish on social networks;
+   * newsletter: needed to send the newsletter.
    */
-  need: 'required' | 'source' | 'optional' | 'diffusion'
+  need: 'required' | 'source' | 'optional' | 'diffusion' | 'newsletter'
   /** Source type that needs this key, if any. */
   sourceType?: SourceType
   /** Where the key is created (checked 2026-10-01). Help text is in the board translations. */
@@ -62,6 +79,11 @@ export const PROVIDER_INFO: Record<Provider, ProviderInfo> = {
   // Checked 2026-10-02 (docs.zernio.com, docs.joinmastodon.org).
   zernio: { need: 'diffusion', url: 'https://zernio.com/dashboard/api-keys' },
   mastodon: { need: 'diffusion', url: 'https://docs.joinmastodon.org/client/token/' },
+  // Checked 2026-10-02 (help.brevo.com).
+  brevo: {
+    need: 'newsletter',
+    url: 'https://help.brevo.com/hc/en-us/articles/209467485-Create-and-manage-your-API-keys',
+  },
 }
 
 /** Provider whose key a source type needs to run (GitHub works without, but is rate limited). */
@@ -99,6 +121,9 @@ export const ERROR_CODES = [
   'no_slot', // no daily slot (posts per day at 0)
   'slot_taken',
   'nothing_to_schedule',
+  'newsletter_not_configured', // :lang (no list or no sender)
+  'credits_exhausted', // :provider
+  'empty_digest', // nothing validated since the last newsletter
   'unexpected',
 ] as const
 export type ErrorCode = (typeof ERROR_CODES)[number]

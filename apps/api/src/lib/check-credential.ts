@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { CredentialMeta, CredentialStatus, Provider } from '@pann/shared'
+import { readBrevoAccount } from '../newsletter/brevo'
 import { checkMastodon, listZernioAccounts } from '../publish/networks'
 import { PRIVATE_HOST, USER_AGENT } from './fetch-text'
 
@@ -49,6 +50,25 @@ export async function checkCredential(
       return result.invalid
         ? { status: 'invalid', detail: 'invalid_key' }
         : { status: 'unchecked', detail: 'provider_unreachable', meta: { accounts: [] } }
+    }
+    if (provider === 'brevo') {
+      const result = await readBrevoAccount(secret)
+      if (result.ok)
+        return {
+          status: 'ok',
+          detail: null,
+          meta: {
+            lists: result.lists,
+            senders: result.senders,
+            refreshed_at: new Date().toISOString(),
+          },
+        }
+      if (result.detail === 'provider_unreachable')
+        return { status: 'unchecked', detail: 'provider_unreachable', meta: {} }
+      // A key used from an IP that Brevo blocks is not wrong: say so, keep it.
+      return result.detail === 'ip_not_authorized'
+        ? { status: 'unchecked', detail: 'ip_not_authorized', meta: {} }
+        : { status: 'invalid', detail: 'invalid_key' }
     }
     if (provider === 'mastodon') {
       const instance = options.instance ?? ''

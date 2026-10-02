@@ -41,6 +41,12 @@ export const router = createRouter({
       props: true,
     },
     {
+      path: '/t/:topicId/newsletter',
+      name: 'newsletter',
+      component: () => import('./views/NewsletterView.vue'),
+      props: true,
+    },
+    {
       path: '/t/:topicId/settings',
       name: 'settings',
       component: () => import('./views/SettingsView.vue'),

@@ -40,6 +40,7 @@ export default {
     ownerOnly: 'Seul le propriétaire du workspace peut ajouter, remplacer ou supprimer une clé.',
     groupCollect: 'Collecte et IA',
     groupDiffusion: 'Diffusion sur les réseaux',
+    groupNewsletter: 'Lettre d’information',
     status: {
       none: 'Non configuré',
       ok: 'Clé vérifiée',
@@ -52,6 +53,7 @@ export default {
       source: 'Nécessaire pour certaines sources',
       optional: 'Facultatif, recommandé',
       diffusion: 'Nécessaire pour publier sur les réseaux',
+      newsletter: 'Nécessaire pour envoyer la lettre',
     },
     howTo: 'Où trouver cette clé ?',
     keyLabel: 'Clé {provider}',
@@ -74,6 +76,13 @@ export default {
     refreshRequested: 'Actualisation demandée : la liste se met à jour dans quelques secondes.',
     mastodonAccount: 'Compte : {acct}',
     mastodonLimit: 'Longueur maximale d’un post sur cette instance : {count} caractères.',
+    listsTitle: 'Listes de contacts dans Brevo',
+    sendersTitle: 'Expéditeurs dans Brevo',
+    noLists: 'Aucune liste de contacts dans Brevo pour l’instant.',
+    noSenders: 'Aucun expéditeur dans Brevo pour l’instant.',
+    listLine: '{name} ({count} contacts)',
+    senderLine: '{name} <{email}>',
+    refreshBrevo: 'Actualiser les listes et les expéditeurs',
     detail: {
       no_free_check:
         'Ce service ne propose pas de vérification gratuite : la clé sera vérifiée à la première collecte.',
@@ -81,6 +90,9 @@ export default {
         'Le service ne répondait pas : la clé sera vérifiée à la première utilisation.',
       rejected_during_collection: 'La clé a été refusée lors de la dernière collecte.',
       rejected_during_publication: 'La clé a été refusée lors de la dernière publication.',
+      rejected_during_newsletter: 'La clé a été refusée lors du dernier envoi de la lettre.',
+      ip_not_authorized:
+        'Brevo bloque les appels venant d’adresses IP inconnues. Désactivez ce blocage dans Brevo (Sécurité, IP autorisées) : Pann tourne sur Cloudflare, dont les adresses changent.',
     },
     providers: {
       anthropic: {
@@ -149,6 +161,21 @@ export default {
         cost: 'Gratuit.',
         link: 'Documentation Mastodon : jetons d’accès',
       },
+      brevo: {
+        name: 'Brevo',
+        purpose:
+          'Envoi de la lettre d’information hebdomadaire, une campagne par langue, à la liste de contacts de cette langue.',
+        steps: [
+          'Créez un compte sur brevo.com, puis une liste de contacts par langue (Contacts, puis Listes).',
+          'Ajoutez et validez votre adresse d’expédition (Expéditeurs, domaines et IP dédiées).',
+          'Ouvrez le menu de votre compte, puis Paramètres, SMTP et API, onglet « Clés API et MCP ».',
+          'Cliquez sur « Générer une nouvelle clé API », nommez-la « Pann » et copiez-la : elle ne s’affiche qu’une seule fois.',
+          'Si Brevo bloque les adresses IP inconnues, désactivez ce blocage : Pann tourne sur Cloudflare, dont les adresses changent.',
+          'Ensuite, dans les réglages de chaque thème, choisissez l’expéditeur et la liste de chaque langue.',
+        ],
+        cost: 'Le plan gratuit de Brevo limite le nombre d’e-mails envoyés par jour : vérifiez qu’il couvre vos listes.',
+        link: 'Aide Brevo : créer et gérer ses clés API',
+      },
     },
   },
   errors: {
@@ -189,6 +216,10 @@ export default {
       'Aucun créneau de publication : le nombre de posts par jour est à 0 dans les réglages.',
     slot_taken: 'Ce créneau vient d’être pris. Réessayez.',
     nothing_to_schedule: 'Aucun post à programmer pour cet élément.',
+    newsletter_not_configured:
+      'Lettre en {lang} non configurée : choisissez l’expéditeur et la liste dans les réglages du thème.',
+    credits_exhausted: 'Crédits {provider} épuisés : l’envoi a été refusé.',
+    empty_digest: 'Rien de nouveau depuis la lettre précédente : rien n’a été envoyé.',
   },
   draft: {
     statusWithError: '{status} : {error}',
@@ -266,12 +297,51 @@ export default {
     postsLabel: 'Posts de « {title} »',
     postLine: '{channel} en {lang} : {status}',
   },
+  newsletter: {
+    heading: 'Lettre : {topic}',
+    intro:
+      'Chaque lettre reprend les éléments validés depuis la lettre précédente, avec leur résumé dans la langue de la lettre. Une campagne Brevo par langue.',
+    nextAuto: 'Prochain envoi automatique : {date}.',
+    manual:
+      'Envoi automatique désactivé : la lettre part quand vous cliquez sur « Envoyer maintenant ».',
+    settingsLink: 'Régler la lettre',
+    preview: 'Prochaine lettre en {lang}',
+    period: 'Éléments validés depuis le {date}',
+    count: 'Aucun élément | Un élément | {n} éléments',
+    withoutSummary:
+      'Un élément validé n’a pas encore de résumé en {lang} : il attendra la prochaine lettre. | {n} éléments validés n’ont pas encore de résumé en {lang} : ils attendront la prochaine lettre.',
+    subject: 'Objet : {subject}',
+    notConfigured:
+      'Lettre en {lang} non configurée : choisissez l’expéditeur et la liste dans les réglages.',
+    frameTitle: 'Aperçu de la lettre en {lang}',
+    send: 'Envoyer maintenant',
+    sendLabel: 'Envoyer maintenant la lettre en {lang}',
+    confirmTitle: 'Envoyer la lettre en {lang} ?',
+    confirmText:
+      'La campagne part tout de suite vers toute la liste. Un e-mail envoyé ne peut pas être rappelé.',
+    sending: 'Envoi demandé : l’historique se met à jour dans quelques secondes.',
+    history: 'Lettres envoyées',
+    historyCaption: 'Dernières lettres de ce thème',
+    empty: 'Aucune lettre pour l’instant.',
+    date: 'Date',
+    lang: 'Langue',
+    items: 'Éléments',
+    status: 'Statut',
+    statuses: {
+      draft: 'Brouillon',
+      scheduled: 'Envoi en cours',
+      sent: 'Envoyée',
+      failed: 'Échec',
+      skipped: 'Rien à envoyer',
+    },
+  },
   topicNav: {
     label: 'Sections du thème',
     board: 'Tri',
     sources: 'Sources',
     settings: 'Réglages',
     diffusion: 'Diffusion',
+    newsletter: 'Lettre',
   },
   board: {
     openDetail: 'Fiche et rédaction',
@@ -457,5 +527,25 @@ export default {
     accountConflict: 'Deux comptes publient {channel} en {lang} : n’en gardez qu’un.',
     accountMissing:
       'Compte introuvable dans Zernio : {account}. Actualisez la liste dans Connexions.',
+    newsletter: 'Lettre d’information',
+    newsletterHint:
+      'Une campagne Brevo par langue, avec les éléments validés depuis la lettre précédente. Le nom et l’introduction sont les vôtres.',
+    autoSend: 'Envoyer automatiquement chaque semaine',
+    autoSendHint: 'Sinon, la lettre ne part que depuis l’onglet « Lettre », quand vous le décidez.',
+    weekday: 'Jour d’envoi',
+    weekdays: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
+    time: 'Heure d’envoi',
+    timeHint: 'Dans le fuseau horaire de la diffusion.',
+    sender: 'Expéditeur',
+    noSender: 'Choisir un expéditeur',
+    senderInactive: '{sender} (non validé)',
+    list: 'Liste des abonnés en {lang}',
+    noList: 'Aucune liste',
+    newsletterTitle: 'Nom de la lettre en {lang}',
+    newsletterTitleHint: 'Laissé vide, le nom du thème est utilisé.',
+    newsletterIntro: 'Introduction en {lang}',
+    newsletterIntroHint: 'Texte en haut de chaque lettre. Facultatif.',
+    noBrevo:
+      'Ajoutez d’abord une clé Brevo dans Connexions pour choisir l’expéditeur et les listes.',
   },
 }

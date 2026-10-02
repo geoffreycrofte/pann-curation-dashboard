@@ -18,8 +18,12 @@ export function describeError(value: string, t: Translate): DescribedError {
   const provider = (PROVIDERS as readonly string[]).includes(parsed.detail ?? '')
     ? (parsed.detail as Provider)
     : undefined
-  // Diffusion errors carry "channel" or "channel/lang".
-  const [channel, lang] = (parsed.detail ?? '').split('/')
+  // Diffusion errors carry "channel" or "channel/lang"; newsletter errors, "lang".
+  const parts = (parsed.detail ?? '').split('/')
+  const [channel, lang] =
+    parts.length === 1 && (LANGS as readonly string[]).includes(parts[0]!)
+      ? [undefined, parts[0]]
+      : parts
   const params = {
     detail: parsed.detail,
     provider: provider ? t(`connections.providers.${provider}.name`) : parsed.detail,

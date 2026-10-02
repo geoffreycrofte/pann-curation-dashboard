@@ -6,6 +6,7 @@ import { credentials } from './routes/credentials'
 import { me } from './routes/me'
 import { sources } from './routes/sources'
 import { diffusion } from './routes/diffusion'
+import { newsletter } from './routes/newsletter'
 import { topics } from './routes/topics'
 
 export const app = new Hono<AppEnv>().basePath('/api')
@@ -16,6 +17,7 @@ app.use('/*', async (c, next) => (c.req.path === '/api/health' ? next() : requir
 app.route('/me', me)
 app.route('/topics', topics)
 app.route('/topics', diffusion)
+app.route('/topics', newsletter)
 app.route('/topics/:topicId/sources', sources)
 app.route('/workspaces/:workspaceId/credentials', credentials)
 

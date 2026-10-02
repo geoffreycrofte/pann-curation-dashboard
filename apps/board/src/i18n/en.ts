@@ -42,6 +42,7 @@ export default {
     ownerOnly: 'Only the workspace owner can add, replace or delete a key.',
     groupCollect: 'Collection and AI',
     groupDiffusion: 'Diffusion on social networks',
+    groupNewsletter: 'Newsletter',
     status: {
       none: 'Not configured',
       ok: 'Key verified',
@@ -54,6 +55,7 @@ export default {
       source: 'Needed by some sources',
       optional: 'Optional, recommended',
       diffusion: 'Needed to publish on social networks',
+      newsletter: 'Needed to send the newsletter',
     },
     howTo: 'Where do I find this key?',
     keyLabel: '{provider} key',
@@ -76,12 +78,22 @@ export default {
     refreshRequested: 'Refresh requested: the list updates in a few seconds.',
     mastodonAccount: 'Account: {acct}',
     mastodonLimit: 'Maximum length of a post on this instance: {count} characters.',
+    listsTitle: 'Contact lists in Brevo',
+    sendersTitle: 'Senders in Brevo',
+    noLists: 'No contact list in Brevo yet.',
+    noSenders: 'No sender in Brevo yet.',
+    listLine: '{name} ({count} contacts)',
+    senderLine: '{name} <{email}>',
+    refreshBrevo: 'Refresh the lists and senders',
     detail: {
       no_free_check:
         'This service has no free check: the key will be verified on the first collection.',
       provider_unreachable: 'The service did not answer: the key will be verified on first use.',
       rejected_during_collection: 'The key was rejected during the last collection.',
       rejected_during_publication: 'The key was rejected during the last publication.',
+      rejected_during_newsletter: 'The key was rejected during the last newsletter.',
+      ip_not_authorized:
+        'Brevo blocks calls from unknown IP addresses. Turn this blocking off in Brevo (Security, Authorised IPs): Pann runs on Cloudflare, whose addresses change.',
     },
     providers: {
       anthropic: {
@@ -149,6 +161,21 @@ export default {
         cost: 'Free.',
         link: 'Mastodon documentation: access tokens',
       },
+      brevo: {
+        name: 'Brevo',
+        purpose:
+          'Sends the weekly newsletter, one campaign per language, to the contact list of that language.',
+        steps: [
+          'Create an account on brevo.com, then one contact list per language (Contacts, then Lists).',
+          'Add and verify your sender address (Senders, domains and dedicated IPs).',
+          'Open your account menu, then Settings, SMTP & API, “API Keys & MCP” tab.',
+          'Click “Generate a new API key”, name it “Pann” and copy it: it is shown only once.',
+          'If Brevo blocks unknown IP addresses, turn this blocking off: Pann runs on Cloudflare, whose addresses change.',
+          'Then, in the settings of each topic, choose the sender and the list of each language.',
+        ],
+        cost: 'The free Brevo plan limits the number of emails sent per day: check that it covers your lists.',
+        link: 'Brevo help: create and manage API keys',
+      },
     },
   },
   errors: {
@@ -187,6 +214,10 @@ export default {
     no_slot: 'No publishing slot: posts per day is set to 0 in the settings.',
     slot_taken: 'This slot was just taken. Try again.',
     nothing_to_schedule: 'No post to schedule for this item.',
+    newsletter_not_configured:
+      'Newsletter in {lang} not set up: choose the sender and the list in the topic settings.',
+    credits_exhausted: '{provider} credits used up: the sending was refused.',
+    empty_digest: 'Nothing new since the previous newsletter: nothing was sent.',
   },
   draft: {
     statusWithError: '{status}: {error}',
@@ -263,12 +294,50 @@ export default {
     postsLabel: 'Posts of “{title}”',
     postLine: '{channel} in {lang}: {status}',
   },
+  newsletter: {
+    heading: 'Newsletter: {topic}',
+    intro:
+      'Each issue holds the items validated since the previous issue, with their summary in the language of the issue. One Brevo campaign per language.',
+    nextAuto: 'Next automatic sending: {date}.',
+    manual: 'Automatic sending is off: the newsletter goes out when you click “Send now”.',
+    settingsLink: 'Set up the newsletter',
+    preview: 'Next issue in {lang}',
+    period: 'Items validated since {date}',
+    count: 'No item | One item | {n} items',
+    withoutSummary:
+      'One validated item has no summary in {lang} yet: it will wait for the next issue. | {n} validated items have no summary in {lang} yet: they will wait for the next issue.',
+    subject: 'Subject: {subject}',
+    notConfigured:
+      'Newsletter in {lang} not set up: choose the sender and the list in the settings.',
+    frameTitle: 'Preview of the newsletter in {lang}',
+    send: 'Send now',
+    sendLabel: 'Send the newsletter in {lang} now',
+    confirmTitle: 'Send the newsletter in {lang}?',
+    confirmText:
+      'The campaign goes out right away to the whole list. A sent email cannot be recalled.',
+    sending: 'Sending requested: the history updates in a few seconds.',
+    history: 'Sent issues',
+    historyCaption: 'Last issues of this topic',
+    empty: 'No issue yet.',
+    date: 'Date',
+    lang: 'Language',
+    items: 'Items',
+    status: 'Status',
+    statuses: {
+      draft: 'Draft',
+      scheduled: 'Sending',
+      sent: 'Sent',
+      failed: 'Failed',
+      skipped: 'Nothing to send',
+    },
+  },
   topicNav: {
     label: 'Topic sections',
     board: 'Sorting',
     sources: 'Sources',
     settings: 'Settings',
     diffusion: 'Diffusion',
+    newsletter: 'Newsletter',
   },
   board: {
     openDetail: 'Details and drafts',
@@ -445,5 +514,25 @@ export default {
     accountLangs: 'Languages published by {account}',
     accountConflict: 'Two accounts publish {channel} in {lang}: keep only one.',
     accountMissing: 'Account not found in Zernio: {account}. Refresh the list in Connections.',
+    newsletter: 'Newsletter',
+    newsletterHint:
+      'One Brevo campaign per language, with the items validated since the previous issue. The name and the introduction are yours.',
+    autoSend: 'Send automatically every week',
+    autoSendHint:
+      'Otherwise, the newsletter only goes out from the “Newsletter” tab, when you decide.',
+    weekday: 'Sending day',
+    weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    time: 'Sending time',
+    timeHint: 'In the time zone of the diffusion.',
+    sender: 'Sender',
+    noSender: 'Choose a sender',
+    senderInactive: '{sender} (not verified)',
+    list: 'Subscriber list in {lang}',
+    noList: 'No list',
+    newsletterTitle: 'Name of the newsletter in {lang}',
+    newsletterTitleHint: 'Left empty, the topic name is used.',
+    newsletterIntro: 'Introduction in {lang}',
+    newsletterIntroHint: 'Text at the top of each issue. Optional.',
+    noBrevo: 'First add a Brevo key in Connections to choose the sender and the lists.',
   },
 } satisfies typeof fr

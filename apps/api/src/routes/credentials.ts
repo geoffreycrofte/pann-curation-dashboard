@@ -65,20 +65,23 @@ export const credentials = new Hono<AppEnv>()
   })
 
   /**
-   * Lists the Zernio accounts again. The key is read by a job (secret key), after
-   * RLS has shown that the user is a member of the workspace.
+   * Reads the Zernio accounts or the Brevo lists and senders again. The key is read
+   * by a job (secret key), after RLS has shown that the user is a member.
    */
-  .post('/zernio/refresh', async (c) => {
+  .post('/:provider/refresh', async (c) => {
     const workspaceId = c.req.param('workspaceId')!
+    const p = provider(c.req.param('provider'))
+    if (p !== 'zernio' && p !== 'brevo')
+      throw new HTTPException(404, { message: 'Nothing to refresh' })
     const { data, error } = await c.var.db
       .from('workspace_credentials')
       .select('provider')
       .eq('workspace_id', workspaceId)
-      .eq('provider', 'zernio')
+      .eq('provider', p)
       .maybeSingle()
     if (error) throw error
-    if (!data) throw new HTTPException(404, { message: 'missing_credential:zernio' })
-    await c.env.JOBS.send({ type: 'refresh-zernio-accounts', workspaceId })
+    if (!data) throw new HTTPException(404, { message: `missing_credential:${p}` })
+    await c.env.JOBS.send({ type: 'refresh-credential', workspaceId, provider: p })
     return c.body(null, 202)
   })
 

@@ -145,3 +145,15 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 **Droits.** Les utilisateurs ne modifient plus que le texte d'un post (droits par colonne) ; programmation et retrait passent par `schedule_item` et `unschedule_item`, qui vérifient l'accès au thème. Un élément qui quitte `validated` sort de la file.
 
 **W Social** : toujours aucune API de publication documentée au 02/10/2026 (réseau sur AT Protocol, ouvert en bêta publique le 17/06/2026). Non branché.
+
+## 2026-10-02 : lettre d'information hebdomadaire (étape 7)
+
+**Une campagne Brevo par langue**, envoyée à la liste de cette langue (`newsletter.lists.fr` / `.en`) avec l'expéditeur choisi (`newsletter.sender_id`). Les listes et expéditeurs sont lus avec la clé Brevo (Connexions), et actualisables par un job, comme les comptes Zernio.
+
+**Contenu.** Chaque lettre reprend les éléments validés depuis la fin de la lettre précédente envoyée (7 jours pour la première), avec leur résumé dans la langue de la lettre. Un élément sans résumé dans cette langue attend la lettre suivante. Rien n'est envoyé deux fois ni oublié : `digests.period_from` / `period_to` enchaînent les fenêtres, et un index unique (thème, langue, `period_to`) empêche un double envoi. Une semaine sans élément est enregistrée « rien à envoyer », sans campagne.
+
+**Ce qui est à l'utilisateur** : nom de la lettre, introduction, jour et heure d'envoi, envoi automatique ou manuel (manuel par défaut : la lettre ne part que depuis l'onglet « Lettre », avec confirmation). **Ce qui est intégré** : la mise en page de l'e-mail et les deux liens imposés (voir dans le navigateur, désabonnement, via les balises Brevo `{{ mirror }}` et `{{ unsubscribe }}`).
+
+**E-mail accessible** : `lang` déclaré, contenu enveloppé dans `role="article"` étiqueté par l'objet (recommandation de l'Email Markup Consortium, car les webmails retirent `<html lang>`), tableaux de mise en page en `role="presentation"`, vrais titres, liens soulignés, contraste du texte supérieur à 7:1, aucun texte dans une image.
+
+**Envoi** : vérifié toutes les 5 minutes avec la publication ; une lettre automatique n'est plus envoyée si elle a plus de 6 heures de retard (panne). Erreurs gérées : clé refusée, crédits Brevo épuisés (402), liste ou expéditeur manquant. Brevo peut bloquer les IP inconnues : la vérification de la clé le détecte et l'interface explique comment lever ce blocage (Cloudflare n'a pas d'IP fixe).

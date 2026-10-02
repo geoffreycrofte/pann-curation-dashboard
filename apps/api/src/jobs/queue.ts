@@ -5,6 +5,10 @@ import { supabaseCollectStore } from '../collect/store'
 import { claudeDraftModel } from '../draft/model'
 import { supabaseDraftStore } from '../draft/store'
 import { draft } from '../draft/draft'
+import type { Lang } from '@pann/shared'
+import { sendBrevoCampaign } from '../newsletter/brevo'
+import { sendDigests } from '../newsletter/digest'
+import { refreshBrevoAccount, supabaseDigestStore } from '../newsletter/store'
 import { publishWithZernio, publishToMastodon } from '../publish/networks'
 import { publish } from '../publish/publish'
 import { refreshZernioAccounts, supabasePublishStore } from '../publish/store'
@@ -23,7 +27,9 @@ export type JobMessage =
   | { type: 'draft'; topicId: string; itemId: string }
   /** Publish what is due now (after "publish now", or a retry). */
   | { type: 'publish' }
-  | { type: 'refresh-zernio-accounts'; workspaceId: string }
+  | { type: 'refresh-credential'; workspaceId: string; provider: 'zernio' | 'brevo' }
+  /** Newsletter sent from the board, for one topic (all its languages, or one). */
+  | { type: 'send-digest'; topicId: string; lang?: Lang }
 
 export const networks = { zernio: publishWithZernio, mastodon: publishToMastodon }
 
@@ -69,8 +75,20 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
       console.log(JSON.stringify({ job: 'publish-now', report }))
       return
     }
-    case 'refresh-zernio-accounts': {
-      await refreshZernioAccounts(db, message.workspaceId)
+    case 'refresh-credential': {
+      if (message.provider === 'zernio') await refreshZernioAccounts(db, message.workspaceId)
+      else await refreshBrevoAccount(db, message.workspaceId)
+      return
+    }
+    case 'send-digest': {
+      const reports = await sendDigests({
+        store: supabaseDigestStore(db),
+        send: sendBrevoCampaign,
+        mode: 'now',
+        topicId: message.topicId,
+        langs: message.lang ? [message.lang] : undefined,
+      })
+      console.log(JSON.stringify({ job: 'send-digest', reports }))
       return
     }
   }

@@ -75,12 +75,37 @@ export const topicConfigSchema = z.object({
       posts_per_day: z.number().int().min(0).max(10).default(2),
       /** Daily publication times, in `timezone`. One item per slot. */
       slots: z.array(timeSlot).max(10).default(['09:00', '16:00']),
+      /** Weekly newsletter: day (0 Sunday to 6 Saturday) and time, in `timezone`. */
       digest: z
         .object({
           weekday: z.number().int().min(0).max(6).default(5),
           time: timeSlot.default('08:00'),
         })
         .prefault({}),
+    })
+    .prefault({}),
+  /**
+   * Weekly newsletter (Brevo): one campaign per output language, sent to the list of
+   * that language. Content: the items validated since the previous newsletter.
+   */
+  newsletter: z
+    .object({
+      /** Off: the newsletter is only sent from the board ("Send now"). */
+      auto_send: z.boolean().default(false),
+      /** Brevo sender id (Brevo checks the sender address). */
+      sender_id: z.number().int().positive().nullable().default(null),
+      lists: z
+        .object({
+          fr: z.number().int().positive().nullable().default(null),
+          en: z.number().int().positive().nullable().default(null),
+        })
+        .prefault({}),
+      /** Name of the newsletter, shown at the top and in the subject. */
+      title_fr: z.string().trim().max(120).default(''),
+      title_en: z.string().trim().max(120).default(''),
+      /** Short text at the top of each issue, written by the user. */
+      intro_fr: z.string().trim().max(2000).default(''),
+      intro_en: z.string().trim().max(2000).default(''),
     })
     .prefault({}),
   /**
