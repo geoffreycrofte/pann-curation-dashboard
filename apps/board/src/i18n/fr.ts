@@ -41,6 +41,27 @@ export default {
     groupCollect: 'Collecte et IA',
     groupDiffusion: 'Diffusion sur les réseaux',
     groupNewsletter: 'Newsletter',
+    mcpTitle: 'Claude et autres assistants (MCP)',
+    mcpIntro:
+      'Connectez Claude à Pann pour trier et rédiger en conversation : « montre-moi les éléments légaux de la semaine », « valide les trois premiers ». Claude agit avec votre compte, après votre autorisation.',
+    mcpUrl: 'Adresse du serveur MCP',
+    mcpCopy: 'Copier l’adresse',
+    mcpCopied: 'Adresse copiée.',
+    mcpSteps: [
+      'Dans Claude, ouvrez Paramètres, puis Connecteurs, et ajoutez un connecteur personnalisé.',
+      'Collez l’adresse ci-dessus et validez.',
+      'Claude ouvre une page de Pann : vérifiez la demande, puis cliquez sur « Autoriser ».',
+    ],
+    mcpPublic:
+      'Claude doit pouvoir joindre cette adresse depuis internet : elle fonctionne une fois Pann en ligne, pas sur 127.0.0.1.',
+    grants: 'Applications autorisées',
+    grantsEmpty: 'Aucune application autorisée pour l’instant.',
+    grantsUnavailable:
+      'Liste indisponible : le serveur OAuth n’est peut-être pas activé dans Supabase (Authentication, puis OAuth Server).',
+    grantedOn: 'Autorisée le {date}',
+    revoke: 'Retirer l’accès',
+    revokeLabel: 'Retirer l’accès de {client}',
+    revoked: 'Accès de {client} retiré.',
     status: {
       none: 'Non configuré',
       ok: 'Clé vérifiée',
@@ -334,6 +355,25 @@ export default {
       failed: 'Échec',
       skipped: 'Rien à envoyer',
     },
+  },
+  consent: {
+    title: 'Autoriser {client} à accéder à Pann ?',
+    titleUnknown: 'Autoriser cette application à accéder à Pann ?',
+    intro: 'En votre nom, avec le compte {email}, {client} pourra :',
+    can: [
+      'lire vos thèmes, éléments, résumés et brouillons de posts ;',
+      'trier les éléments (valider, rejeter, remettre à trier) et ajouter des liens ;',
+      'modifier les résumés et les posts, relancer la rédaction ;',
+      'programmer des posts, ou les publier tout de suite sur vos comptes.',
+    ],
+    cannot: 'Elle n’aura pas accès à vos clés de services et ne pourra pas envoyer la newsletter.',
+    revoke: 'Vous pourrez retirer cet accès à tout moment, dans Connexions.',
+    redirect: 'Après votre choix, vous revenez sur {host}.',
+    approve: 'Autoriser',
+    deny: 'Refuser',
+    working: 'Un instant…',
+    missing: 'Demande d’autorisation incomplète : relancez la connexion depuis l’application.',
+    error: 'La demande d’autorisation n’a pas pu être lue : {message}',
   },
   topicNav: {
     label: 'Sections du thème',

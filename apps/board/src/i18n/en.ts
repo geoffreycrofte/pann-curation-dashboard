@@ -43,6 +43,27 @@ export default {
     groupCollect: 'Collection and AI',
     groupDiffusion: 'Diffusion on social networks',
     groupNewsletter: 'Newsletter',
+    mcpTitle: 'Claude and other assistants (MCP)',
+    mcpIntro:
+      'Connect Claude to Pann to sort and write in a conversation: “show me this week’s legal items”, “validate the first three”. Claude acts with your account, after your authorization.',
+    mcpUrl: 'MCP server address',
+    mcpCopy: 'Copy the address',
+    mcpCopied: 'Address copied.',
+    mcpSteps: [
+      'In Claude, open Settings, then Connectors, and add a custom connector.',
+      'Paste the address above and confirm.',
+      'Claude opens a Pann page: check the request, then click “Allow”.',
+    ],
+    mcpPublic:
+      'Claude must reach this address from the internet: it works once Pann is online, not on 127.0.0.1.',
+    grants: 'Authorized applications',
+    grantsEmpty: 'No authorized application yet.',
+    grantsUnavailable:
+      'List unavailable: the OAuth server may not be enabled in Supabase (Authentication, then OAuth Server).',
+    grantedOn: 'Authorized on {date}',
+    revoke: 'Remove access',
+    revokeLabel: 'Remove the access of {client}',
+    revoked: 'Access of {client} removed.',
     status: {
       none: 'Not configured',
       ok: 'Key verified',
@@ -330,6 +351,25 @@ export default {
       failed: 'Failed',
       skipped: 'Nothing to send',
     },
+  },
+  consent: {
+    title: 'Allow {client} to access Pann?',
+    titleUnknown: 'Allow this application to access Pann?',
+    intro: 'On your behalf, with the account {email}, {client} will be able to:',
+    can: [
+      'read your topics, items, summaries and post drafts;',
+      'sort the items (validate, reject, put back to sort) and add links;',
+      'edit the summaries and posts, and draft again;',
+      'schedule posts, or publish them right away on your accounts.',
+    ],
+    cannot: 'It will not access your service keys and cannot send the newsletter.',
+    revoke: 'You can remove this access at any time, in Connections.',
+    redirect: 'After your choice, you will be sent back to {host}.',
+    approve: 'Allow',
+    deny: 'Deny',
+    working: 'One moment…',
+    missing: 'Incomplete authorization request: start the connection again from the application.',
+    error: 'The authorization request could not be read: {message}',
   },
   topicNav: {
     label: 'Topic sections',

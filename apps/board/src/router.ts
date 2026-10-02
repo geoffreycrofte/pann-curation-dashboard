@@ -11,6 +11,12 @@ export const router = createRouter({
       component: () => import('./views/ConnectionsView.vue'),
     },
     {
+      // Authorization Path of the Supabase OAuth server (Claude and other MCP clients).
+      path: '/oauth/consent',
+      name: 'oauth-consent',
+      component: () => import('./views/ConsentView.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('./views/LoginView.vue'),
@@ -55,10 +61,41 @@ export const router = createRouter({
   ],
 })
 
+/** Page asked before signing in (e.g. the OAuth consent page), resumed afterwards. */
+const REDIRECT_KEY = 'pann.redirect'
+
+function remember(path: string | null) {
+  try {
+    if (path) localStorage.setItem(REDIRECT_KEY, path)
+    else localStorage.removeItem(REDIRECT_KEY)
+  } catch {
+    // storage unavailable: the user lands on the home page
+  }
+}
+
+function recall(): string | null {
+  try {
+    const path = localStorage.getItem(REDIRECT_KEY)
+    // Same-origin paths only.
+    return path && path.startsWith('/') && !path.startsWith('//') ? path : null
+  } catch {
+    return null
+  }
+}
+
 router.beforeEach(async (to) => {
   await initSession()
-  if (!to.meta.public && !session.value) return { name: 'login' }
-  if (to.name === 'login' && session.value) return { name: 'home' }
+  if (!to.meta.public && !session.value) {
+    // The magic link opens a new tab: keep the page in localStorage, not in the URL.
+    if (to.name !== 'home') remember(to.fullPath)
+    return { name: 'login' }
+  }
+  if (session.value && (to.name === 'login' || to.name === 'home')) {
+    const path = recall()
+    remember(null)
+    if (path) return path
+    if (to.name === 'login') return { name: 'home' }
+  }
 })
 
 /** Move focus to the main heading after each navigation (SPA page change announcement). */

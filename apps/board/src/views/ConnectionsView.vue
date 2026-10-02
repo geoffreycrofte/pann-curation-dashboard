@@ -2,6 +2,7 @@
 import { PROVIDER_INFO, PROVIDERS } from '@pann/shared'
 import { useQuery } from '@pinia/colada'
 import { useI18n } from 'vue-i18n'
+import McpSection from '../components/McpSection.vue'
 import ProviderCard from '../components/ProviderCard.vue'
 import { api } from '../lib/api'
 import { useWorkspace } from '../lib/workspace'
@@ -63,6 +64,7 @@ const {
         />
       </div>
     </section>
+    <McpSection />
   </template>
 </template>
 

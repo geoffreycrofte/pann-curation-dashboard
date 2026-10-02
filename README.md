@@ -69,6 +69,7 @@ Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, 
 - Secrets du Worker : `wrangler secret put` pour `SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_SECRET_KEY`. Les clés des services se règlent dans l'app (Connexions).
 - Files de tâches (une fois) : `wrangler queues create pann-jobs` et `wrangler queues create pann-jobs-dlq`.
 - Supabase Auth (projet distant) : désactiver les inscriptions publiques, inviter son adresse, définir l'URL du site et les URLs de redirection.
+- Serveur MCP (Claude) : dans Supabase, Authentication, puis OAuth Server : activer le serveur OAuth, activer l'enregistrement dynamique des clients, et régler l'Authorization Path sur `/oauth/consent`. L'URL du site (Authentication, URL Configuration) doit être celle de Pann en ligne : la page de consentement s'y trouve. Dans Claude : Paramètres, Connecteurs, connecteur personnalisé, adresse `https://<pann>/mcp`.
 
 ## Avancement (plan de `docs/CONTEXT.md`, section 9)
 
@@ -79,7 +80,8 @@ Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, 
 - [x] 3. Tri IA (Haiku) : pertinence, type, contenu promotionnel, explication ; archivage sous le seuil
 - [x] 4. Rédaction IA (Sonnet) : résumés FR/EN, extrait, brouillons de posts modifiables ; plafond de coût mensuel
 - [ ] 5. Publication CheckFox
-- [ ] 6. Diffusion sociale
-- [ ] 7. Newsletter (Brevo)
+- [x] 6. Diffusion sociale : LinkedIn et Bluesky (Zernio), Mastodon ; créneaux, un post par langue
+- [x] 7. Newsletter (Brevo) : une campagne par langue, envoi manuel ou hebdomadaire
+- [x] Flux publics RSS et JSON Feed par thème et par langue
 - [ ] 8. Second topic
-- [ ] 9. Serveur MCP de curation
+- [x] 9. Serveur MCP de curation, pour Claude, connexion OAuth (Supabase Auth)
