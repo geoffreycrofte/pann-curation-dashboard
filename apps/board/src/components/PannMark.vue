@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** Pann mark: a P monogram whose bowl is the pan, a spark of what was found, grains washed away. */
+/** Pann mark: the pan seen from above, water swirling, sand grains, and the nugget that stays. */
 defineProps<{ size?: number }>()
 </script>
 
@@ -14,19 +14,35 @@ defineProps<{ size?: number }>()
     focusable="false"
   >
     <rect width="64" height="64" rx="16" fill="#141414" />
-    <!-- P monogram: the bowl of the P is the pan -->
+    <circle cx="32" cy="33" r="24" fill="#26241F" />
+    <circle cx="32" cy="33" r="24" fill="none" stroke="#5C574C" stroke-width="2" />
+    <circle cx="32" cy="33" r="15" fill="none" stroke="#3A372F" stroke-width="1.5" />
     <path
-      d="M20 52V14h13.5C42 14 48 19.6 48 27.5S42 41 33.5 41H20"
+      d="M14 28c4-9 15-13 24-10M50 39c-4 8-14 11-22 9"
       fill="none"
-      stroke="#FFC72C"
-      stroke-width="7"
-      stroke-linejoin="round"
+      stroke="#8A8170"
+      stroke-width="1.6"
       stroke-linecap="round"
     />
-    <!-- what shines in the pan: the find -->
-    <path d="M33 22.5l1.4 3.6 3.6 1.4-3.6 1.4L33 32.5l-1.4-3.6-3.6-1.4 3.6-1.4z" fill="#FFF1C2" />
-    <!-- grains of sand washed away -->
-    <circle cx="27.5" cy="57" r="1.2" fill="#8A8170" />
-    <circle cx="32" cy="55" r=".9" fill="#8A8170" />
+    <circle cx="19" cy="40" r="1.1" fill="#8A8170" />
+    <circle cx="45" cy="25" r="1" fill="#8A8170" />
+    <circle cx="24" cy="47" r=".9" fill="#8A8170" />
+    <circle cx="41" cy="45" r="1" fill="#8A8170" />
+    <g transform="translate(9.5 8.5) scale(.7)">
+      <path
+        d="M22.5 37.5c-2.6-3.4-.6-8.6 3.6-9.8 1.6-3.6 6.4-4.8 9.4-2.4 3.8-.6 7 2.4 6.6 6.2 2.4 2.6 1.4 7-1.8 8.2-1.2 3.4-5.6 4.6-8.4 2.6-3.4 1.6-7.6-.4-8.6-3.8-.4-.2-.6-.6-.8-1z"
+        fill="#FFC72C"
+      />
+      <path
+        d="M28.6 29.6l6.2 3.2 6.6-2.2M34.8 32.8l-1.6 8.6M28.6 29.6l-3.4 7.4"
+        fill="none"
+        stroke="#B88A00"
+        stroke-width="1.3"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      />
+      <path d="M26.2 30.6l2.4-1 .9 2.6-2.4 1.2z" fill="#FFF1C2" opacity=".9" />
+    </g>
+    <path d="M44 12l1.3 3.5 3.5 1.3-3.5 1.3L44 21.6l-1.3-3.5-3.5-1.3 3.5-1.3z" fill="#FFF1C2" />
   </svg>
 </template>

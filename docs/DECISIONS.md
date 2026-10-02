@@ -125,3 +125,7 @@ Mise en page : barre latérale noire (thèmes, Connexions, langue), qui devient 
 ## 2026-10-02 : logo, monogramme P
 
 Le premier logo (batée en perspective, pépite cubique) évoquait une poêle avec du beurre. Quatre pistes comparées (`docs/brand/logo-explorations.png`) : pépite seule (pop-corn), tamis (panier), batée vue de dessus (assiette), monogramme P. Retenu : le **monogramme P**, dont la boucle est la batée, avec un éclat or pâle à l'intérieur et deux grains de sable sous la hampe. Net jusqu'à 16 px et sans évocation culinaire : dès qu'on dessine le récipient, on pense cuisine.
+
+## 2026-10-02 : logo, batée vue de dessus et favicon pépite
+
+Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D) pour le logo et l'icône d'app, la **pépite seule** (piste A) pour le favicon. Remplace le monogramme P. Ajout d'un manifeste d'app web et des icônes d'écran d'accueil (iOS, Android, maskable).

@@ -2,11 +2,16 @@
 
 ## Logo
 
-`pann-mark.svg` : un **monogramme P** dont la boucle est la batée. Dedans, un **éclat** : ce qu'on trouve en lavant beaucoup de sable. Deux grains sous la hampe rappellent le sable qu'on laisse partir. L'or est réservé à la lettre, l'éclat est or pâle, le sable est gris.
+Deux déclinaisons, choisies le 2026-10-02 parmi quatre pistes (`logo-explorations.png`) :
 
-Pistes écartées (2026-10-02) : la batée en perspective avec une pépite cubique (une poêle avec du beurre), la pépite seule (du pop-corn), le tamis (un panier), la batée vue de dessus (une assiette). Leçon : dès qu'on dessine le récipient, on pense cuisine.
+- **Logo et icône d'app** (`pann-mark.svg`, piste D) : la **batée vue de dessus**, sombre, avec le remous de l'eau, quelques grains de sable, et la **pépite** dorée qui reste au fond, avec son éclat. L'or est réservé à la pépite.
+- **Favicon** (`pann-favicon.svg`, piste A) : la **pépite seule** avec son éclat et quelques grains, plus lisible à 16 px que la batée.
 
-- Tuile noir d'encre, lettre en or. Lisible jusqu'à 16 px (favicon).
+Icônes d'app générées depuis `pann-mark.svg` : `apps/board/public/apple-touch-icon.png` (180 px), `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (fond plein, la plateforme arrondit), déclarées dans `manifest.webmanifest`.
+
+Pistes écartées : la batée en perspective avec une pépite cubique (une poêle avec du beurre), le tamis (un panier), le monogramme P.
+
+- Tuile noir d'encre, or réservé à la pépite.
 - Dans l'app : composant `apps/board/src/components/PannMark.vue` (décoratif, `aria-hidden`), toujours accompagné du nom « Pann » en texte.
 - Nom : Bricolage Grotesque, graisse 800, interlettrage serré.
 
