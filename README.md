@@ -61,13 +61,13 @@ pnpm db:reset      # rejoue toutes les migrations et le seed
 
 ## Déploiement
 
-Workflow manuel `Deploy` (GitHub Actions) : `supabase db push`, build du board, `wrangler deploy`.
-À configurer une fois :
+Workflow manuel `Deploy` (GitHub Actions, onglet Actions, puis « Run workflow ») : migrations (`supabase db push`), build du board, files de tâches (créées au premier passage), `wrangler deploy`, puis secrets du Worker.
+À configurer une fois, dans GitHub (Settings, Environments, `production`) :
 
-- Secrets GitHub : `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
-- Variables GitHub : `SUPABASE_PROJECT_REF`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
-- Secrets du Worker : `wrangler secret put` pour `SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_SECRET_KEY`. Les clés des services se règlent dans l'app (Connexions).
-- Files de tâches (une fois) : `wrangler queues create pann-jobs` et `wrangler queues create pann-jobs-dlq`.
+- Secrets : `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_SECRET_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+- Variables : `SUPABASE_PROJECT_REF`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
+- Jeton Cloudflare : modèle « Edit Cloudflare Workers », plus la permission Queues en écriture sur le compte.
+- Les clés des services (Anthropic, Exa, Zernio…) ne vont jamais ici : elles se règlent dans l'app (Connexions).
 - Supabase Auth (projet distant) : désactiver les inscriptions publiques, inviter son adresse, définir l'URL du site et les URLs de redirection.
 - Serveur MCP (Claude) : dans Supabase, Authentication, puis OAuth Server : activer le serveur OAuth, activer l'enregistrement dynamique des clients, et régler l'Authorization Path sur `/oauth/consent`. L'URL du site (Authentication, URL Configuration) doit être celle de Pann en ligne : la page de consentement s'y trouve. Dans Claude : Paramètres, Connecteurs, connecteur personnalisé, adresse `https://<pann>/mcp`.
 
