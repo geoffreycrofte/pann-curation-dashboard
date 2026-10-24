@@ -1,0 +1,123 @@
+import { parseTopicConfig, type CredentialMeta } from '@pann/shared'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { readBrevoAccount } from './brevo'
+import { lastIssueEnd, loadDigestContent } from './content'
+import type { DigestStore } from './digest'
+
+const day = (date: Date) => date.toISOString().slice(0, 10)
+
+async function brevoKey(db: SupabaseClient, workspaceId: string) {
+  const { data, error } = await db.rpc('workspace_credentials_for_jobs', {
+    p_workspace_id: workspaceId,
+  })
+  if (error) throw error
+  return ((data ?? []) as { provider: string; secret: string }[]).find(
+    (r) => r.provider === 'brevo',
+  )?.secret
+}
+
+/** Supabase implementation. `db` must use the secret key (jobs only). */
+export function supabaseDigestStore(db: SupabaseClient): DigestStore {
+  return {
+    async topics(topicId) {
+      let query = db
+        .from('topics')
+        .select('id, workspace_id, slug, name_fr, name_en, config')
+        .eq('active', true)
+      if (topicId) query = query.eq('id', topicId)
+      const { data, error } = await query
+      if (error) throw error
+      return data.map((t) => ({ ...t, config: parseTopicConfig(t.config) }))
+    },
+
+    async issueExists(topicId, lang, periodTo) {
+      const { count, error } = await db
+        .from('digests')
+        .select('id', { count: 'exact', head: true })
+        .eq('topic_id', topicId)
+        .eq('lang', lang)
+        .eq('period_to', periodTo.toISOString())
+      if (error) throw error
+      return (count ?? 0) > 0
+    },
+
+    lastIssueEnd: (topicId, lang) => lastIssueEnd(db, topicId, lang),
+    content: (q) => loadDigestContent(db, q),
+    brevoKey: (workspaceId) => brevoKey(db, workspaceId),
+
+    async createIssue(row) {
+      const { data, error } = await db
+        .from('digests')
+        .insert({
+          topic_id: row.topic_id,
+          lang: row.lang,
+          period_start: day(row.period_from),
+          period_end: day(row.period_to),
+          period_from: row.period_from.toISOString(),
+          period_to: row.period_to.toISOString(),
+          status: row.status,
+          subject: row.subject ?? null,
+          item_count: row.item_count ?? 0,
+          last_error: row.last_error ?? null,
+        })
+        .select('id')
+        .single()
+      if (error?.code === '23505') return null
+      if (error) throw error
+      return data.id as string
+    },
+
+    async updateIssue(id, patch) {
+      const { error } = await db
+        .from('digests')
+        .update({
+          ...patch,
+          sent_at: patch.sent_at?.toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+      if (error) throw error
+    },
+
+    async markCredentialInvalid(workspaceId) {
+      const { error } = await db
+        .from('workspace_credentials')
+        .update({
+          status: 'invalid',
+          status_detail: 'rejected_during_newsletter',
+          checked_at: new Date().toISOString(),
+        })
+        .eq('workspace_id', workspaceId)
+        .eq('provider', 'brevo')
+      if (error) throw error
+    },
+  }
+}
+
+/** Lists and senders read again (new list in Brevo, sender validated…). */
+export async function refreshBrevoAccount(db: SupabaseClient, workspaceId: string) {
+  const key = await brevoKey(db, workspaceId)
+  if (!key) return
+  const result = await readBrevoAccount(key)
+  const now = new Date().toISOString()
+  const update = result.ok
+    ? {
+        status: 'ok',
+        status_detail: null,
+        checked_at: now,
+        meta: {
+          lists: result.lists,
+          senders: result.senders,
+          refreshed_at: now,
+        } satisfies CredentialMeta,
+      }
+    : result.detail === 'provider_unreachable'
+      ? { status_detail: 'provider_unreachable' }
+      : { status: 'invalid', status_detail: result.detail, checked_at: now }
+  const { error } = await db
+    .from('workspace_credentials')
+    .update(update)
+    .eq('workspace_id', workspaceId)
+    .eq('provider', 'brevo')
+  if (error) throw error
+}

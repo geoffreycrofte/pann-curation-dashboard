@@ -1,0 +1,5 @@
+# Written by "pnpm configure" (recommended). Values: Supabase dashboard, Project Settings, API Keys.
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+# Service keys (Anthropic, Exa, GitHub) are not set here: use the "Connexions" page of the app.

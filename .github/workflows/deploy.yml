@@ -1,0 +1,63 @@
+name: Deploy
+
+# Manual for now: enable `push: branches: [main]` once the secrets below exist.
+on:
+  workflow_dispatch:
+
+concurrency: deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # Supabase keys of the Worker (the only keys in the environment: the service keys
+      # are set in the app, Connections page).
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Database migrations
+        run: |
+          pnpm exec supabase link --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
+          pnpm exec supabase db push
+
+      - name: Build board
+        run: pnpm --filter @pann/board build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+
+      # Job queues: created on the first run, left as they are afterwards.
+      - name: Job queues
+        working-directory: apps/api
+        run: |
+          for queue in pann-jobs pann-jobs-dlq; do
+            if pnpm exec wrangler queues info "$queue" > /dev/null 2>&1; then
+              echo "Queue $queue exists"
+            else
+              pnpm exec wrangler queues create "$queue"
+            fi
+          done
+
+      - name: Deploy Worker (API + board assets)
+        working-directory: apps/api
+        run: pnpm exec wrangler deploy --var SUPABASE_URL:${{ vars.SUPABASE_URL }}
+
+      # Read from stdin: the values never appear in the logs.
+      - name: Worker secrets
+        working-directory: apps/api
+        run: |
+          printf '%s' "$SUPABASE_PUBLISHABLE_KEY" | pnpm exec wrangler secret put SUPABASE_PUBLISHABLE_KEY
+          printf '%s' "$SUPABASE_SECRET_KEY" | pnpm exec wrangler secret put SUPABASE_SECRET_KEY

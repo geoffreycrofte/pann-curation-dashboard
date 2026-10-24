@@ -1,0 +1,293 @@
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/bricolage-grotesque';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 100%;
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h1 {
+  margin: 0 0 var(--space-4);
+  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
+  font-weight: 800;
+}
+
+h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--color-accent-text);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Headings receive focus programmatically on navigation; they are not interactive. */
+h1[tabindex='-1']:focus {
+  outline: none;
+}
+
+.visually-hidden:not(:focus):not(:active) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+ * Buttons: pills. Primary = gold fill with ink text.
+ * ------------------------------------------------------------------------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.75rem; /* 44px target size */
+  padding: var(--space-2) var(--space-5);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--color-text);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button[data-variant='primary'] {
+  border-color: var(--color-accent-fill);
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+}
+
+.button[data-variant='primary']:hover:not(:disabled) {
+  border-color: var(--color-on-accent);
+}
+
+.button[data-variant='danger'] {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ---------------------------------------------------------------------------
+ * Cards and sections
+ * ------------------------------------------------------------------------- */
+.card {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+/* Information banner: the text carries the message, the gold edge only marks it. */
+.notice {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-inline-start: 6px solid var(--color-accent-fill);
+  border-radius: var(--radius);
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+}
+
+.notice p {
+  margin: var(--space-1) 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Forms
+ * ------------------------------------------------------------------------- */
+.form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.form-row {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.form-row > label,
+.form-label {
+  font-weight: 650;
+}
+
+.form-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--space-2);
+}
+
+.form-check input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-accent-text);
+}
+
+.form-check .hint {
+  grid-column: 2;
+}
+
+.field {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.field:hover {
+  border-color: var(--color-text);
+}
+
+.field:focus-visible {
+  outline-offset: 1px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+fieldset {
+  margin: 0;
+  padding: var(--space-5) var(--space-6) var(--space-6);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+legend {
+  padding: 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------------------------
+ * Dialogs (Reka UI AlertDialog)
+ * ------------------------------------------------------------------------- */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(10 10 10 / 0.55);
+}
+
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(32rem, calc(100vw - 2rem));
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.25);
+  transform: translate(-50%, -50%);
+}
+
+.dialog-title {
+  margin-top: 0;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .button[data-variant='primary'] {
+    border: 2px solid ButtonText;
+  }
+
+  .card,
+  fieldset,
+  .notice {
+    border: 1px solid CanvasText;
+  }
+}

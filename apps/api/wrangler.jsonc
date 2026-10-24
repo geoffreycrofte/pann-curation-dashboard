@@ -1,0 +1,44 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "pann",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // The board (apps/board) is served as static assets by this same Worker.
+  // Only /api/*, the public feeds (/feeds/*) and the MCP server (/mcp and its OAuth
+  // metadata) reach the Worker code; everything else is the SPA.
+  "assets": {
+    "directory": "../board/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/feeds/*", "/mcp", "/.well-known/oauth-protected-resource*"],
+  },
+
+  "vars": {
+    "SUPABASE_URL": "http://127.0.0.1:54321",
+  },
+  // Local values come from .dev.vars (written by "pnpm configure") and override "vars".
+  // Production secrets (wrangler secret put): SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY.
+  // Service keys (Anthropic, Exa, GitHub) are per workspace, set in the app (Connexions).
+
+  "observability": { "enabled": true },
+
+  // Hourly collection; each run only collects the sources that are due (isSourceDue).
+  // Every 5 minutes: publication of the posts whose slot has come.
+  // Keep in sync with COLLECT_CRON and PUBLISH_CRON in src/jobs/scheduled.ts.
+  "triggers": { "crons": ["7 * * * *", "*/5 * * * *"] },
+
+  // Background jobs (jobs/queue.ts). Simulated locally by "wrangler dev"; in production,
+  // create them once: wrangler queues create pann-jobs && wrangler queues create pann-jobs-dlq
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "pann-jobs" }],
+    "consumers": [
+      {
+        "queue": "pann-jobs",
+        "max_batch_size": 1,
+        "max_retries": 2,
+        "dead_letter_queue": "pann-jobs-dlq",
+      },
+    ],
+  },
+}
