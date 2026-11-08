@@ -3,6 +3,7 @@ import {
   type ErrorCode,
   type ItemKind,
   type Provider,
+  type ConversationMeta,
   type SourceType,
   type TopicConfig,
 } from '@pann/shared'
@@ -17,6 +18,8 @@ export interface CollectedItem {
   kind?: ItemKind | null
   /** Tools: release tag, used to re-propose a published tool when it changes. */
   change_signature?: string | null
+  /** Conversations (engagement): platform, author, thread, points. */
+  meta?: ConversationMeta
 }
 
 export interface UsageEntry {
@@ -45,6 +48,8 @@ export interface CollectSource {
   id: string
   topic_id: string
   workspace_id: string
+  /** Tool the source feeds: its items are linked to the topic for that tool. */
+  module: 'curation' | 'engagement'
   type: SourceType
   label: string
   config: Record<string, unknown>

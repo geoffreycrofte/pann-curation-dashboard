@@ -30,6 +30,7 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
             'topic:topics!inner (workspace_id, name_en, config, monthly_budget_usd)',
         )
         .eq('draft_status', 'pending')
+        .eq('module', 'curation')
         .lt('draft_attempts', MAX_DRAFT_ATTEMPTS)
         .order('validated_at', { ascending: true, nullsFirst: false })
         .limit(limit)

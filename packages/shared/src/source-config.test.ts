@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { exaSourceConfigSchema, isExcludedUrl, siteOf, slugify } from './source-config'
+import {
+  blueskySourceConfigSchema,
+  exaSourceConfigSchema,
+  hackerNewsSourceConfigSchema,
+  isExcludedUrl,
+  moduleOfSourceType,
+  siteOf,
+  slugify,
+} from './source-config'
 
 describe('exaSourceConfigSchema', () => {
   it('reduces domains to their host and rejects invalid ones', () => {
@@ -34,5 +42,25 @@ describe('excluded sites', () => {
     expect(isExcludedUrl('https://blog.example.org/x', excluded)).toBe(true)
     expect(isExcludedUrl('https://notexample.org/x', excluded)).toBe(false)
     expect(isExcludedUrl('https://example.org/x', [])).toBe(false)
+  })
+})
+
+describe('engagement sources', () => {
+  it('feed the engagement tool; the others feed curation', () => {
+    expect(moduleOfSourceType('hackernews')).toBe('engagement')
+    expect(moduleOfSourceType('bluesky')).toBe('engagement')
+    expect(moduleOfSourceType('rss')).toBe('curation')
+  })
+
+  it('fill their defaults and check the language code', () => {
+    expect(hackerNewsSourceConfigSchema.parse({ query: 'wcag' })).toEqual({
+      query: 'wcag',
+      scope: 'all',
+      min_points: 0,
+      max_results: 20,
+    })
+    expect(blueskySourceConfigSchema.safeParse({ query: 'a11y', lang: 'french' }).success).toBe(
+      false,
+    )
   })
 })

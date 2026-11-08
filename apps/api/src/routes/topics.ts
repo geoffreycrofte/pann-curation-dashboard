@@ -12,6 +12,7 @@ import {
   safeParseTopicConfig,
   kindSchema,
   topicConfigSchema,
+  TOPIC_MODULES,
   type ItemTopicStatus,
 } from '@pann/shared'
 import { Hono } from 'hono'
@@ -27,9 +28,31 @@ const TOPIC_COLUMNS = 'id, workspace_id, slug, name_fr, name_en, active, monthly
 
 const listQuery = z.object({
   status: z.enum(ITEM_TOPIC_STATUSES).default('new'),
+  /** Board of the curation tool (default) or conversations of the engagement tool. */
+  module: z.enum(TOPIC_MODULES).default('curation'),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 })
+
+interface ConversationRow {
+  item_id: string
+  topic_id: string
+  status: ItemTopicStatus
+  relevance_score: number | null
+  triage_reason: string | null
+  engagement_decision: string | null
+  engagement_angle: string | null
+  engagement_risk: string | null
+  item: {
+    canonical_url: string
+    title: string
+    fetched_content: string | null
+    source_lang: string | null
+    published_at: string | null
+    discovered_at: string
+    meta: Record<string, unknown> | null
+  }
+}
 
 /** Status and/or kind of an item in a topic. */
 const itemPatch = z
@@ -353,6 +376,7 @@ export const topics = new Hono<AppEnv>()
   /** Number of items per status, for the board tabs (archived items are not counted). */
   .get('/:topicId/counts', async (c) => {
     const topicId = c.req.param('topicId')
+    const module = TOPIC_MODULES.find((m) => m === c.req.query('module')) ?? 'curation'
     const statuses = ITEM_TOPIC_STATUSES.filter((s) => s !== 'archived')
     const results = await Promise.all(
       statuses.map((status) =>
@@ -360,6 +384,7 @@ export const topics = new Hono<AppEnv>()
           .from('item_topics')
           .select('item_id', { count: 'exact', head: true })
           .eq('topic_id', topicId)
+          .eq('module', module)
           .eq('status', status),
       ),
     )
@@ -408,6 +433,39 @@ export const topics = new Hono<AppEnv>()
     return c.json(data)
   })
 
+  /** Conversations of the engagement tool, best opportunity first. */
+  .get('/:topicId/conversations', async (c) => {
+    const query = listQuery.safeParse(c.req.query())
+    if (!query.success) throw new HTTPException(400, { message: z.prettifyError(query.error) })
+    const { status, limit, offset } = query.data
+    const { data, error } = await c.var.db
+      .from('item_topics')
+      .select(
+        'item_id, topic_id, status, relevance_score, triage_reason, engagement_decision, engagement_angle, engagement_risk, ' +
+          'item:items (canonical_url, title, fetched_content, source_lang, published_at, discovered_at, meta)',
+      )
+      .eq('topic_id', c.req.param('topicId'))
+      .eq('module', 'engagement')
+      .eq('status', status)
+      .order('relevance_score', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+      .returns<ConversationRow[]>()
+    if (error) throw error
+    return c.json(
+      data.map(({ item, ...rest }) => ({
+        ...rest,
+        canonical_url: item.canonical_url,
+        title: item.title,
+        excerpt: item.fetched_content ? item.fetched_content.slice(0, 400) : null,
+        source_lang: item.source_lang,
+        published_at: item.published_at,
+        discovered_at: item.discovered_at,
+        meta: item.meta ?? {},
+      })),
+    )
+  })
+
   .get('/:topicId/items', async (c) => {
     const query = listQuery.safeParse(c.req.query())
     if (!query.success) throw new HTTPException(400, { message: z.prettifyError(query.error) })
@@ -420,6 +478,7 @@ export const topics = new Hono<AppEnv>()
           'item:items (canonical_url, title, source_lang, origin, published_at, discovered_at)',
       )
       .eq('topic_id', c.req.param('topicId'))
+      .eq('module', 'curation')
       .eq('status', status)
       .order('relevance_score', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
@@ -559,10 +618,10 @@ export const topics = new Hono<AppEnv>()
 
     const { data: current, error: readError } = await c.var.db
       .from('item_topics')
-      .select('status')
+      .select('status, module')
       .eq('topic_id', topicId)
       .eq('item_id', itemId)
-      .maybeSingle<{ status: ItemTopicStatus }>()
+      .maybeSingle<{ status: ItemTopicStatus; module: string }>()
     if (readError) throw readError
     if (!current) throw new HTTPException(404, { message: 'Item not found in this topic' })
     if (!canTransition(current.status, target)) {
@@ -581,6 +640,8 @@ export const topics = new Hono<AppEnv>()
     if (error) throw error
     if (!data) throw new HTTPException(409, { message: 'Status changed meanwhile, reload' })
     // Validation queues the drafting in the database (trigger); run it now.
-    if (target === 'validated') await c.env.JOBS.send({ type: 'draft', topicId, itemId })
+    // Conversations are not drafted: a reply is never published by an API.
+    if (target === 'validated' && current.module === 'curation')
+      await c.env.JOBS.send({ type: 'draft', topicId, itemId })
     return c.json(data)
   })

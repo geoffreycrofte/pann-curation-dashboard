@@ -27,8 +27,28 @@ export const LOCKED_STATUSES: readonly ItemTopicStatus[] = ['published', 'reject
 export const ITEM_ORIGINS = ['collected', 'manual'] as const
 export type ItemOrigin = (typeof ITEM_ORIGINS)[number]
 
-export const SOURCE_TYPES = ['rss', 'exa', 'github'] as const
+/**
+ * rss, exa, github feed the curation board; hackernews and bluesky bring
+ * conversations to the engagement tool (see moduleOfSourceType).
+ */
+export const SOURCE_TYPES = ['rss', 'exa', 'github', 'hackernews', 'bluesky'] as const
 export type SourceType = (typeof SOURCE_TYPES)[number]
+
+/** Facts of a conversation (engagement), shared with the item: where and who. */
+export interface ConversationMeta {
+  platform?: 'hackernews' | 'bluesky'
+  author?: string
+  /** Thread the conversation belongs to (a comment's story, a reply's root post). */
+  thread_title?: string
+  points?: number
+  comments?: number
+}
+
+/** What the engagement triage proposes for a conversation. */
+export const ENGAGEMENT_DECISIONS = ['reply', 'watch', 'skip'] as const
+export type EngagementDecision = (typeof ENGAGEMENT_DECISIONS)[number]
+export const ENGAGEMENT_RISKS = ['low', 'medium', 'high'] as const
+export type EngagementRisk = (typeof ENGAGEMENT_RISKS)[number]
 
 export const CHANNELS = ['linkedin', 'bluesky', 'mastodon', 'w'] as const
 export type Channel = (typeof CHANNELS)[number]
@@ -80,9 +100,32 @@ export interface BoardItem {
   publish_at: string | null
 }
 
+/** A conversation of the engagement tool, as listed on its board. */
+export interface Conversation {
+  item_id: string
+  topic_id: string
+  status: ItemTopicStatus
+  canonical_url: string
+  title: string
+  /** Start of the post or comment, to judge without opening it. */
+  excerpt: string | null
+  source_lang: string | null
+  published_at: string | null
+  discovered_at: string
+  meta: ConversationMeta
+  /** Opportunity, 0 to 100 (null: waiting for the engagement triage). */
+  relevance_score: number | null
+  triage_reason: string | null
+  engagement_decision: EngagementDecision | null
+  engagement_angle: string | null
+  engagement_risk: EngagementRisk | null
+}
+
 export interface Source {
   id: string
   topic_id: string
+  /** Tool the source feeds; set from its type when it is created. */
+  module: 'curation' | 'engagement'
   type: SourceType
   label: string
   config: Record<string, unknown>

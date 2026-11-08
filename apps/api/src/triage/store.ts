@@ -30,6 +30,8 @@ export function supabaseTriageStore(db: SupabaseClient): TriageStore {
         )
         .is('relevance_score', null)
         .eq('status', 'new')
+        // Conversations have their own triage (engagement/triage.ts).
+        .eq('module', 'curation')
         .lt('triage_attempts', MAX_TRIAGE_ATTEMPTS)
         .eq('topic.active', true)
         .order('created_at')

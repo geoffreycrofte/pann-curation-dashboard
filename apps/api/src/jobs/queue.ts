@@ -5,6 +5,9 @@ import { supabaseCollectStore } from '../collect/store'
 import { claudeDraftModel } from '../draft/model'
 import { supabaseDraftStore } from '../draft/store'
 import { draft } from '../draft/draft'
+import { claudeEngagementModel } from '../engagement/model'
+import { supabaseEngagementStore } from '../engagement/store'
+import { triageConversations } from '../engagement/triage'
 import type { Lang } from '@pann/shared'
 import { sendBrevoCampaign } from '../newsletter/brevo'
 import { sendDigests } from '../newsletter/digest'
@@ -49,6 +52,15 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
       const topicId = reports[0]?.topic_id
       console.log(JSON.stringify({ job: 'collect-now', reports }))
       if (!topicId) return
+      if (reports[0]?.module === 'engagement') {
+        const judged = await triageConversations({
+          store: supabaseEngagementStore(db),
+          model: claudeEngagementModel,
+          topicId,
+        })
+        console.log(JSON.stringify({ job: 'engagement-triage-now', judged }))
+        return
+      }
       const triaged = await triage({
         store: supabaseTriageStore(db),
         model: claudeTriageModel,
