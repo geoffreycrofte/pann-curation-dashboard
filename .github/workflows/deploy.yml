@@ -1,13 +1,19 @@
 name: Deploy
 
-# Manual for now: enable `push: branches: [main]` once the secrets below exist.
+# Runs after CI succeeds on main, so a commit that fails its checks is never deployed.
+# Can still be run by hand (Actions, Deploy, Run workflow).
 on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 concurrency: deploy
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     environment: production
     env:
@@ -21,6 +27,9 @@ jobs:
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The commit CI checked, not whatever main points to when this run starts.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
