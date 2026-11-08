@@ -12,6 +12,7 @@ import { refreshBrevoAccount, supabaseDigestStore } from '../newsletter/store'
 import { publishWithZernio, publishToMastodon } from '../publish/networks'
 import { publish } from '../publish/publish'
 import { refreshZernioAccounts, supabasePublishStore } from '../publish/store'
+import { claudeRewriteModel, runRewrite } from '../rewrite/rewrite'
 import { claudeTriageModel } from '../triage/model'
 import { supabaseTriageStore } from '../triage/store'
 import { triage } from '../triage/triage'
@@ -30,6 +31,8 @@ export type JobMessage =
   | { type: 'refresh-credential'; workspaceId: string; provider: 'zernio' | 'brevo' }
   /** Newsletter sent from the board, for one topic (all its languages, or one). */
   | { type: 'send-digest'; topicId: string; lang?: Lang }
+  /** AI rewrite of a summary or post, asked from the item page (table rewrites). */
+  | { type: 'rewrite'; rewriteId: string }
 
 export const networks = { zernio: publishWithZernio, mastodon: publishToMastodon }
 
@@ -78,6 +81,10 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     case 'refresh-credential': {
       if (message.provider === 'zernio') await refreshZernioAccounts(db, message.workspaceId)
       else await refreshBrevoAccount(db, message.workspaceId)
+      return
+    }
+    case 'rewrite': {
+      await runRewrite(db, message.rewriteId, claudeRewriteModel)
       return
     }
     case 'send-digest': {

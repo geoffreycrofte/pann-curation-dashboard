@@ -20,6 +20,7 @@ import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { fetchText } from '../lib/fetch-text'
 import { checkKind, kindKey } from '../lib/kinds'
+import { rewriteRequestSchema } from '../rewrite/prompt'
 import { parseJson } from '../lib/validation'
 
 const TOPIC_COLUMNS = 'id, workspace_id, slug, name_fr, name_en, active, monthly_budget_usd'
@@ -347,6 +348,43 @@ export const topics = new Hono<AppEnv>()
     const { error } = await c.var.db.from('topics').update({ config: next }).eq('id', topicId)
     if (error) throw error
     return c.body(null, 204)
+  })
+
+  /**
+   * AI rewrite of a summary or a post. The request is recorded (RLS: the user can
+   * access the topic and the item is in it), a job runs it; the board polls the result.
+   */
+  .post('/:topicId/items/:itemId/rewrites', async (c) => {
+    const request = await parseJson(rewriteRequestSchema, c.req.raw)
+    const { topicId, itemId } = c.req.param()
+    const { data: link, error: linkError } = await c.var.db
+      .from('item_topics')
+      .select('item_id')
+      .eq('topic_id', topicId)
+      .eq('item_id', itemId)
+      .maybeSingle()
+    if (linkError) throw linkError
+    if (!link) throw new HTTPException(404, { message: 'Item not found in this topic' })
+    const { data, error } = await c.var.db
+      .from('rewrites')
+      .insert({ topic_id: topicId, item_id: itemId, request })
+      .select('id')
+      .single()
+    if (error) throw error
+    await c.env.JOBS.send({ type: 'rewrite', rewriteId: data.id })
+    return c.json({ id: data.id }, 202)
+  })
+
+  .get('/:topicId/rewrites/:rewriteId', async (c) => {
+    const { data, error } = await c.var.db
+      .from('rewrites')
+      .select('id, status, result, error')
+      .eq('topic_id', c.req.param('topicId'))
+      .eq('id', c.req.param('rewriteId'))
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Rewrite not found' })
+    return c.json(data)
   })
 
   .get('/:topicId/items', async (c) => {
