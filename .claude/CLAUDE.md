@@ -20,3 +20,7 @@ Complète le `CLAUDE.md` à la racine (produit, commandes, règles de code).
 
 - Pas de ligne `Co-Authored-By` dans les messages de commit.
 - Messages en anglais : un titre court à l'impératif, puis le pourquoi dans le corps.
+
+## Pull requests
+
+- Pas de mention « Generated with Claude Code » ni de lien de session dans la description d'une PR ou dans un commentaire.
