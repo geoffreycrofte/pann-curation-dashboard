@@ -82,6 +82,7 @@ describe('Pann MCP server', () => {
     const list = await result(await serveMcp(rpc('tools/list'), fakeApi().api))
     expect(list.tools?.map((t) => t.name)).toEqual([
       'list_topics',
+      'get_topic_kinds',
       'list_items',
       'get_item',
       'set_item_status',
@@ -106,7 +107,8 @@ describe('Pann MCP server', () => {
       triage_reason: 'Utile',
       draft_status: 'none',
       publish_at: null,
-      item: { title: `T${id}`, canonical_url: `https://e.org/${id}`, kind, discovered_at: 'd' },
+      kind,
+      item: { title: `T${id}`, canonical_url: `https://e.org/${id}`, discovered_at: 'd' },
     })
     const { api, calls } = fakeApi({
       [`GET /topics/${TOPIC}/items`]: [row('a', 'legal'), row('b', 'tool'), row('c', 'legal')],

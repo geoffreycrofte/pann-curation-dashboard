@@ -7,6 +7,8 @@ export interface TriageCall {
   model: string
   system: string
   user: string
+  /** Keys of the topic kinds: the only values the answer may give. */
+  kindKeys: readonly string[]
 }
 
 export type TriageResult =
@@ -21,7 +23,7 @@ export type TriageResult =
 /** One triage call with structured outputs: the answer is guaranteed to match the schema. */
 export type TriageModel = (call: TriageCall) => Promise<TriageResult>
 
-export const claudeTriageModel: TriageModel = async ({ apiKey, model, system, user }) => {
+export const claudeTriageModel: TriageModel = async ({ apiKey, model, system, user, kindKeys }) => {
   const client = new Anthropic({ apiKey, maxRetries: 2, timeout: 60_000 })
   try {
     const response = await client.messages.parse({
@@ -29,7 +31,7 @@ export const claudeTriageModel: TriageModel = async ({ apiKey, model, system, us
       max_tokens: 512,
       system,
       messages: [{ role: 'user', content: user }],
-      output_config: { format: zodOutputFormat(triageOutputSchema) },
+      output_config: { format: zodOutputFormat(triageOutputSchema(kindKeys)) },
     })
     const usage = {
       input_tokens: response.usage.input_tokens,

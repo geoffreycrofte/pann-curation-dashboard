@@ -92,7 +92,12 @@ const { mutate, isLoading } = useMutation({
       </div>
       <div class="form-row">
         <label :for="`${id}-kind`">{{ t('addRss.kind') }}</label>
-        <KindSelect :id="`${id}-kind`" v-model="kind" :aria-describedby="`${id}-kind-hint`" />
+        <KindSelect
+          :id="`${id}-kind`"
+          :topic-id="topicId"
+          v-model="kind"
+          :aria-describedby="`${id}-kind-hint`"
+        />
         <p :id="`${id}-kind-hint`" class="hint">{{ t('addRss.kindHint') }}</p>
       </div>
       <div class="form-row">

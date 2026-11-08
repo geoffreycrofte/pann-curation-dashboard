@@ -27,6 +27,10 @@
   --color-accent-on-ink: #ffc72c;
   --color-success: light-dark(#1d6b34, #6fd08c);
   --color-danger: light-dark(#b42318, #ff8a80);
+  /* Badge backgrounds (with --color-text on them). */
+  --color-neutral-soft: light-dark(#ece6d8, #2b2b30);
+  --color-success-soft: light-dark(#dcefe1, #133420);
+  --color-danger-soft: light-dark(#fbe1dd, #3d1a16);
   --color-focus: light-dark(#7a5800, #ffc72c);
   --color-focus-on-ink: #ffc72c;
 

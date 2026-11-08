@@ -85,7 +85,7 @@ export const githubAdapter: Adapter = async (source, { since, secrets }) => {
         .filter(Boolean)
         .join('\n'),
       published_at: release?.published_at ?? repo.pushed_at,
-      kind: 'tool' as const,
+      kind: source.default_kind,
       change_signature: release?.tag_name ?? null,
     })
   }

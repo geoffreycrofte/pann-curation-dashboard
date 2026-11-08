@@ -18,11 +18,11 @@ with ws as (
   insert into public.topics (workspace_id, slug, name_fr, name_en, monthly_budget_usd, config)
   select ws.id, 'accessibilite', 'Accessibilité numérique', 'Digital accessibility', 10,
   $json${
-    "categories": [
-      { "key": "news",     "label_fr": "Actualité", "label_en": "News" },
-      { "key": "legal",    "label_fr": "Légal",     "label_en": "Legal" },
-      { "key": "tool",     "label_fr": "Outil",     "label_en": "Tool" },
-      { "key": "resource", "label_fr": "Ressource", "label_en": "Resource" }
+    "kinds": [
+      { "key": "news",     "label_fr": "Actualité", "label_en": "News",     "description": "Announcements, events, industry news." },
+      { "key": "legal",    "label_fr": "Légal",     "label_en": "Legal",    "description": "Laws, regulations, standards, court or authority decisions, official guidance." },
+      { "key": "tool",     "label_fr": "Outil",     "label_en": "Tool",     "description": "Software, libraries, extensions, services, new releases." },
+      { "key": "resource", "label_fr": "Ressource", "label_en": "Resource", "description": "Guides, tutorials, articles, research, talks." }
     ],
     "output_langs": ["fr", "en"],
     "ai": {
@@ -53,7 +53,7 @@ with ws as (
   returning id
 )
 insert into public.sources (topic_id, type, label, config, default_kind)
-select topic.id, s.type::public.source_type, s.label, s.config::jsonb, s.kind::public.item_kind
+select topic.id, s.type::public.source_type, s.label, s.config::jsonb, s.kind
 from topic, (values
   ('github', 'GitHub topic: accessibility', '{"query": "topic:accessibility", "min_stars": 20}', 'tool'),
   ('github', 'GitHub topic: a11y',          '{"query": "topic:a11y", "min_stars": 20}', 'tool'),

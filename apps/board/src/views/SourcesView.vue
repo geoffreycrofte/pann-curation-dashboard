@@ -35,12 +35,14 @@ import TopicNav from '../components/TopicNav.vue'
 import { api, type SourcePatch } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
+import { useTopicKinds } from '../lib/kinds'
 import { useWorkspace } from '../lib/workspace'
 
 const props = defineProps<{ topicId: string }>()
 const { t, d } = useI18n()
 const queryCache = useQueryCache()
 const topicName = useTopicName(() => props.topicId)
+const { label: kindLabel } = useTopicKinds(() => props.topicId)
 
 const { data: topic } = useQuery({
   key: () => ['topic', props.topicId],
@@ -291,9 +293,7 @@ function feedUrl(source: Source): string | undefined {
                     <dt class="visually-hidden">{{ t('sources.kind') }}</dt>
                     <dd>
                       {{
-                        source.default_kind
-                          ? t(`kind.${source.default_kind}`)
-                          : t('kindSelect.none')
+                        source.default_kind ? kindLabel(source.default_kind) : t('kindSelect.none')
                       }}
                     </dd>
                   </div>
@@ -522,13 +522,6 @@ function feedUrl(source: Source): string | undefined {
 .type-dot[data-type='github'] {
   border: 1.5px solid var(--color-text);
   background: none;
-}
-
-.meta-kind dd {
-  padding: 0.125rem var(--space-2);
-  border-radius: 6px;
-  background: var(--color-accent-soft);
-  font-weight: 600;
 }
 
 .meta-query {

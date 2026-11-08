@@ -1,4 +1,4 @@
-import { ITEM_KINDS, ITEM_TOPIC_STATUSES, LANGS } from '@pann/shared'
+import { ITEM_TOPIC_STATUSES, KIND_KEY, LANGS } from '@pann/shared'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 import { CfWorkerJsonSchemaValidator } from '@modelcontextprotocol/sdk/validation/cfworker'
@@ -46,7 +46,8 @@ interface ItemRow {
   triage_reason: string | null
   draft_status: string
   publish_at: string | null
-  item: { title: string; canonical_url: string; kind: string | null; discovered_at: string }
+  kind: string | null
+  item: { title: string; canonical_url: string; discovered_at: string }
 }
 
 /** One MCP server per request (stateless): nothing is shared between users. */
@@ -76,6 +77,22 @@ export function createPannServer(api: ApiCall): McpServer {
   )
 
   server.registerTool(
+    'get_topic_kinds',
+    {
+      title: 'List the kinds of content of a topic',
+      description:
+        'Kinds of content of a topic (key, names, definition): the values accepted for "kind".',
+      inputSchema: { topic_id: topicId },
+      annotations: readOnly,
+    },
+    ({ topic_id }) =>
+      run(
+        api('GET', `/topics/${topic_id}`),
+        (topic) => (topic as { config: { kinds: unknown } }).config.kinds,
+      ),
+  )
+
+  server.registerTool(
     'list_items',
     {
       title: 'List items',
@@ -84,7 +101,13 @@ export function createPannServer(api: ApiCall): McpServer {
       inputSchema: {
         topic_id: topicId,
         status: z.enum(ITEM_TOPIC_STATUSES).default('new'),
-        kind: z.enum(ITEM_KINDS).optional().describe('Keep only this kind of content'),
+        kind: z
+          .string()
+          .regex(KIND_KEY)
+          .optional()
+          .describe(
+            'Keep only this kind of content (a kind key of the topic, see get_topic_kinds)',
+          ),
         limit: z.number().int().min(1).max(100).default(20),
       },
       annotations: readOnly,
@@ -92,13 +115,13 @@ export function createPannServer(api: ApiCall): McpServer {
     ({ topic_id, status, kind, limit }) =>
       run(api('GET', `/topics/${topic_id}/items?status=${status}&limit=100`), (rows) =>
         (rows as ItemRow[])
-          .filter((r) => !kind || r.item.kind === kind)
+          .filter((r) => !kind || r.kind === kind)
           .slice(0, limit)
           .map((r) => ({
             item_id: r.item_id,
             title: r.item.title,
             url: r.item.canonical_url,
-            kind: r.item.kind,
+            kind: r.kind,
             score: r.relevance_score,
             reason: r.triage_reason,
             commercial: r.is_commercial,
@@ -148,7 +171,12 @@ export function createPannServer(api: ApiCall): McpServer {
         topic_id: topicId,
         url: z.string().url(),
         title: z.string().max(500).optional(),
-        kind: z.enum(ITEM_KINDS).nullable().default(null),
+        kind: z
+          .string()
+          .regex(KIND_KEY)
+          .nullable()
+          .default(null)
+          .describe('A kind key of the topic (see get_topic_kinds), or null'),
         status: z.enum(['new', 'validated']).default('validated'),
       },
       annotations: { idempotentHint: true, openWorldHint: true },

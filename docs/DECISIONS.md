@@ -197,3 +197,25 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 **Appliquée partout, pas seulement à Exa.** Le collecteur écarte les pages de ces sites quelle que soit la source (RSS, Exa, GitHub), avant l'ingestion. Exa reçoit en plus les domaines exclus (`excludeDomains`), pour ne pas payer des résultats écartés ensuite ; une source limitée à certains sites (`includeDomains`) envoie seulement sa liste, privée des sites exclus. Un lien ajouté à la main n'est pas filtré : c'est un choix explicite.
 
 **Au moment de l'exclusion**, l'élément d'origine et tous les éléments de ce site encore « À trier » passent en « Rejeté ». Les éléments déjà validés ne bougent pas. Retirer un site de la liste ne fait pas revenir les éléments rejetés.
+
+## 2026-11-08 : types de contenu propres à chaque thème
+
+**Liste par thème** (`kinds` dans la config : clé, noms FR et EN, définition). Pann propose quatre types par défaut (actualité, légal, outil, ressource) ; chaque thème les renomme, en ajoute ou en retire (Réglages, Types de contenu). Les anciennes configs reprennent `categories`, prévu pour cela mais jamais utilisé, sinon les types par défaut.
+
+**Le type d'un élément est stocké par thème** (`item_topics.kind`), plus sur l'élément partagé : un même article peut être « légal » dans un thème et « actualité » dans un autre. Migration `20261108000000_custom_kinds` : reprise des valeurs, `sources.default_kind` en texte, fonctions `ingest_items`, `add_manual_item` et `topic_feed` réécrites, suppression de `items.kind` et du type `item_kind`. Les clés ne sont pas contraintes en base (elles vivent dans la config) : l'API vérifie qu'un type existe dans le thème.
+
+**Retirer un type** passe par `PUT /api/topics/:id/kinds`, qui reporte ses éléments et ses sources sur un type choisi (ou aucun). Le `PATCH` générique de la config refuse `kinds`.
+
+**Tri par IA** : il choisit parmi les clés du thème (sortie structurée avec une énumération construite par thème) et lit leurs définitions, qui sont des réglages de l'utilisateur ; le prompt (`triage-v3`) ne contient plus de définition en dur. Un type venu de la source ou de l'utilisateur prime sur celui du tri. Le dédoublonnage par titre écartait les outils via `items.kind` : il écarte désormais les éléments suivis par version (`change_signature`).
+
+## 2026-11-08 : réécriture par IA depuis la fiche
+
+**Réécrire** (Raccourcir, Allonger un peu, Plus pro, Plus familier, Instruction personnalisée) sur chaque résumé et chaque post. La proposition remplace le texte dans le champ, rien n'est enregistré sans « Enregistrer », et « Annuler la réécriture » rétablit le texte précédent.
+
+**Par un job, pas dans la requête.** Lire la clé Anthropic demande la clé secrète, interdite dans une requête utilisateur. La requête enregistre la demande dans `rewrites` (RLS : l'utilisateur accède au thème, et ne lit que ses propres demandes), un job l'exécute et écrit le résultat, le board interroge la ligne toutes les 1,5 s (90 s au plus). Les demandes de plus de 7 jours sont supprimées par le job.
+
+**Prompt** (`rewrite-v1`) : uniquement le fonctionnement (garder les faits et la langue, pas d'URL dans un post, limite de longueur du post moins le lien). Les consignes de style viennent des réglages du thème (`style_rules` pour les résumés, `post_rules` pour les posts). Modèle de rédaction du thème ; même budget mensuel que la rédaction ; coût enregistré sous l'opération `rewrite`.
+
+## 2026-11-08 : badges
+
+Un seul style pour les étiquettes et statuts de toute l'application (`.badge` dans `base.css`) : petit, plat, coins peu arrondis, fond teinté, sans bordure, pour ne jamais ressembler à un bouton (les boutons sont des pilules bordées). Tons `accent`, `success`, `danger` et neutre, point optionnel (`data-dot`) ; le texte porte l'information. Nouveaux tokens de fond, vérifiés en contraste : `--color-neutral-soft`, `--color-success-soft`, `--color-danger-soft`.

@@ -247,7 +247,38 @@ export default {
     credits_exhausted: 'Crédits {provider} épuisés : l’envoi a été refusé.',
     empty_digest: 'Rien de nouveau depuis la newsletter précédente : rien n’a été envoyé.',
   },
+  rewrite: {
+    button: 'Réécrire',
+    label: 'Réécrire : {field}',
+    running: 'Réécriture…',
+    done: 'Proposition insérée dans le champ. Enregistrez pour la garder, ou annulez la réécriture.',
+    undone: 'Texte précédent rétabli.',
+    undo: 'Annuler la réécriture',
+    timeout: 'La réécriture prend trop de temps. Réessayez dans un moment.',
+    presets: {
+      shorter: 'Raccourcir',
+      longer: 'Allonger un peu',
+      formal: 'Plus pro',
+      casual: 'Plus familier',
+      custom: 'Instruction personnalisée…',
+    },
+    customTitle: 'Réécrire avec votre instruction',
+    customText:
+      '{field} : décrivez ce que Claude doit changer. Les faits du texte sont conservés, et rien n’est enregistré avant que vous le décidiez.',
+    instruction: 'Instruction',
+    instructionPlaceholder: 'Exemple : commence par le chiffre clé, et cite la norme concernée.',
+    submit: 'Réécrire',
+  },
   draft: {
+    editedBadge: 'Modifié à la main',
+    unsaved: 'Non enregistré',
+    summaryUse: 'Ce résumé est repris dans la newsletter et dans les flux publics, dans sa langue.',
+    confirmTitle: 'Relancer la rédaction ?',
+    confirmReplaced:
+      'Claude rédige à nouveau les résumés, l’extrait et les posts à partir de la source.',
+    confirmKept:
+      'Les textes modifiés à la main sont conservés tels quels : seuls les autres sont remplacés.',
+    confirmCost: 'Cet appel est facturé et compte dans le budget mensuel du thème.',
     statusWithError: '{status} : {error}',
     status: {
       none: 'Pas encore rédigé',
@@ -444,7 +475,30 @@ export default {
     reject: 'Rejeter',
     restore: 'Remettre à trier',
   },
-  kind: { news: 'Actualité', legal: 'Légal', tool: 'Outil', resource: 'Ressource' },
+  itemKind: {
+    label: 'Type de contenu',
+    saved: 'Type de contenu enregistré.',
+  },
+  kinds: {
+    title: 'Types de contenu',
+    intro:
+      'Les types servent à étiqueter les éléments, à régler la fréquence de collecte (onglet Collecte) et à guider le tri par IA. Pann en propose quatre au départ : renommez-les, ajoutez-en ou retirez-en selon votre thème.',
+    newKind: 'Nouveau type',
+    labelFr: 'Nom en français',
+    labelEn: 'Nom en anglais',
+    description: 'Ce que ce type regroupe',
+    descriptionHint:
+      'L’IA lit cette définition pour choisir le type d’un élément. Exemple : décisions de justice et avis des autorités.',
+    remove: 'Retirer ce type',
+    removeLabel: 'Retirer le type « {kind} »',
+    add: 'Ajouter un type',
+    removedTitle: 'Types retirés',
+    removedHint:
+      'Leurs éléments et leurs sources passent sur le type choisi ci-dessous à l’enregistrement. Un type ajouté apparaît ici une fois enregistré.',
+    replaceLabel: 'Remplacer « {kind} » par',
+    restore: 'Garder ce type',
+    saved: 'Types de contenu enregistrés.',
+  },
   sourceType: { rss: 'Flux RSS', exa: 'Recherche Exa', github: 'GitHub' },
   interval: {
     hours: 'Toutes les heures | Toutes les {n} heures',
@@ -588,6 +642,7 @@ export default {
     tabsLabel: 'Sections des réglages',
     tabs: {
       general: 'Général',
+      kinds: 'Types de contenu',
       collection: 'Collecte',
       triage: 'Tri par IA',
       drafting: 'Rédaction par IA',
@@ -624,6 +679,7 @@ export default {
     calls: 'Appels',
     cost: 'Coût',
     operations: {
+      rewrite: 'Réécriture par IA',
       triage: 'Tri par IA',
       draft: 'Rédaction par IA',
       search: 'Recherche Exa',

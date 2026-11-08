@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DRAFT_MODES, ITEM_KINDS, type TopicConfig } from '@pann/shared'
+import { DRAFT_MODES, kindLabel, type Lang, type TopicConfig } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, ref, useId, watch } from 'vue'
@@ -10,6 +10,7 @@ import DiffusionSettings from '../components/DiffusionSettings.vue'
 import FeedSettings from '../components/FeedSettings.vue'
 import NewsletterSettings from '../components/NewsletterSettings.vue'
 import TopicGeneralSettings from '../components/TopicGeneralSettings.vue'
+import TopicKindsSettings from '../components/TopicKindsSettings.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
@@ -17,7 +18,7 @@ import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
 
 const props = defineProps<{ topicId: string }>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const id = useId()
 const queryCache = useQueryCache()
 const topicName = useTopicName(() => props.topicId)
@@ -25,6 +26,7 @@ const topicName = useTopicName(() => props.topicId)
 // Sub-tabs, kept in the address (?tab=…) so a section can be linked and survives a reload.
 const TABS = [
   'general',
+  'kinds',
   'collection',
   'triage',
   'drafting',
@@ -65,6 +67,12 @@ watch(
   },
   { immediate: true },
 )
+
+function setKindInterval(key: string, hours: number | null) {
+  if (!collection.value) return
+  if (hours) collection.value.intervals_hours[key] = hours
+  else delete collection.value.intervals_hours[key]
+}
 
 /** Free-text rules of the drafting tab (field of topic.config.ai, translation key). */
 const RULES = [
@@ -107,18 +115,26 @@ const { mutate, isLoading } = useMutation({
       <TopicGeneralSettings :key="topic.id" :topic="topic" />
     </TabsContent>
 
+    <TabsContent value="kinds" class="subpanel">
+      <TopicKindsSettings :key="topic.id" :topic="topic" />
+    </TabsContent>
+
     <TabsContent value="collection" class="subpanel">
       <form class="form settings" @submit.prevent="mutate()">
         <fieldset :aria-describedby="`${id}-hint`">
           <legend>{{ t('settings.collection') }}</legend>
           <p :id="`${id}-hint`" class="hint">{{ t('settings.collectionHint') }}</p>
           <div class="grid">
-            <div v-for="kind in ITEM_KINDS" :key="kind" class="form-row">
-              <label :for="`${id}-${kind}`">{{ t(`kind.${kind}`) }}</label>
+            <div v-for="kind in topic.config.kinds" :key="kind.key" class="form-row">
+              <label :for="`${id}-${kind.key}`">
+                {{ kindLabel(topic.config, kind.key, locale as Lang) }}
+              </label>
+              <!-- No interval of its own: the kind follows the "Others" value. -->
               <IntervalSelect
-                :id="`${id}-${kind}`"
-                :model-value="collection.intervals_hours[kind]"
-                @update:model-value="(v) => v && (collection!.intervals_hours[kind] = v)"
+                :id="`${id}-${kind.key}`"
+                :model-value="collection.intervals_hours[kind.key] ?? null"
+                :inherited-hours="collection.default_hours"
+                @update:model-value="(v) => setKindInterval(kind.key, v)"
               />
             </div>
             <div class="form-row">

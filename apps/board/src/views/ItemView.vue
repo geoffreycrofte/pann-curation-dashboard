@@ -22,8 +22,9 @@ import {
 } from 'reka-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import TextSaver from '../components/TextSaver.vue'
-import { api } from '../lib/api'
+import KindSelect from '../components/KindSelect.vue'
+import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
+import { api, type RewriteInput } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useWorkspace } from '../lib/workspace'
 
@@ -81,6 +82,20 @@ const canDraft = computed(() => ['validated', 'published'].includes(detail.value
 
 const message = ref('')
 const isError = ref(false)
+
+const { mutate: saveKind, isLoading: savingKind } = useMutation({
+  mutation: (kind: string | null) => api.setItemKind(props.topicId, props.itemId, kind),
+  async onSuccess() {
+    isError.value = false
+    message.value = t('itemKind.saved')
+    await queryCache.invalidateQueries({ key: key() })
+    await queryCache.invalidateQueries({ key: ['items', props.topicId] })
+  },
+  onError(err) {
+    isError.value = true
+    message.value = describeError(err.message, t).text
+  },
+})
 const { mutate: regenerate, isLoading: regenerating } = useMutation({
   mutation: () => api.requestDraft(props.topicId, props.itemId),
   async onSuccess() {
@@ -93,6 +108,38 @@ const { mutate: regenerate, isLoading: regenerating } = useMutation({
     message.value = describeError(err.message, t).text
   },
 })
+
+// AI rewrite: the job usually answers in a few seconds; the board polls its result.
+async function rewriteText(
+  target: RewriteInput['target'],
+  text: string,
+  preset: RewritePreset,
+  instruction?: string,
+): Promise<string> {
+  const { id } = await api.rewrite(props.topicId, props.itemId, {
+    text,
+    preset,
+    instruction,
+    target,
+  })
+  const deadline = Date.now() + 90_000
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    const result = await api.rewriteResult(props.topicId, id)
+    if (result.status === 'done' && result.result) return result.result
+    if (result.status === 'failed')
+      throw new Error(describeError(result.error ?? 'unexpected', t).text)
+  }
+  throw new Error(t('rewrite.timeout'))
+}
+
+/** Look of the drafting status block: tone and icon follow the state. */
+const draftTone = computed(
+  () =>
+    ({ none: 'neutral', pending: 'accent', ready: 'success', failed: 'danger' })[
+      detail.value?.draft_status ?? 'none'
+    ],
+)
 
 async function saveSummary(lang: string, text: string) {
   await api.updateSummary(props.topicId, props.itemId, lang, text)
@@ -113,6 +160,14 @@ const hasAccount = (post: PostDraft) =>
   !!topic.value && !!post.lang && !!accountFor(topic.value.config, post.channel, post.lang)
 
 const posts = computed(() => detail.value?.posts ?? [])
+const postTone = (post: PostDraft) =>
+  post.status === 'sent'
+    ? 'success'
+    : post.status === 'failed'
+      ? 'danger'
+      : post.status === 'scheduled' || post.claimed_at
+        ? 'accent'
+        : undefined
 const canDiffuse = computed(
   () =>
     ['validated', 'published'].includes(detail.value?.status ?? '') &&
@@ -190,8 +245,32 @@ async function savePost(postId: string, text: string) {
     </p>
     <h1 tabindex="-1" :lang="detail.item.source_lang ?? undefined">{{ detail.item.title }}</h1>
     <ul class="meta">
-      <li>{{ t(`statusOne.${detail.status}`) }}</li>
-      <li v-if="detail.item.kind">{{ t(`kind.${detail.item.kind}`) }}</li>
+      <li>
+        <span
+          class="badge"
+          data-dot
+          :data-tone="
+            detail.status === 'validated' || detail.status === 'published'
+              ? 'success'
+              : detail.status === 'rejected'
+                ? 'danger'
+                : undefined
+          "
+        >
+          {{ t(`statusOne.${detail.status}`) }}
+        </span>
+      </li>
+      <li class="kind-field">
+        <!-- The kind of the item in this topic: set by the source, the triage or here. -->
+        <label for="item-kind">{{ t('itemKind.label') }}</label>
+        <KindSelect
+          id="item-kind"
+          :topic-id="topicId"
+          :model-value="detail.kind"
+          :disabled="savingKind"
+          @update:model-value="(kind) => saveKind(kind)"
+        />
+      </li>
       <li v-if="detail.relevance_score !== null">
         {{ t('board.relevance', { score: detail.relevance_score }) }}
       </li>
@@ -211,27 +290,104 @@ async function savePost(postId: string, text: string) {
     </p>
     <p v-if="detail.triage_reason">{{ t('board.reason', { reason: detail.triage_reason }) }}</p>
 
-    <section class="block" aria-labelledby="drafting-status">
-      <h2 id="drafting-status">{{ t(`draft.status.${detail.draft_status}`) }}</h2>
-      <p v-if="detail.draft_error" class="error">{{ describeError(detail.draft_error, t).text }}</p>
-      <p v-if="detail.draft_error && describeError(detail.draft_error, t).provider">
-        <RouterLink to="/connections">{{ t('errors.fixInConnections') }}</RouterLink>
-      </p>
-      <p v-if="!canDraft" class="hint">{{ t('draft.notValidated') }}</p>
-      <p v-if="model" class="hint">{{ t('draft.model', { model }) }}</p>
-      <div v-if="canDraft" class="row">
-        <button
-          type="button"
-          class="button"
-          :disabled="regenerating || detail.draft_status === 'pending'"
-          aria-describedby="regenerate-hint"
-          @click="regenerate()"
+    <section class="block draft-state" :data-tone="draftTone" aria-labelledby="drafting-status">
+      <span class="state-icon" aria-hidden="true">
+        <svg v-if="detail.draft_status === 'ready'" viewBox="0 0 24 24" width="22" height="22">
+          <path
+            d="M5 12.5l4.5 4.5L19 7.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <svg
+          v-else-if="detail.draft_status === 'pending'"
+          class="spin"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
         >
-          {{ t('draft.regenerate') }}
-        </button>
+          <path
+            d="M12 3a9 9 0 1 1-9 9"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          />
+        </svg>
+        <svg
+          v-else-if="detail.draft_status === 'failed'"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+        >
+          <path
+            d="M12 7v6M12 16.5v.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          />
+          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+        </svg>
+        <svg v-else viewBox="0 0 24 24" width="22" height="22">
+          <path
+            d="M6 18h12M8 14l7.5-7.5 2 2L10 16H8z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+      <div class="state-text">
+        <h2 id="drafting-status">{{ t(`draft.status.${detail.draft_status}`) }}</h2>
+        <p v-if="model" class="hint">{{ t('draft.model', { model }) }}</p>
+        <p v-if="!canDraft" class="hint">{{ t('draft.notValidated') }}</p>
+        <p v-if="detail.draft_error" class="error">
+          {{ describeError(detail.draft_error, t).text }}
+          <RouterLink v-if="describeError(detail.draft_error, t).provider" to="/connections">
+            {{ t('errors.fixInConnections') }}
+          </RouterLink>
+        </p>
+      </div>
+      <div v-if="canDraft" class="state-action">
+        <AlertDialogRoot>
+          <AlertDialogTrigger as-child>
+            <button
+              type="button"
+              class="button"
+              :disabled="regenerating || detail.draft_status === 'pending'"
+              aria-describedby="regenerate-hint"
+            >
+              {{ t('draft.regenerate') }}
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogPortal>
+            <AlertDialogOverlay class="dialog-overlay" />
+            <AlertDialogContent class="dialog">
+              <AlertDialogTitle class="dialog-title">{{
+                t('draft.confirmTitle')
+              }}</AlertDialogTitle>
+              <AlertDialogDescription as="div" class="confirm-text">
+                <p>{{ t('draft.confirmReplaced') }}</p>
+                <p>{{ t('draft.confirmKept') }}</p>
+                <p>{{ t('draft.confirmCost') }}</p>
+              </AlertDialogDescription>
+              <div class="dialog-actions">
+                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                <AlertDialogAction class="button" data-variant="primary" @click="regenerate()">
+                  {{ t('draft.regenerate') }}
+                </AlertDialogAction>
+              </div>
+            </AlertDialogContent>
+          </AlertDialogPortal>
+        </AlertDialogRoot>
         <p id="regenerate-hint" class="hint">{{ t('draft.regenerateHint') }}</p>
       </div>
-      <p role="status" :class="{ error: isError }">{{ message }}</p>
+      <p role="status" class="state-message" :class="{ error: isError }">{{ message }}</p>
     </section>
 
     <section v-if="detail.summaries.length" class="block" aria-labelledby="summaries">
@@ -249,7 +405,12 @@ async function savePost(postId: string, text: string) {
             :value="detail.summaries.find((s) => s.lang === lang)!.summary"
             :lang="lang"
             :edited="detail.summaries.find((s) => s.lang === lang)!.edited_by_human"
+            :description="t('draft.summaryUse')"
             :save="(text) => saveSummary(lang, text)"
+            :rewrite="
+              (text, preset, instruction) =>
+                rewriteText({ kind: 'summary', lang }, text, preset, instruction)
+            "
           />
         </template>
       </div>
@@ -285,9 +446,20 @@ async function savePost(postId: string, text: string) {
               :readonly="post.status === 'sent' || !!post.claimed_at"
               :edited="post.edited_by_human"
               :save="(text) => savePost(post.id, text)"
+              :rewrite="
+                post.lang
+                  ? (text, preset, instruction) =>
+                      rewriteText(
+                        { kind: 'post', lang: post.lang!, channel },
+                        text,
+                        preset,
+                        instruction,
+                      )
+                  : undefined
+              "
             />
             <p class="post-status" :data-status="post.status">
-              <span class="badge">{{
+              <span class="badge" data-dot :data-tone="postTone(post)">{{
                 post.claimed_at ? t('diffusion.claimed') : t(`diffusion.postStatus.${post.status}`)
               }}</span>
               <span v-if="post.status === 'scheduled' && post.scheduled_at">
@@ -384,6 +556,126 @@ async function savePost(postId: string, text: string) {
 </template>
 
 <style scoped>
+/* Drafting status: tone and icon follow the state (text first, color reinforces). */
+.draft-state {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-inline-start: 6px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.draft-state[data-tone='accent'] {
+  border-inline-start-color: var(--color-accent-fill);
+}
+
+.draft-state[data-tone='success'] {
+  border-inline-start-color: var(--color-success);
+}
+
+.draft-state[data-tone='danger'] {
+  border-inline-start-color: var(--color-danger);
+}
+
+.state-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--color-neutral-soft);
+  color: var(--color-text);
+}
+
+.draft-state[data-tone='accent'] .state-icon {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+}
+
+.draft-state[data-tone='success'] .state-icon {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.draft-state[data-tone='danger'] .state-icon {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.state-text h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.state-text p {
+  margin: var(--space-1) 0 0;
+}
+
+/* "Draft again" at the far right, its help text under it. */
+.state-action {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-1);
+  max-width: 16rem;
+  text-align: end;
+}
+
+.state-action .hint {
+  margin: 0;
+}
+
+.state-message {
+  grid-column: 2 / -1;
+  margin: 0;
+}
+
+.state-message:empty {
+  position: absolute;
+}
+
+.confirm-text p {
+  margin: 0 0 var(--space-2);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@media (max-width: 40rem) {
+  .draft-state {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .state-action {
+    grid-column: 1 / -1;
+    justify-items: start;
+    max-width: none;
+    text-align: start;
+  }
+}
+
+.kind-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.kind-field .field {
+  min-height: 2.25rem;
+  padding-block: var(--space-1);
+  font-size: 0.875rem;
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;
@@ -445,30 +737,6 @@ async function savePost(postId: string, text: string) {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
-}
-
-.badge {
-  padding: 0.125rem var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  font-size: 0.8125rem;
-  font-weight: 650;
-}
-
-.post-status[data-status='sent'] .badge {
-  border-color: var(--color-success);
-  color: var(--color-success);
-}
-
-.post-status[data-status='failed'] .badge {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-}
-
-.post-status[data-status='scheduled'] .badge {
-  border-color: var(--color-accent-fill);
-  background: var(--color-accent-fill);
-  color: var(--color-on-accent);
 }
 
 .excerpt {

@@ -6,8 +6,8 @@
 export const LANGS = ['fr', 'en'] as const
 export type Lang = (typeof LANGS)[number]
 
-export const ITEM_KINDS = ['news', 'legal', 'tool', 'resource'] as const
-export type ItemKind = (typeof ITEM_KINDS)[number]
+/** Key of a content kind, from the kinds of the topic (topic config `kinds`). */
+export type ItemKind = string
 
 export const ITEM_TOPIC_STATUSES = [
   'new',
