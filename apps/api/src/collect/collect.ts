@@ -2,6 +2,7 @@ import {
   isSourceDue,
   normalizeUrl,
   parseErrorCode,
+  requiredProvider,
   type Provider,
   type SourceRunStats,
 } from '@pann/shared'
@@ -39,6 +40,11 @@ export interface CollectStore {
   credentials(workspaceId: string): Promise<CollectSecrets>
   /** A provider rejected the workspace key: shown on the Connections page. */
   markCredentialInvalid(workspaceId: string, provider: Provider): Promise<void>
+  /**
+   * A provider accepted the workspace key during collection. Exa has no free check
+   * when the key is saved: this is how its key becomes "checked".
+   */
+  markCredentialOk(workspaceId: string, provider: Provider): Promise<void>
   ingest(topicId: string, rows: IngestRow[]): Promise<IngestStats>
   finishRun(
     sourceId: string,
@@ -126,6 +132,9 @@ export async function collect(deps: {
     return secrets
   }
 
+  // Once per workspace and provider and per pass: the first successful use is enough.
+  const confirmed = new Set<string>()
+
   const reports: SourceReport[] = []
   for (const source of due) {
     const report: SourceReport = {
@@ -142,6 +151,11 @@ export async function collect(deps: {
         secrets: await secretsOf(source.workspace_id),
       })
       if (result.usage?.length) await deps.store.logUsage(source, result.usage)
+      const provider = requiredProvider(source.type)
+      if (provider && !confirmed.has(`${source.workspace_id}/${provider}`)) {
+        confirmed.add(`${source.workspace_id}/${provider}`)
+        await deps.store.markCredentialOk(source.workspace_id, provider)
+      }
       const rows = toIngestRows(result.items)
       report.collected = rows.length
       const stats = rows.length ? await deps.store.ingest(source.topic_id, rows) : emptyStats()
