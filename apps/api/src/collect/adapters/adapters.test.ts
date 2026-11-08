@@ -1,7 +1,7 @@
 import { parseTopicConfig } from '@pann/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CollectSource } from '../types'
-import { exaAdapter } from './exa'
+import { domainFilters, exaAdapter } from './exa'
 import { githubAdapter } from './github'
 import { rssAdapter } from './rss'
 
@@ -175,5 +175,20 @@ describe('githubAdapter', () => {
       ['o/tool: A11y linter', 'v2.1.0', '2026-09-19T00:00:00Z', 'tool'],
       ['o/lib', null, '2026-09-21T00:00:00Z', 'tool'],
     ])
+  })
+})
+
+describe('domainFilters', () => {
+  it('adds the topic exclusions to the source ones', () => {
+    expect(domainFilters(undefined, ['a.org'], ['b.org', 'a.org'])).toEqual({
+      excludeDomains: ['a.org', 'b.org'],
+    })
+    expect(domainFilters(undefined, undefined, [])).toEqual({})
+  })
+
+  it('removes excluded sites from an include list and sends no exclusion with it', () => {
+    expect(domainFilters(['w3.org', 'blog.b.org'], undefined, ['b.org'])).toEqual({
+      includeDomains: ['w3.org'],
+    })
   })
 })

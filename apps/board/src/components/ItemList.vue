@@ -57,6 +57,21 @@ const { mutate, isLoading } = useMutation({
     emit('announce', err.message)
   },
 })
+
+const { mutate: excludeSite, isLoading: excluding } = useMutation({
+  mutation: (vars: { item: BoardItem; domain: string }) =>
+    api.excludeSite(props.topicId, vars.domain, vars.item.item_id),
+  async onSuccess(result) {
+    emit('announce', t('reject.siteDone', { site: result.domain, count: result.rejected }))
+    await queryCache.invalidateQueries({ key: ['items', props.topicId] })
+    await queryCache.invalidateQueries({ key: ['topic', props.topicId] })
+    await nextTick()
+    listEl.value?.focus()
+  },
+  onError(err) {
+    emit('announce', err.message)
+  },
+})
 </script>
 
 <template>
@@ -66,7 +81,12 @@ const { mutate, isLoading } = useMutation({
     <p v-if="!items?.length">{{ t('board.empty') }}</p>
     <ul v-else class="list">
       <li v-for="item in items" :key="item.item_id">
-        <ItemCard :item="item" :busy="isLoading" @set-status="(to) => mutate({ item, to })" />
+        <ItemCard
+          :item="item"
+          :busy="isLoading || excluding"
+          @set-status="(to) => mutate({ item, to })"
+          @exclude-site="(domain) => excludeSite({ item, domain })"
+        />
       </li>
     </ul>
   </div>

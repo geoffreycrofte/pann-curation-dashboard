@@ -242,44 +242,6 @@ const { mutate, isLoading } = useMutation({
 </template>
 
 <style scoped>
-/* Sub-tabs: plain labels on a separating line, a thick gold bar under the current one
- * (and bold text: not color alone). Lighter than the topic sections above. */
-.subtabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--space-1);
-  margin-bottom: var(--space-6);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.subtab {
-  min-height: 2.75rem;
-  margin-bottom: -1px;
-  padding: var(--space-2) var(--space-4);
-  border: 0;
-  border-bottom: 4px solid transparent;
-  background: none;
-  color: var(--color-text-muted);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.subtab:hover {
-  color: var(--color-text);
-  border-bottom-color: var(--color-border-subtle);
-}
-
-.subtab[data-state='active'] {
-  border-bottom-color: var(--color-accent-fill);
-  color: var(--color-text);
-  font-weight: 750;
-}
-
-.subpanel:focus-visible {
-  outline-offset: 4px;
-}
-
 /* Each panel is one section: no card, the legend reads as the panel title. */
 .settings {
   max-width: 40rem;
@@ -325,11 +287,5 @@ textarea.field {
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   gap: var(--space-4);
   margin-top: var(--space-3);
-}
-
-@media (forced-colors: active) {
-  .subtab[data-state='active'] {
-    border-bottom-color: Highlight;
-  }
 }
 </style>

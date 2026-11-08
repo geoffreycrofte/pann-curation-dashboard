@@ -17,6 +17,22 @@ const responseSchema = z.object({
   costDollars: z.object({ total: z.number() }).partial().nullish(),
 })
 
+/**
+ * The sites excluded from the topic join the source's own exclusions. A source limited
+ * to some sites only sends that list, minus the excluded ones (the collector drops
+ * excluded sites from every result anyway).
+ */
+export function domainFilters(
+  include: string[] | undefined,
+  exclude: string[] | undefined,
+  topicExcluded: string[],
+): { includeDomains?: string[]; excludeDomains?: string[] } {
+  const isExcluded = (d: string) => topicExcluded.some((x) => d === x || d.endsWith(`.${x}`))
+  if (include?.length) return { includeDomains: include.filter((d) => !isExcluded(d)) }
+  const all = [...new Set([...(exclude ?? []), ...topicExcluded])]
+  return all.length ? { excludeDomains: all } : {}
+}
+
 export const exaAdapter: Adapter = async (source, { since, secrets }) => {
   const key = secrets.exa
   if (!key) throw new SourceError('missing_credential', 'exa')
@@ -32,8 +48,11 @@ export const exaAdapter: Adapter = async (source, { since, secrets }) => {
       type: 'auto',
       numResults: num_results,
       startPublishedDate: since.toISOString(),
-      includeDomains: include_domains,
-      excludeDomains: exclude_domains,
+      ...domainFilters(
+        include_domains,
+        exclude_domains,
+        source.topic_config.collection.excluded_domains,
+      ),
       contents: { text: { maxCharacters: max_characters } },
     }),
     signal: AbortSignal.timeout(30_000),

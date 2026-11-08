@@ -189,3 +189,11 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 **Création d'un thème** : `POST /api/topics` avec le minimum (noms FR et EN, langues de publication, critères de pertinence, budget). Le reste de la configuration prend ses valeurs par défaut et se règle ensuite (onglet Réglages, sous-onglet Général pour les noms et les langues). Le slug vient du nom anglais, suffixé (`-2`, `-3`…) s'il existe déjà dans le workspace. La RLS existante (`members manage topics`) suffit : aucune migration. Après création, le board ouvre l'onglet Sources : c'est l'étape suivante de la mise en place.
 
 **Sources Exa et GitHub** : leurs schémas de configuration passent dans `packages/shared/src/source-config.ts`, utilisés par l'API (création, modification) et par le collecteur. Une source se modifie depuis sa carte (nom, type de contenu, réglages de la recherche). L'adresse d'un flux RSS reste fixe : un autre flux est une autre source.
+
+## 2026-11-08 : sites exclus d'un thème
+
+**Une liste par thème** (`collection.excluded_domains`), alimentée depuis le tri (« Rejeter », puis « Exclure ce site web ») ou depuis Sources, sous-onglet Exclusions. Un domaine exclut aussi ses sous-domaines ; `www.` est ignoré.
+
+**Appliquée partout, pas seulement à Exa.** Le collecteur écarte les pages de ces sites quelle que soit la source (RSS, Exa, GitHub), avant l'ingestion. Exa reçoit en plus les domaines exclus (`excludeDomains`), pour ne pas payer des résultats écartés ensuite ; une source limitée à certains sites (`includeDomains`) envoie seulement sa liste, privée des sites exclus. Un lien ajouté à la main n'est pas filtré : c'est un choix explicite.
+
+**Au moment de l'exclusion**, l'élément d'origine et tous les éléments de ce site encore « À trier » passent en « Rejeté ». Les éléments déjà validés ne bougent pas. Retirer un site de la liste ne fait pas revenir les éléments rejetés.

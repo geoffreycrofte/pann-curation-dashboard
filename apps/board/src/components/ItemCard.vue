@@ -1,15 +1,24 @@
 <script setup lang="ts">
 import type { BoardItem, ItemTopicStatus } from '@pann/shared'
-import { canTransition } from '@pann/shared'
+import { canTransition, siteOf } from '@pann/shared'
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+} from 'reka-ui'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { describeError } from '../lib/errors'
 
 const props = defineProps<{ item: BoardItem; busy: boolean }>()
-const emit = defineEmits<{ setStatus: [status: ItemTopicStatus] }>()
+const emit = defineEmits<{ setStatus: [status: ItemTopicStatus]; excludeSite: [domain: string] }>()
 const { t, d } = useI18n()
 
 const headingId = computed(() => `item-${props.item.item_id}`)
+/** Site of the item, offered for exclusion from the "Reject" menu. */
+const site = computed(() => siteOf(props.item.canonical_url))
 /** Visual level of the score tile; the score itself is also given as text. */
 const level = computed(() => {
   const score = props.item.relevance_score
@@ -105,17 +114,51 @@ const actions = computed(() =>
           role="group"
           :aria-label="t('board.actions', { title: item.title })"
         >
-          <button
-            v-for="action in actions"
-            :key="action.to"
-            type="button"
-            class="button"
-            :data-variant="action.variant"
-            :disabled="busy"
-            @click="emit('setStatus', action.to)"
-          >
-            {{ t(action.label) }}
-          </button>
+          <template v-for="action in actions" :key="action.to">
+            <!-- Reject: this item only, or the whole site from now on. -->
+            <DropdownMenuRoot v-if="action.to === 'rejected' && site">
+              <DropdownMenuTrigger as-child>
+                <button type="button" class="button" :disabled="busy">
+                  {{ t(action.label) }}
+                  <svg
+                    class="chevron"
+                    viewBox="0 0 16 16"
+                    width="14"
+                    height="14"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M3.5 6l4.5 4.5L12.5 6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                  </svg>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuContent class="menu" align="start" :side-offset="6">
+                  <DropdownMenuItem class="menu-item" @select="emit('setStatus', 'rejected')">
+                    {{ t('reject.justThis') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem class="menu-item" @select="emit('excludeSite', site)">
+                    <span>{{ t('reject.site') }}</span>
+                    <span class="menu-hint">{{ t('reject.siteHint', { site }) }}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenuPortal>
+            </DropdownMenuRoot>
+            <button
+              v-else
+              type="button"
+              class="button"
+              :data-variant="action.variant"
+              :disabled="busy"
+              @click="emit('setStatus', action.to)"
+            >
+              {{ t(action.label) }}
+            </button>
+          </template>
         </div>
         <RouterLink
           class="detail-link"

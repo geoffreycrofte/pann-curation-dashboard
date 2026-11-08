@@ -18,7 +18,7 @@ Complète le `CLAUDE.md` à la racine (produit, commandes, règles de code).
   git config user.email "452767+geoffreycrofte@users.noreply.github.com"
   ```
 
-- Pas de ligne `Co-Authored-By` dans les messages de commit.
+- Pas de ligne `Co-Authored-By` ni `Claude-Session` dans les messages de commit.
 - Messages en anglais : un titre court à l'impératif, puis le pourquoi dans le corps.
 
 ## Pull requests

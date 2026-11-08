@@ -114,6 +114,19 @@ describe('collect', () => {
     expect(invalid).toEqual([])
   })
 
+  it('never ingests items from a site excluded from the topic', async () => {
+    const excludedConfig = parseTopicConfig({ collection: { excluded_domains: ['rival.com'] } })
+    const { store, ingested } = memoryStore([source({ id: 'a', topic_config: excludedConfig })])
+    const rss: Adapter = async () => ({
+      items: [
+        { url: 'https://blog.rival.com/post', title: 'Rival' },
+        { url: 'https://example.org/ok', title: 'Kept' },
+      ],
+    })
+    await collect({ store, adapters: { rss }, now })
+    expect(ingested.t?.map((r) => r.canonical_url)).toEqual(['https://example.org/ok'])
+  })
+
   it('passes the workspace keys to the adapters', async () => {
     const { store } = memoryStore([source({ id: 'a', type: 'exa' })])
     let received: unknown

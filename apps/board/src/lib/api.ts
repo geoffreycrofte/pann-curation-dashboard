@@ -193,6 +193,15 @@ export const api = {
       `/topics/${topicId}/feed`,
       json('POST', { enabled, regenerate }),
     ),
+  excludeSite: (topicId: string, domain: string, itemId?: string) =>
+    request<{ domain: string; rejected: number }>(
+      `/topics/${topicId}/excluded-domains`,
+      json('POST', { domain, item_id: itemId }),
+    ),
+  removeExcludedSite: (topicId: string, domain: string) =>
+    request<void>(`/topics/${topicId}/excluded-domains/${encodeURIComponent(domain)}`, {
+      method: 'DELETE',
+    }),
   updateConfig: (topicId: string, patch: Partial<TopicConfig>) =>
     request<TopicConfig>(`/topics/${topicId}/config`, json('PATCH', patch)),
 
