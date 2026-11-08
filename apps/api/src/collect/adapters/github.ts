@@ -1,17 +1,9 @@
+import { githubSourceConfigSchema } from '@pann/shared'
 import { z } from 'zod'
 import { USER_AGENT } from '../../lib/fetch-text'
 import { SourceError, type Adapter } from '../types'
 
 const API = 'https://api.github.com'
-
-const configSchema = z.object({
-  /** GitHub search qualifiers, e.g. "topic:a11y". */
-  query: z.string().min(1),
-  /** Popularity floor, added unless the query already has a stars: qualifier. */
-  min_stars: z.number().int().min(0).default(20),
-  /** Repositories per run; each one costs a release lookup. */
-  max_results: z.number().int().min(1).max(30).default(15),
-})
 
 const searchSchema = z.object({
   items: z.array(
@@ -53,7 +45,7 @@ async function latestRelease(fullName: string, token?: string) {
  * is the change signature: a published tool comes back when it ships a new release.
  */
 export const githubAdapter: Adapter = async (source, { since, secrets }) => {
-  const config = configSchema.safeParse(source.config)
+  const config = githubSourceConfigSchema.safeParse(source.config)
   if (!config.success) throw new SourceError('invalid_config')
   const { query, min_stars, max_results } = config.data
 

@@ -63,8 +63,7 @@ const { mutate, isLoading } = useMutation({
 </script>
 
 <template>
-  <section :aria-labelledby="`${id}-heading`" class="add-rss">
-    <h2 :id="`${id}-heading`">{{ t('addRss.title') }}</h2>
+  <div class="add-rss">
     <form class="form" @submit.prevent="mutate(url)">
       <div class="form-row">
         <label :for="`${id}-url`">{{ t('addRss.url') }}</label>
@@ -136,24 +135,10 @@ const { mutate, isLoading } = useMutation({
     </form>
 
     <p role="status" :class="{ error: isError }">{{ message }}</p>
-  </section>
+  </div>
 </template>
 
 <style scoped>
-.add-rss {
-  max-width: 44rem;
-  margin-top: var(--space-6);
-  padding: var(--space-5) var(--space-6) var(--space-6);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
-
-.add-rss h2 {
-  margin-top: 0;
-}
-
 .choose {
   margin-top: var(--space-4);
 }

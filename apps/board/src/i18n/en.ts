@@ -28,6 +28,7 @@ export default {
     signOut: 'Sign out',
   },
   nav: {
+    newTopic: 'New topic',
     menu: 'Menu',
     workspace: 'Workspace',
     label: 'Main navigation',
@@ -80,6 +81,8 @@ export default {
       newsletter: 'Needed to send the newsletter',
     },
     manage: 'Manage',
+    replace: 'Replace the key',
+    collapse: 'Collapse',
     howTo: 'Where do I find this key?',
     keyLabel: '{provider} key',
     keyLabelReplace: 'New {provider} key',
@@ -446,6 +449,14 @@ export default {
     topicDefault: 'Topic setting ({value})',
   },
   sources: {
+    edit: 'Edit',
+    editLabel: 'Edit “{label}”',
+    query: 'Search',
+    rssUrlFixed: 'A feed address cannot be changed: for another feed, add a new source.',
+    newTopicTitle: 'Topic created.',
+    newTopicText:
+      'Next step: add its sources (RSS feeds, Exa searches, GitHub repositories) with the form at the bottom of the page. The content kind of each source sets how often it is collected.',
+    newTopicSettings: 'Then set up drafting, distribution and the newsletter',
     activeShort: 'Collection on',
     heading: 'Sources: {topic}',
     title: 'Sources',
@@ -477,6 +488,58 @@ export default {
     confirmText: 'Items already collected are kept. This cannot be undone.',
     lastError: 'Last error: {message}',
   },
+  newTopic: {
+    title: 'New topic',
+    intro:
+      'A topic is a watch subject with its own sources, triage, distribution and newsletter. Start with the essentials: everything can be changed later in the topic settings.',
+    names: 'Topic name',
+    namesHint: 'Shown on the board, in newsletters and feeds, in each language.',
+    nameFr: 'Name in French',
+    nameEn: 'Name in English',
+    langs: 'Publishing languages',
+    langsHint: 'Summaries, posts and the newsletter are written in each of these languages.',
+    langsRequired: 'Choose at least one publishing language.',
+    criteriaHint:
+      'Optional, but this is what guides the AI triage: describe what makes an item useful for this topic and what to leave out.',
+    create: 'Create the topic',
+    creating: 'Creating…',
+  },
+  addSource: {
+    title: 'Add a source',
+    type: 'Source type',
+    describe: {
+      rss: 'The feed of a site or a blog.',
+      exa: 'A web search that finds recent articles.',
+      github: 'Popular repositories matching a search.',
+    },
+  },
+  searchSource: {
+    submit: 'Add the source',
+    created: 'Source “{label}” added.',
+    exa: {
+      labelPlaceholder: 'Example: legal news',
+      query: 'Search',
+      queryPlaceholder: 'Example: new European Accessibility Act penalties',
+      queryHint:
+        'Describe what you are looking for in plain language: Exa finds pages with a close meaning, published since the last collection.',
+      numResults: 'Results per collection',
+      numResultsHint: 'From 1 to 25. Exa bills each collection.',
+      include: 'Only these sites',
+      exclude: 'Exclude these sites',
+      domainsHint: 'One domain per line, for example w3.org.',
+    },
+    github: {
+      labelPlaceholder: 'Example: a11y tools',
+      query: 'GitHub search',
+      queryPlaceholder: 'topic:a11y',
+      queryHint:
+        'GitHub search syntax: topic:a11y, language:typescript, or keywords. Only repositories updated since the last collection come up.',
+      minStars: 'Minimum stars',
+      minStarsHint: 'Leaves out little-followed repositories.',
+      maxResults: 'Repositories per collection',
+      maxResultsHint: 'From 1 to 30.',
+    },
+  },
   addRss: {
     title: 'Add an RSS feed',
     url: 'Address of the feed or of a page of the site',
@@ -496,6 +559,7 @@ export default {
   settings: {
     tabsLabel: 'Settings sections',
     tabs: {
+      general: 'General',
       collection: 'Collection',
       triage: 'AI triage',
       drafting: 'AI drafting',

@@ -4,6 +4,7 @@ import type {
   ItemTopicStatus,
   Lang,
   Provider,
+  SearchSourceType,
   Source,
   Topic,
   TopicConfig,
@@ -79,8 +80,28 @@ export interface AddItemResult {
 }
 
 export type SourcePatch = Partial<
-  Pick<Source, 'label' | 'active' | 'default_kind' | 'interval_hours'>
+  Pick<Source, 'label' | 'active' | 'default_kind' | 'interval_hours' | 'config'>
 >
+
+/** Exa search or GitHub repository search (config: see @pann/shared source-config). */
+export interface AddSearchSourceInput {
+  type: SearchSourceType
+  label: string
+  config: Record<string, unknown>
+  default_kind: ItemKind | null
+  interval_hours: number | null
+}
+
+export interface NewTopicInput {
+  workspace_id: string
+  name_fr: string
+  name_en: string
+  output_langs: Lang[]
+  relevance_criteria: string
+  monthly_budget_usd: number
+}
+
+export type TopicPatch = Partial<Pick<Topic, 'monthly_budget_usd' | 'name_fr' | 'name_en'>>
 
 export interface Me {
   user: { id: string; email?: string }
@@ -165,6 +186,7 @@ export const api = {
     request<void>(`/workspaces/${workspaceId}/credentials/${provider}`, { method: 'DELETE' }),
 
   topics: () => request<Topic[]>('/topics'),
+  createTopic: (input: NewTopicInput) => request<Topic>('/topics', json('POST', input)),
   topic: (topicId: string) => request<TopicWithConfig>(`/topics/${topicId}`),
   setFeed: (topicId: string, enabled: boolean, regenerate = false) =>
     request<{ feed_key: string | null }>(
@@ -208,12 +230,14 @@ export const api = {
   sendNewsletter: (topicId: string, lang?: Lang) =>
     request<void>(`/topics/${topicId}/newsletter/send`, json('POST', { lang })),
   usage: (topicId: string) => request<TopicUsage>(`/topics/${topicId}/usage`),
-  updateTopic: (topicId: string, patch: { monthly_budget_usd: number }) =>
+  updateTopic: (topicId: string, patch: TopicPatch) =>
     request<Topic>(`/topics/${topicId}`, json('PATCH', patch)),
 
   sources: (topicId: string) => request<Source[]>(`/topics/${topicId}/sources`),
   addRss: (topicId: string, input: AddRssInput) =>
     request<AddRssResult>(`/topics/${topicId}/sources/rss`, json('POST', input)),
+  addSearchSource: (topicId: string, input: AddSearchSourceInput) =>
+    request<Source>(`/topics/${topicId}/sources`, json('POST', input)),
   updateSource: (topicId: string, sourceId: string, patch: SourcePatch) =>
     request<Source>(`/topics/${topicId}/sources/${sourceId}`, json('PATCH', patch)),
   collectNow: (topicId: string, sourceId: string) =>

@@ -50,6 +50,35 @@ watch(status, async (value, previous) => {
   } else if (value !== 'ok') expanded.value = true
 })
 
+// With a key in place the form stays hidden: "Replace the key" opens it. A refused key
+// shows it right away, since it has to be replaced anyway.
+const replacing = ref(false)
+const showForm = computed(
+  () => props.canEdit && (!props.credential || status.value === 'invalid' || replacing.value),
+)
+const secretInput = ref<HTMLInputElement>()
+const replaceButton = ref<HTMLButtonElement>()
+async function startReplace() {
+  replacing.value = true
+  await nextTick()
+  secretInput.value?.focus()
+}
+async function cancelReplace() {
+  replacing.value = false
+  secret.value = ''
+  await nextTick()
+  replaceButton.value?.focus()
+}
+
+// Header button (collapsed card) and footer button (open card) toggle the same thing:
+// focus follows to the button that is shown after the switch.
+const footerToggle = ref<HTMLButtonElement>()
+async function setExpanded(value: boolean) {
+  expanded.value = value
+  await nextTick()
+  ;(value ? footerToggle.value : toggle.value)?.focus()
+}
+
 const secret = ref('')
 const instance = ref(props.credential?.meta.instance?.replace(/^https:\/\//, '') ?? '')
 const message = ref('')
@@ -70,6 +99,8 @@ const { mutate: save, isLoading: saving } = useMutation({
   async onSuccess(credential) {
     secret.value = ''
     isError.value = false
+    const wasReplacing = replacing.value
+    replacing.value = false
     const detail = credential.status_detail
       ? ` ${t(`connections.detail.${credential.status_detail}`)}`
       : ''
@@ -79,6 +110,11 @@ const { mutate: save, isLoading: saving } = useMutation({
         status: t(`connections.status.${credential.status}`),
       }) + detail
     await refresh()
+    // The form (and the focused save button) is gone: focus the replace button.
+    if (wasReplacing && expanded.value) {
+      await nextTick()
+      replaceButton.value?.focus()
+    }
   },
   onError(err) {
     isError.value = true
@@ -127,13 +163,13 @@ const { mutate: remove } = useMutation({
     <p class="purpose">{{ t(`connections.providers.${provider}.purpose`) }}</p>
 
     <button
-      v-if="status === 'ok'"
+      v-if="status === 'ok' && !expanded"
       ref="toggle"
       type="button"
       class="button toggle"
-      :aria-expanded="expanded"
+      aria-expanded="false"
       :aria-controls="`${id}-details`"
-      @click="expanded = !expanded"
+      @click="setExpanded(true)"
     >
       {{ t('connections.manage') }}<span class="visually-hidden">&nbsp;{{ name }}</span>
       <svg class="chevron" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
@@ -212,7 +248,7 @@ const { mutate: remove } = useMutation({
         </p>
       </details>
 
-      <form v-if="canEdit" class="form key-form" @submit.prevent="save()">
+      <form v-if="showForm" :id="`${id}-form`" class="form key-form" @submit.prevent="save()">
         <div class="form-row">
           <label :for="`${id}-secret`">
             {{
@@ -223,6 +259,7 @@ const { mutate: remove } = useMutation({
           </label>
           <input
             :id="`${id}-secret`"
+            ref="secretInput"
             v-model="secret"
             class="field"
             type="password"
@@ -247,38 +284,73 @@ const { mutate: remove } = useMutation({
           />
           <p :id="`${id}-instance-hint`" class="hint">{{ t('connections.instanceHint') }}</p>
         </div>
-        <div class="actions">
-          <button type="submit" class="button" data-variant="primary" :disabled="saving">
+      </form>
+
+      <div v-if="canEdit || status === 'ok'" class="card-footer">
+        <template v-if="showForm">
+          <button
+            type="submit"
+            :form="`${id}-form`"
+            class="button"
+            data-variant="primary"
+            :disabled="saving"
+          >
             {{ saving ? t('connections.saving') : t('connections.save') }}
           </button>
-          <AlertDialogRoot v-if="credential">
-            <AlertDialogTrigger as-child>
-              <button
-                type="button"
-                class="button"
-                :aria-label="t('connections.removeLabel', { provider: name })"
-              >
-                {{ t('connections.remove') }}
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogPortal>
-              <AlertDialogOverlay class="dialog-overlay" />
-              <AlertDialogContent class="dialog">
-                <AlertDialogTitle class="dialog-title">
-                  {{ t('connections.confirmTitle', { provider: name }) }}
-                </AlertDialogTitle>
-                <AlertDialogDescription>{{ t('connections.confirmText') }}</AlertDialogDescription>
-                <div class="dialog-actions">
-                  <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
-                  <AlertDialogAction class="button" data-variant="danger" @click="remove()">
-                    {{ t('common.delete') }}
-                  </AlertDialogAction>
-                </div>
-              </AlertDialogContent>
-            </AlertDialogPortal>
-          </AlertDialogRoot>
-        </div>
-      </form>
+          <button v-if="replacing" type="button" class="button" @click="cancelReplace">
+            {{ t('common.cancel') }}
+          </button>
+        </template>
+        <button
+          v-else-if="canEdit"
+          ref="replaceButton"
+          type="button"
+          class="button"
+          @click="startReplace"
+        >
+          {{ t('connections.replace') }}
+        </button>
+        <AlertDialogRoot v-if="credential">
+          <AlertDialogTrigger as-child>
+            <button
+              type="button"
+              class="button"
+              :aria-label="t('connections.removeLabel', { provider: name })"
+            >
+              {{ t('connections.remove') }}
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogPortal>
+            <AlertDialogOverlay class="dialog-overlay" />
+            <AlertDialogContent class="dialog">
+              <AlertDialogTitle class="dialog-title">
+                {{ t('connections.confirmTitle', { provider: name }) }}
+              </AlertDialogTitle>
+              <AlertDialogDescription>{{ t('connections.confirmText') }}</AlertDialogDescription>
+              <div class="dialog-actions">
+                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                <AlertDialogAction class="button" data-variant="danger" @click="remove()">
+                  {{ t('common.delete') }}
+                </AlertDialogAction>
+              </div>
+            </AlertDialogContent>
+          </AlertDialogPortal>
+        </AlertDialogRoot>
+        <button
+          v-if="status === 'ok'"
+          ref="footerToggle"
+          type="button"
+          class="button footer-toggle"
+          aria-expanded="true"
+          :aria-controls="`${id}-details`"
+          @click="setExpanded(false)"
+        >
+          {{ t('connections.collapse') }}<span class="visually-hidden">&nbsp;{{ name }}</span>
+          <svg class="chevron" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path d="M3.5 10l4.5-4.5L12.5 10" fill="none" stroke="currentColor" stroke-width="2" />
+          </svg>
+        </button>
+      </div>
     </div>
     <p role="status" class="message" :class="{ error: isError }">{{ message }}</p>
   </section>
@@ -335,10 +407,6 @@ const { mutate: remove } = useMutation({
 
 .toggle {
   justify-self: start;
-}
-
-.toggle[aria-expanded='true'] .chevron {
-  transform: rotate(180deg);
 }
 
 /* Empty live region: kept in the page for announcements, out of the layout. */
@@ -421,9 +489,15 @@ const { mutate: remove } = useMutation({
   max-width: 32rem;
 }
 
-.actions {
+.card-footer {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
+}
+
+/* Close the open card from its foot, at the far right of the action row. */
+.footer-toggle {
+  margin-inline-start: auto;
 }
 </style>

@@ -1,4 +1,13 @@
-import { ITEM_KINDS, MAX_INTERVAL_HOURS, MIN_INTERVAL_HOURS } from '@pann/shared'
+import {
+  exaSourceConfigSchema,
+  githubSourceConfigSchema,
+  ITEM_KINDS,
+  MAX_INTERVAL_HOURS,
+  MIN_INTERVAL_HOURS,
+  SEARCH_SOURCE_TYPES,
+  searchSourceConfigSchemas,
+  type SearchSourceType,
+} from '@pann/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
@@ -18,12 +27,24 @@ const addRssBody = z.object({
   interval_hours: interval.default(null),
 })
 
+const searchCommon = {
+  label: z.string().trim().min(1).max(200),
+  default_kind: z.enum(ITEM_KINDS).nullable().default(null),
+  interval_hours: interval.default(null),
+}
+const addSearchBody = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('exa'), config: exaSourceConfigSchema, ...searchCommon }),
+  z.object({ type: z.literal('github'), config: githubSourceConfigSchema, ...searchCommon }),
+])
+
 const updateBody = z
   .object({
     label: z.string().trim().min(1).max(200),
     active: z.boolean(),
     default_kind: z.enum(ITEM_KINDS).nullable(),
     interval_hours: interval,
+    /** Search sources only; validated against the schema of the source type. */
+    config: z.record(z.string(), z.unknown()),
   })
   .partial()
 
@@ -68,8 +89,37 @@ export const sources = new Hono<AppEnv>()
     return c.json({ status: 'created', source: data }, 201)
   })
 
+  /** Adds an Exa search or a GitHub repository search. */
+  .post('/', async (c) => {
+    const body = await parseJson(addSearchBody, c.req.raw)
+    const { data, error } = await c.var.db
+      .from('sources')
+      .insert({ topic_id: c.req.param('topicId')!, ...body })
+      .select(SOURCE_COLUMNS)
+      .single()
+    if (error) throw error
+    return c.json(data, 201)
+  })
+
   .patch('/:sourceId', async (c) => {
-    const body = await parseJson(updateBody, c.req.raw)
+    const { config, ...rest } = await parseJson(updateBody, c.req.raw)
+    const body: Record<string, unknown> = rest
+    if (config) {
+      const { data: current, error: readError } = await c.var.db
+        .from('sources')
+        .select('type')
+        .eq('topic_id', c.req.param('topicId')!)
+        .eq('id', c.req.param('sourceId'))
+        .maybeSingle()
+      if (readError) throw readError
+      if (!current) throw new HTTPException(404, { message: 'Source not found' })
+      // A feed keeps its URL: changing it means adding another source.
+      if (!(SEARCH_SOURCE_TYPES as readonly string[]).includes(current.type))
+        throw new HTTPException(400, { message: 'invalid_config' })
+      const parsed = searchSourceConfigSchemas[current.type as SearchSourceType].safeParse(config)
+      if (!parsed.success) throw new HTTPException(400, { message: 'invalid_config' })
+      body.config = parsed.data
+    }
     const { data, error } = await c.var.db
       .from('sources')
       .update(body)
