@@ -6,17 +6,17 @@ English translation of the brief Geoffrey wrote on 2026-11-08 for a supervised o
 
 The brief was written for a standalone tool (Markdown files in a Git repository, driven by Claude Code). That tool was not built: engagement became a tool of each Pann topic (see `docs/DECISIONS.md`, entry "un thème, deux outils"). Some parts therefore map to Pann features or are superseded:
 
-| Brief | In Pann |
-|---|---|
-| One repository per product (CheckFox) | One topic per product (CheckFox, Kitzy, Pann, RampUp...), with curation and engagement tools |
-| `brand/positioning.md`, `messaging.md`, `objections.md`, `proof-points.md` | Product profile of the topic (`topics.config.product`, Settings, Product) |
-| `listening/queries.md`, collection with Harken or OpenMagpie | Engagement sources of the topic (Hacker News, Bluesky, Mastodon, GitHub...) |
-| `listening/rules.md`, scoring grid | Engagement triage (to be built), its criteria set per topic |
-| `content/drafts/`, `prompts/draft-reply.md` | Engagement drafts in the board (to be built) |
-| Markdown tables of opportunities and rejections | Items and statuses in the database, shown on the board |
-| `prompts/*.md` | Prompts of the Pann jobs (tool behaviour only) plus topic settings (style, rules) |
-| Postiz for scheduling | Pann diffusion queue (curation). Engagement replies are never published by an API |
-| `ops/metrics.md`, `ops/learnings.md` | Not built yet |
+| Brief                                                                      | In Pann                                                                                      |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| One repository per product (CheckFox)                                      | One topic per product (CheckFox, Kitzy, Pann, RampUp...), with curation and engagement tools |
+| `brand/positioning.md`, `messaging.md`, `objections.md`, `proof-points.md` | Product profile of the topic (`topics.config.product`, Settings, Product)                    |
+| `listening/queries.md`, collection with Harken or OpenMagpie               | Engagement sources of the topic (Hacker News, Bluesky, Mastodon, GitHub...)                  |
+| `listening/rules.md`, scoring grid                                         | Engagement triage (to be built), its criteria set per topic                                  |
+| `content/drafts/`, `prompts/draft-reply.md`                                | Engagement drafts in the board (to be built)                                                 |
+| Markdown tables of opportunities and rejections                            | Items and statuses in the database, shown on the board                                       |
+| `prompts/*.md`                                                             | Prompts of the Pann jobs (tool behaviour only) plus topic settings (style, rules)            |
+| Postiz for scheduling                                                      | Pann diffusion queue (curation). Engagement replies are never published by an API            |
+| `ops/metrics.md`, `ops/learnings.md`                                       | Not built yet                                                                                |
 
 Rules that stay valid as written: sections 1 (non-negotiable principles), 2 (positioning, as CheckFox content for its product profile), the qualification signals and Reddit rules of section 6, the drafting constraints of section 7 and the publishing rules of section 8.
 
@@ -292,8 +292,8 @@ AI can speed up preparation, signal detection and documentation. It does not rep
 
 **Recommended format.**
 
-| Proof | Method | Result | Limit | Source |
-|---|---|---|---|---|
+| Proof                    | Method                              | Result         | Limit          | Source          |
+| ------------------------ | ----------------------------------- | -------------- | -------------- | --------------- |
 | Reduced preparation time | Before/after comparison on X audits | To be measured | Limited sample | To be completed |
 
 ---
@@ -386,26 +386,26 @@ Channels: LinkedIn, newsletters, webinars, product communities.
 
 **Opportunity score, from 0 to 100.**
 
-| Criterion | Points |
-|---|---:|
-| Explicit pain or need | 0 to 25 |
-| Purchase intent or search for a tool | 0 to 20 |
-| Relevance for CheckFox | 0 to 20 |
-| Authority or reach of the discussion | 0 to 15 |
-| Freshness | 0 to 10 |
+| Criterion                             |  Points |
+| ------------------------------------- | ------: |
+| Explicit pain or need                 | 0 to 25 |
+| Purchase intent or search for a tool  | 0 to 20 |
+| Relevance for CheckFox                | 0 to 20 |
+| Authority or reach of the discussion  | 0 to 15 |
+| Freshness                             | 0 to 10 |
 | Possibility of giving a useful answer | 0 to 10 |
 
 Review note: a points grid scored by a model looks more precise than it is. Prefer a few well-described levels, calibrated against Geoffrey's real decisions. Weighting purchase intent at 20 points also conflicts with "help first".
 
 **Decision.**
 
-| Score | Status | Action |
-|---:|---|---|
+|     Score | Status      | Action                                      |
+| --------: | ----------- | ------------------------------------------- |
 | 80 to 100 | Reply first | Quick draft, useful reply, optional mention |
-| 60 to 79 | Reply | Draft to proofread, educational angle |
-| 40 to 59 | Watch | No immediate reply, follow the discussion |
-| 20 to 39 | Off topic | Reject |
-| 0 to 19 | Noise | Reject |
+|  60 to 79 | Reply       | Draft to proofread, educational angle       |
+|  40 to 59 | Watch       | No immediate reply, follow the discussion   |
+|  20 to 39 | Off topic   | Reject                                      |
+|   0 to 19 | Noise       | Reject                                      |
 
 **Positive signals.**
 
