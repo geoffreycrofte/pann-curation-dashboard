@@ -42,6 +42,9 @@ const PAIRS = [
   ['color-accent-text', 'color-surface-2', 4.5],
   ['color-on-accent', 'color-accent-fill', 4.5],
   ['color-text-muted', 'color-accent-soft', 4.5],
+  ['color-text', 'color-neutral-soft', 4.5],
+  ['color-text', 'color-success-soft', 4.5],
+  ['color-text', 'color-danger-soft', 4.5],
   ['color-surface', 'color-text', 4.5],
   ['color-danger', 'color-surface-2', 4.5],
   ['color-on-ink', 'color-ink', 4.5],
@@ -57,6 +60,10 @@ const PAIRS = [
   ['color-focus', 'color-surface', 3],
   ['color-focus-on-ink', 'color-ink', 3],
   ['color-accent-fill', 'color-ink', 3],
+  ['color-ai-violet', 'color-bg', 3],
+  ['color-ai-violet', 'color-surface', 3],
+  ['color-ai-teal', 'color-bg', 3],
+  ['color-ai-teal', 'color-surface', 3],
 ]
 
 let failed = false

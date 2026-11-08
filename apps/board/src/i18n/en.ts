@@ -245,7 +245,37 @@ export default {
     credits_exhausted: '{provider} credits used up: the sending was refused.',
     empty_digest: 'Nothing new since the previous newsletter: nothing was sent.',
   },
+  rewrite: {
+    button: 'Rewrite',
+    label: 'Rewrite: {field}',
+    running: 'Rewriting…',
+    done: 'Proposal inserted in the field. Save to keep it, or undo the rewrite.',
+    undone: 'Previous text restored.',
+    undo: 'Undo the rewrite',
+    timeout: 'The rewrite is taking too long. Try again in a moment.',
+    presets: {
+      shorter: 'Shorten',
+      longer: 'Lengthen a little',
+      formal: 'More professional',
+      casual: 'More casual',
+      custom: 'Custom instruction…',
+    },
+    customTitle: 'Rewrite with your instruction',
+    customText:
+      '{field}: describe what Claude should change. The facts of the text are kept, and nothing is saved until you decide.',
+    instruction: 'Instruction',
+    instructionPlaceholder: 'Example: start with the key figure, and name the standard concerned.',
+    submit: 'Rewrite',
+  },
   draft: {
+    editedBadge: 'Edited by hand',
+    unsaved: 'Not saved',
+    summaryUse: 'This summary is used in the newsletter and in the public feeds, in its language.',
+    confirmTitle: 'Draft again?',
+    confirmReplaced:
+      'Claude writes the summaries, the excerpt and the posts again from the source.',
+    confirmKept: 'Texts edited by hand are kept as they are: only the others are replaced.',
+    confirmCost: 'This call is billed and counts toward the monthly budget of the topic.',
     statusWithError: '{status}: {error}',
     status: {
       none: 'Not drafted yet',
@@ -440,7 +470,30 @@ export default {
     reject: 'Reject',
     restore: 'Back to sorting',
   },
-  kind: { news: 'News', legal: 'Legal', tool: 'Tool', resource: 'Resource' },
+  itemKind: {
+    label: 'Content kind',
+    saved: 'Content kind saved.',
+  },
+  kinds: {
+    title: 'Kinds of content',
+    intro:
+      'Kinds label the items, set how often sources are collected (Collection tab) and guide the AI triage. Pann offers four to start with: rename them, add or remove some to fit your topic.',
+    newKind: 'New kind',
+    labelFr: 'Name in French',
+    labelEn: 'Name in English',
+    description: 'What this kind covers',
+    descriptionHint:
+      'The AI reads this definition to choose the kind of an item. Example: court decisions and opinions of authorities.',
+    remove: 'Remove this kind',
+    removeLabel: 'Remove the “{kind}” kind',
+    add: 'Add a kind',
+    removedTitle: 'Removed kinds',
+    removedHint:
+      'Their items and sources move to the kind chosen below when you save. A kind you add shows here once saved.',
+    replaceLabel: 'Replace “{kind}” with',
+    restore: 'Keep this kind',
+    saved: 'Kinds of content saved.',
+  },
   sourceType: { rss: 'RSS feed', exa: 'Exa search', github: 'GitHub' },
   interval: {
     hours: 'Every hour | Every {n} hours',
@@ -582,6 +635,7 @@ export default {
     tabsLabel: 'Settings sections',
     tabs: {
       general: 'General',
+      kinds: 'Kinds of content',
       collection: 'Collection',
       triage: 'AI triage',
       drafting: 'AI drafting',
@@ -616,7 +670,13 @@ export default {
     operation: 'Operation',
     calls: 'Calls',
     cost: 'Cost',
-    operations: { triage: 'AI triage', draft: 'AI drafting', search: 'Exa search', other: 'Other' },
+    operations: {
+      rewrite: 'AI rewrite',
+      triage: 'AI triage',
+      draft: 'AI drafting',
+      search: 'Exa search',
+      other: 'Other',
+    },
     draftMode: 'When drafting happens',
     draftModes: {
       on_validate: 'On validation (cheaper)',

@@ -287,6 +287,68 @@ legend {
 }
 
 /* ---------------------------------------------------------------------------
+ * Badges: tags and statuses. Small, flat, square-ish and filled: never outlined
+ * pills, so they cannot be mistaken for buttons. The text carries the meaning; the
+ * tone and the dot only reinforce it.
+ * ------------------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 6px;
+  background: var(--color-neutral-soft);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badge[data-tone='accent'] {
+  background: var(--color-accent-soft);
+}
+
+.badge[data-tone='success'] {
+  background: var(--color-success-soft);
+}
+
+.badge[data-tone='danger'] {
+  background: var(--color-danger-soft);
+}
+
+.badge[data-dot]::before {
+  content: '';
+  flex: none;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.badge[data-tone='accent'][data-dot]::before {
+  background: var(--color-accent-text);
+}
+
+.badge[data-tone='success'][data-dot]::before {
+  background: var(--color-success);
+}
+
+.badge[data-tone='danger'][data-dot]::before {
+  background: var(--color-danger);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------------------------------------------------------------------------
  * Dropdown menus (Reka UI DropdownMenu)
  * ------------------------------------------------------------------------- */
 .menu {
@@ -315,6 +377,12 @@ legend {
 .menu-item[data-highlighted] {
   background: var(--color-text);
   color: var(--color-surface);
+}
+
+.menu-separator {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--color-border-subtle);
 }
 
 .menu-hint {
@@ -363,7 +431,69 @@ legend {
   outline-offset: 4px;
 }
 
+/* ---------------------------------------------------------------------------
+ * AI at work: a colored halo turns around the field and the button while Claude
+ * writes. Decorative: the state is also given as text and with aria-busy.
+ * ------------------------------------------------------------------------- */
+@property --ai-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.ai-halo {
+  position: relative;
+  display: grid;
+  border-radius: var(--radius);
+}
+
+.ai-halo[data-shape='pill'] {
+  display: inline-grid;
+  border-radius: var(--radius-pill);
+}
+
+.ai-halo > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ai-halo[data-busy='true']::before,
+.ai-halo[data-busy='true']::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--ai-angle),
+    var(--color-ai-violet),
+    var(--color-accent-fill),
+    var(--color-ai-teal),
+    var(--color-ai-violet)
+  );
+  animation: ai-turn 2.4s linear infinite;
+}
+
+/* Soft glow behind the sharp ring. */
+.ai-halo[data-busy='true']::after {
+  inset: -6px;
+  filter: blur(10px);
+  opacity: 0.55;
+  z-index: 0;
+}
+
+@keyframes ai-turn {
+  to {
+    --ai-angle: 360deg;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  /* The halo stays, still. */
+  .ai-halo[data-busy='true']::before,
+  .ai-halo[data-busy='true']::after {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {
@@ -392,6 +522,18 @@ legend {
 
   .menu-item[data-highlighted] {
     outline: 2px solid Highlight;
+  }
+
+  .badge {
+    border: 1px solid CanvasText;
+  }
+
+  .ai-halo[data-busy='true']::before {
+    background: Highlight;
+  }
+
+  .ai-halo[data-busy='true']::after {
+    display: none;
   }
 
   .subtab[data-state='active'] {

@@ -161,6 +161,8 @@ export const diffusion = new Hono<AppEnv>()
         items.map((i) => i.item_id),
       )
       .neq('status', 'draft')
+      .order('channel')
+      .order('lang')
     if (postsError) throw postsError
     return c.json(items.map((i) => ({ ...i, posts: posts.filter((p) => p.item_id === i.item_id) })))
   })

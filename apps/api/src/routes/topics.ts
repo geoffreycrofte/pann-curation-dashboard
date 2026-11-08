@@ -5,11 +5,12 @@ import {
   LANGS,
   extractPageTitle,
   newFeedKey,
-  ITEM_KINDS,
   ITEM_TOPIC_STATUSES,
   normalizeUrl,
   parseTopicConfig,
   slugify,
+  safeParseTopicConfig,
+  kindSchema,
   topicConfigSchema,
   type ItemTopicStatus,
 } from '@pann/shared'
@@ -18,6 +19,8 @@ import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { fetchText } from '../lib/fetch-text'
+import { checkKind, kindKey } from '../lib/kinds'
+import { rewriteRequestSchema } from '../rewrite/prompt'
 import { parseJson } from '../lib/validation'
 
 const TOPIC_COLUMNS = 'id, workspace_id, slug, name_fr, name_en, active, monthly_budget_usd'
@@ -28,7 +31,22 @@ const listQuery = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 })
 
-const statusBody = z.object({ status: z.enum(ITEM_TOPIC_STATUSES) })
+/** Status and/or kind of an item in a topic. */
+const itemPatch = z
+  .object({ status: z.enum(ITEM_TOPIC_STATUSES), kind: kindKey.nullable() })
+  .partial()
+  .refine((body) => body.status !== undefined || body.kind !== undefined, {
+    message: 'Nothing to change',
+  })
+
+/**
+ * New list of the topic kinds. A removed kind is replaced, on the items and sources
+ * that use it, by the kind given in `replacements` (null: no kind).
+ */
+const kindsBody = z.object({
+  kinds: z.array(kindSchema).min(1).max(20),
+  replacements: z.record(z.string(), kindKey.nullable()).default({}),
+})
 
 /** Top-level keys of the topic config are replaced as a whole, then the result is validated. */
 const configPatch = z.record(z.string(), z.unknown())
@@ -59,8 +77,8 @@ const newTopicBody = z.object({
 const textBody = (max: number) => z.object({ text: z.string().trim().min(1).max(max) })
 
 const DETAIL_COLUMNS =
-  'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, drafted_at, status, validated_at, publish_at, ' +
-  'item:items (canonical_url, title, source_lang, kind, origin, published_at, discovered_at)'
+  'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, drafted_at, status, validated_at, publish_at, kind, ' +
+  'item:items (canonical_url, title, source_lang, origin, published_at, discovered_at)'
 
 const POST_COLUMNS =
   'id, channel, lang, body, status, edited_by_human, scheduled_at, sent_at, published_url, last_error, claimed_at'
@@ -68,7 +86,7 @@ const POST_COLUMNS =
 const manualItemBody = z.object({
   url: z.url({ protocol: /^https?$/ }),
   title: z.string().trim().max(500).optional(),
-  kind: z.enum(ITEM_KINDS).nullable().default(null),
+  kind: kindKey.nullable().default(null),
   status: z.enum(['new', 'validated']).default('validated'),
 })
 
@@ -182,6 +200,8 @@ export const topics = new Hono<AppEnv>()
 
   .patch('/:topicId/config', async (c) => {
     const patch = await parseJson(configPatch, c.req.raw)
+    // Removing a kind reassigns items and sources: PUT /kinds does it.
+    if ('kinds' in patch) throw new HTTPException(400, { message: 'invalid_config' })
     const topicId = c.req.param('topicId')
     const { data: current, error: readError } = await c.var.db
       .from('topics')
@@ -191,9 +211,63 @@ export const topics = new Hono<AppEnv>()
     if (readError) throw readError
     if (!current) throw new HTTPException(404, { message: 'Topic not found' })
 
-    const next = topicConfigSchema.safeParse({ ...(current.config as object), ...patch })
+    const next = safeParseTopicConfig({ ...(current.config as object), ...patch })
     if (!next.success) throw new HTTPException(400, { message: z.prettifyError(next.error) })
 
+    const { error } = await c.var.db.from('topics').update({ config: next.data }).eq('id', topicId)
+    if (error) throw error
+    return c.json(next.data)
+  })
+
+  .put('/:topicId/kinds', async (c) => {
+    const { kinds, replacements } = await parseJson(kindsBody, c.req.raw)
+    const topicId = c.req.param('topicId')
+    const { data: current, error: readError } = await c.var.db
+      .from('topics')
+      .select('config')
+      .eq('id', topicId)
+      .maybeSingle()
+    if (readError) throw readError
+    if (!current) throw new HTTPException(404, { message: 'Topic not found' })
+
+    const config = parseTopicConfig(current.config)
+    const keys = new Set(kinds.map((k) => k.key))
+    const removed = config.kinds.map((k) => k.key).filter((key) => !keys.has(key))
+    for (const key of removed) {
+      const target = replacements[key] ?? null
+      if (target !== null && !keys.has(target))
+        throw new HTTPException(400, { message: 'invalid_config' })
+    }
+    const next = topicConfigSchema.safeParse({
+      ...config,
+      kinds,
+      collection: {
+        ...config.collection,
+        intervals_hours: Object.fromEntries(
+          Object.entries(config.collection.intervals_hours).filter(([key]) => keys.has(key)),
+        ),
+      },
+    })
+    if (!next.success) throw new HTTPException(400, { message: z.prettifyError(next.error) })
+
+    // Reassign first: a failure leaves the old list, still matching the data.
+    for (const key of removed) {
+      const target = replacements[key] ?? null
+      const [items, sources] = await Promise.all([
+        c.var.db
+          .from('item_topics')
+          .update({ kind: target })
+          .eq('topic_id', topicId)
+          .eq('kind', key),
+        c.var.db
+          .from('sources')
+          .update({ default_kind: target })
+          .eq('topic_id', topicId)
+          .eq('default_kind', key),
+      ])
+      if (items.error) throw items.error
+      if (sources.error) throw sources.error
+    }
     const { error } = await c.var.db.from('topics').update({ config: next.data }).eq('id', topicId)
     if (error) throw error
     return c.json(next.data)
@@ -297,6 +371,43 @@ export const topics = new Hono<AppEnv>()
     return c.json(counts)
   })
 
+  /**
+   * AI rewrite of a summary or a post. The request is recorded (RLS: the user can
+   * access the topic and the item is in it), a job runs it; the board polls the result.
+   */
+  .post('/:topicId/items/:itemId/rewrites', async (c) => {
+    const request = await parseJson(rewriteRequestSchema, c.req.raw)
+    const { topicId, itemId } = c.req.param()
+    const { data: link, error: linkError } = await c.var.db
+      .from('item_topics')
+      .select('item_id')
+      .eq('topic_id', topicId)
+      .eq('item_id', itemId)
+      .maybeSingle()
+    if (linkError) throw linkError
+    if (!link) throw new HTTPException(404, { message: 'Item not found in this topic' })
+    const { data, error } = await c.var.db
+      .from('rewrites')
+      .insert({ topic_id: topicId, item_id: itemId, request })
+      .select('id')
+      .single()
+    if (error) throw error
+    await c.env.JOBS.send({ type: 'rewrite', rewriteId: data.id })
+    return c.json({ id: data.id }, 202)
+  })
+
+  .get('/:topicId/rewrites/:rewriteId', async (c) => {
+    const { data, error } = await c.var.db
+      .from('rewrites')
+      .select('id, status, result, error')
+      .eq('topic_id', c.req.param('topicId'))
+      .eq('id', c.req.param('rewriteId'))
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Rewrite not found' })
+    return c.json(data)
+  })
+
   .get('/:topicId/items', async (c) => {
     const query = listQuery.safeParse(c.req.query())
     if (!query.success) throw new HTTPException(400, { message: z.prettifyError(query.error) })
@@ -305,8 +416,8 @@ export const topics = new Hono<AppEnv>()
     const { data, error } = await c.var.db
       .from('item_topics')
       .select(
-        'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, publish_at, ' +
-          'item:items (canonical_url, title, source_lang, kind, origin, published_at, discovered_at)',
+        'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, publish_at, kind, ' +
+          'item:items (canonical_url, title, source_lang, origin, published_at, discovered_at)',
       )
       .eq('topic_id', c.req.param('topicId'))
       .eq('status', status)
@@ -323,6 +434,7 @@ export const topics = new Hono<AppEnv>()
    */
   .post('/:topicId/items', async (c) => {
     const body = await parseJson(manualItemBody, c.req.raw)
+    await checkKind(c.var.db, c.req.param('topicId'), body.kind)
     const canonicalUrl = normalizeUrl(body.url)
 
     let title = body.title
@@ -362,13 +474,16 @@ export const topics = new Hono<AppEnv>()
       c.var.db
         .from('summaries')
         .select('lang, summary, key_excerpt, source_nature, edited_by_human, model, updated_at')
-        .eq('item_id', itemId),
+        .eq('item_id', itemId)
+        .order('lang'),
       c.var.db
         .from('posts')
         .select(POST_COLUMNS)
         .eq('item_id', itemId)
         .eq('topic_id', topicId)
-        .order('channel'),
+        // Stable order: an update must not move a post (rows come back in any order).
+        .order('channel')
+        .order('lang'),
     ])
     if (sError) throw sError
     if (pError) throw pError
@@ -424,8 +539,23 @@ export const topics = new Hono<AppEnv>()
   })
 
   .patch('/:topicId/items/:itemId', async (c) => {
-    const { status: target } = await parseJson(statusBody, c.req.raw)
+    const body = await parseJson(itemPatch, c.req.raw)
     const { topicId, itemId } = c.req.param()
+
+    if (body.kind !== undefined) {
+      await checkKind(c.var.db, topicId, body.kind)
+      const { data, error } = await c.var.db
+        .from('item_topics')
+        .update({ kind: body.kind })
+        .eq('topic_id', topicId)
+        .eq('item_id', itemId)
+        .select('item_id, topic_id, status, validated_at, kind')
+        .maybeSingle()
+      if (error) throw error
+      if (!data) throw new HTTPException(404, { message: 'Item not found in this topic' })
+      if (body.status === undefined) return c.json(data)
+    }
+    const target = body.status!
 
     const { data: current, error: readError } = await c.var.db
       .from('item_topics')

@@ -1,20 +1,23 @@
-import { ITEM_KINDS, type Lang, type TopicConfig } from '@pann/shared'
+import type { Lang, TopicConfig } from '@pann/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes, to compare and re-run. Stored with each triage. */
-export const TRIAGE_PROMPT_VERSION = 'triage-v2'
+export const TRIAGE_PROMPT_VERSION = 'triage-v3'
 
 /** Characters of content sent to the model: triage does not need the whole article. */
 export const TRIAGE_CONTENT_CHARS = 6000
 
-export const triageOutputSchema = z.object({
-  language: z.string().describe('ISO 639-1 code of the item content, e.g. "en" or "fr"'),
-  kind: z.enum(ITEM_KINDS),
-  relevance: z.number().int().describe('0 to 100'),
-  commercial: z.boolean(),
-  reason: z.string().describe('One short sentence explaining the score'),
-})
-export type TriageOutput = z.infer<typeof triageOutputSchema>
+/** The kind is one of the keys of the topic kinds (at least one, see the topic config). */
+export function triageOutputSchema(kindKeys: readonly string[]) {
+  return z.object({
+    language: z.string().describe('ISO 639-1 code of the item content, e.g. "en" or "fr"'),
+    kind: z.enum(kindKeys as [string, ...string[]]),
+    relevance: z.number().int().describe('0 to 100'),
+    commercial: z.boolean(),
+    reason: z.string().describe('One short sentence explaining the score'),
+  })
+}
+export type TriageOutput = z.infer<ReturnType<typeof triageOutputSchema>>
 
 const LANG_NAMES: Record<Lang, string> = { fr: 'French', en: 'English' }
 
@@ -27,6 +30,10 @@ export interface TriageTopic {
 export function triageSystemPrompt(topic: TriageTopic): string {
   const lang = topic.config.output_langs[0] ?? 'en'
   const criteria = topic.config.ai.relevance_criteria.trim() || topic.name_en
+  // Kinds and their definitions are topic settings, written by the user.
+  const kinds = topic.config.kinds
+    .map((k) => `  - ${k.key}: ${k.description.trim() || `${k.label_en} / ${k.label_fr}`}`)
+    .join('\n')
   return `You triage items collected for a content-curation board. A person reviews the board and keeps only the most useful items for a professional audience.
 
 Topic: ${topic.name_en}
@@ -34,7 +41,8 @@ Relevance criteria: ${criteria}
 
 For each item, return:
 - language: ISO 639-1 code of the item content.
-- kind: news (announcements, events, industry news), legal (laws, regulations, standards, court or authority decisions, official guidance), tool (software, libraries, extensions, services, new releases), resource (guides, tutorials, articles, research, talks).
+- kind: the key of the kind of content that fits best, among:
+${kinds}
 - relevance from 0 to 100, for someone who follows this topic professionally:
   80-100: central to the topic, new, substantial.
   50-79: relevant but secondary, or a minor update.

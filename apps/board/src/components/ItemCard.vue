@@ -11,11 +11,13 @@ import {
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { describeError } from '../lib/errors'
+import { useTopicKinds } from '../lib/kinds'
 
 const props = defineProps<{ item: BoardItem; busy: boolean }>()
 const emit = defineEmits<{ setStatus: [status: ItemTopicStatus]; excludeSite: [domain: string] }>()
 const { t, d } = useI18n()
 
+const { label: kindLabel } = useTopicKinds(() => props.item.topic_id)
 const headingId = computed(() => `item-${props.item.item_id}`)
 /** Site of the item, offered for exclusion from the "Reject" menu. */
 const site = computed(() => siteOf(props.item.canonical_url))
@@ -51,10 +53,12 @@ const actions = computed(() =>
     </div>
 
     <div class="body">
-      <ul class="chips">
-        <li v-if="item.kind" class="chip chip-kind">{{ t(`kind.${item.kind}`) }}</li>
-        <li v-if="item.origin === 'manual'" class="chip">{{ t('board.manual') }}</li>
-        <li v-if="item.is_commercial" class="chip chip-warning">{{ t('board.commercial') }}</li>
+      <ul class="badges">
+        <li v-if="item.kind" class="badge" data-tone="accent">{{ kindLabel(item.kind) }}</li>
+        <li v-if="item.origin === 'manual'" class="badge">{{ t('board.manual') }}</li>
+        <li v-if="item.is_commercial" class="badge" data-tone="danger" data-dot>
+          {{ t('board.commercial') }}
+        </li>
       </ul>
 
       <h2 :id="headingId" class="title">
@@ -237,7 +241,7 @@ const actions = computed(() =>
   min-width: 0;
 }
 
-.chips,
+.badges,
 .meta {
   display: flex;
   flex-wrap: wrap;
@@ -245,24 +249,6 @@ const actions = computed(() =>
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.chip {
-  padding: 0.125rem var(--space-3);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface-2);
-  font-size: 0.8125rem;
-  font-weight: 650;
-}
-
-.chip-kind {
-  border-color: var(--color-text);
-}
-
-.chip-warning {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
 }
 
 .title {

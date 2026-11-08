@@ -1,4 +1,4 @@
-import { claudeCostUsd, ITEM_KINDS, type ItemKind, type TopicConfig } from '@pann/shared'
+import { claudeCostUsd, isTopicKind, type ItemKind, type TopicConfig } from '@pann/shared'
 import type { UsageEntry } from '../collect/types'
 import type { TriageModel } from './model'
 import {
@@ -24,7 +24,8 @@ export interface TriageDecision {
   relevance: number
   commercial: boolean
   reason: string
-  kind: ItemKind
+  /** Null when the answer is not a kind of the topic (it may have changed meanwhile). */
+  kind: ItemKind | null
   language: string
   /** Below the topic threshold: archived, out of the board but still searchable. */
   archived: boolean
@@ -66,9 +67,7 @@ export function decide(
     relevance,
     commercial: output.commercial,
     reason: output.reason.trim().slice(0, 500),
-    kind: (ITEM_KINDS as readonly string[]).includes(output.kind)
-      ? (output.kind as ItemKind)
-      : 'news',
+    kind: isTopicKind(config, output.kind) ? output.kind : null,
     language: output.language.trim().toLowerCase().slice(0, 8),
     archived: relevance < config.ai.relevance_threshold,
   }
@@ -109,6 +108,7 @@ export async function triage(deps: {
       model,
       system: triageSystemPrompt({ name_en: item.topic_name_en, config: item.topic_config }),
       user: triageUserMessage(item),
+      kindKeys: item.topic_config.kinds.map((k) => k.key),
     })
 
     if (result.usage) {
