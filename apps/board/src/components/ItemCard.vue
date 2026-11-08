@@ -11,11 +11,13 @@ import {
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { describeError } from '../lib/errors'
+import { useTopicKinds } from '../lib/kinds'
 
 const props = defineProps<{ item: BoardItem; busy: boolean }>()
 const emit = defineEmits<{ setStatus: [status: ItemTopicStatus]; excludeSite: [domain: string] }>()
 const { t, d } = useI18n()
 
+const { label: kindLabel } = useTopicKinds(() => props.item.topic_id)
 const headingId = computed(() => `item-${props.item.item_id}`)
 /** Site of the item, offered for exclusion from the "Reject" menu. */
 const site = computed(() => siteOf(props.item.canonical_url))
@@ -52,7 +54,7 @@ const actions = computed(() =>
 
     <div class="body">
       <ul class="chips">
-        <li v-if="item.kind" class="chip chip-kind">{{ t(`kind.${item.kind}`) }}</li>
+        <li v-if="item.kind" class="chip chip-kind">{{ kindLabel(item.kind) }}</li>
         <li v-if="item.origin === 'manual'" class="chip">{{ t('board.manual') }}</li>
         <li v-if="item.is_commercial" class="chip chip-warning">{{ t('board.commercial') }}</li>
       </ul>

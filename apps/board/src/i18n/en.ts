@@ -440,7 +440,30 @@ export default {
     reject: 'Reject',
     restore: 'Back to sorting',
   },
-  kind: { news: 'News', legal: 'Legal', tool: 'Tool', resource: 'Resource' },
+  itemKind: {
+    label: 'Content kind',
+    saved: 'Content kind saved.',
+  },
+  kinds: {
+    title: 'Kinds of content',
+    intro:
+      'Kinds label the items, set how often sources are collected (Collection tab) and guide the AI triage. Pann offers four to start with: rename them, add or remove some to fit your topic.',
+    newKind: 'New kind',
+    labelFr: 'Name in French',
+    labelEn: 'Name in English',
+    description: 'What this kind covers',
+    descriptionHint:
+      'The AI reads this definition to choose the kind of an item. Example: court decisions and opinions of authorities.',
+    remove: 'Remove this kind',
+    removeLabel: 'Remove the “{kind}” kind',
+    add: 'Add a kind',
+    removedTitle: 'Removed kinds',
+    removedHint:
+      'Their items and sources move to the kind chosen below when you save. A kind you add shows here once saved.',
+    replaceLabel: 'Replace “{kind}” with',
+    restore: 'Keep this kind',
+    saved: 'Kinds of content saved.',
+  },
   sourceType: { rss: 'RSS feed', exa: 'Exa search', github: 'GitHub' },
   interval: {
     hours: 'Every hour | Every {n} hours',
@@ -582,6 +605,7 @@ export default {
     tabsLabel: 'Settings sections',
     tabs: {
       general: 'General',
+      kinds: 'Kinds of content',
       collection: 'Collection',
       triage: 'AI triage',
       drafting: 'AI drafting',

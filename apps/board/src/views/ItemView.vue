@@ -22,6 +22,7 @@ import {
 } from 'reka-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import KindSelect from '../components/KindSelect.vue'
 import TextSaver from '../components/TextSaver.vue'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
@@ -81,6 +82,20 @@ const canDraft = computed(() => ['validated', 'published'].includes(detail.value
 
 const message = ref('')
 const isError = ref(false)
+
+const { mutate: saveKind, isLoading: savingKind } = useMutation({
+  mutation: (kind: string | null) => api.setItemKind(props.topicId, props.itemId, kind),
+  async onSuccess() {
+    isError.value = false
+    message.value = t('itemKind.saved')
+    await queryCache.invalidateQueries({ key: key() })
+    await queryCache.invalidateQueries({ key: ['items', props.topicId] })
+  },
+  onError(err) {
+    isError.value = true
+    message.value = describeError(err.message, t).text
+  },
+})
 const { mutate: regenerate, isLoading: regenerating } = useMutation({
   mutation: () => api.requestDraft(props.topicId, props.itemId),
   async onSuccess() {
@@ -191,7 +206,17 @@ async function savePost(postId: string, text: string) {
     <h1 tabindex="-1" :lang="detail.item.source_lang ?? undefined">{{ detail.item.title }}</h1>
     <ul class="meta">
       <li>{{ t(`statusOne.${detail.status}`) }}</li>
-      <li v-if="detail.item.kind">{{ t(`kind.${detail.item.kind}`) }}</li>
+      <li class="kind-field">
+        <!-- The kind of the item in this topic: set by the source, the triage or here. -->
+        <label for="item-kind">{{ t('itemKind.label') }}</label>
+        <KindSelect
+          id="item-kind"
+          :topic-id="topicId"
+          :model-value="detail.kind"
+          :disabled="savingKind"
+          @update:model-value="(kind) => saveKind(kind)"
+        />
+      </li>
       <li v-if="detail.relevance_score !== null">
         {{ t('board.relevance', { score: detail.relevance_score }) }}
       </li>
@@ -384,6 +409,18 @@ async function savePost(postId: string, text: string) {
 </template>
 
 <style scoped>
+.kind-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.kind-field .field {
+  min-height: 2.25rem;
+  padding-block: var(--space-1);
+  font-size: 0.875rem;
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;

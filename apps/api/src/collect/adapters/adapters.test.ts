@@ -164,7 +164,7 @@ describe('githubAdapter', () => {
       return json({ message: 'Not Found' }, 404)
     })
     const { items } = await githubAdapter(
-      { ...base, type: 'github', config: { query: 'topic:a11y' } },
+      { ...base, type: 'github', config: { query: 'topic:a11y' }, default_kind: 'tool' },
       { since, secrets: { github: 't' } },
     )
     const search = new URL(calls[0]!.url)

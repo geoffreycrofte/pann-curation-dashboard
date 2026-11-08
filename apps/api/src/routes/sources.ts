@@ -1,7 +1,6 @@
 import {
   exaSourceConfigSchema,
   githubSourceConfigSchema,
-  ITEM_KINDS,
   MAX_INTERVAL_HOURS,
   MIN_INTERVAL_HOURS,
   SEARCH_SOURCE_TYPES,
@@ -13,6 +12,7 @@ import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { resolveFeed } from '../lib/feeds'
+import { checkKind, kindKey } from '../lib/kinds'
 import { parseJson } from '../lib/validation'
 
 const SOURCE_COLUMNS =
@@ -23,13 +23,13 @@ const interval = z.number().int().min(MIN_INTERVAL_HOURS).max(MAX_INTERVAL_HOURS
 const addRssBody = z.object({
   url: z.url({ protocol: /^https?$/ }),
   label: z.string().trim().max(200).optional(),
-  default_kind: z.enum(ITEM_KINDS).nullable().default(null),
+  default_kind: kindKey.nullable().default(null),
   interval_hours: interval.default(null),
 })
 
 const searchCommon = {
   label: z.string().trim().min(1).max(200),
-  default_kind: z.enum(ITEM_KINDS).nullable().default(null),
+  default_kind: kindKey.nullable().default(null),
   interval_hours: interval.default(null),
 }
 const addSearchBody = z.discriminatedUnion('type', [
@@ -41,7 +41,7 @@ const updateBody = z
   .object({
     label: z.string().trim().min(1).max(200),
     active: z.boolean(),
-    default_kind: z.enum(ITEM_KINDS).nullable(),
+    default_kind: kindKey.nullable(),
     interval_hours: interval,
     /** Search sources only; validated against the schema of the source type. */
     config: z.record(z.string(), z.unknown()),
@@ -66,6 +66,7 @@ export const sources = new Hono<AppEnv>()
    */
   .post('/rss', async (c) => {
     const body = await parseJson(addRssBody, c.req.raw)
+    await checkKind(c.var.db, c.req.param('topicId')!, body.default_kind)
     const resolved = await resolveFeed(body.url)
     if (resolved.kind === 'none') throw new HTTPException(422, { message: resolved.reason })
     if (resolved.kind === 'choose')
@@ -92,6 +93,7 @@ export const sources = new Hono<AppEnv>()
   /** Adds an Exa search or a GitHub repository search. */
   .post('/', async (c) => {
     const body = await parseJson(addSearchBody, c.req.raw)
+    await checkKind(c.var.db, c.req.param('topicId')!, body.default_kind)
     const { data, error } = await c.var.db
       .from('sources')
       .insert({ topic_id: c.req.param('topicId')!, ...body })
@@ -103,6 +105,7 @@ export const sources = new Hono<AppEnv>()
 
   .patch('/:sourceId', async (c) => {
     const { config, ...rest } = await parseJson(updateBody, c.req.raw)
+    await checkKind(c.var.db, c.req.param('topicId')!, rest.default_kind)
     const body: Record<string, unknown> = rest
     if (config) {
       const { data: current, error: readError } = await c.var.db

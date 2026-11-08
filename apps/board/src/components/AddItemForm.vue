@@ -89,7 +89,7 @@ const { mutate, isLoading } = useMutation({
       </div>
       <div class="form-row">
         <label :for="`${id}-kind`">{{ t('addItem.kind') }}</label>
-        <KindSelect :id="`${id}-kind`" v-model="kind" />
+        <KindSelect :id="`${id}-kind`" :topic-id="topicId" v-model="kind" />
       </div>
       <div class="form-check">
         <input

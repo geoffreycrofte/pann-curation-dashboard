@@ -8,6 +8,7 @@ import type {
   Source,
   Topic,
   TopicConfig,
+  TopicKind,
   WorkspaceCredential,
   PostDraft,
   Summary,
@@ -45,8 +46,9 @@ const json = (method: string, body: unknown): RequestInit => ({
   body: JSON.stringify(body),
 })
 
+/** Fields of the shared item; the others (kind included) belong to the item in the topic. */
 type ItemFields =
-  'canonical_url' | 'title' | 'source_lang' | 'kind' | 'origin' | 'published_at' | 'discovered_at'
+  'canonical_url' | 'title' | 'source_lang' | 'origin' | 'published_at' | 'discovered_at'
 /** Shape returned by GET /topics/:id/items (item fields nested under `item`). */
 type ItemRow = Omit<BoardItem, ItemFields> & { item: Pick<BoardItem, ItemFields> }
 
@@ -202,6 +204,9 @@ export const api = {
     request<void>(`/topics/${topicId}/excluded-domains/${encodeURIComponent(domain)}`, {
       method: 'DELETE',
     }),
+  /** New list of kinds; removed kinds are replaced on items and sources (null: no kind). */
+  setKinds: (topicId: string, kinds: TopicKind[], replacements: Record<string, string | null>) =>
+    request<TopicConfig>(`/topics/${topicId}/kinds`, json('PUT', { kinds, replacements })),
   updateConfig: (topicId: string, patch: Partial<TopicConfig>) =>
     request<TopicConfig>(`/topics/${topicId}/config`, json('PATCH', patch)),
 
@@ -211,6 +216,8 @@ export const api = {
   },
   addItem: (topicId: string, input: AddItemInput) =>
     request<AddItemResult>(`/topics/${topicId}/items`, json('POST', input)),
+  setItemKind: (topicId: string, itemId: string, kind: string | null) =>
+    request(`/topics/${topicId}/items/${itemId}`, json('PATCH', { kind })),
   setStatus: (topicId: string, itemId: string, status: ItemTopicStatus) =>
     request(`/topics/${topicId}/items/${itemId}`, json('PATCH', { status })),
 

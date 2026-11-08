@@ -6,12 +6,12 @@ interface PendingRow {
   item_id: string
   topic_id: string
   triage_attempts: number
+  kind: string | null
   item: {
     title: string
     canonical_url: string
     published_at: string | null
     fetched_content: string | null
-    kind: PendingTriage['item_kind']
     source_lang: string | null
   }
   topic: { workspace_id: string; name_en: string; config: unknown; active: boolean }
@@ -24,8 +24,8 @@ export function supabaseTriageStore(db: SupabaseClient): TriageStore {
       let query = db
         .from('item_topics')
         .select(
-          'item_id, topic_id, triage_attempts, ' +
-            'item:items!inner (title, canonical_url, published_at, fetched_content, kind, source_lang), ' +
+          'item_id, topic_id, triage_attempts, kind, ' +
+            'item:items!inner (title, canonical_url, published_at, fetched_content, source_lang), ' +
             'topic:topics!inner (workspace_id, name_en, config, active)',
         )
         .is('relevance_score', null)
@@ -48,7 +48,7 @@ export function supabaseTriageStore(db: SupabaseClient): TriageStore {
         canonical_url: row.item.canonical_url,
         published_at: row.item.published_at,
         fetched_content: row.item.fetched_content,
-        item_kind: row.item.kind,
+        item_kind: row.kind,
         source_lang: row.item.source_lang,
       }))
     },
@@ -86,6 +86,8 @@ export function supabaseTriageStore(db: SupabaseClient): TriageStore {
           triaged_at: new Date().toISOString(),
           triage_error: null,
           status: decision.archived ? 'archived' : 'new',
+          // The kind given by the source or the user wins over the triage.
+          ...(!item.item_kind && decision.kind ? { kind: decision.kind } : {}),
         })
         .eq('item_id', item.item_id)
         .eq('topic_id', item.topic_id)
@@ -101,12 +103,12 @@ export function supabaseTriageStore(db: SupabaseClient): TriageStore {
           .eq('draft_status', 'none')
         if (queueError) throw queueError
       }
-      // Item-level facts: only fill what the collector did not know.
-      const patch: Record<string, string> = {}
-      if (!item.item_kind) patch.kind = decision.kind
-      if (!item.source_lang && decision.language) patch.source_lang = decision.language
-      if (Object.keys(patch).length) {
-        const { error: itemError } = await db.from('items').update(patch).eq('id', item.item_id)
+      // Item-level fact: only fill what the collector did not know.
+      if (!item.source_lang && decision.language) {
+        const { error: itemError } = await db
+          .from('items')
+          .update({ source_lang: decision.language })
+          .eq('id', item.item_id)
         if (itemError) throw itemError
       }
     },

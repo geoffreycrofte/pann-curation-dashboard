@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { DRAFT_MODES, LANGS } from './domain'
+import { DRAFT_MODES, LANGS, type Lang } from './domain'
 import { DRAFT_CHANNELS } from './drafting'
 import { domainSchema } from './source-config'
 
@@ -20,14 +20,59 @@ function isTimeZone(value: string): boolean {
 /** HH:MM, 24-hour clock. */
 const timeSlot = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
 
+export const KIND_KEY = /^[a-z0-9]+(-[a-z0-9]+)*$/
+
+/** A kind of content of a topic: shown on the board, chosen by the AI triage. */
+export const kindSchema = z.object({
+  key: z.string().regex(KIND_KEY).max(40),
+  label_fr: z.string().trim().min(1).max(60),
+  label_en: z.string().trim().min(1).max(60),
+  /** What belongs to this kind; given to the AI triage to choose it. */
+  description: z.string().trim().max(300).default(''),
+})
+export type TopicKind = z.infer<typeof kindSchema>
+
+/** Kinds offered by Pann to every new topic; each topic can rename, add or remove kinds. */
+export const DEFAULT_KINDS: TopicKind[] = [
+  {
+    key: 'news',
+    label_fr: 'Actualité',
+    label_en: 'News',
+    description: 'Announcements, events, industry news.',
+  },
+  {
+    key: 'legal',
+    label_fr: 'Légal',
+    label_en: 'Legal',
+    description: 'Laws, regulations, standards, court or authority decisions, official guidance.',
+  },
+  {
+    key: 'tool',
+    label_fr: 'Outil',
+    label_en: 'Tool',
+    description: 'Software, libraries, extensions, services, new releases.',
+  },
+  {
+    key: 'resource',
+    label_fr: 'Ressource',
+    label_en: 'Resource',
+    description: 'Guides, tutorials, articles, research, talks.',
+  },
+]
+
 /**
  * Everything that is specific to a theme lives here (stored in topics.config, jsonb).
  * Nothing about "accessibility" is hard-coded in the application.
  */
 export const topicConfigSchema = z.object({
-  categories: z
-    .array(z.object({ key: z.string().min(1), label_fr: z.string(), label_en: z.string() }))
-    .default([]),
+  kinds: z
+    .array(kindSchema)
+    .min(1)
+    .max(20)
+    .refine((kinds) => new Set(kinds.map((k) => k.key)).size === kinds.length, {
+      message: 'Kind keys must be unique',
+    })
+    .default(DEFAULT_KINDS),
   output_langs: z.array(z.enum(LANGS)).min(1).default(['fr', 'en']),
   ai: z
     .object({
@@ -55,14 +100,10 @@ export const topicConfigSchema = z.object({
   /** How often sources are collected, by the kind of content they produce. */
   collection: z
     .object({
+      /** By kind key; a kind without its own interval uses default_hours. */
       intervals_hours: z
-        .object({
-          news: intervalHours.default(24),
-          legal: intervalHours.default(48),
-          tool: intervalHours.default(168),
-          resource: intervalHours.default(72),
-        })
-        .prefault({}),
+        .record(z.string(), intervalHours)
+        .default({ news: 24, legal: 48, tool: 168, resource: 72 }),
       /** Sources without a kind hint. */
       default_hours: intervalHours.default(24),
       /** Older entries are ignored, so that a new feed does not flood the board with its archive. */
@@ -166,6 +207,31 @@ export const topicConfigSchema = z.object({
 
 export type TopicConfig = z.infer<typeof topicConfigSchema>
 
+/**
+ * Configs written before kinds were editable hold `categories` (same shape, unused
+ * then) or nothing: they get the default kinds.
+ */
+function withKinds(raw: unknown): unknown {
+  if (!raw || typeof raw !== 'object') return {}
+  const { categories, ...rest } = raw as Record<string, unknown>
+  if ('kinds' in rest || !Array.isArray(categories) || !categories.length) return rest
+  return { ...rest, kinds: categories }
+}
+
 export function parseTopicConfig(raw: unknown): TopicConfig {
-  return topicConfigSchema.parse(raw ?? {})
+  return topicConfigSchema.parse(withKinds(raw))
+}
+
+export function safeParseTopicConfig(raw: unknown) {
+  return topicConfigSchema.safeParse(withKinds(raw))
+}
+
+/** Label of a kind in a language; the key itself for a kind the topic no longer has. */
+export function kindLabel(config: Pick<TopicConfig, 'kinds'>, key: string, lang: Lang): string {
+  const kind = config.kinds.find((k) => k.key === key)
+  return kind ? (lang === 'fr' ? kind.label_fr : kind.label_en) : key
+}
+
+export function isTopicKind(config: Pick<TopicConfig, 'kinds'>, key: string): boolean {
+  return config.kinds.some((k) => k.key === key)
 }

@@ -117,7 +117,7 @@ describe('triage', () => {
 })
 
 describe('decide', () => {
-  it('clamps the score and falls back on a known kind', () => {
+  it('clamps the score and ignores a kind the topic does not have', () => {
     expect(
       decide(
         { relevance: 140.4, commercial: true, reason: ' ok ', kind: 'weird', language: 'FR' },
@@ -127,7 +127,7 @@ describe('decide', () => {
       relevance: 100,
       commercial: true,
       reason: 'ok',
-      kind: 'news',
+      kind: null,
       language: 'fr',
       archived: false,
     })
@@ -135,6 +135,24 @@ describe('decide', () => {
 })
 
 describe('prompt', () => {
+  it('offers the kinds of the topic, with their definitions', () => {
+    const custom = parseTopicConfig({
+      kinds: [
+        {
+          key: 'case-law',
+          label_fr: 'Jurisprudence',
+          label_en: 'Case law',
+          description: 'Court decisions.',
+        },
+        { key: 'event', label_fr: 'Événement', label_en: 'Event' },
+      ],
+    })
+    const system = triageSystemPrompt({ name_en: 'Law', config: custom })
+    expect(system).toContain('- case-law: Court decisions.')
+    expect(system).toContain('- event: Event / Événement')
+    expect(system).not.toContain('legal')
+  })
+
   it('builds the system prompt from the topic config only', () => {
     const system = triageSystemPrompt({ name_en: 'Digital accessibility', config })
     expect(system).toContain('Relevance criteria: Digital accessibility')

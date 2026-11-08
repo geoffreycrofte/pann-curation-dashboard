@@ -444,7 +444,30 @@ export default {
     reject: 'Rejeter',
     restore: 'Remettre à trier',
   },
-  kind: { news: 'Actualité', legal: 'Légal', tool: 'Outil', resource: 'Ressource' },
+  itemKind: {
+    label: 'Type de contenu',
+    saved: 'Type de contenu enregistré.',
+  },
+  kinds: {
+    title: 'Types de contenu',
+    intro:
+      'Les types servent à étiqueter les éléments, à régler la fréquence de collecte (onglet Collecte) et à guider le tri par IA. Pann en propose quatre au départ : renommez-les, ajoutez-en ou retirez-en selon votre thème.',
+    newKind: 'Nouveau type',
+    labelFr: 'Nom en français',
+    labelEn: 'Nom en anglais',
+    description: 'Ce que ce type regroupe',
+    descriptionHint:
+      'L’IA lit cette définition pour choisir le type d’un élément. Exemple : décisions de justice et avis des autorités.',
+    remove: 'Retirer ce type',
+    removeLabel: 'Retirer le type « {kind} »',
+    add: 'Ajouter un type',
+    removedTitle: 'Types retirés',
+    removedHint:
+      'Leurs éléments et leurs sources passent sur le type choisi ci-dessous à l’enregistrement. Un type ajouté apparaît ici une fois enregistré.',
+    replaceLabel: 'Remplacer « {kind} » par',
+    restore: 'Garder ce type',
+    saved: 'Types de contenu enregistrés.',
+  },
   sourceType: { rss: 'Flux RSS', exa: 'Recherche Exa', github: 'GitHub' },
   interval: {
     hours: 'Toutes les heures | Toutes les {n} heures',
@@ -588,6 +611,7 @@ export default {
     tabsLabel: 'Sections des réglages',
     tabs: {
       general: 'Général',
+      kinds: 'Types de contenu',
       collection: 'Collecte',
       triage: 'Tri par IA',
       drafting: 'Rédaction par IA',

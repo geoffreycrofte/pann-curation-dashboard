@@ -10,11 +10,16 @@ export interface SchedulableSource {
   run_requested_at?: string | null
 }
 
-/** Source override, else the topic interval for the source's kind, else the topic default. */
+/**
+ * Source override, else the topic interval for the source's kind, else the topic default
+ * (also for a kind without its own interval).
+ */
 export function effectiveIntervalHours(source: SchedulableSource, config: TopicConfig): number {
   if (source.interval_hours) return source.interval_hours
-  if (source.default_kind) return config.collection.intervals_hours[source.default_kind]
-  return config.collection.default_hours
+  const byKind = source.default_kind
+    ? config.collection.intervals_hours[source.default_kind]
+    : undefined
+  return byKind ?? config.collection.default_hours
 }
 
 /**
