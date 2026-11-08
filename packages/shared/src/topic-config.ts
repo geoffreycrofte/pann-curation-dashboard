@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { DRAFT_MODES, LANGS } from './domain'
 import { DRAFT_CHANNELS } from './drafting'
+import { domainSchema } from './source-config'
 
 /** Interval bounds, in hours: 1 hour to 90 days. */
 export const MIN_INTERVAL_HOURS = 1
@@ -66,6 +67,11 @@ export const topicConfigSchema = z.object({
       default_hours: intervalHours.default(24),
       /** Older entries are ignored, so that a new feed does not flood the board with its archive. */
       max_age_days: z.number().int().min(1).max(365).default(30),
+      /**
+       * Sites never proposed for this topic (competitors, unsuitable sites…): dropped
+       * at collection, passed to Exa as excluded domains. Subdomains included.
+       */
+      excluded_domains: z.array(domainSchema).max(500).default([]),
     })
     .prefault({}),
   schedule: z

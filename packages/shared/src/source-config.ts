@@ -6,14 +6,31 @@ import { z } from 'zod'
  */
 
 /** "example.org", without scheme or path; https://… is accepted and reduced to the host. */
-const domain = z
+export const domainSchema = z
   .string()
   .trim()
   .toLowerCase()
   .transform((value) => value.replace(/^https?:\/\//, '').replace(/\/.*$/, ''))
+  .transform((value) => value.replace(/^www\./, ''))
   .pipe(z.string().regex(/^([a-z0-9-]+\.)+[a-z]{2,}$/, 'Invalid domain'))
 
-const domains = z.array(domain).max(50)
+const domains = z.array(domainSchema).max(50)
+
+/** Site of a URL as shown and excluded: its host without "www.". Null if not a URL. */
+export function siteOf(url: string): string | null {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, '') || null
+  } catch {
+    return null
+  }
+}
+
+/** True when the URL is on one of the domains or one of their subdomains. */
+export function isExcludedUrl(url: string, excluded: readonly string[]): boolean {
+  if (!excluded.length) return false
+  const host = siteOf(url)
+  return !!host && excluded.some((d) => host === d || host.endsWith(`.${d}`))
+}
 
 /** https://exa.ai/docs/reference/search (checked 2026-10-01). */
 export const exaSourceConfigSchema = z.object({

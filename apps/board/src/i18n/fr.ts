@@ -453,6 +453,8 @@ export default {
     topicDefault: 'Réglage du thème ({value})',
   },
   sources: {
+    tabsLabel: 'Sections des sources',
+    tabs: { sources: 'Sources', exclusions: 'Exclusions' },
     edit: 'Modifier',
     editLabel: 'Modifier « {label} »',
     query: 'Recherche',
@@ -509,6 +511,26 @@ export default {
       'Facultatif, mais c’est ce qui guide le tri par IA : décrivez ce qui rend un élément utile pour ce thème et ce qu’il faut écarter.',
     create: 'Créer le thème',
     creating: 'Création…',
+  },
+  reject: {
+    justThis: 'Juste celui-là',
+    site: 'Exclure ce site web',
+    siteHint: 'Plus rien de {site} : ni dans le tri, ni dans les recherches.',
+    siteDone: '« {site} » exclu. Éléments rejetés : {count}.',
+  },
+  exclusions: {
+    title: 'Sites exclus',
+    intro:
+      'Les sites que vous ne citerez jamais (concurrence, sites inadaptés…). Leurs pages sont écartées de toutes les sources de ce thème, sous-domaines compris, et retirées des recherches Exa. Les éléments de ces sites encore dans « À trier » sont rejetés.',
+    add: 'Exclure un site',
+    addHint: 'Un domaine, par exemple exemple.com. Une adresse complète est réduite à son domaine.',
+    placeholder: 'exemple.com',
+    submit: 'Exclure',
+    empty: 'Aucun site exclu pour ce thème.',
+    listLabel: 'Sites exclus de ce thème',
+    remove: 'Retirer',
+    removeLabel: 'Ne plus exclure {site}',
+    removed: '« {site} » n’est plus exclu. Ses éléments déjà rejetés le restent.',
   },
   addSource: {
     title: 'Ajouter une source',

@@ -1,5 +1,7 @@
 import {
   canTransition,
+  domainSchema,
+  isExcludedUrl,
   LANGS,
   extractPageTitle,
   newFeedKey,
@@ -30,6 +32,9 @@ const statusBody = z.object({ status: z.enum(ITEM_TOPIC_STATUSES) })
 
 /** Top-level keys of the topic config are replaced as a whole, then the result is validated. */
 const configPatch = z.record(z.string(), z.unknown())
+
+/** Excluding a site, optionally from an item of the board ("Reject" > "Exclude this site"). */
+const excludeBody = z.object({ domain: domainSchema, item_id: z.uuid().optional() })
 
 const feedBody = z.object({ enabled: z.boolean(), regenerate: z.boolean().default(false) })
 
@@ -192,6 +197,83 @@ export const topics = new Hono<AppEnv>()
     const { error } = await c.var.db.from('topics').update({ config: next.data }).eq('id', topicId)
     if (error) throw error
     return c.json(next.data)
+  })
+
+  /**
+   * Adds a site to the topic exclusions. The item it comes from, if any, and every item
+   * of that site still waiting in "To sort" are rejected: the site is never cited.
+   */
+  .post('/:topicId/excluded-domains', async (c) => {
+    const { domain, item_id } = await parseJson(excludeBody, c.req.raw)
+    const topicId = c.req.param('topicId')
+    const { data: topic, error: readError } = await c.var.db
+      .from('topics')
+      .select('config')
+      .eq('id', topicId)
+      .maybeSingle()
+    if (readError) throw readError
+    if (!topic) throw new HTTPException(404, { message: 'Topic not found' })
+
+    const config = parseTopicConfig(topic.config)
+    const excluded = config.collection.excluded_domains
+    if (!excluded.includes(domain)) {
+      const next = topicConfigSchema.safeParse({
+        ...config,
+        collection: { ...config.collection, excluded_domains: [...excluded, domain].sort() },
+      })
+      if (!next.success) throw new HTTPException(400, { message: z.prettifyError(next.error) })
+      const { error } = await c.var.db
+        .from('topics')
+        .update({ config: next.data })
+        .eq('id', topicId)
+      if (error) throw error
+    }
+
+    const { data: rows, error: listError } = await c.var.db
+      .from('item_topics')
+      .select('item_id, status, item:items (canonical_url)')
+      .eq('topic_id', topicId)
+      .in('status', ['new', 'archived', 'validated'])
+      .returns<{ item_id: string; status: ItemTopicStatus; item: { canonical_url: string } }[]>()
+    if (listError) throw listError
+    // The chosen item, whatever its status; the others only while they wait in "To sort".
+    const toReject = (rows ?? [])
+      .filter((r) =>
+        r.item_id === item_id ? canTransition(r.status, 'rejected') : r.status === 'new',
+      )
+      .filter((r) => r.item_id === item_id || isExcludedUrl(r.item.canonical_url, [domain]))
+      .map((r) => r.item_id)
+    if (toReject.length) {
+      const { error } = await c.var.db
+        .from('item_topics')
+        .update({ status: 'rejected' })
+        .eq('topic_id', topicId)
+        .in('item_id', toReject)
+      if (error) throw error
+    }
+    return c.json({ domain, rejected: toReject.length })
+  })
+
+  .delete('/:topicId/excluded-domains/:domain', async (c) => {
+    const { topicId, domain } = c.req.param()
+    const { data: topic, error: readError } = await c.var.db
+      .from('topics')
+      .select('config')
+      .eq('id', topicId)
+      .maybeSingle()
+    if (readError) throw readError
+    if (!topic) throw new HTTPException(404, { message: 'Topic not found' })
+    const config = parseTopicConfig(topic.config)
+    const next = {
+      ...config,
+      collection: {
+        ...config.collection,
+        excluded_domains: config.collection.excluded_domains.filter((d) => d !== domain),
+      },
+    }
+    const { error } = await c.var.db.from('topics').update({ config: next }).eq('id', topicId)
+    if (error) throw error
+    return c.body(null, 204)
   })
 
   .get('/:topicId/items', async (c) => {

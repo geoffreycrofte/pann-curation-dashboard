@@ -286,6 +286,83 @@ legend {
   margin-top: var(--space-5);
 }
 
+/* ---------------------------------------------------------------------------
+ * Dropdown menus (Reka UI DropdownMenu)
+ * ------------------------------------------------------------------------- */
+.menu {
+  z-index: 20;
+  min-width: 14rem;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+}
+
+.menu-item {
+  display: grid;
+  gap: 0.125rem;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: calc(var(--radius) - 4px);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Keyboard and pointer highlight: filled, not color alone (Reka sets data-highlighted). */
+.menu-item[data-highlighted] {
+  background: var(--color-text);
+  color: var(--color-surface);
+}
+
+.menu-hint {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* ---------------------------------------------------------------------------
+ * Sub-tabs (Reka UI Tabs): plain labels on a separating line, a thick gold bar
+ * under the current one (and bold text: not color alone).
+ * ------------------------------------------------------------------------- */
+.subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-1);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.subtab {
+  min-height: 2.75rem;
+  margin-bottom: -1px;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-bottom: 4px solid transparent;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.subtab:hover {
+  color: var(--color-text);
+  border-bottom-color: var(--color-border-subtle);
+}
+
+.subtab[data-state='active'] {
+  border-bottom-color: var(--color-accent-fill);
+  color: var(--color-text);
+  font-weight: 750;
+}
+
+.subpanel:focus-visible {
+  outline-offset: 4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -308,7 +385,16 @@ legend {
 
   .card,
   fieldset,
-  .notice {
+  .notice,
+  .menu {
     border: 1px solid CanvasText;
+  }
+
+  .menu-item[data-highlighted] {
+    outline: 2px solid Highlight;
+  }
+
+  .subtab[data-state='active'] {
+    border-bottom-color: Highlight;
   }
 }

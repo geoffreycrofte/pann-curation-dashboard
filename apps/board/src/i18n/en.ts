@@ -449,6 +449,8 @@ export default {
     topicDefault: 'Topic setting ({value})',
   },
   sources: {
+    tabsLabel: 'Source sections',
+    tabs: { sources: 'Sources', exclusions: 'Exclusions' },
     edit: 'Edit',
     editLabel: 'Edit “{label}”',
     query: 'Search',
@@ -503,6 +505,26 @@ export default {
       'Optional, but this is what guides the AI triage: describe what makes an item useful for this topic and what to leave out.',
     create: 'Create the topic',
     creating: 'Creating…',
+  },
+  reject: {
+    justThis: 'Just this one',
+    site: 'Exclude this website',
+    siteHint: 'Nothing more from {site}: neither in triage nor in searches.',
+    siteDone: '“{site}” excluded. Items rejected: {count}.',
+  },
+  exclusions: {
+    title: 'Excluded sites',
+    intro:
+      'Sites you will never cite (competitors, unsuitable sites…). Their pages are left out of every source of this topic, subdomains included, and removed from Exa searches. Items from these sites still in “To sort” are rejected.',
+    add: 'Exclude a site',
+    addHint: 'A domain, for example example.com. A full address is reduced to its domain.',
+    placeholder: 'example.com',
+    submit: 'Exclude',
+    empty: 'No excluded site for this topic.',
+    listLabel: 'Sites excluded from this topic',
+    remove: 'Remove',
+    removeLabel: 'Stop excluding {site}',
+    removed: '“{site}” is no longer excluded. Its items already rejected stay rejected.',
   },
   addSource: {
     title: 'Add a source',

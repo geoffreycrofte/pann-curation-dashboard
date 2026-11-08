@@ -1,4 +1,5 @@
 import {
+  isExcludedUrl,
   isSourceDue,
   normalizeUrl,
   parseErrorCode,
@@ -156,7 +157,9 @@ export async function collect(deps: {
         confirmed.add(`${source.workspace_id}/${provider}`)
         await deps.store.markCredentialOk(source.workspace_id, provider)
       }
-      const rows = toIngestRows(result.items)
+      // Sites excluded from the topic are never proposed, whatever the source.
+      const excluded = source.topic_config.collection.excluded_domains
+      const rows = toIngestRows(result.items.filter((i) => !isExcludedUrl(i.url, excluded)))
       report.collected = rows.length
       const stats = rows.length ? await deps.store.ingest(source.topic_id, rows) : emptyStats()
       report.stats = stats

@@ -10,6 +10,10 @@ import {
 } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import {
+  TabsContent,
+  TabsList,
+  TabsRoot,
+  TabsTrigger,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
@@ -22,8 +26,9 @@ import {
 } from 'reka-ui'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AddSourceSection from '../components/AddSourceSection.vue'
+import ExcludedSites from '../components/ExcludedSites.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import SourceEditor from '../components/SourceEditor.vue'
 import TopicNav from '../components/TopicNav.vue'
@@ -51,6 +56,12 @@ const {
 })
 
 const route = useRoute()
+const router = useRouter()
+// Sub-tabs, kept in the address (?tab=exclusions) like the settings.
+const tab = computed<'sources' | 'exclusions'>({
+  get: () => (route.query.tab === 'exclusions' ? 'exclusions' : 'sources'),
+  set: (value) => void router.replace({ query: { ...route.query, tab: value } }),
+})
 /** Just created from "New topic": the sources are the next step of the setup. */
 const isNewTopic = computed(() => route.query.new === '1')
 
@@ -206,188 +217,234 @@ function feedUrl(source: Source): string | undefined {
   <h1 tabindex="-1">{{ t('sources.heading', { topic: topicName }) }}</h1>
   <TopicNav :topic-id="topicId" />
 
-  <div v-if="isNewTopic" class="notice" role="note">
-    <p>
-      <strong>{{ t('sources.newTopicTitle') }}</strong>
-    </p>
-    <p>{{ t('sources.newTopicText') }}</p>
-    <p>
-      <RouterLink :to="{ name: 'settings', params: { topicId } }">
-        {{ t('sources.newTopicSettings') }}
-      </RouterLink>
-    </p>
-  </div>
+  <TabsRoot v-model="tab" activation-mode="manual">
+    <TabsList :aria-label="t('sources.tabsLabel')" class="subtabs">
+      <TabsTrigger value="sources" class="subtab">{{ t('sources.tabs.sources') }}</TabsTrigger>
+      <TabsTrigger value="exclusions" class="subtab">
+        {{ t('sources.tabs.exclusions') }}
+        <span v-if="topic?.config.collection.excluded_domains.length" class="count">
+          {{ topic.config.collection.excluded_domains.length }}
+        </span>
+      </TabsTrigger>
+    </TabsList>
 
-  <div v-if="missingProviders.length || githubWithoutToken" class="notice" role="note">
-    <p v-for="provider in missingProviders" :key="provider">
-      {{
-        t('sources.missingKey', {
-          type: t(`sourceType.${PROVIDER_INFO[provider].sourceType}`),
-          provider: t(`connections.providers.${provider}.name`),
-        })
-      }}
-    </p>
-    <p v-if="githubWithoutToken">{{ t('sources.githubNoToken') }}</p>
-    <p>
-      <RouterLink to="/connections">{{ t('errors.fixInConnections') }}</RouterLink>
-    </p>
-  </div>
-
-  <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
-  <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
-  <p v-else-if="!sources?.length">{{ t('sources.empty') }}</p>
-  <ul v-else class="sources" :aria-label="t('sources.tableCaption')">
-    <li v-for="source in sources" :key="source.id">
-      <article
-        class="card source"
-        :aria-labelledby="`source-${source.id}`"
-        :data-active="source.active"
-      >
-        <div class="source-head">
-          <div class="source-title">
-            <h2 :id="`source-${source.id}`">
-              <a
-                v-if="feedUrl(source)"
-                :href="feedUrl(source)"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {{ source.label }}
-              </a>
-              <template v-else>{{ source.label }}</template>
-            </h2>
-            <dl class="meta">
-              <div class="meta-type">
-                <dt class="visually-hidden">{{ t('sources.type') }}</dt>
-                <dd>
-                  <span class="type-dot" :data-type="source.type" aria-hidden="true"></span>
-                  {{ t(`sourceType.${source.type}`) }}
-                </dd>
-              </div>
-              <div class="meta-kind">
-                <dt class="visually-hidden">{{ t('sources.kind') }}</dt>
-                <dd>
-                  {{
-                    source.default_kind ? t(`kind.${source.default_kind}`) : t('kindSelect.none')
-                  }}
-                </dd>
-              </div>
-              <div v-if="searchQuery(source)" class="meta-query">
-                <dt class="visually-hidden">{{ t('sources.query') }}</dt>
-                <dd>{{ searchQuery(source) }}</dd>
-              </div>
-            </dl>
-          </div>
-          <div class="source-run">
-            <p class="run-date">
-              <span class="hint">{{ t('sources.lastRun') }}</span>
-              {{
-                source.last_run_at
-                  ? d(new Date(source.last_run_at), { dateStyle: 'short', timeStyle: 'short' })
-                  : t('common.never')
-              }}
-            </p>
-            <p v-if="collectionPending(source)" class="hint">{{ t('sources.pending') }}</p>
-            <p v-else-if="source.last_run_stats" class="hint">
-              {{ formatStats(source.last_run_stats) }}
-            </p>
-          </div>
-        </div>
-
-        <p v-if="source.last_error" class="error source-error">
-          {{ t('sources.lastError', { message: describeError(source.last_error, t).text }) }}
-          <RouterLink v-if="describeError(source.last_error, t).provider" to="/connections">
-            {{ t('errors.fixInConnections') }}
+    <TabsContent value="sources" class="subpanel">
+      <div v-if="isNewTopic" class="notice" role="note">
+        <p>
+          <strong>{{ t('sources.newTopicTitle') }}</strong>
+        </p>
+        <p>{{ t('sources.newTopicText') }}</p>
+        <p>
+          <RouterLink :to="{ name: 'settings', params: { topicId } }">
+            {{ t('sources.newTopicSettings') }}
           </RouterLink>
         </p>
+      </div>
 
-        <div class="source-controls">
-          <div class="form-row">
-            <label :for="`freq-${source.id}`" class="hint">{{ t('sources.frequency') }}</label>
-            <IntervalSelect
-              :id="`freq-${source.id}`"
-              :model-value="source.interval_hours"
-              :inherited-hours="inheritedHours(source)"
-              :disabled="updating"
-              @update:model-value="(v) => update({ source, patch: { interval_hours: v } })"
-            />
-          </div>
-          <div class="form-check active-check">
-            <input
-              :id="`active-${source.id}`"
-              type="checkbox"
-              :checked="source.active"
-              :disabled="updating"
-              @change="
-                update({ source, patch: { active: ($event.target as HTMLInputElement).checked } })
-              "
-            />
-            <label :for="`active-${source.id}`">{{ t('sources.activeShort') }}</label>
-          </div>
-          <div class="row-actions">
-            <button
-              :id="`edit-${source.id}`"
-              type="button"
-              class="button"
-              :aria-expanded="editing === source.id"
-              :aria-label="t('sources.editLabel', { label: source.label })"
-              @click="editing = editing === source.id ? null : source.id"
-            >
-              {{ t('sources.edit') }}
-            </button>
-            <button
-              type="button"
-              class="button"
-              data-variant="primary"
-              :aria-label="t('sources.collectLabel', { label: source.label })"
-              :disabled="collectionPending(source) || !source.active"
-              @click="collectNow(source)"
-            >
-              {{ t('sources.collect') }}
-            </button>
-            <AlertDialogRoot>
-              <AlertDialogTrigger as-child>
+      <div v-if="missingProviders.length || githubWithoutToken" class="notice" role="note">
+        <p v-for="provider in missingProviders" :key="provider">
+          {{
+            t('sources.missingKey', {
+              type: t(`sourceType.${PROVIDER_INFO[provider].sourceType}`),
+              provider: t(`connections.providers.${provider}.name`),
+            })
+          }}
+        </p>
+        <p v-if="githubWithoutToken">{{ t('sources.githubNoToken') }}</p>
+        <p>
+          <RouterLink to="/connections">{{ t('errors.fixInConnections') }}</RouterLink>
+        </p>
+      </div>
+
+      <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
+      <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
+      <p v-else-if="!sources?.length">{{ t('sources.empty') }}</p>
+      <ul v-else class="sources" :aria-label="t('sources.tableCaption')">
+        <li v-for="source in sources" :key="source.id">
+          <article
+            class="card source"
+            :aria-labelledby="`source-${source.id}`"
+            :data-active="source.active"
+          >
+            <div class="source-head">
+              <div class="source-title">
+                <h2 :id="`source-${source.id}`">
+                  <a
+                    v-if="feedUrl(source)"
+                    :href="feedUrl(source)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ source.label }}
+                  </a>
+                  <template v-else>{{ source.label }}</template>
+                </h2>
+                <dl class="meta">
+                  <div class="meta-type">
+                    <dt class="visually-hidden">{{ t('sources.type') }}</dt>
+                    <dd>
+                      <span class="type-dot" :data-type="source.type" aria-hidden="true"></span>
+                      {{ t(`sourceType.${source.type}`) }}
+                    </dd>
+                  </div>
+                  <div class="meta-kind">
+                    <dt class="visually-hidden">{{ t('sources.kind') }}</dt>
+                    <dd>
+                      {{
+                        source.default_kind
+                          ? t(`kind.${source.default_kind}`)
+                          : t('kindSelect.none')
+                      }}
+                    </dd>
+                  </div>
+                  <div v-if="searchQuery(source)" class="meta-query">
+                    <dt class="visually-hidden">{{ t('sources.query') }}</dt>
+                    <dd>{{ searchQuery(source) }}</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="source-run">
+                <p class="run-date">
+                  <span class="hint">{{ t('sources.lastRun') }}</span>
+                  {{
+                    source.last_run_at
+                      ? d(new Date(source.last_run_at), { dateStyle: 'short', timeStyle: 'short' })
+                      : t('common.never')
+                  }}
+                </p>
+                <p v-if="collectionPending(source)" class="hint">{{ t('sources.pending') }}</p>
+                <p v-else-if="source.last_run_stats" class="hint">
+                  {{ formatStats(source.last_run_stats) }}
+                </p>
+              </div>
+            </div>
+
+            <p v-if="source.last_error" class="error source-error">
+              {{ t('sources.lastError', { message: describeError(source.last_error, t).text }) }}
+              <RouterLink v-if="describeError(source.last_error, t).provider" to="/connections">
+                {{ t('errors.fixInConnections') }}
+              </RouterLink>
+            </p>
+
+            <div class="source-controls">
+              <div class="form-row">
+                <label :for="`freq-${source.id}`" class="hint">{{ t('sources.frequency') }}</label>
+                <IntervalSelect
+                  :id="`freq-${source.id}`"
+                  :model-value="source.interval_hours"
+                  :inherited-hours="inheritedHours(source)"
+                  :disabled="updating"
+                  @update:model-value="(v) => update({ source, patch: { interval_hours: v } })"
+                />
+              </div>
+              <div class="form-check active-check">
+                <input
+                  :id="`active-${source.id}`"
+                  type="checkbox"
+                  :checked="source.active"
+                  :disabled="updating"
+                  @change="
+                    update({
+                      source,
+                      patch: { active: ($event.target as HTMLInputElement).checked },
+                    })
+                  "
+                />
+                <label :for="`active-${source.id}`">{{ t('sources.activeShort') }}</label>
+              </div>
+              <div class="row-actions">
+                <button
+                  :id="`edit-${source.id}`"
+                  type="button"
+                  class="button"
+                  :aria-expanded="editing === source.id"
+                  :aria-label="t('sources.editLabel', { label: source.label })"
+                  @click="editing = editing === source.id ? null : source.id"
+                >
+                  {{ t('sources.edit') }}
+                </button>
                 <button
                   type="button"
                   class="button"
-                  :aria-label="t('sources.deleteLabel', { label: source.label })"
+                  data-variant="primary"
+                  :aria-label="t('sources.collectLabel', { label: source.label })"
+                  :disabled="collectionPending(source) || !source.active"
+                  @click="collectNow(source)"
                 >
-                  {{ t('common.delete') }}
+                  {{ t('sources.collect') }}
                 </button>
-              </AlertDialogTrigger>
-              <AlertDialogPortal>
-                <AlertDialogOverlay class="dialog-overlay" />
-                <AlertDialogContent class="dialog">
-                  <AlertDialogTitle class="dialog-title">
-                    {{ t('sources.confirmTitle', { label: source.label }) }}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>{{ t('sources.confirmText') }}</AlertDialogDescription>
-                  <div class="dialog-actions">
-                    <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
-                    <AlertDialogAction class="button" data-variant="danger" @click="remove(source)">
+                <AlertDialogRoot>
+                  <AlertDialogTrigger as-child>
+                    <button
+                      type="button"
+                      class="button"
+                      :aria-label="t('sources.deleteLabel', { label: source.label })"
+                    >
                       {{ t('common.delete') }}
-                    </AlertDialogAction>
-                  </div>
-                </AlertDialogContent>
-              </AlertDialogPortal>
-            </AlertDialogRoot>
-          </div>
-        </div>
-        <SourceEditor
-          v-if="editing === source.id"
-          :topic-id="topicId"
-          :source="source"
-          @done="(text) => finishEdit(source, text)"
-        />
-      </article>
-    </li>
-  </ul>
-  <p role="status" :class="{ error: isError }">{{ message }}</p>
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogPortal>
+                    <AlertDialogOverlay class="dialog-overlay" />
+                    <AlertDialogContent class="dialog">
+                      <AlertDialogTitle class="dialog-title">
+                        {{ t('sources.confirmTitle', { label: source.label }) }}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>{{
+                        t('sources.confirmText')
+                      }}</AlertDialogDescription>
+                      <div class="dialog-actions">
+                        <AlertDialogCancel class="button">{{
+                          t('common.cancel')
+                        }}</AlertDialogCancel>
+                        <AlertDialogAction
+                          class="button"
+                          data-variant="danger"
+                          @click="remove(source)"
+                        >
+                          {{ t('common.delete') }}
+                        </AlertDialogAction>
+                      </div>
+                    </AlertDialogContent>
+                  </AlertDialogPortal>
+                </AlertDialogRoot>
+              </div>
+            </div>
+            <SourceEditor
+              v-if="editing === source.id"
+              :topic-id="topicId"
+              :source="source"
+              @done="(text) => finishEdit(source, text)"
+            />
+          </article>
+        </li>
+      </ul>
+      <p role="status" :class="{ error: isError }">{{ message }}</p>
 
-  <AddSourceSection v-if="topic" :topic-id="topicId" :config="topic.config" />
+      <AddSourceSection v-if="topic" :topic-id="topicId" :config="topic.config" />
+    </TabsContent>
+
+    <TabsContent value="exclusions" class="subpanel">
+      <ExcludedSites
+        v-if="topic"
+        :topic-id="topicId"
+        :domains="topic.config.collection.excluded_domains"
+      />
+    </TabsContent>
+  </TabsRoot>
 </template>
 
 <style scoped>
+.count {
+  display: inline-block;
+  min-width: 1.5rem;
+  margin-inline-start: var(--space-1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
 .sources {
   display: grid;
   gap: var(--space-4);
