@@ -26,11 +26,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      # The Supabase CLI of the lockfile, as in the Deploy workflow: no lookup of the
+      # "latest" release through the GitHub API, which is rate limited.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          version: latest
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Apply migrations and seed on a local stack
         run: |
-          supabase db start
-          supabase db reset
-          supabase db lint --level error
+          pnpm exec supabase db start
+          pnpm exec supabase db reset
+          pnpm exec supabase db lint --level error
