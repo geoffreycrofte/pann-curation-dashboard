@@ -35,11 +35,15 @@ function memoryStore(sources: CollectSource[]) {
   const runs: Record<string, string | null> = {}
   const usage: unknown[] = []
   const invalid: string[] = []
+  const ok: string[] = []
   const store: CollectStore = {
     activeSources: async () => sources,
     credentials: async (workspaceId) => (workspaceId === 'w' ? { exa: 'key' } : {}),
     markCredentialInvalid: async (workspaceId, provider) => {
       invalid.push(`${workspaceId}/${provider}`)
+    },
+    markCredentialOk: async (workspaceId, provider) => {
+      ok.push(`${workspaceId}/${provider}`)
     },
     ingest: async (topicId, rows) => {
       ingested[topicId] = [...(ingested[topicId] ?? []), ...rows]
@@ -52,7 +56,7 @@ function memoryStore(sources: CollectSource[]) {
       usage.push(...entries)
     },
   }
-  return { store, ingested, runs, usage, invalid }
+  return { store, ingested, runs, usage, invalid, ok }
 }
 
 describe('toIngestRows', () => {
@@ -96,6 +100,18 @@ describe('collect', () => {
     expect(invalid).toEqual(['w/exa'])
     expect(ingested.t?.map((r) => r.canonical_url)).toEqual(['https://example.org/x'])
     expect(usage).toEqual([])
+  })
+
+  it('marks the Exa key as checked after a successful collection, once per pass', async () => {
+    const { store, ok, invalid } = memoryStore([
+      source({ id: 'a', type: 'exa' }),
+      source({ id: 'b', type: 'exa' }),
+      source({ id: 'c', type: 'rss' }),
+    ])
+    const empty: Adapter = async () => ({ items: [] })
+    await collect({ store, adapters: { exa: empty, rss: empty }, now })
+    expect(ok).toEqual(['w/exa'])
+    expect(invalid).toEqual([])
   })
 
   it('passes the workspace keys to the adapters', async () => {

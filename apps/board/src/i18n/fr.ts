@@ -2,6 +2,7 @@ export default {
   app: { name: 'Pann', tagline: 'Outil de curation de veille' },
   a11y: { skipToContent: 'Aller au contenu' },
   lang: { label: 'Langue', fr: 'Français', en: 'English' },
+  theme: { dark: 'Mode sombre' },
   common: {
     save: 'Enregistrer',
     saving: 'Enregistrement…',
@@ -76,6 +77,7 @@ export default {
       diffusion: 'Nécessaire pour publier sur les réseaux',
       newsletter: 'Nécessaire pour envoyer la newsletter',
     },
+    manage: 'Gérer',
     howTo: 'Où trouver cette clé ?',
     keyLabel: 'Clé {provider}',
     keyLabelReplace: 'Nouvelle clé {provider}',
@@ -106,7 +108,7 @@ export default {
     refreshBrevo: 'Actualiser les listes et les expéditeurs',
     detail: {
       no_free_check:
-        'Ce service ne propose pas de vérification gratuite : la clé sera vérifiée à la première collecte.',
+        'Ce service ne propose pas de vérification gratuite : la clé sera vérifiée à la première collecte d’une source « Recherche Exa ». Pour la vérifier tout de suite, utilisez « Collecter maintenant » sur une de ces sources.',
       provider_unreachable:
         'Le service ne répondait pas : la clé sera vérifiée à la première utilisation.',
       rejected_during_collection: 'La clé a été refusée lors de la dernière collecte.',
@@ -497,6 +499,16 @@ export default {
     untitled: 'Sans titre',
   },
   settings: {
+    tabsLabel: 'Sections des réglages',
+    tabs: {
+      collection: 'Collecte',
+      triage: 'Tri par IA',
+      drafting: 'Rédaction par IA',
+      diffusion: 'Diffusion',
+      newsletter: 'Newsletter',
+      feed: 'Flux publics',
+      budget: 'Budget',
+    },
     criteria: 'Critères de pertinence',
     criteriaHint:
       'Décrivez ce qui rend un élément utile pour ce thème : sujets, normes, publics, ce qu’il faut écarter. L’IA s’en sert pour noter chaque élément.',

@@ -61,7 +61,7 @@ pnpm db:reset      # rejoue toutes les migrations et le seed
 
 ## Déploiement
 
-Workflow manuel `Deploy` (GitHub Actions, onglet Actions, puis « Run workflow ») : migrations (`supabase db push`), build du board, files de tâches (créées au premier passage), `wrangler deploy`, puis secrets du Worker.
+Workflow `Deploy` (GitHub Actions), lancé automatiquement après chaque CI réussie sur `main`, ou à la main (onglet Actions, puis « Run workflow ») : migrations (`supabase db push`), build du board, files de tâches (créées au premier passage), `wrangler deploy`, puis secrets du Worker.
 À configurer une fois, dans GitHub (Settings, Environments, `production`) :
 
 - Secrets : `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_SECRET_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.

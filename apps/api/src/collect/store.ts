@@ -54,6 +54,17 @@ export function supabaseCollectStore(db: SupabaseClient): CollectStore {
       if (error) throw error
     },
 
+    async markCredentialOk(workspaceId, provider) {
+      // Only when not already "ok": no write on every hourly run.
+      const { error } = await db
+        .from('workspace_credentials')
+        .update({ status: 'ok', status_detail: null, checked_at: new Date().toISOString() })
+        .eq('workspace_id', workspaceId)
+        .eq('provider', provider)
+        .neq('status', 'ok')
+      if (error) throw error
+    },
+
     async ingest(topicId, rows) {
       const { data, error } = await db.rpc('ingest_items', { p_topic_id: topicId, p_items: rows })
       if (error) throw error

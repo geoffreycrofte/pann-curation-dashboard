@@ -177,3 +177,9 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 **Les outils passent par l'API du board**, avec le jeton de l'utilisateur (appel interne `app.request`) : mêmes contrôles, mêmes transitions de statut, mêmes jobs, même RLS ; aucune logique dupliquée. Outils : lister thèmes et éléments, lire un élément, trier, ajouter un lien, modifier résumés et posts, relancer la rédaction, programmer ou retirer de la file, lire la file de diffusion et la prochaine newsletter. Pas d'envoi de newsletter depuis MCP : il reste dans le board. Les instructions du serveur demandent à Claude de toujours demander avant une publication immédiate ; les annotations (`readOnlyHint`, `openWorldHint`) aident le client à demander confirmation.
 
 **Accès révocable** : la page Connexions liste les applications autorisées (`listGrants`) et retire un accès (`revokeGrant`, qui invalide aussi ses jetons de rafraîchissement). Après connexion par lien magique, Pann ramène sur la page demandée (consentement compris) : chemin gardé dans localStorage, car le lien s'ouvre dans un nouvel onglet.
+
+## 2026-11-08 : déploiement automatique après la CI
+
+**`Deploy` se lance quand la CI réussit sur `main`** (`workflow_run`), plutôt qu'à chaque `push` : un déclenchement sur `push` tournerait en parallèle de la CI et déploierait aussi un commit qui échoue. Le workflow déploie le commit vérifié par la CI (`head_sha`), même si `main` a avancé entre-temps. Le lancement manuel reste possible.
+
+**Conséquence** : une migration fusionnée dans `main` est appliquée à la base de production dans la foulée (`supabase db push`). D'où la règle de `CLAUDE.md` : ne jamais modifier une migration déjà appliquée, toujours en ajouter une nouvelle.

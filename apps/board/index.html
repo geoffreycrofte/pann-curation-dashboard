@@ -9,6 +9,13 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#141414" />
     <title>Pann</title>
+    <script>
+      // Theme picked in the sidebar (lib/theme.ts), applied before the first paint.
+      try {
+        const theme = localStorage.getItem('pann.theme')
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="app"></div>
