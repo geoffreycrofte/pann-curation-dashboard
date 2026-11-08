@@ -92,6 +92,7 @@ const actions = computed(() =>
             })
           }}
         </li>
+        <li v-if="site" class="site">{{ site }}</li>
         <li v-if="item.publish_at && Date.parse(item.publish_at) > Date.now()">
           {{
             t('board.scheduledFor', {
@@ -273,6 +274,17 @@ const actions = computed(() =>
   gap: var(--space-1) var(--space-4);
   font-size: 0.875rem;
   color: var(--color-text-muted);
+}
+
+/* Site of the item after the date, with a separator kept silent for screen readers. */
+.meta .site {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.meta .site::before {
+  content: '•' / '';
+  margin-inline-end: var(--space-4);
 }
 
 .footer {

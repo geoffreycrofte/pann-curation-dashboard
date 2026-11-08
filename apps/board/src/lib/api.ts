@@ -222,6 +222,9 @@ export const api = {
     const rows = await request<ItemRow[]>(`/topics/${topicId}/items?status=${status}`)
     return rows.map(({ item, ...rest }) => ({ ...rest, ...item }))
   },
+  /** Items per status; archived is not counted. */
+  counts: (topicId: string) =>
+    request<Partial<Record<ItemTopicStatus, number>>>(`/topics/${topicId}/counts`),
   addItem: (topicId: string, input: AddItemInput) =>
     request<AddItemResult>(`/topics/${topicId}/items`, json('POST', input)),
   setItemKind: (topicId: string, itemId: string, kind: string | null) =>

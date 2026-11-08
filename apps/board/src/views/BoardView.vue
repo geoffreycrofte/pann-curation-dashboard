@@ -41,6 +41,12 @@ const status = computed<ItemTopicStatus>({
   set: (value) => router.replace({ query: { ...route.query, status: value } }),
 })
 
+// Under the 'items' key: every status change or new item refreshes the counters too.
+const { data: counts } = useQuery({
+  key: () => ['items', props.topicId, 'counts'],
+  query: () => api.counts(props.topicId),
+})
+
 const announcement = ref('')
 </script>
 
@@ -57,6 +63,10 @@ const announcement = ref('')
     <TabsList :aria-label="t('board.statusFilter')" class="tabs">
       <TabsTrigger v-for="s in ITEM_TOPIC_STATUSES" :key="s" :value="s" class="button tab">
         {{ t(`status.${s}`) }}
+        <span v-if="counts?.[s] !== undefined" class="count">
+          <span class="visually-hidden">(</span>{{ counts[s]
+          }}<span class="visually-hidden">)</span>
+        </span>
       </TabsTrigger>
     </TabsList>
     <TabsContent v-for="s in ITEM_TOPIC_STATUSES" :key="s" :value="s" class="panel">
@@ -77,6 +87,22 @@ const announcement = ref('')
 
 .tab {
   border-color: var(--color-border-subtle);
+}
+
+.count {
+  min-width: 1.5rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.tab[data-state='active'] .count {
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 /* Current tab: ink fill, light text and bold (not color alone). */
