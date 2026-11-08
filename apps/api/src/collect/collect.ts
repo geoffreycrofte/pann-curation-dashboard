@@ -4,6 +4,7 @@ import {
   normalizeUrl,
   parseErrorCode,
   requiredProvider,
+  type ConversationMeta,
   type Provider,
   type SourceRunStats,
 } from '@pann/shared'
@@ -24,6 +25,7 @@ export interface IngestRow {
   source_lang: string | null
   kind: string | null
   change_signature: string | null
+  meta?: ConversationMeta
 }
 
 export interface IngestStats {
@@ -46,7 +48,8 @@ export interface CollectStore {
    * when the key is saved: this is how its key becomes "checked".
    */
   markCredentialOk(workspaceId: string, provider: Provider): Promise<void>
-  ingest(topicId: string, rows: IngestRow[]): Promise<IngestStats>
+  /** Links the rows to the topic for the tool of their source. */
+  ingest(topicId: string, rows: IngestRow[], module: CollectSource['module']): Promise<IngestStats>
   finishRun(
     sourceId: string,
     result: { at: Date; error: string | null; stats: SourceRunStats | null },
@@ -57,6 +60,7 @@ export interface CollectStore {
 export interface SourceReport {
   source_id: string
   topic_id: string
+  module: CollectSource['module']
   label: string
   collected: number
   stats?: IngestStats
@@ -73,9 +77,12 @@ function emptyStats(): IngestStats {
 }
 
 export function collectionWindowStart(source: CollectSource, now: Date): Date {
-  const maxAge = new Date(
-    now.getTime() - source.topic_config.collection.max_age_days * 86400 * 1000,
-  )
+  // Conversations age faster than articles: the engagement tool has its own limit.
+  const maxAgeDays =
+    source.module === 'engagement'
+      ? source.topic_config.engagement.max_age_days
+      : source.topic_config.collection.max_age_days
+  const maxAge = new Date(now.getTime() - maxAgeDays * 86400 * 1000)
   if (!source.last_run_at) return maxAge
   const sinceLastRun = new Date(Date.parse(source.last_run_at) - OVERLAP_MS)
   return sinceLastRun > maxAge ? sinceLastRun : maxAge
@@ -99,6 +106,7 @@ export function toIngestRows(items: CollectedItem[]): IngestRow[] {
       source_lang: item.source_lang ?? null,
       kind: item.kind ?? null,
       change_signature: item.change_signature ?? null,
+      ...(item.meta ? { meta: item.meta } : {}),
     })
   }
   return [...rows.values()]
@@ -119,8 +127,8 @@ export async function collect(deps: {
   const now = deps.now ?? new Date()
   const only = deps.onlySourceIds
   const due = (await deps.store.activeSources())
-    // Every source feeds the curation board for now: a topic without curation pauses them.
-    .filter((s) => s.topic_config.modules.curation)
+    // A source runs only while the tool it feeds is on for its topic.
+    .filter((s) => s.topic_config.modules[s.module])
     .filter((s) => (only ? only.includes(s.id) : isSourceDue(s, s.topic_config, now)))
     .sort((a, b) => (a.last_run_at ?? '').localeCompare(b.last_run_at ?? ''))
     .slice(0, deps.maxSources ?? MAX_SOURCES_PER_RUN)
@@ -143,6 +151,7 @@ export async function collect(deps: {
     const report: SourceReport = {
       source_id: source.id,
       topic_id: source.topic_id,
+      module: source.module,
       label: source.label,
       collected: 0,
     }
@@ -163,7 +172,9 @@ export async function collect(deps: {
       const excluded = source.topic_config.collection.excluded_domains
       const rows = toIngestRows(result.items.filter((i) => !isExcludedUrl(i.url, excluded)))
       report.collected = rows.length
-      const stats = rows.length ? await deps.store.ingest(source.topic_id, rows) : emptyStats()
+      const stats = rows.length
+        ? await deps.store.ingest(source.topic_id, rows, source.module)
+        : emptyStats()
       report.stats = stats
       await deps.store.finishRun(source.id, {
         at: now,

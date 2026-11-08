@@ -4,6 +4,9 @@ import { supabaseCollectStore } from '../collect/store'
 import { claudeDraftModel } from '../draft/model'
 import { supabaseDraftStore } from '../draft/store'
 import { draft } from '../draft/draft'
+import { claudeEngagementModel } from '../engagement/model'
+import { supabaseEngagementStore } from '../engagement/store'
+import { triageConversations } from '../engagement/triage'
 import type { Env } from '../env'
 import { sendBrevoCampaign } from '../newsletter/brevo'
 import { sendDigests } from '../newsletter/digest'
@@ -21,7 +24,10 @@ export const COLLECT_CRON = '7 * * * *'
 /** Posts and newsletters go out within 5 minutes of their time. */
 export const PUBLISH_CRON = '*/5 * * * *'
 
-/** Hourly: collect the due sources, triage what waits, catch up on pending drafts. */
+/**
+ * Hourly: collect the due sources, triage what waits, catch up on pending drafts, then
+ * judge the new conversations of the engagement tool.
+ */
 export async function runScheduled(controller: ScheduledController, env: Env): Promise<void> {
   switch (controller.cron) {
     case COLLECT_CRON: {
@@ -32,6 +38,11 @@ export async function runScheduled(controller: ScheduledController, env: Env): P
       console.log(JSON.stringify({ job: 'triage', report: triaged }))
       const drafted = await draft({ store: supabaseDraftStore(db), model: claudeDraftModel })
       console.log(JSON.stringify({ job: 'draft', report: drafted }))
+      const conversations = await triageConversations({
+        store: supabaseEngagementStore(db),
+        model: claudeEngagementModel,
+      })
+      console.log(JSON.stringify({ job: 'engagement-triage', report: conversations }))
       return
     }
     case PUBLISH_CRON: {

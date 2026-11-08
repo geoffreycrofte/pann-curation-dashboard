@@ -58,6 +58,12 @@ export const router = createRouter({
       props: true,
     },
     {
+      path: '/t/:topicId/engagement',
+      name: 'engagement',
+      component: () => import('./views/EngagementView.vue'),
+      props: true,
+    },
+    {
       path: '/t/:topicId/settings',
       name: 'settings',
       component: () => import('./views/SettingsView.vue'),

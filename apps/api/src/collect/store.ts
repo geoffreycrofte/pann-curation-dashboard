@@ -14,7 +14,7 @@ export function supabaseCollectStore(db: SupabaseClient): CollectStore {
       const { data, error } = await db
         .from('sources')
         .select(
-          'id, topic_id, type, label, config, active, default_kind, interval_hours, last_run_at, run_requested_at, ' +
+          'id, topic_id, module, type, label, config, active, default_kind, interval_hours, last_run_at, run_requested_at, ' +
             'topic:topics!inner (workspace_id, active, config)',
         )
         .eq('active', true)
@@ -65,8 +65,12 @@ export function supabaseCollectStore(db: SupabaseClient): CollectStore {
       if (error) throw error
     },
 
-    async ingest(topicId, rows) {
-      const { data, error } = await db.rpc('ingest_items', { p_topic_id: topicId, p_items: rows })
+    async ingest(topicId, rows, module) {
+      const { data, error } = await db.rpc('ingest_items', {
+        p_topic_id: topicId,
+        p_items: rows,
+        p_module: module,
+      })
       if (error) throw error
       return data as IngestStats
     },

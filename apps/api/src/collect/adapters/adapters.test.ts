@@ -2,7 +2,9 @@ import { parseTopicConfig } from '@pann/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CollectSource } from '../types'
 import { domainFilters, exaAdapter } from './exa'
+import { blueskyAdapter, postUrl } from './bluesky'
 import { githubAdapter } from './github'
+import { hackerNewsAdapter } from './hackernews'
 import { rssAdapter } from './rss'
 
 const since = new Date('2026-09-01T00:00:00Z')
@@ -10,6 +12,7 @@ const base: CollectSource = {
   id: 's',
   topic_id: 't',
   workspace_id: 'w',
+  module: 'curation',
   type: 'rss',
   label: 'x',
   config: {},
@@ -190,5 +193,112 @@ describe('domainFilters', () => {
     expect(domainFilters(['w3.org', 'blog.b.org'], undefined, ['b.org'])).toEqual({
       includeDomains: ['w3.org'],
     })
+  })
+})
+
+describe('hackerNewsAdapter', () => {
+  it('searches recent stories and comments and links to the discussion on Hacker News', async () => {
+    const calls = stubFetch(() =>
+      json({
+        hits: [
+          {
+            objectID: '11',
+            _tags: ['story', 'ask_hn'],
+            author: 'ana',
+            created_at: '2026-09-02T10:00:00Z',
+            title: 'Ask HN: How do you audit accessibility?',
+            story_text: 'We use axe &amp; manual checks.',
+            points: 12,
+            num_comments: 4,
+          },
+          {
+            objectID: '12',
+            _tags: ['comment'],
+            author: 'bo',
+            created_at: '2026-09-02T11:00:00Z',
+            comment_text: '<p>Try a <i>screen reader</i> first.</p>',
+            story_title: 'Show HN: A WCAG checker',
+          },
+          { objectID: '13', _tags: ['story'], title: 'Low', points: 1 },
+        ],
+      }),
+    )
+    const result = await hackerNewsAdapter(
+      {
+        ...base,
+        module: 'engagement',
+        type: 'hackernews',
+        config: { query: 'wcag', min_points: 5 },
+      },
+      { since, secrets: {} },
+    )
+    const url = new URL(calls[0]!.url)
+    expect(url.origin + url.pathname).toBe('https://hn.algolia.com/api/v1/search_by_date')
+    expect(url.searchParams.get('tags')).toBe('(story,comment)')
+    expect(url.searchParams.get('numericFilters')).toBe('created_at_i>1788220800')
+    expect(result.items.map((i) => [i.url, i.title, i.content])).toEqual([
+      [
+        'https://news.ycombinator.com/item?id=11',
+        'Ask HN: How do you audit accessibility?',
+        'We use axe & manual checks.',
+      ],
+      [
+        'https://news.ycombinator.com/item?id=12',
+        'Show HN: A WCAG checker',
+        'Try a screen reader first.',
+      ],
+    ])
+    expect(result.items[0]?.meta).toEqual({
+      platform: 'hackernews',
+      author: 'ana',
+      points: 12,
+      comments: 4,
+    })
+    expect(result.items[1]?.meta).toMatchObject({ thread_title: 'Show HN: A WCAG checker' })
+  })
+})
+
+describe('blueskyAdapter', () => {
+  it('searches the latest posts since the window and links to them on bsky.app', async () => {
+    const calls = stubFetch(() =>
+      json({
+        posts: [
+          {
+            uri: 'at://did:plc:abc/app.bsky.feed.post/3kxyz',
+            author: { handle: 'ana.bsky.social' },
+            record: {
+              text: 'Anyone has a good accessibility audit checklist?',
+              createdAt: '2026-09-03T08:00:00Z',
+              langs: ['en'],
+            },
+            replyCount: 2,
+            likeCount: 5,
+          },
+        ],
+      }),
+    )
+    const result = await blueskyAdapter(
+      { ...base, module: 'engagement', type: 'bluesky', config: { query: 'audit', lang: 'en' } },
+      { since, secrets: {} },
+    )
+    const url = new URL(calls[0]!.url)
+    expect(url.origin + url.pathname).toBe('https://api.bsky.app/xrpc/app.bsky.feed.searchPosts')
+    expect(url.searchParams.get('since')).toBe('2026-09-01T00:00:00.000Z')
+    expect(url.searchParams.get('lang')).toBe('en')
+    expect(result.items).toEqual([
+      {
+        url: 'https://bsky.app/profile/ana.bsky.social/post/3kxyz',
+        title: 'Anyone has a good accessibility audit checklist?',
+        content: 'Anyone has a good accessibility audit checklist?',
+        published_at: '2026-09-03T08:00:00Z',
+        source_lang: 'en',
+        kind: null,
+        meta: { platform: 'bluesky', author: 'ana.bsky.social', points: 5, comments: 2 },
+      },
+    ])
+  })
+
+  it('gives no link for an URI that is not a post', () => {
+    expect(postUrl('at://did:plc:abc/app.bsky.feed.like/1', 'a')).toBeNull()
   })
 })

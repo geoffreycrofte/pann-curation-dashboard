@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { SourceType } from './domain'
 
 /**
  * Settings of the search sources, validated by the API when a source is created or
@@ -60,6 +61,48 @@ export const searchSourceConfigSchemas = {
   exa: exaSourceConfigSchema,
   github: githubSourceConfigSchema,
 } as const
+
+/**
+ * Hacker News, through the Algolia search API (https://hn.algolia.com/api, checked
+ * 2026-11-08): stories, comments or both, newest first.
+ */
+export const hackerNewsSourceConfigSchema = z.object({
+  query: z.string().trim().min(1).max(500),
+  scope: z.enum(['stories', 'comments', 'all']).default('all'),
+  /** Stories below this score are left out (comments have no public score). */
+  min_points: z.number().int().min(0).default(0),
+  max_results: z.number().int().min(1).max(50).default(20),
+})
+export type HackerNewsSourceConfig = z.infer<typeof hackerNewsSourceConfigSchema>
+
+/**
+ * Bluesky posts, through app.bsky.feed.searchPosts on api.bsky.app, without an
+ * account (checked 2026-11-08; public.api.bsky.app refuses searches).
+ */
+export const blueskySourceConfigSchema = z.object({
+  query: z.string().trim().min(1).max(300),
+  /** Only posts declared in this language (ISO 639-1), when set. */
+  lang: z
+    .string()
+    .trim()
+    .regex(/^[a-z]{2}$/)
+    .optional(),
+  max_results: z.number().int().min(1).max(50).default(25),
+})
+export type BlueskySourceConfig = z.infer<typeof blueskySourceConfigSchema>
+
+export const ENGAGEMENT_SOURCE_TYPES = ['hackernews', 'bluesky'] as const
+export type EngagementSourceType = (typeof ENGAGEMENT_SOURCE_TYPES)[number]
+
+export const engagementSourceConfigSchemas = {
+  hackernews: hackerNewsSourceConfigSchema,
+  bluesky: blueskySourceConfigSchema,
+} as const
+
+/** Tool a source feeds, from its type: conversations go to engagement. */
+export function moduleOfSourceType(type: SourceType): 'curation' | 'engagement' {
+  return (ENGAGEMENT_SOURCE_TYPES as readonly string[]).includes(type) ? 'engagement' : 'curation'
+}
 
 /** URL-safe identifier from a name: "Accessibilité numérique" → "accessibilite-numerique". */
 export function slugify(name: string): string {

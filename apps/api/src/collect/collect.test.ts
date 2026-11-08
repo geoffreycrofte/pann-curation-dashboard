@@ -17,6 +17,7 @@ function source(overrides: Partial<CollectSource>): CollectSource {
     id: 's',
     topic_id: 't',
     workspace_id: 'w',
+    module: 'curation',
     type: 'rss',
     label: 'Feed',
     config: {},
@@ -35,6 +36,7 @@ function memoryStore(sources: CollectSource[]) {
   const runs: Record<string, string | null> = {}
   const usage: unknown[] = []
   const invalid: string[] = []
+  const modules: string[] = []
   const ok: string[] = []
   const store: CollectStore = {
     activeSources: async () => sources,
@@ -45,7 +47,8 @@ function memoryStore(sources: CollectSource[]) {
     markCredentialOk: async (workspaceId, provider) => {
       ok.push(`${workspaceId}/${provider}`)
     },
-    ingest: async (topicId, rows) => {
+    ingest: async (topicId, rows, module) => {
+      modules.push(module)
       ingested[topicId] = [...(ingested[topicId] ?? []), ...rows]
       return { new_items: rows.length, linked: rows.length, duplicates: 0, reopened: 0, known: 0 }
     },
@@ -56,7 +59,7 @@ function memoryStore(sources: CollectSource[]) {
       usage.push(...entries)
     },
   }
-  return { store, ingested, runs, usage, invalid, ok }
+  return { store, ingested, runs, usage, invalid, ok, modules }
 }
 
 describe('toIngestRows', () => {
@@ -136,6 +139,35 @@ describe('collect', () => {
     }
     await collect({ store, adapters: { exa }, now })
     expect(received).toEqual({ exa: 'key' })
+  })
+
+  it('runs engagement sources only when engagement is on, and links their items to it', async () => {
+    const off = parseTopicConfig({})
+    const on = parseTopicConfig({ modules: { engagement: true } })
+    const conversations: Adapter = async () => ({
+      items: [
+        { url: 'https://news.ycombinator.com/item?id=1', title: 'Ask HN', meta: { points: 3 } },
+      ],
+    })
+    const quiet = memoryStore([
+      source({ id: 'a', module: 'engagement', type: 'hackernews', topic_config: off }),
+    ])
+    await collect({ store: quiet.store, adapters: { hackernews: conversations }, now })
+    expect(quiet.runs).toEqual({})
+
+    const busy = memoryStore([
+      source({ id: 'a', module: 'engagement', type: 'hackernews', topic_config: on }),
+    ])
+    await collect({ store: busy.store, adapters: { hackernews: conversations }, now })
+    expect(busy.modules).toEqual(['engagement'])
+    expect(busy.ingested.t?.[0]?.meta).toEqual({ points: 3 })
+  })
+
+  it('reads conversations over the engagement window, not the curation one', () => {
+    const cfg = parseTopicConfig({ engagement: { max_age_days: 7 } })
+    expect(
+      collectionWindowStart(source({ module: 'engagement', topic_config: cfg }), now).toISOString(),
+    ).toBe('2026-10-03T12:00:00.000Z')
   })
 
   it('pauses the sources of a topic whose curation is turned off', async () => {

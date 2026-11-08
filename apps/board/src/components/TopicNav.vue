@@ -14,16 +14,24 @@ const { data: topic } = useQuery({
 })
 
 const LINKS = [
-  { name: 'board', label: 'topicNav.board', curation: true },
-  { name: 'diffusion', label: 'topicNav.diffusion', curation: true },
-  { name: 'newsletter', label: 'topicNav.newsletter', curation: true },
-  { name: 'sources', label: 'topicNav.sources', curation: true },
-  { name: 'settings', label: 'topicNav.settings', curation: false },
+  { name: 'board', label: 'topicNav.board', module: 'curation' },
+  { name: 'diffusion', label: 'topicNav.diffusion', module: 'curation' },
+  { name: 'newsletter', label: 'topicNav.newsletter', module: 'curation' },
+  { name: 'sources', label: 'topicNav.sources', module: 'curation' },
+  { name: 'engagement', label: 'topicNav.engagement', module: 'engagement' },
+  { name: 'settings', label: 'topicNav.settings', module: null },
 ] as const
 
-/** Curation sections are hidden once the topic is known to have curation turned off. */
+/**
+ * Sections of a tool show while it is on. Before the topic is loaded, curation shows
+ * (on by default) and engagement waits (off by default), so nothing flickers.
+ */
 const links = computed(() =>
-  LINKS.filter((link) => !link.curation || topic.value?.config.modules.curation !== false),
+  LINKS.filter((link) => {
+    if (link.module === 'curation') return topic.value?.config.modules.curation !== false
+    if (link.module === 'engagement') return topic.value?.config.modules.engagement === true
+    return true
+  }),
 )
 </script>
 

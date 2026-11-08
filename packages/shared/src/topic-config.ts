@@ -108,6 +108,17 @@ export const topicConfigSchema = z.object({
     })
     .prefault({}),
   product: productSchema,
+  /** Engagement tool: how conversations are judged and how far back they are read. */
+  engagement: z
+    .object({
+      /** What makes a conversation worth joining for this product (user setting). */
+      criteria: z.string().trim().max(4000).default(''),
+      /** Conversations scored below this opportunity are archived. */
+      threshold: z.number().int().min(0).max(100).default(60),
+      /** Older conversations are not collected: a late reply rarely helps. */
+      max_age_days: z.number().int().min(1).max(90).default(14),
+    })
+    .prefault({}),
   kinds: z
     .array(kindSchema)
     .min(1)

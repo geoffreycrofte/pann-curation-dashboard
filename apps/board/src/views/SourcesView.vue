@@ -53,8 +53,8 @@ const {
   isPending,
   error,
 } = useQuery({
-  key: () => ['sources', props.topicId],
-  query: () => api.sources(props.topicId),
+  key: () => ['sources', props.topicId, 'curation'],
+  query: () => api.sources(props.topicId, 'curation'),
 })
 
 const route = useRoute()

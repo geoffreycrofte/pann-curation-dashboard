@@ -1,11 +1,15 @@
 import {
+  blueskySourceConfigSchema,
+  engagementSourceConfigSchemas,
   exaSourceConfigSchema,
   githubSourceConfigSchema,
+  hackerNewsSourceConfigSchema,
   MAX_INTERVAL_HOURS,
   MIN_INTERVAL_HOURS,
-  SEARCH_SOURCE_TYPES,
+  moduleOfSourceType,
   searchSourceConfigSchemas,
-  type SearchSourceType,
+  TOPIC_MODULES,
+  type SourceType,
 } from '@pann/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -16,7 +20,7 @@ import { checkKind, kindKey } from '../lib/kinds'
 import { parseJson } from '../lib/validation'
 
 const SOURCE_COLUMNS =
-  'id, topic_id, type, label, config, active, default_kind, interval_hours, last_run_at, last_error, run_requested_at, last_run_stats, created_at'
+  'id, topic_id, module, type, label, config, active, default_kind, interval_hours, last_run_at, last_error, run_requested_at, last_run_stats, created_at'
 
 const interval = z.number().int().min(MIN_INTERVAL_HOURS).max(MAX_INTERVAL_HOURS).nullable()
 
@@ -32,10 +36,25 @@ const searchCommon = {
   default_kind: kindKey.nullable().default(null),
   interval_hours: interval.default(null),
 }
+/** Searches: Exa and GitHub (curation), Hacker News and Bluesky (engagement). */
 const addSearchBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('exa'), config: exaSourceConfigSchema, ...searchCommon }),
   z.object({ type: z.literal('github'), config: githubSourceConfigSchema, ...searchCommon }),
+  z.object({
+    type: z.literal('hackernews'),
+    config: hackerNewsSourceConfigSchema,
+    ...searchCommon,
+  }),
+  z.object({ type: z.literal('bluesky'), config: blueskySourceConfigSchema, ...searchCommon }),
 ])
+
+/** Config schema of the sources whose settings can be edited (all but RSS). */
+const configSchemas: Partial<Record<SourceType, z.ZodType>> = {
+  ...searchSourceConfigSchemas,
+  ...engagementSourceConfigSchemas,
+}
+
+const listQuery = z.object({ module: z.enum(TOPIC_MODULES).optional() })
 
 const updateBody = z
   .object({
@@ -51,11 +70,15 @@ const updateBody = z
 /** Mounted under /topics/:topicId/sources. RLS restricts everything to the user's topics. */
 export const sources = new Hono<AppEnv>()
   .get('/', async (c) => {
-    const { data, error } = await c.var.db
+    const query = listQuery.safeParse(c.req.query())
+    if (!query.success) throw new HTTPException(400, { message: 'invalid_config' })
+    let request = c.var.db
       .from('sources')
       .select(SOURCE_COLUMNS)
       .eq('topic_id', c.req.param('topicId')!)
       .order('created_at')
+    if (query.data.module) request = request.eq('module', query.data.module)
+    const { data, error } = await request
     if (error) throw error
     return c.json(data)
   })
@@ -90,13 +113,14 @@ export const sources = new Hono<AppEnv>()
     return c.json({ status: 'created', source: data }, 201)
   })
 
-  /** Adds an Exa search or a GitHub repository search. */
+  /** Adds a search: Exa or GitHub (curation), Hacker News or Bluesky (engagement). */
   .post('/', async (c) => {
     const body = await parseJson(addSearchBody, c.req.raw)
     await checkKind(c.var.db, c.req.param('topicId')!, body.default_kind)
     const { data, error } = await c.var.db
       .from('sources')
-      .insert({ topic_id: c.req.param('topicId')!, ...body })
+      // The tool a source feeds follows from its type: conversations go to engagement.
+      .insert({ topic_id: c.req.param('topicId')!, module: moduleOfSourceType(body.type), ...body })
       .select(SOURCE_COLUMNS)
       .single()
     if (error) throw error
@@ -117,9 +141,9 @@ export const sources = new Hono<AppEnv>()
       if (readError) throw readError
       if (!current) throw new HTTPException(404, { message: 'Source not found' })
       // A feed keeps its URL: changing it means adding another source.
-      if (!(SEARCH_SOURCE_TYPES as readonly string[]).includes(current.type))
-        throw new HTTPException(400, { message: 'invalid_config' })
-      const parsed = searchSourceConfigSchemas[current.type as SearchSourceType].safeParse(config)
+      const schema = configSchemas[current.type as SourceType]
+      if (!schema) throw new HTTPException(400, { message: 'invalid_config' })
+      const parsed = schema.safeParse(config)
       if (!parsed.success) throw new HTTPException(400, { message: 'invalid_config' })
       body.config = parsed.data
     }

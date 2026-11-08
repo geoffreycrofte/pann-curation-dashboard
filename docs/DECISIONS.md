@@ -238,3 +238,18 @@ Les deux outils partagent la sémantique du thème (types de contenu, langues, s
 **Garde-fous de l'engagement, à intégrer à l'outil et non aux réglages** (étapes suivantes) : une réponse n'est jamais publiée par une API, la personne l'ouvre, la copie et la marque comme publiée ; la mention du lien avec le produit est ajoutée dès que le produit est cité ; un plafond de réponses par communauté et par semaine, commun à tous les thèmes d'un même compte. Sinon, Pann ouvert en SaaS deviendrait un outil de spam.
 
 **Suite prévue** : interface de l'engagement et sources de conversations (Hacker News et Bluesky d'abord), puis tri et rédaction propres à l'engagement (une réponse dans la langue de la discussion, aux limites de la plateforme d'origine).
+
+## 2026-11-09 : sources et tri de l'engagement
+
+**L'outil d'une source et d'un élément est enregistré** (`sources.module`, `item_topics.module`, `curation` ou `engagement`, `curation` par défaut : rien ne change pour l'existant). Il découle du type de la source : RSS, Exa et GitHub alimentent la curation, Hacker News et Bluesky l'engagement. Une source ne tourne que si l'outil qu'elle alimente est activé pour son thème. `ingest_items` reçoit l'outil (`p_module`) et l'écrit sur le lien de l'élément au thème ; les conversations ne sont jamais fusionnées sur leur titre (les commentaires d'un même sujet le partagent). La clé primaire de `item_topics` reste (élément, thème) : une même URL ne peut pas être à la fois dans la curation et dans l'engagement d'un thème, ce qui n'arrive pas en pratique (une conversation est une page de discussion, pas un article).
+
+**Les deux outils ne se mélangent pas.** Seuls les éléments de curation sont rédigés (trigger `queue_draft_on_validate` et `request_draft` limités à la curation), affichés dans le tri, comptés sur ses onglets et repris dans la newsletter. Une réponse à une conversation n'est jamais publiée par une API : la personne ouvre la discussion et répond elle-même ; Pann ne rédige pas encore de réponse (étape suivante).
+
+**Sources de conversations**, vérifiées le 2026-11-08 :
+
+- Hacker News via l'API Algolia (`hn.algolia.com/api/v1/search_by_date`, sans clé) : sujets, commentaires ou les deux, seuil de points pour les sujets. L'élément est la page de discussion sur Hacker News (là où l'on répondrait), pas la page vers laquelle un sujet pointe.
+- Bluesky via `app.bsky.feed.searchPosts` sur `api.bsky.app`, sans compte. `public.api.bsky.app` refuse les recherches (403) : à surveiller, Bluesky peut fermer l'accès anonyme ; il faudrait alors un compte et un mot de passe d'application (page Connexions).
+
+Les faits d'une conversation (plateforme, auteur, fil, points, réponses) sont stockés avec l'élément partagé (`items.meta`) et rafraîchis à chaque collecte. Fenêtre de collecte propre à l'engagement (`engagement.max_age_days`, 14 jours par défaut) : une réponse tardive aide rarement.
+
+**Tri propre à l'engagement** (`engagement-triage-v1`, modèle de tri du thème) : opportunité de 0 à 100 décrite par niveaux plutôt que par une grille de points (remarque de relecture du brief), décision (répondre, surveiller, passer), piste d'aide en une phrase, risque (faible, moyen, élevé), langue. Les principes du brief sont dans le prompt parce qu'ils sont le fonctionnement de l'outil (aider d'abord, ne pas surestimer l'intention d'achat, écarter les fils hostiles et les demandes de prestation) ; le produit et les conversations à rejoindre sont des réglages du thème (fiche produit, `engagement.criteria`). Sous le seuil (`engagement.threshold`, 60) ou « passer » : archivée. Coût enregistré sous `engagement_triage`.

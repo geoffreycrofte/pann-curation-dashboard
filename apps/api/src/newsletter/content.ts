@@ -25,6 +25,7 @@ export async function loadDigestContent(
     .from('item_topics')
     .select('item_id, validated_at, item:items (title, canonical_url, source_lang)')
     .eq('topic_id', q.topicId)
+    .eq('module', 'curation')
     .in('status', ['validated', 'published'])
     .gt('validated_at', q.from.toISOString())
     .lte('validated_at', q.to.toISOString())
