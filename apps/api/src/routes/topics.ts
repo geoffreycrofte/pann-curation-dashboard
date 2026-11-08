@@ -453,13 +453,16 @@ export const topics = new Hono<AppEnv>()
       c.var.db
         .from('summaries')
         .select('lang, summary, key_excerpt, source_nature, edited_by_human, model, updated_at')
-        .eq('item_id', itemId),
+        .eq('item_id', itemId)
+        .order('lang'),
       c.var.db
         .from('posts')
         .select(POST_COLUMNS)
         .eq('item_id', itemId)
         .eq('topic_id', topicId)
-        .order('channel'),
+        // Stable order: an update must not move a post (rows come back in any order).
+        .order('channel')
+        .order('lang'),
     ])
     if (sError) throw sError
     if (pError) throw pError

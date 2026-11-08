@@ -27,6 +27,9 @@
   --color-accent-on-ink: #ffc72c;
   --color-success: light-dark(#1d6b34, #6fd08c);
   --color-danger: light-dark(#b42318, #ff8a80);
+  /* AI at work: colors of the animated halo, with --color-accent-fill (3:1 on the backgrounds). */
+  --color-ai-violet: light-dark(#6d4aff, #b3a1ff);
+  --color-ai-teal: light-dark(#0b7f86, #4fd1c5);
   /* Badge backgrounds (with --color-text on them). */
   --color-neutral-soft: light-dark(#ece6d8, #2b2b30);
   --color-success-soft: light-dark(#dcefe1, #133420);
