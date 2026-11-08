@@ -276,6 +276,27 @@ export const topics = new Hono<AppEnv>()
     return c.body(null, 204)
   })
 
+  /** Number of items per status, for the board tabs (archived items are not counted). */
+  .get('/:topicId/counts', async (c) => {
+    const topicId = c.req.param('topicId')
+    const statuses = ITEM_TOPIC_STATUSES.filter((s) => s !== 'archived')
+    const results = await Promise.all(
+      statuses.map((status) =>
+        c.var.db
+          .from('item_topics')
+          .select('item_id', { count: 'exact', head: true })
+          .eq('topic_id', topicId)
+          .eq('status', status),
+      ),
+    )
+    const counts: Partial<Record<ItemTopicStatus, number>> = {}
+    results.forEach(({ count, error }, index) => {
+      if (error) throw error
+      counts[statuses[index]!] = count ?? 0
+    })
+    return c.json(counts)
+  })
+
   .get('/:topicId/items', async (c) => {
     const query = listQuery.safeParse(c.req.query())
     if (!query.success) throw new HTTPException(400, { message: z.prettifyError(query.error) })
