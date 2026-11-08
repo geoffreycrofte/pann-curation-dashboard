@@ -60,6 +60,10 @@ const PAIRS = [
   ['color-focus', 'color-surface', 3],
   ['color-focus-on-ink', 'color-ink', 3],
   ['color-accent-fill', 'color-ink', 3],
+  ['color-ai-violet', 'color-bg', 3],
+  ['color-ai-violet', 'color-surface', 3],
+  ['color-ai-teal', 'color-bg', 3],
+  ['color-ai-teal', 'color-surface', 3],
 ]
 
 let failed = false

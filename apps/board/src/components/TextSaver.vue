@@ -140,22 +140,24 @@ async function undoRewrite() {
       <span v-if="dirty" class="badge" data-tone="accent" data-dot>{{ t('draft.unsaved') }}</span>
 
       <DropdownMenuRoot v-if="rewrite && !readonly">
-        <DropdownMenuTrigger as-child>
-          <button
-            type="button"
-            class="button rewrite"
-            :disabled="rewriting || saving"
-            :aria-label="t('rewrite.label', { field: label })"
-          >
-            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-              <path
-                d="M8 1.5l1.3 3.2 3.2 1.3-3.2 1.3L8 10.5 6.7 7.3 3.5 6l3.2-1.3zM12.5 10l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6zM3.5 10.5l.5 1 1 .5-1 .5-.5 1-.5-1-1-.5 1-.5z"
-                fill="currentColor"
-              />
-            </svg>
-            {{ rewriting ? t('rewrite.running') : t('rewrite.button') }}
-          </button>
-        </DropdownMenuTrigger>
+        <span class="ai-halo rewrite-halo" data-shape="pill" :data-busy="rewriting">
+          <DropdownMenuTrigger as-child>
+            <button
+              type="button"
+              class="button rewrite"
+              :disabled="rewriting || saving"
+              :aria-label="t('rewrite.label', { field: label })"
+            >
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                <path
+                  d="M8 1.5l1.3 3.2 3.2 1.3-3.2 1.3L8 10.5 6.7 7.3 3.5 6l3.2-1.3zM12.5 10l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6zM3.5 10.5l.5 1 1 .5-1 .5-.5 1-.5-1-1-.5 1-.5z"
+                  fill="currentColor"
+                />
+              </svg>
+              {{ t('rewrite.button') }}
+            </button>
+          </DropdownMenuTrigger>
+        </span>
         <DropdownMenuPortal>
           <DropdownMenuContent class="menu" align="end" :side-offset="6">
             <DropdownMenuItem
@@ -175,18 +177,20 @@ async function undoRewrite() {
       </DropdownMenuRoot>
     </div>
     <p v-if="description" :id="`${id}-desc`" class="hint">{{ description }}</p>
-    <textarea
-      :id="`${id}-text`"
-      ref="textarea"
-      v-model="text"
-      class="field"
-      :lang="lang"
-      rows="5"
-      :readonly="readonly || rewriting"
-      :aria-describedby="`${description ? `${id}-desc ` : ''}${id}-meta`"
-      :aria-invalid="over > 0 || undefined"
-      :aria-busy="rewriting || undefined"
-    ></textarea>
+    <div class="ai-halo" :data-busy="rewriting">
+      <textarea
+        :id="`${id}-text`"
+        ref="textarea"
+        v-model="text"
+        class="field"
+        :lang="lang"
+        rows="5"
+        :readonly="readonly || rewriting"
+        :aria-describedby="`${description ? `${id}-desc ` : ''}${id}-meta`"
+        :aria-invalid="over > 0 || undefined"
+        :aria-busy="rewriting || undefined"
+      ></textarea>
+    </div>
     <p :id="`${id}-meta`" class="hint">
       <span v-if="limit">{{ t(lengthKey ?? 'draft.length', { count: length, limit }) }}</span>
       <span v-if="over > 0" class="error">
@@ -256,9 +260,12 @@ async function undoRewrite() {
   min-height: 2.75rem;
 }
 
+.rewrite-halo {
+  margin-inline-start: auto;
+}
+
 .rewrite {
   min-height: 2.25rem;
-  margin-inline-start: auto;
   padding-inline: var(--space-3);
   font-size: 0.875rem;
 }
@@ -270,7 +277,7 @@ textarea {
 }
 
 textarea[aria-busy='true'] {
-  opacity: 0.6;
+  background: var(--color-surface-2);
 }
 
 .row {

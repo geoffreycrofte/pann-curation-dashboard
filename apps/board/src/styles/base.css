@@ -431,7 +431,69 @@ legend {
   outline-offset: 4px;
 }
 
+/* ---------------------------------------------------------------------------
+ * AI at work: a colored halo turns around the field and the button while Claude
+ * writes. Decorative: the state is also given as text and with aria-busy.
+ * ------------------------------------------------------------------------- */
+@property --ai-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.ai-halo {
+  position: relative;
+  display: grid;
+  border-radius: var(--radius);
+}
+
+.ai-halo[data-shape='pill'] {
+  display: inline-grid;
+  border-radius: var(--radius-pill);
+}
+
+.ai-halo > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ai-halo[data-busy='true']::before,
+.ai-halo[data-busy='true']::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--ai-angle),
+    var(--color-ai-violet),
+    var(--color-accent-fill),
+    var(--color-ai-teal),
+    var(--color-ai-violet)
+  );
+  animation: ai-turn 2.4s linear infinite;
+}
+
+/* Soft glow behind the sharp ring. */
+.ai-halo[data-busy='true']::after {
+  inset: -6px;
+  filter: blur(10px);
+  opacity: 0.55;
+  z-index: 0;
+}
+
+@keyframes ai-turn {
+  to {
+    --ai-angle: 360deg;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  /* The halo stays, still. */
+  .ai-halo[data-busy='true']::before,
+  .ai-halo[data-busy='true']::after {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {
@@ -464,6 +526,14 @@ legend {
 
   .badge {
     border: 1px solid CanvasText;
+  }
+
+  .ai-halo[data-busy='true']::before {
+    background: Highlight;
+  }
+
+  .ai-halo[data-busy='true']::after {
+    display: none;
   }
 
   .subtab[data-state='active'] {

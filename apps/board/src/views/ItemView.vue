@@ -6,6 +6,7 @@ import {
   POST_LIMITS,
   publishedLength,
   type DraftChannel,
+  type Lang,
   type PostDraft,
 } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
@@ -160,6 +161,11 @@ const hasAccount = (post: PostDraft) =>
   !!topic.value && !!post.lang && !!accountFor(topic.value.config, post.channel, post.lang)
 
 const posts = computed(() => detail.value?.posts ?? [])
+/** Posts of a network, always in the order of LANGS: saving one must not move it. */
+const postsOf = (channel: DraftChannel) =>
+  posts.value
+    .filter((p) => p.channel === channel)
+    .sort((a, b) => LANGS.indexOf(a.lang as Lang) - LANGS.indexOf(b.lang as Lang))
 const postTone = (post: PostDraft) =>
   post.status === 'sent'
     ? 'success'
@@ -425,11 +431,7 @@ async function savePost(postId: string, text: string) {
       >
         <h3 :id="`posts-${channel}`">{{ t(`draft.channels.${channel}`) }}</h3>
         <div class="pair">
-          <div
-            v-for="post in detail.posts.filter((p) => p.channel === channel)"
-            :key="post.id"
-            class="post"
-          >
+          <div v-for="post in postsOf(channel)" :key="post.id" class="post">
             <TextSaver
               :label="
                 t('draft.postLabel', {
