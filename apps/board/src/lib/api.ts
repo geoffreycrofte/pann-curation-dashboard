@@ -6,6 +6,9 @@ import type {
   Lang,
   Provider,
   SearchSourceType,
+  EngagementSourceType,
+  Conversation,
+  TopicModule,
   Source,
   Topic,
   TopicConfig,
@@ -88,7 +91,7 @@ export type SourcePatch = Partial<
 
 /** Exa search or GitHub repository search (config: see @pann/shared source-config). */
 export interface AddSearchSourceInput {
-  type: SearchSourceType
+  type: SearchSourceType | EngagementSourceType
   label: string
   config: Record<string, unknown>
   default_kind: ItemKind | null
@@ -223,8 +226,11 @@ export const api = {
     return rows.map(({ item, ...rest }) => ({ ...rest, ...item }))
   },
   /** Items per status; archived is not counted. */
-  counts: (topicId: string) =>
-    request<Partial<Record<ItemTopicStatus, number>>>(`/topics/${topicId}/counts`),
+  counts: (topicId: string, module: TopicModule = 'curation') =>
+    request<Partial<Record<ItemTopicStatus, number>>>(`/topics/${topicId}/counts?module=${module}`),
+  /** Conversations of the engagement tool with this status. */
+  conversations: (topicId: string, status: ItemTopicStatus) =>
+    request<Conversation[]>(`/topics/${topicId}/conversations?status=${status}`),
   addItem: (topicId: string, input: AddItemInput) =>
     request<AddItemResult>(`/topics/${topicId}/items`, json('POST', input)),
   setItemKind: (topicId: string, itemId: string, kind: string | null) =>
@@ -270,7 +276,8 @@ export const api = {
   updateTopic: (topicId: string, patch: TopicPatch) =>
     request<Topic>(`/topics/${topicId}`, json('PATCH', patch)),
 
-  sources: (topicId: string) => request<Source[]>(`/topics/${topicId}/sources`),
+  sources: (topicId: string, module: TopicModule) =>
+    request<Source[]>(`/topics/${topicId}/sources?module=${module}`),
   addRss: (topicId: string, input: AddRssInput) =>
     request<AddRssResult>(`/topics/${topicId}/sources/rss`, json('POST', input)),
   addSearchSource: (topicId: string, input: AddSearchSourceInput) =>

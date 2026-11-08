@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { SourceType, TopicConfig } from '@pann/shared'
+
+/** Sources of the curation board (conversations are added from the Engagement tab). */
+type CurationSourceType = Extract<SourceType, 'rss' | 'exa' | 'github'>
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AddRssForm from './AddRssForm.vue'
@@ -8,8 +11,8 @@ import AddSearchSourceForm from './AddSearchSourceForm.vue'
 defineProps<{ topicId: string; config: TopicConfig }>()
 const { t } = useI18n()
 const id = useId()
-const TYPES: SourceType[] = ['rss', 'exa', 'github']
-const type = ref<SourceType>('rss')
+const TYPES: CurationSourceType[] = ['rss', 'exa', 'github']
+const type = ref<CurationSourceType>('rss')
 </script>
 
 <template>

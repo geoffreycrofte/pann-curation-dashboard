@@ -417,6 +417,9 @@ export default {
     curation: 'Curation',
     curationHint:
       'Collecter, trier et partager des contenus sur les réseaux et dans la newsletter. Désactivée : la collecte et l’envoi automatique de la newsletter s’arrêtent, et ses sections sont masquées. Les éléments, les posts déjà programmés et les flux publics restent en place.',
+    engagement: 'Engagement',
+    engagementHint:
+      'Repérer des conversations (Hacker News, Bluesky) où votre équipe peut aider, et les trier. Pann ne publie jamais de réponse : vous répondez vous-même.',
     curationOff: 'La curation est désactivée pour ce thème.',
     turnOn: 'L’activer dans les réglages',
   },
@@ -453,6 +456,7 @@ export default {
       'Ajoutée chaque fois que le produit est cité dans une réponse, pour que votre lien avec lui soit clair.',
   },
   topicNav: {
+    engagement: 'Engagement',
     label: 'Sections du thème',
     board: 'Tri',
     sources: 'Sources',
@@ -540,7 +544,13 @@ export default {
     restore: 'Garder ce type',
     saved: 'Types de contenu enregistrés.',
   },
-  sourceType: { rss: 'Flux RSS', exa: 'Recherche Exa', github: 'GitHub' },
+  sourceType: {
+    rss: 'Flux RSS',
+    exa: 'Recherche Exa',
+    github: 'GitHub',
+    hackernews: 'Hacker News',
+    bluesky: 'Bluesky',
+  },
   interval: {
     hours: 'Toutes les heures | Toutes les {n} heures',
     days: 'Tous les jours | Tous les {n} jours',
@@ -626,6 +636,89 @@ export default {
     remove: 'Retirer',
     removeLabel: 'Ne plus exclure {site}',
     removed: '« {site} » n’est plus exclu. Ses éléments déjà rejetés le restent.',
+  },
+  engagement: {
+    heading: 'Engagement : {topic}',
+    off: 'L’engagement est désactivé pour ce thème.',
+    sectionsLabel: 'Sections de l’engagement',
+    sections: { conversations: 'Conversations', sources: 'Sources', settings: 'Réglages du tri' },
+    neverPosted:
+      'Pann ne publie jamais de réponse. Ouvrez la discussion, répondez vous-même si vous pouvez vraiment aider, et mentionnez votre lien avec le produit dès que vous le citez.',
+    statusFilter: 'Afficher les conversations',
+    status: {
+      new: 'À examiner',
+      validated: 'À répondre',
+      rejected: 'Écartées',
+      archived: 'Archivées',
+    },
+    statusOne: {
+      new: 'à examiner',
+      validated: 'à répondre',
+      rejected: 'écartée',
+      archived: 'archivée',
+      published: 'répondue',
+    },
+    statusChanged: '« {title} » : {status}.',
+    empty: {
+      new: 'Aucune conversation à examiner. Ajoutez des sources ou lancez une collecte.',
+      validated: 'Aucune conversation à répondre.',
+      rejected: 'Aucune conversation écartée.',
+      archived: 'Aucune conversation archivée par le tri.',
+      published: 'Aucune conversation répondue.',
+    },
+    actions: { toReply: 'À répondre', dismiss: 'Écarter', restore: 'Remettre à examiner' },
+    platforms: { hackernews: 'Hacker News', bluesky: 'Bluesky' },
+    decisions: { reply: 'Répondre', watch: 'Surveiller', skip: 'Passer' },
+    risks: { low: 'Risque faible', medium: 'Risque moyen', high: 'Risque élevé' },
+    opensNewTab: '(ouvre un nouvel onglet)',
+    angle: 'Comment aider :',
+    pending: 'En attente du tri par IA',
+    opportunity: 'Opportunité : {score} sur 100',
+    by: 'par {author}',
+    points: '{n} point | {n} points',
+    replies: '{n} réponse | {n} réponses',
+    sources: {
+      title: 'Sources de conversations',
+      intro:
+        'Pann cherche des discussions récentes où votre équipe peut aider. Ces sources ne nourrissent que l’engagement, jamais la curation.',
+      empty: 'Aucune source de conversations pour ce thème.',
+      add: 'Ajouter une recherche',
+      query: 'Recherche',
+      queryPlaceholder: 'Exemple : accessibility audit',
+      queryHint: {
+        hackernews: 'Mots-clés cherchés dans les sujets et les commentaires de Hacker News.',
+        bluesky: 'Mots-clés cherchés dans les posts publics de Bluesky.',
+      },
+      scope: 'Chercher dans',
+      scopes: {
+        all: 'Sujets et commentaires',
+        stories: 'Sujets seulement',
+        comments: 'Commentaires seulement',
+      },
+      minPoints: 'Points minimum des sujets',
+      lang: 'Langue des posts',
+      langHint: 'Code à deux lettres, par exemple fr ou en.',
+      lastRun: 'Dernière collecte : {date}',
+      maxResults: 'Résultats par collecte',
+    },
+    settings: {
+      title: 'Réglages du tri',
+      intro:
+        'L’IA note chaque conversation : opportunité, décision (répondre, surveiller, passer), piste d’aide et risque. Elle s’appuie sur la fiche produit et sur vos critères.',
+      product:
+        'La fiche produit décrit ce que fait le produit, pour qui, et ce qu’il ne faut jamais dire.',
+      productLink: 'Compléter la fiche produit',
+      criteria: 'Conversations à rejoindre',
+      criteriaPlaceholder:
+        'Exemple : des auditeurs ou des équipes produit qui cherchent une méthode pour auditer un site, une application ou un PDF.',
+      criteriaHint:
+        'Décrivez les personnes et les problèmes pour lesquels votre réponse sera vraiment utile.',
+      threshold: 'Seuil d’opportunité (0 à 100)',
+      thresholdHint: 'Les conversations notées sous ce seuil sont archivées.',
+      maxAge: 'Ancienneté maximale (jours)',
+      maxAgeHint:
+        'Les discussions plus anciennes ne sont pas collectées : une réponse tardive aide rarement.',
+    },
   },
   addSource: {
     title: 'Ajouter une source',
@@ -721,6 +814,7 @@ export default {
     calls: 'Appels',
     cost: 'Coût',
     operations: {
+      engagement_triage: 'Tri des conversations',
       rewrite: 'Réécriture par IA',
       triage: 'Tri par IA',
       draft: 'Rédaction par IA',
