@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import LangSwitcher from './components/LangSwitcher.vue'
 import PannMark from './components/PannMark.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 import { api } from './lib/api'
 import { session } from './lib/session'
 import { supabase } from './lib/supabase'
@@ -86,6 +87,7 @@ async function signOut() {
           </nav>
 
           <div class="sidebar-bottom">
+            <ThemeToggle />
             <LangSwitcher />
             <button type="button" class="button sign-out" @click="signOut">
               {{ t('auth.signOut') }}
@@ -272,6 +274,13 @@ nav ul {
   background: var(--color-accent-fill);
   color: var(--color-on-accent);
   box-shadow: none;
+}
+
+/* The theme itself shows the state: the toggle keeps the outline style when pressed. */
+.sidebar-bottom :deep(.theme-toggle[aria-pressed='true']) {
+  border-color: var(--color-on-ink-muted);
+  background: transparent;
+  color: var(--color-on-ink);
 }
 
 /* -------------------------------------------------------------------------

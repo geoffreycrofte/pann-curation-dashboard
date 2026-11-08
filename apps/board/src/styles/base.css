@@ -206,6 +206,21 @@ h1[tabindex='-1']:focus {
   border-color: var(--color-text);
 }
 
+/* Own chevron, away from the right edge (the native one sticks to it). Drawn with two
+ * gradients so it takes the text color of the theme. */
+select.field {
+  appearance: none;
+  padding-inline-end: 2.75rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    right 1.3rem center,
+    right 1rem center;
+  background-size: 0.3rem 0.3rem;
+  background-repeat: no-repeat;
+}
+
 .field:focus-visible {
   outline-offset: 1px;
 }
@@ -281,6 +296,12 @@ legend {
 }
 
 @media (forced-colors: active) {
+  /* Background images may not be shown: give the native arrow back. */
+  select.field {
+    appearance: auto;
+    padding-inline-end: var(--space-3);
+  }
+
   .button[data-variant='primary'] {
     border: 2px solid ButtonText;
   }

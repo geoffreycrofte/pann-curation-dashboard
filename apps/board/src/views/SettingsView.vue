@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { DRAFT_MODES, ITEM_KINDS, type TopicConfig } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
-import { ref, useId, watch } from 'vue'
+import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
+import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import BudgetSection from '../components/BudgetSection.vue'
 import DiffusionSettings from '../components/DiffusionSettings.vue'
 import FeedSettings from '../components/FeedSettings.vue'
@@ -18,6 +20,27 @@ const { t } = useI18n()
 const id = useId()
 const queryCache = useQueryCache()
 const topicName = useTopicName(() => props.topicId)
+
+// Sub-tabs, kept in the address (?tab=…) so a section can be linked and survives a reload.
+const TABS = [
+  'collection',
+  'triage',
+  'drafting',
+  'diffusion',
+  'newsletter',
+  'feed',
+  'budget',
+] as const
+type Tab = (typeof TABS)[number]
+const route = useRoute()
+const router = useRouter()
+const tab = computed<Tab>({
+  get: () => {
+    const value = route.query.tab
+    return (TABS as readonly unknown[]).includes(value) ? (value as Tab) : 'collection'
+  },
+  set: (value) => void router.replace({ query: { ...route.query, tab: value } }),
+})
 
 const {
   data: topic,
@@ -40,6 +63,13 @@ watch(
   },
   { immediate: true },
 )
+
+/** Free-text rules of the drafting tab (field of topic.config.ai, translation key). */
+const RULES = [
+  { field: 'editorial_rules', label: 'editorialRules' },
+  { field: 'style_rules', label: 'styleRules' },
+  { field: 'post_rules', label: 'postRules' },
+] as const
 
 const message = ref('')
 const isError = ref(false)
@@ -64,147 +94,215 @@ const { mutate, isLoading } = useMutation({
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
-  <form v-else-if="collection" class="form settings" @submit.prevent="mutate()">
-    <fieldset :aria-describedby="`${id}-hint`">
-      <legend>{{ t('settings.collection') }}</legend>
-      <p :id="`${id}-hint`" class="hint">{{ t('settings.collectionHint') }}</p>
-      <div class="grid">
-        <div v-for="kind in ITEM_KINDS" :key="kind" class="form-row">
-          <label :for="`${id}-${kind}`">{{ t(`kind.${kind}`) }}</label>
-          <IntervalSelect
-            :id="`${id}-${kind}`"
-            :model-value="collection.intervals_hours[kind]"
-            @update:model-value="(v) => v && (collection!.intervals_hours[kind] = v)"
-          />
-        </div>
-        <div class="form-row">
-          <label :for="`${id}-default`">{{ t('settings.other') }}</label>
-          <IntervalSelect
-            :id="`${id}-default`"
-            :model-value="collection.default_hours"
-            @update:model-value="(v) => v && (collection!.default_hours = v)"
-          />
-        </div>
-      </div>
-    </fieldset>
-    <fieldset v-if="ai">
-      <legend>{{ t('settings.triage') }}</legend>
-      <div class="form-row">
-        <label :for="`${id}-criteria`">{{ t('settings.criteria') }}</label>
-        <textarea
-          :id="`${id}-criteria`"
-          v-model="ai.relevance_criteria"
-          class="field"
-          rows="4"
-          maxlength="4000"
-          :placeholder="t('settings.criteriaPlaceholder')"
-          :aria-describedby="`${id}-criteria-hint`"
-        ></textarea>
-        <p :id="`${id}-criteria-hint`" class="hint">{{ t('settings.criteriaHint') }}</p>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-threshold`">{{ t('settings.threshold') }}</label>
-        <input
-          :id="`${id}-threshold`"
-          v-model.number="ai.relevance_threshold"
-          class="field threshold"
-          type="number"
-          min="0"
-          max="100"
-          step="1"
-          required
-          :aria-describedby="`${id}-threshold-hint`"
-        />
-        <p :id="`${id}-threshold-hint`" class="hint">{{ t('settings.thresholdHint') }}</p>
-      </div>
-    </fieldset>
-    <fieldset v-if="ai" :aria-describedby="`${id}-drafting-hint`">
-      <legend>{{ t('settings.drafting') }}</legend>
-      <p :id="`${id}-drafting-hint`" class="hint">{{ t('settings.draftingHint') }}</p>
-      <div class="form-row">
-        <label :for="`${id}-draft-mode`">{{ t('settings.draftMode') }}</label>
-        <select
-          :id="`${id}-draft-mode`"
-          v-model="ai.draft_mode"
-          class="field"
-          :aria-describedby="`${id}-draft-mode-hint`"
-        >
-          <option v-for="mode in DRAFT_MODES" :key="mode" :value="mode">
-            {{ t(`settings.draftModes.${mode}`) }}
-          </option>
-        </select>
-        <p :id="`${id}-draft-mode-hint`" class="hint">{{ t('settings.draftModeHint') }}</p>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-editorial_rules`">{{ t('settings.editorialRules') }}</label>
-        <textarea
-          :id="`${id}-editorial_rules`"
-          v-model="ai.editorial_rules"
-          class="field"
-          rows="5"
-          maxlength="4000"
-          :placeholder="t('settings.editorialRulesPlaceholder')"
-          :aria-describedby="`${id}-editorial_rules-hint`"
-        ></textarea>
-        <p :id="`${id}-editorial_rules-hint`" class="hint">
-          {{ t('settings.editorialRulesHint') }}
-        </p>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-style_rules`">{{ t('settings.styleRules') }}</label>
-        <textarea
-          :id="`${id}-style_rules`"
-          v-model="ai.style_rules"
-          class="field"
-          rows="5"
-          maxlength="4000"
-          :placeholder="t('settings.styleRulesPlaceholder')"
-          :aria-describedby="`${id}-style_rules-hint`"
-        ></textarea>
-        <p :id="`${id}-style_rules-hint`" class="hint">{{ t('settings.styleRulesHint') }}</p>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-post_rules`">{{ t('settings.postRules') }}</label>
-        <textarea
-          :id="`${id}-post_rules`"
-          v-model="ai.post_rules"
-          class="field"
-          rows="5"
-          maxlength="4000"
-          :placeholder="t('settings.postRulesPlaceholder')"
-          :aria-describedby="`${id}-post_rules-hint`"
-        ></textarea>
-        <p :id="`${id}-post_rules-hint`" class="hint">{{ t('settings.postRulesHint') }}</p>
-      </div>
-    </fieldset>
-    <div>
-      <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
-        {{ isLoading ? t('common.saving') : t('common.save') }}
-      </button>
-    </div>
-  </form>
-  <p role="status" :class="{ error: isError }">{{ message }}</p>
+  <TabsRoot v-else-if="topic && collection && ai" v-model="tab" activation-mode="manual">
+    <TabsList :aria-label="t('settings.tabsLabel')" class="subtabs">
+      <TabsTrigger v-for="name in TABS" :key="name" :value="name" class="subtab">
+        {{ t(`settings.tabs.${name}`) }}
+      </TabsTrigger>
+    </TabsList>
 
-  <DiffusionSettings v-if="topic" :topic-id="topicId" :config="topic.config" />
-  <NewsletterSettings v-if="topic" :topic-id="topicId" :config="topic.config" />
-  <FeedSettings
-    v-if="topic"
-    :topic-id="topicId"
-    :config="topic.config"
-    :feed-key="topic.feed_key"
-  />
+    <TabsContent value="collection" class="subpanel">
+      <form class="form settings" @submit.prevent="mutate()">
+        <fieldset :aria-describedby="`${id}-hint`">
+          <legend>{{ t('settings.collection') }}</legend>
+          <p :id="`${id}-hint`" class="hint">{{ t('settings.collectionHint') }}</p>
+          <div class="grid">
+            <div v-for="kind in ITEM_KINDS" :key="kind" class="form-row">
+              <label :for="`${id}-${kind}`">{{ t(`kind.${kind}`) }}</label>
+              <IntervalSelect
+                :id="`${id}-${kind}`"
+                :model-value="collection.intervals_hours[kind]"
+                @update:model-value="(v) => v && (collection!.intervals_hours[kind] = v)"
+              />
+            </div>
+            <div class="form-row">
+              <label :for="`${id}-default`">{{ t('settings.other') }}</label>
+              <IntervalSelect
+                :id="`${id}-default`"
+                :model-value="collection.default_hours"
+                @update:model-value="(v) => v && (collection!.default_hours = v)"
+              />
+            </div>
+          </div>
+        </fieldset>
+        <div>
+          <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
+            {{ isLoading ? t('common.saving') : t('common.save') }}
+          </button>
+        </div>
+        <p role="status" :class="{ error: isError }">{{ message }}</p>
+      </form>
+    </TabsContent>
 
-  <BudgetSection :topic-id="topicId" />
+    <TabsContent value="triage" class="subpanel">
+      <form class="form settings" @submit.prevent="mutate()">
+        <fieldset>
+          <legend>{{ t('settings.triage') }}</legend>
+          <div class="form-row">
+            <label :for="`${id}-criteria`">{{ t('settings.criteria') }}</label>
+            <textarea
+              :id="`${id}-criteria`"
+              v-model="ai.relevance_criteria"
+              class="field"
+              rows="4"
+              maxlength="4000"
+              :placeholder="t('settings.criteriaPlaceholder')"
+              :aria-describedby="`${id}-criteria-hint`"
+            ></textarea>
+            <p :id="`${id}-criteria-hint`" class="hint">{{ t('settings.criteriaHint') }}</p>
+          </div>
+          <div class="form-row">
+            <label :for="`${id}-threshold`">{{ t('settings.threshold') }}</label>
+            <input
+              :id="`${id}-threshold`"
+              v-model.number="ai.relevance_threshold"
+              class="field threshold"
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              required
+              :aria-describedby="`${id}-threshold-hint`"
+            />
+            <p :id="`${id}-threshold-hint`" class="hint">{{ t('settings.thresholdHint') }}</p>
+          </div>
+        </fieldset>
+        <div>
+          <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
+            {{ isLoading ? t('common.saving') : t('common.save') }}
+          </button>
+        </div>
+        <p role="status" :class="{ error: isError }">{{ message }}</p>
+      </form>
+    </TabsContent>
+
+    <TabsContent value="drafting" class="subpanel">
+      <form class="form settings" @submit.prevent="mutate()">
+        <fieldset :aria-describedby="`${id}-drafting-hint`">
+          <legend>{{ t('settings.drafting') }}</legend>
+          <p :id="`${id}-drafting-hint`" class="hint">{{ t('settings.draftingHint') }}</p>
+          <div class="form-row">
+            <label :for="`${id}-draft-mode`">{{ t('settings.draftMode') }}</label>
+            <select
+              :id="`${id}-draft-mode`"
+              v-model="ai.draft_mode"
+              class="field"
+              :aria-describedby="`${id}-draft-mode-hint`"
+            >
+              <option v-for="mode in DRAFT_MODES" :key="mode" :value="mode">
+                {{ t(`settings.draftModes.${mode}`) }}
+              </option>
+            </select>
+            <p :id="`${id}-draft-mode-hint`" class="hint">{{ t('settings.draftModeHint') }}</p>
+          </div>
+          <div v-for="rule in RULES" :key="rule.field" class="form-row">
+            <label :for="`${id}-${rule.field}`">{{ t(`settings.${rule.label}`) }}</label>
+            <textarea
+              :id="`${id}-${rule.field}`"
+              v-model="ai[rule.field]"
+              class="field"
+              rows="5"
+              maxlength="4000"
+              :placeholder="t(`settings.${rule.label}Placeholder`)"
+              :aria-describedby="`${id}-${rule.field}-hint`"
+            ></textarea>
+            <p :id="`${id}-${rule.field}-hint`" class="hint">
+              {{ t(`settings.${rule.label}Hint`) }}
+            </p>
+          </div>
+        </fieldset>
+        <div>
+          <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
+            {{ isLoading ? t('common.saving') : t('common.save') }}
+          </button>
+        </div>
+        <p role="status" :class="{ error: isError }">{{ message }}</p>
+      </form>
+    </TabsContent>
+
+    <TabsContent value="diffusion" class="subpanel">
+      <DiffusionSettings :topic-id="topicId" :config="topic.config" />
+    </TabsContent>
+    <TabsContent value="newsletter" class="subpanel">
+      <NewsletterSettings :topic-id="topicId" :config="topic.config" />
+    </TabsContent>
+    <TabsContent value="feed" class="subpanel">
+      <FeedSettings :topic-id="topicId" :config="topic.config" :feed-key="topic.feed_key" />
+    </TabsContent>
+    <TabsContent value="budget" class="subpanel">
+      <BudgetSection :topic-id="topicId" />
+    </TabsContent>
+  </TabsRoot>
 </template>
 
 <style scoped>
+/* Sub-tabs: plain labels on a separating line, a thick gold bar under the current one
+ * (and bold text: not color alone). Lighter than the topic sections above. */
+.subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-1);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.subtab {
+  min-height: 2.75rem;
+  margin-bottom: -1px;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-bottom: 4px solid transparent;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.subtab:hover {
+  color: var(--color-text);
+  border-bottom-color: var(--color-border-subtle);
+}
+
+.subtab[data-state='active'] {
+  border-bottom-color: var(--color-accent-fill);
+  color: var(--color-text);
+  font-weight: 750;
+}
+
+.subpanel:focus-visible {
+  outline-offset: 4px;
+}
+
+/* Each panel is one section: no card, the legend reads as the panel title. */
 .settings {
   max-width: 40rem;
 }
 
-fieldset {
+.settings fieldset {
   display: grid;
   gap: var(--space-4);
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.settings legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-size: 1.375rem;
+}
+
+.settings p[role='status'] {
+  margin: 0;
+}
+
+.subpanel :deep(.diffusion),
+.subpanel :deep(.newsletter),
+.subpanel :deep(.feed),
+.subpanel :deep(.budget) {
+  margin-top: 0;
 }
 
 textarea.field {
@@ -221,5 +319,11 @@ textarea.field {
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   gap: var(--space-4);
   margin-top: var(--space-3);
+}
+
+@media (forced-colors: active) {
+  .subtab[data-state='active'] {
+    border-bottom-color: Highlight;
+  }
 }
 </style>

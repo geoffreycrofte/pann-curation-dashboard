@@ -27,9 +27,9 @@ const links = [
 </template>
 
 <style scoped>
-/* Segmented control: the current section is filled in gold (and bold). */
+/* Segmented control over the full width: the current section is filled in gold (and bold). */
 .topic-nav ul {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
   margin: 0 0 var(--space-6);
@@ -41,9 +41,14 @@ const links = [
   list-style: none;
 }
 
+.topic-nav li {
+  flex: 1 1 auto;
+}
+
 .topic-nav a {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   min-height: 2.75rem;
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-pill);

@@ -3,11 +3,15 @@
 import { readFileSync } from 'node:fs'
 
 const css = readFileSync(new URL('../src/styles/tokens.css', import.meta.url), 'utf8')
-const [light, dark] = css.split('@media (prefers-color-scheme: dark)')
 
-function tokens(block) {
+/** Colors of one theme: `--name: light-dark(#light, #dark)` or `--name: #same`. */
+function tokens(theme) {
   return Object.fromEntries(
-    [...block.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi)].map((m) => [m[1], m[2]]),
+    [
+      ...css.matchAll(
+        /--([\w-]+):\s*(?:light-dark\(\s*(#[0-9a-f]{6})\s*,\s*(#[0-9a-f]{6})\s*\)|(#[0-9a-f]{6}))/gi,
+      ),
+    ].map((m) => [m[1], m[4] ?? (theme === 'light' ? m[2] : m[3])]),
   )
 }
 
@@ -56,11 +60,8 @@ const PAIRS = [
 ]
 
 let failed = false
-for (const [name, block] of [
-  ['light', light],
-  ['dark', { ...tokens(light), ...tokens(dark) }],
-]) {
-  const t = typeof block === 'string' ? tokens(block) : block
+for (const name of ['light', 'dark']) {
+  const t = tokens(name)
   for (const [fg, bg, min] of PAIRS) {
     const r = ratio(t[fg], t[bg])
     const ok = r >= min

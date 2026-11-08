@@ -4,6 +4,7 @@ export default {
   app: { name: 'Pann', tagline: 'Content curation tool' },
   a11y: { skipToContent: 'Skip to content' },
   lang: { label: 'Language', fr: 'Français', en: 'English' },
+  theme: { dark: 'Dark mode' },
   common: {
     save: 'Save',
     saving: 'Saving…',
@@ -78,6 +79,7 @@ export default {
       diffusion: 'Needed to publish on social networks',
       newsletter: 'Needed to send the newsletter',
     },
+    manage: 'Manage',
     howTo: 'Where do I find this key?',
     keyLabel: '{provider} key',
     keyLabelReplace: 'New {provider} key',
@@ -108,7 +110,7 @@ export default {
     refreshBrevo: 'Refresh the lists and senders',
     detail: {
       no_free_check:
-        'This service has no free check: the key will be verified on the first collection.',
+        'This service has no free check: the key will be verified on the first collection of an “Exa search” source. To verify it right away, use “Collect now” on one of these sources.',
       provider_unreachable: 'The service did not answer: the key will be verified on first use.',
       rejected_during_collection: 'The key was rejected during the last collection.',
       rejected_during_publication: 'The key was rejected during the last publication.',
@@ -492,6 +494,16 @@ export default {
     untitled: 'Untitled',
   },
   settings: {
+    tabsLabel: 'Settings sections',
+    tabs: {
+      collection: 'Collection',
+      triage: 'AI triage',
+      drafting: 'AI drafting',
+      diffusion: 'Diffusion',
+      newsletter: 'Newsletter',
+      feed: 'Public feeds',
+      budget: 'Budget',
+    },
     criteria: 'Relevance criteria',
     criteriaHint:
       'Describe what makes an item useful for this topic: subjects, standards, audiences, what to leave out. The AI uses it to score each item.',
