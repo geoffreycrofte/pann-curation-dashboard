@@ -20,10 +20,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from 'reka-ui'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import AddRssForm from '../components/AddRssForm.vue'
+import { useRoute } from 'vue-router'
+import AddSourceSection from '../components/AddSourceSection.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
+import SourceEditor from '../components/SourceEditor.vue'
 import TopicNav from '../components/TopicNav.vue'
 import { api, type SourcePatch } from '../lib/api'
 import { describeError } from '../lib/errors'
@@ -47,6 +49,19 @@ const {
   key: () => ['sources', props.topicId],
   query: () => api.sources(props.topicId),
 })
+
+const route = useRoute()
+/** Just created from "New topic": the sources are the next step of the setup. */
+const isNewTopic = computed(() => route.query.new === '1')
+
+// One source edited at a time; focus returns to its "Edit" button when done.
+const editing = ref<string | null>(null)
+async function finishEdit(source: Source, text: string) {
+  editing.value = null
+  if (text) report(text)
+  await nextTick()
+  document.getElementById(`edit-${source.id}`)?.focus()
+}
 
 const message = ref('')
 const isError = ref(false)
@@ -174,6 +189,12 @@ function inheritedHours(source: Source): number | undefined {
   return effectiveIntervalHours({ ...source, interval_hours: null }, topic.value.config)
 }
 
+function searchQuery(source: Source): string | undefined {
+  return source.type !== 'rss' && typeof source.config.query === 'string'
+    ? source.config.query
+    : undefined
+}
+
 function feedUrl(source: Source): string | undefined {
   return source.type === 'rss' && typeof source.config.url === 'string'
     ? source.config.url
@@ -184,6 +205,18 @@ function feedUrl(source: Source): string | undefined {
 <template>
   <h1 tabindex="-1">{{ t('sources.heading', { topic: topicName }) }}</h1>
   <TopicNav :topic-id="topicId" />
+
+  <div v-if="isNewTopic" class="notice" role="note">
+    <p>
+      <strong>{{ t('sources.newTopicTitle') }}</strong>
+    </p>
+    <p>{{ t('sources.newTopicText') }}</p>
+    <p>
+      <RouterLink :to="{ name: 'settings', params: { topicId } }">
+        {{ t('sources.newTopicSettings') }}
+      </RouterLink>
+    </p>
+  </div>
 
   <div v-if="missingProviders.length || githubWithoutToken" class="notice" role="note">
     <p v-for="provider in missingProviders" :key="provider">
@@ -223,12 +256,27 @@ function feedUrl(source: Source): string | undefined {
               </a>
               <template v-else>{{ source.label }}</template>
             </h2>
-            <ul class="chips">
-              <li class="chip chip-strong">{{ t(`sourceType.${source.type}`) }}</li>
-              <li class="chip">
-                {{ source.default_kind ? t(`kind.${source.default_kind}`) : t('kindSelect.none') }}
-              </li>
-            </ul>
+            <dl class="meta">
+              <div class="meta-type">
+                <dt class="visually-hidden">{{ t('sources.type') }}</dt>
+                <dd>
+                  <span class="type-dot" :data-type="source.type" aria-hidden="true"></span>
+                  {{ t(`sourceType.${source.type}`) }}
+                </dd>
+              </div>
+              <div class="meta-kind">
+                <dt class="visually-hidden">{{ t('sources.kind') }}</dt>
+                <dd>
+                  {{
+                    source.default_kind ? t(`kind.${source.default_kind}`) : t('kindSelect.none')
+                  }}
+                </dd>
+              </div>
+              <div v-if="searchQuery(source)" class="meta-query">
+                <dt class="visually-hidden">{{ t('sources.query') }}</dt>
+                <dd>{{ searchQuery(source) }}</dd>
+              </div>
+            </dl>
           </div>
           <div class="source-run">
             <p class="run-date">
@@ -278,6 +326,16 @@ function feedUrl(source: Source): string | undefined {
           </div>
           <div class="row-actions">
             <button
+              :id="`edit-${source.id}`"
+              type="button"
+              class="button"
+              :aria-expanded="editing === source.id"
+              :aria-label="t('sources.editLabel', { label: source.label })"
+              @click="editing = editing === source.id ? null : source.id"
+            >
+              {{ t('sources.edit') }}
+            </button>
+            <button
               type="button"
               class="button"
               data-variant="primary"
@@ -315,12 +373,18 @@ function feedUrl(source: Source): string | undefined {
             </AlertDialogRoot>
           </div>
         </div>
+        <SourceEditor
+          v-if="editing === source.id"
+          :topic-id="topicId"
+          :source="source"
+          @done="(text) => finishEdit(source, text)"
+        />
       </article>
     </li>
   </ul>
   <p role="status" :class="{ error: isError }">{{ message }}</p>
 
-  <AddRssForm v-if="topic" :topic-id="topicId" :config="topic.config" />
+  <AddSourceSection v-if="topic" :topic-id="topicId" :config="topic.config" />
 </template>
 
 <style scoped>
@@ -363,26 +427,62 @@ function feedUrl(source: Source): string | undefined {
   color: var(--color-text);
 }
 
-.chips {
+/* Source facts as quiet labels, not buttons: type with a colored dot, content kind as a
+ * soft tag, the query in monospace. The text carries the meaning; color only marks it. */
+.meta {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.meta dd {
+  display: inline-flex;
+  align-items: center;
   gap: var(--space-2);
   margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
-.chip {
-  padding: 0.125rem var(--space-3);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface-2);
-  font-size: 0.8125rem;
+.meta-type dd {
   font-weight: 650;
+  color: var(--color-text-muted);
 }
 
-.chip-strong {
-  border-color: var(--color-text);
+.type-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-accent-fill);
+}
+
+.type-dot[data-type='exa'] {
+  background: var(--color-text);
+}
+
+.type-dot[data-type='github'] {
+  border: 1.5px solid var(--color-text);
+  background: none;
+}
+
+.meta-kind dd {
+  padding: 0.125rem var(--space-2);
+  border-radius: 6px;
+  background: var(--color-accent-soft);
+  font-weight: 600;
+}
+
+.meta-query {
+  flex-basis: 100%;
+}
+
+.meta-query dd {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
 }
 
 .source-run {

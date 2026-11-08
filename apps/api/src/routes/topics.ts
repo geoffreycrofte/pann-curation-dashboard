@@ -7,6 +7,7 @@ import {
   ITEM_TOPIC_STATUSES,
   normalizeUrl,
   parseTopicConfig,
+  slugify,
   topicConfigSchema,
   type ItemTopicStatus,
 } from '@pann/shared'
@@ -32,7 +33,24 @@ const configPatch = z.record(z.string(), z.unknown())
 
 const feedBody = z.object({ enabled: z.boolean(), regenerate: z.boolean().default(false) })
 
-const topicPatch = z.object({ monthly_budget_usd: z.number().min(0).max(10_000) })
+const topicName = z.string().trim().min(1).max(100)
+const topicPatch = z
+  .object({
+    monthly_budget_usd: z.number().min(0).max(10_000),
+    name_fr: topicName,
+    name_en: topicName,
+  })
+  .partial()
+
+/** Initial setup of a new topic; everything else keeps its default and is set later. */
+const newTopicBody = z.object({
+  workspace_id: z.uuid(),
+  name_fr: topicName,
+  name_en: topicName,
+  output_langs: z.array(z.enum(LANGS)).min(1),
+  relevance_criteria: z.string().trim().max(4000).default(''),
+  monthly_budget_usd: z.number().min(0).max(10_000).default(10),
+})
 const textBody = (max: number) => z.object({ text: z.string().trim().min(1).max(max) })
 
 const DETAIL_COLUMNS =
@@ -54,6 +72,36 @@ export const topics = new Hono<AppEnv>()
     const { data, error } = await c.var.db.from('topics').select(TOPIC_COLUMNS).order('created_at')
     if (error) throw error
     return c.json(data)
+  })
+
+  /** RLS: only a member of the workspace can create a topic in it. */
+  .post('/', async (c) => {
+    const body = await parseJson(newTopicBody, c.req.raw)
+    const config = parseTopicConfig({
+      output_langs: body.output_langs,
+      ai: { relevance_criteria: body.relevance_criteria },
+    })
+    const base = slugify(body.name_en)
+    // The slug is unique per workspace: "accessibility", then "accessibility-2"…
+    for (let attempt = 1; attempt <= 20; attempt++) {
+      const { data, error } = await c.var.db
+        .from('topics')
+        .insert({
+          workspace_id: body.workspace_id,
+          slug: attempt === 1 ? base : `${base}-${attempt}`,
+          name_fr: body.name_fr,
+          name_en: body.name_en,
+          monthly_budget_usd: body.monthly_budget_usd,
+          config,
+        })
+        .select(TOPIC_COLUMNS)
+        .single()
+      if (error?.code === '23505') continue
+      if (error?.code === '42501') throw new HTTPException(403, { message: 'Not a member' })
+      if (error) throw error
+      return c.json(data, 201)
+    }
+    throw new HTTPException(409, { message: 'Topic slug already taken' })
   })
 
   .get('/:topicId', async (c) => {

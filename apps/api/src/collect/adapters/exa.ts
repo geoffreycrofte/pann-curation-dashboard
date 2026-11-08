@@ -1,17 +1,9 @@
+import { exaSourceConfigSchema } from '@pann/shared'
 import { z } from 'zod'
 import { SourceError, type Adapter } from '../types'
 
 /** https://exa.ai/docs/reference/search (checked 2026-10-01). */
 const EXA_SEARCH_URL = 'https://api.exa.ai/search'
-
-const configSchema = z.object({
-  query: z.string().min(1),
-  num_results: z.number().int().min(1).max(25).default(10),
-  include_domains: z.array(z.string()).optional(),
-  exclude_domains: z.array(z.string()).optional(),
-  /** Characters of page text kept for triage. */
-  max_characters: z.number().int().min(500).max(20_000).default(6000),
-})
 
 const responseSchema = z.object({
   results: z.array(
@@ -28,7 +20,7 @@ const responseSchema = z.object({
 export const exaAdapter: Adapter = async (source, { since, secrets }) => {
   const key = secrets.exa
   if (!key) throw new SourceError('missing_credential', 'exa')
-  const config = configSchema.safeParse(source.config)
+  const config = exaSourceConfigSchema.safeParse(source.config)
   if (!config.success) throw new SourceError('invalid_config')
   const { query, num_results, include_domains, exclude_domains, max_characters } = config.data
 

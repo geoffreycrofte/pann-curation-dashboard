@@ -23,6 +23,11 @@ export const router = createRouter({
       meta: { public: true },
     },
     {
+      path: '/topics/new',
+      name: 'new-topic',
+      component: () => import('./views/NewTopicView.vue'),
+    },
+    {
       path: '/t/:topicId',
       name: 'board',
       component: () => import('./views/BoardView.vue'),

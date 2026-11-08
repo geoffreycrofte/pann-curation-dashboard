@@ -9,6 +9,7 @@ import BudgetSection from '../components/BudgetSection.vue'
 import DiffusionSettings from '../components/DiffusionSettings.vue'
 import FeedSettings from '../components/FeedSettings.vue'
 import NewsletterSettings from '../components/NewsletterSettings.vue'
+import TopicGeneralSettings from '../components/TopicGeneralSettings.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
@@ -23,6 +24,7 @@ const topicName = useTopicName(() => props.topicId)
 
 // Sub-tabs, kept in the address (?tab=…) so a section can be linked and survives a reload.
 const TABS = [
+  'general',
   'collection',
   'triage',
   'drafting',
@@ -37,7 +39,7 @@ const router = useRouter()
 const tab = computed<Tab>({
   get: () => {
     const value = route.query.tab
-    return (TABS as readonly unknown[]).includes(value) ? (value as Tab) : 'collection'
+    return (TABS as readonly unknown[]).includes(value) ? (value as Tab) : 'general'
   },
   set: (value) => void router.replace({ query: { ...route.query, tab: value } }),
 })
@@ -100,6 +102,10 @@ const { mutate, isLoading } = useMutation({
         {{ t(`settings.tabs.${name}`) }}
       </TabsTrigger>
     </TabsList>
+
+    <TabsContent value="general" class="subpanel">
+      <TopicGeneralSettings :key="topic.id" :topic="topic" />
+    </TabsContent>
 
     <TabsContent value="collection" class="subpanel">
       <form class="form settings" @submit.prevent="mutate()">

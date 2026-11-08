@@ -74,6 +74,12 @@ async function signOut() {
                   {{ locale === 'fr' ? topic.name_fr : topic.name_en }}
                 </RouterLink>
               </li>
+              <li>
+                <RouterLink :to="{ name: 'new-topic' }" class="nav-link nav-add">
+                  <span class="nav-plus" aria-hidden="true">+</span>
+                  {{ t('nav.newTopic') }}
+                </RouterLink>
+              </li>
             </ul>
             <p id="nav-workspace" class="nav-label">{{ t('nav.workspace') }}</p>
             <ul aria-labelledby="nav-workspace">
@@ -238,6 +244,17 @@ nav ul {
   background: rgb(255 255 255 / 0.06);
 }
 
+.nav-add:not(.router-link-exact-active) {
+  color: var(--color-on-ink-muted);
+}
+
+.nav-plus {
+  width: 0.5rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
 .nav-dot {
   width: 0.5rem;
   height: 0.5rem;
@@ -253,7 +270,18 @@ nav ul {
 }
 
 .nav-link[aria-current='page'] .nav-dot,
-.nav-link.router-link-exact-active .nav-dot {
+.nav-link.router-link-exact-active .nav-add:not(.router-link-exact-active) {
+  color: var(--color-on-ink-muted);
+}
+
+.nav-plus {
+  width: 0.5rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
+.nav-dot {
   border-color: var(--color-on-accent);
   background: var(--color-on-accent);
 }

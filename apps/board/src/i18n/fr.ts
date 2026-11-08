@@ -26,6 +26,7 @@ export default {
     signOut: 'Se déconnecter',
   },
   nav: {
+    newTopic: 'Nouveau thème',
     menu: 'Menu',
     workspace: 'Espace de travail',
     label: 'Navigation principale',
@@ -78,6 +79,8 @@ export default {
       newsletter: 'Nécessaire pour envoyer la newsletter',
     },
     manage: 'Gérer',
+    replace: 'Remplacer la clé',
+    collapse: 'Replier',
     howTo: 'Où trouver cette clé ?',
     keyLabel: 'Clé {provider}',
     keyLabelReplace: 'Nouvelle clé {provider}',
@@ -450,6 +453,15 @@ export default {
     topicDefault: 'Réglage du thème ({value})',
   },
   sources: {
+    edit: 'Modifier',
+    editLabel: 'Modifier « {label} »',
+    query: 'Recherche',
+    rssUrlFixed:
+      'L’adresse d’un flux ne se modifie pas : pour un autre flux, ajoutez une nouvelle source.',
+    newTopicTitle: 'Thème créé.',
+    newTopicText:
+      'Étape suivante : ajoutez ses sources (flux RSS, recherches Exa, dépôts GitHub) avec le formulaire en bas de page. Le type de contenu de chaque source règle sa fréquence de collecte.',
+    newTopicSettings: 'Régler ensuite la rédaction, la diffusion et la newsletter',
     activeShort: 'Collecte active',
     heading: 'Sources : {topic}',
     title: 'Sources',
@@ -482,6 +494,58 @@ export default {
     confirmText: 'Les éléments déjà collectés sont conservés. Cette action est définitive.',
     lastError: 'Dernière erreur : {message}',
   },
+  newTopic: {
+    title: 'Nouveau thème',
+    intro:
+      'Un thème est un sujet de veille avec ses propres sources, son tri, sa diffusion et sa newsletter. Commencez par l’essentiel : tout se modifie ensuite dans les réglages du thème.',
+    names: 'Nom du thème',
+    namesHint: 'Affiché dans le board, les newsletters et les flux, dans chaque langue.',
+    nameFr: 'Nom en français',
+    nameEn: 'Nom en anglais',
+    langs: 'Langues de publication',
+    langsHint: 'Les résumés, les posts et la newsletter sont rédigés dans chacune de ces langues.',
+    langsRequired: 'Choisissez au moins une langue de publication.',
+    criteriaHint:
+      'Facultatif, mais c’est ce qui guide le tri par IA : décrivez ce qui rend un élément utile pour ce thème et ce qu’il faut écarter.',
+    create: 'Créer le thème',
+    creating: 'Création…',
+  },
+  addSource: {
+    title: 'Ajouter une source',
+    type: 'Type de source',
+    describe: {
+      rss: 'Le flux d’un site ou d’un blog.',
+      exa: 'Une recherche web qui trouve des articles récents.',
+      github: 'Les dépôts populaires qui correspondent à une recherche.',
+    },
+  },
+  searchSource: {
+    submit: 'Ajouter la source',
+    created: 'Source « {label} » ajoutée.',
+    exa: {
+      labelPlaceholder: 'Exemple : actualité juridique',
+      query: 'Recherche',
+      queryPlaceholder: 'Exemple : nouvelles sanctions European Accessibility Act',
+      queryHint:
+        'Décrivez en langage naturel ce que vous cherchez : Exa trouve des pages au sens proche, publiées depuis la dernière collecte.',
+      numResults: 'Résultats par collecte',
+      numResultsHint: 'De 1 à 25. Chaque collecte est facturée par Exa.',
+      include: 'Seulement ces sites',
+      exclude: 'Exclure ces sites',
+      domainsHint: 'Un domaine par ligne, par exemple w3.org.',
+    },
+    github: {
+      labelPlaceholder: 'Exemple : outils a11y',
+      query: 'Recherche GitHub',
+      queryPlaceholder: 'topic:a11y',
+      queryHint:
+        'Syntaxe de recherche de GitHub : topic:a11y, language:typescript, ou des mots-clés. Seuls les dépôts mis à jour depuis la dernière collecte remontent.',
+      minStars: 'Étoiles minimum',
+      minStarsHint: 'Écarte les dépôts peu suivis.',
+      maxResults: 'Dépôts par collecte',
+      maxResultsHint: 'De 1 à 30.',
+    },
+  },
   addRss: {
     title: 'Ajouter un flux RSS',
     url: 'Adresse du flux ou de la page du site',
@@ -501,6 +565,7 @@ export default {
   settings: {
     tabsLabel: 'Sections des réglages',
     tabs: {
+      general: 'Général',
       collection: 'Collecte',
       triage: 'Tri par IA',
       drafting: 'Rédaction par IA',

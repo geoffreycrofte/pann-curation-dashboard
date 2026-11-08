@@ -183,3 +183,9 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 **`Deploy` se lance quand la CI réussit sur `main`** (`workflow_run`), plutôt qu'à chaque `push` : un déclenchement sur `push` tournerait en parallèle de la CI et déploierait aussi un commit qui échoue. Le workflow déploie le commit vérifié par la CI (`head_sha`), même si `main` a avancé entre-temps. Le lancement manuel reste possible.
 
 **Conséquence** : une migration fusionnée dans `main` est appliquée à la base de production dans la foulée (`supabase db push`). D'où la règle de `CLAUDE.md` : ne jamais modifier une migration déjà appliquée, toujours en ajouter une nouvelle.
+
+## 2026-11-08 : thèmes et sources de recherche créés depuis le board
+
+**Création d'un thème** : `POST /api/topics` avec le minimum (noms FR et EN, langues de publication, critères de pertinence, budget). Le reste de la configuration prend ses valeurs par défaut et se règle ensuite (onglet Réglages, sous-onglet Général pour les noms et les langues). Le slug vient du nom anglais, suffixé (`-2`, `-3`…) s'il existe déjà dans le workspace. La RLS existante (`members manage topics`) suffit : aucune migration. Après création, le board ouvre l'onglet Sources : c'est l'étape suivante de la mise en place.
+
+**Sources Exa et GitHub** : leurs schémas de configuration passent dans `packages/shared/src/source-config.ts`, utilisés par l'API (création, modification) et par le collecteur. Une source se modifie depuis sa carte (nom, type de contenu, réglages de la recherche). L'adresse d'un flux RSS reste fixe : un autre flux est une autre source.
