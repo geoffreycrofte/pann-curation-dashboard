@@ -406,6 +406,47 @@ export default {
     missing: 'Incomplete authorization request: start the connection again from the application.',
     error: 'The authorization request could not be read: {message}',
   },
+  modules: {
+    heading: 'Tools of the topic',
+    hint: 'A topic stands for a product or a subject to make known. Each tool is turned on separately and shares the connections and the budget of the topic.',
+    curation: 'Curation',
+    curationHint:
+      'Collect, sort and share content on social networks and in the newsletter. Turned off: collection and automatic newsletter sending stop, and its sections are hidden. Items, posts already scheduled and public feeds stay as they are.',
+    curationOff: 'Curation is turned off for this topic.',
+    turnOn: 'Turn it on in the settings',
+  },
+  product: {
+    heading: 'Product',
+    hint: 'What this topic makes known. The AI uses this information when it writes on behalf of the product: only write what is true and verifiable.',
+    name: 'Product name',
+    url: 'Website address',
+    fields: {
+      description: {
+        label: 'Description',
+        hint: 'What the product is, what it does, who it is for. A few sentences.',
+      },
+      audience: {
+        label: 'Audience',
+        hint: 'The people it is for and the problems they face.',
+      },
+      messages: {
+        label: 'Positioning and messages',
+        hint: 'What you want people to understand, and the wordings to prefer.',
+      },
+      proof_points: {
+        label: 'Proof points',
+        hint: 'Verifiable facts that support your messages, each with its source. A proof point without a source is not used.',
+      },
+      claims_to_avoid: {
+        label: 'Never say',
+        hint: 'Forbidden promises, wordings to avoid, comparisons not to make.',
+      },
+    },
+    disclosure: 'Disclosure of your link with the product',
+    disclosurePlaceholder: 'Example: I am the maker of CheckFox.',
+    disclosureHint:
+      'Added each time the product is mentioned in a reply, so that your link with it is clear.',
+  },
   topicNav: {
     label: 'Topic sections',
     board: 'Sorting',
@@ -635,6 +676,7 @@ export default {
     tabsLabel: 'Settings sections',
     tabs: {
       general: 'General',
+      product: 'Product',
       kinds: 'Kinds of content',
       collection: 'Collection',
       triage: 'AI triage',

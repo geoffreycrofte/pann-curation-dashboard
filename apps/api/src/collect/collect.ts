@@ -119,6 +119,8 @@ export async function collect(deps: {
   const now = deps.now ?? new Date()
   const only = deps.onlySourceIds
   const due = (await deps.store.activeSources())
+    // Every source feeds the curation board for now: a topic without curation pauses them.
+    .filter((s) => s.topic_config.modules.curation)
     .filter((s) => (only ? only.includes(s.id) : isSourceDue(s, s.topic_config, now)))
     .sort((a, b) => (a.last_run_at ?? '').localeCompare(b.last_run_at ?? ''))
     .slice(0, deps.maxSources ?? MAX_SOURCES_PER_RUN)

@@ -14,13 +14,17 @@ const queryCache = useQueryCache()
 const nameFr = ref(props.topic.name_fr)
 const nameEn = ref(props.topic.name_en)
 const langs = ref<Lang[]>([...props.topic.config.output_langs])
+const curation = ref(props.topic.config.modules.curation)
 const message = ref('')
 const isError = ref(false)
 
 const { mutate, isLoading } = useMutation({
   mutation: async () => {
     await api.updateTopic(props.topic.id, { name_fr: nameFr.value, name_en: nameEn.value })
-    await api.updateConfig(props.topic.id, { output_langs: langs.value })
+    await api.updateConfig(props.topic.id, {
+      output_langs: langs.value,
+      modules: { ...props.topic.config.modules, curation: curation.value },
+    })
   },
   async onSuccess() {
     isError.value = false
@@ -81,6 +85,20 @@ function submit() {
         <input :id="`${id}-lang-${lang}`" v-model="langs" type="checkbox" :value="lang" />
         <label :for="`${id}-lang-${lang}`">{{ t(`lang.${lang}`) }}</label>
       </div>
+    </fieldset>
+    <fieldset :aria-describedby="`${id}-modules-hint`">
+      <legend>{{ t('modules.heading') }}</legend>
+      <p :id="`${id}-modules-hint`" class="hint">{{ t('modules.hint') }}</p>
+      <div class="form-check">
+        <input
+          :id="`${id}-curation`"
+          v-model="curation"
+          type="checkbox"
+          :aria-describedby="`${id}-curation-hint`"
+        />
+        <label :for="`${id}-curation`">{{ t('modules.curation') }}</label>
+      </div>
+      <p :id="`${id}-curation-hint`" class="hint">{{ t('modules.curationHint') }}</p>
     </fieldset>
     <div>
       <button type="submit" class="button" data-variant="primary" :disabled="isLoading">

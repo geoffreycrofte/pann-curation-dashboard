@@ -138,6 +138,18 @@ describe('collect', () => {
     expect(received).toEqual({ exa: 'key' })
   })
 
+  it('pauses the sources of a topic whose curation is turned off', async () => {
+    const noCuration = parseTopicConfig({ modules: { curation: false, engagement: true } })
+    const { store, runs } = memoryStore([
+      source({ id: 'paused', topic_config: noCuration }),
+      source({ id: 'running' }),
+    ])
+    const adapters = { rss: async () => ({ items: [] }) }
+    await collect({ store, adapters, now })
+    await collect({ store, adapters, now, onlySourceIds: ['paused'] })
+    expect(Object.keys(runs)).toEqual(['running'])
+  })
+
   it('"collect now" runs the requested source even when it is not due', async () => {
     const { store, runs } = memoryStore([
       source({ id: 'recent', last_run_at: '2026-10-10T11:30:00Z' }),

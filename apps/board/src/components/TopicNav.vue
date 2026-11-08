@@ -1,16 +1,30 @@
 <script setup lang="ts">
+import { useQuery } from '@pinia/colada'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { api } from '../lib/api'
 
-defineProps<{ topicId: string }>()
+const props = defineProps<{ topicId: string }>()
 const { t } = useI18n()
 
-const links = [
-  { name: 'board', label: 'topicNav.board' },
-  { name: 'diffusion', label: 'topicNav.diffusion' },
-  { name: 'newsletter', label: 'topicNav.newsletter' },
-  { name: 'sources', label: 'topicNav.sources' },
-  { name: 'settings', label: 'topicNav.settings' },
+// Same query as the settings page: shared cache.
+const { data: topic } = useQuery({
+  key: () => ['topic', props.topicId],
+  query: () => api.topic(props.topicId),
+})
+
+const LINKS = [
+  { name: 'board', label: 'topicNav.board', curation: true },
+  { name: 'diffusion', label: 'topicNav.diffusion', curation: true },
+  { name: 'newsletter', label: 'topicNav.newsletter', curation: true },
+  { name: 'sources', label: 'topicNav.sources', curation: true },
+  { name: 'settings', label: 'topicNav.settings', curation: false },
 ] as const
+
+/** Curation sections are hidden once the topic is known to have curation turned off. */
+const links = computed(() =>
+  LINKS.filter((link) => !link.curation || topic.value?.config.modules.curation !== false),
+)
 </script>
 
 <template>

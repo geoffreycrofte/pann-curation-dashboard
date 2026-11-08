@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Pann : outil de curation de veille multi-thèmes. Contexte produit : `docs/CONTEXT.md`. Choix techniques : `docs/DECISIONS.md` (ajouter une entrée pour toute décision structurante).
+Pann : outil de marketing par thème. Un thème est un produit ou un sujet à faire connaître, avec deux outils activables (`topics.config.modules`) : curation de veille et engagement (conversations où aider). Contexte produit : `docs/CONTEXT.md`. Choix techniques : `docs/DECISIONS.md` (ajouter une entrée pour toute décision structurante).
 
 ## Commandes
 

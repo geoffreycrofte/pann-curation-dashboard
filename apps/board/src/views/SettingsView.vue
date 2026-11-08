@@ -9,6 +9,7 @@ import BudgetSection from '../components/BudgetSection.vue'
 import DiffusionSettings from '../components/DiffusionSettings.vue'
 import FeedSettings from '../components/FeedSettings.vue'
 import NewsletterSettings from '../components/NewsletterSettings.vue'
+import ProductSettings from '../components/ProductSettings.vue'
 import TopicGeneralSettings from '../components/TopicGeneralSettings.vue'
 import TopicKindsSettings from '../components/TopicKindsSettings.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
@@ -26,6 +27,7 @@ const topicName = useTopicName(() => props.topicId)
 // Sub-tabs, kept in the address (?tab=…) so a section can be linked and survives a reload.
 const TABS = [
   'general',
+  'product',
   'kinds',
   'collection',
   'triage',
@@ -36,12 +38,17 @@ const TABS = [
   'budget',
 ] as const
 type Tab = (typeof TABS)[number]
+/** Tabs shown whatever the tools of the topic; the others belong to curation. */
+const SHARED_TABS: readonly Tab[] = ['general', 'product', 'budget']
 const route = useRoute()
 const router = useRouter()
+const tabs = computed(() =>
+  TABS.filter((name) => SHARED_TABS.includes(name) || topic.value?.config.modules.curation),
+)
 const tab = computed<Tab>({
   get: () => {
     const value = route.query.tab
-    return (TABS as readonly unknown[]).includes(value) ? (value as Tab) : 'general'
+    return (tabs.value as readonly unknown[]).includes(value) ? (value as Tab) : 'general'
   },
   set: (value) => void router.replace({ query: { ...route.query, tab: value } }),
 })
@@ -106,13 +113,17 @@ const { mutate, isLoading } = useMutation({
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
   <TabsRoot v-else-if="topic && collection && ai" v-model="tab" activation-mode="manual">
     <TabsList :aria-label="t('settings.tabsLabel')" class="subtabs">
-      <TabsTrigger v-for="name in TABS" :key="name" :value="name" class="subtab">
+      <TabsTrigger v-for="name in tabs" :key="name" :value="name" class="subtab">
         {{ t(`settings.tabs.${name}`) }}
       </TabsTrigger>
     </TabsList>
 
     <TabsContent value="general" class="subpanel">
       <TopicGeneralSettings :key="topic.id" :topic="topic" />
+    </TabsContent>
+
+    <TabsContent value="product" class="subpanel">
+      <ProductSettings :key="topic.id" :topic="topic" />
     </TabsContent>
 
     <TabsContent value="kinds" class="subpanel">
