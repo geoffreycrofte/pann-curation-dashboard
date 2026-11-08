@@ -245,7 +245,37 @@ export default {
     credits_exhausted: '{provider} credits used up: the sending was refused.',
     empty_digest: 'Nothing new since the previous newsletter: nothing was sent.',
   },
+  rewrite: {
+    button: 'Rewrite',
+    label: 'Rewrite: {field}',
+    running: 'Rewriting…',
+    done: 'Proposal inserted in the field. Save to keep it, or undo the rewrite.',
+    undone: 'Previous text restored.',
+    undo: 'Undo the rewrite',
+    timeout: 'The rewrite is taking too long. Try again in a moment.',
+    presets: {
+      shorter: 'Shorten',
+      longer: 'Lengthen a little',
+      formal: 'More professional',
+      casual: 'More casual',
+      custom: 'Custom instruction…',
+    },
+    customTitle: 'Rewrite with your instruction',
+    customText:
+      '{field}: describe what Claude should change. The facts of the text are kept, and nothing is saved until you decide.',
+    instruction: 'Instruction',
+    instructionPlaceholder: 'Example: start with the key figure, and name the standard concerned.',
+    submit: 'Rewrite',
+  },
   draft: {
+    editedBadge: 'Edited by hand',
+    unsaved: 'Not saved',
+    summaryUse: 'This summary is used in the newsletter and in the public feeds, in its language.',
+    confirmTitle: 'Draft again?',
+    confirmReplaced:
+      'Claude writes the summaries, the excerpt and the posts again from the source.',
+    confirmKept: 'Texts edited by hand are kept as they are: only the others are replaced.',
+    confirmCost: 'This call is billed and counts toward the monthly budget of the topic.',
     statusWithError: '{status}: {error}',
     status: {
       none: 'Not drafted yet',
@@ -640,7 +670,13 @@ export default {
     operation: 'Operation',
     calls: 'Calls',
     cost: 'Cost',
-    operations: { triage: 'AI triage', draft: 'AI drafting', search: 'Exa search', other: 'Other' },
+    operations: {
+      rewrite: 'AI rewrite',
+      triage: 'AI triage',
+      draft: 'AI drafting',
+      search: 'Exa search',
+      other: 'Other',
+    },
     draftMode: 'When drafting happens',
     draftModes: {
       on_validate: 'On validation (cheaper)',

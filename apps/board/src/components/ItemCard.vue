@@ -53,10 +53,12 @@ const actions = computed(() =>
     </div>
 
     <div class="body">
-      <ul class="chips">
-        <li v-if="item.kind" class="chip chip-kind">{{ kindLabel(item.kind) }}</li>
-        <li v-if="item.origin === 'manual'" class="chip">{{ t('board.manual') }}</li>
-        <li v-if="item.is_commercial" class="chip chip-warning">{{ t('board.commercial') }}</li>
+      <ul class="badges">
+        <li v-if="item.kind" class="badge" data-tone="accent">{{ kindLabel(item.kind) }}</li>
+        <li v-if="item.origin === 'manual'" class="badge">{{ t('board.manual') }}</li>
+        <li v-if="item.is_commercial" class="badge" data-tone="danger" data-dot>
+          {{ t('board.commercial') }}
+        </li>
       </ul>
 
       <h2 :id="headingId" class="title">
@@ -238,7 +240,7 @@ const actions = computed(() =>
   min-width: 0;
 }
 
-.chips,
+.badges,
 .meta {
   display: flex;
   flex-wrap: wrap;
@@ -246,24 +248,6 @@ const actions = computed(() =>
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.chip {
-  padding: 0.125rem var(--space-3);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface-2);
-  font-size: 0.8125rem;
-  font-weight: 650;
-}
-
-.chip-kind {
-  border-color: var(--color-text);
-}
-
-.chip-warning {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
 }
 
 .title {

@@ -524,13 +524,6 @@ function feedUrl(source: Source): string | undefined {
   background: none;
 }
 
-.meta-kind dd {
-  padding: 0.125rem var(--space-2);
-  border-radius: 6px;
-  background: var(--color-accent-soft);
-  font-weight: 600;
-}
-
 .meta-query {
   flex-basis: 100%;
 }

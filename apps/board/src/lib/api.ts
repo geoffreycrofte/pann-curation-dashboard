@@ -1,5 +1,6 @@
 import type {
   BoardItem,
+  DraftChannel,
   ItemKind,
   ItemTopicStatus,
   Lang,
@@ -101,6 +102,13 @@ export interface NewTopicInput {
   output_langs: Lang[]
   relevance_criteria: string
   monthly_budget_usd: number
+}
+
+export interface RewriteInput {
+  text: string
+  preset: 'shorter' | 'longer' | 'formal' | 'casual' | 'custom'
+  instruction?: string
+  target: { kind: 'summary'; lang: Lang } | { kind: 'post'; lang: Lang; channel: DraftChannel }
 }
 
 export type TopicPatch = Partial<Pick<Topic, 'monthly_budget_usd' | 'name_fr' | 'name_en'>>
@@ -232,6 +240,16 @@ export const api = {
       `/topics/${topicId}/items/${itemId}/summaries/${lang}`,
       json('PATCH', { text }),
     ),
+  /** AI rewrite: recorded, then run by a job; `rewriteResult` is polled until done. */
+  rewrite: (topicId: string, itemId: string, input: RewriteInput) =>
+    request<{ id: string }>(`/topics/${topicId}/items/${itemId}/rewrites`, json('POST', input)),
+  rewriteResult: (topicId: string, rewriteId: string) =>
+    request<{
+      id: string
+      status: 'pending' | 'done' | 'failed'
+      result: string | null
+      error: string | null
+    }>(`/topics/${topicId}/rewrites/${rewriteId}`),
   updatePost: (topicId: string, postId: string, text: string) =>
     request<PostDraft>(`/topics/${topicId}/posts/${postId}`, json('PATCH', { text })),
   schedule: (topicId: string, itemId: string, when: 'next_slot' | 'now') =>

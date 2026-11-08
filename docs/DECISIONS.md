@@ -207,3 +207,15 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 **Retirer un type** passe par `PUT /api/topics/:id/kinds`, qui reporte ses éléments et ses sources sur un type choisi (ou aucun). Le `PATCH` générique de la config refuse `kinds`.
 
 **Tri par IA** : il choisit parmi les clés du thème (sortie structurée avec une énumération construite par thème) et lit leurs définitions, qui sont des réglages de l'utilisateur ; le prompt (`triage-v3`) ne contient plus de définition en dur. Un type venu de la source ou de l'utilisateur prime sur celui du tri. Le dédoublonnage par titre écartait les outils via `items.kind` : il écarte désormais les éléments suivis par version (`change_signature`).
+
+## 2026-11-08 : réécriture par IA depuis la fiche
+
+**Réécrire** (Raccourcir, Allonger un peu, Plus pro, Plus familier, Instruction personnalisée) sur chaque résumé et chaque post. La proposition remplace le texte dans le champ, rien n'est enregistré sans « Enregistrer », et « Annuler la réécriture » rétablit le texte précédent.
+
+**Par un job, pas dans la requête.** Lire la clé Anthropic demande la clé secrète, interdite dans une requête utilisateur. La requête enregistre la demande dans `rewrites` (RLS : l'utilisateur accède au thème, et ne lit que ses propres demandes), un job l'exécute et écrit le résultat, le board interroge la ligne toutes les 1,5 s (90 s au plus). Les demandes de plus de 7 jours sont supprimées par le job.
+
+**Prompt** (`rewrite-v1`) : uniquement le fonctionnement (garder les faits et la langue, pas d'URL dans un post, limite de longueur du post moins le lien). Les consignes de style viennent des réglages du thème (`style_rules` pour les résumés, `post_rules` pour les posts). Modèle de rédaction du thème ; même budget mensuel que la rédaction ; coût enregistré sous l'opération `rewrite`.
+
+## 2026-11-08 : badges
+
+Un seul style pour les étiquettes et statuts de toute l'application (`.badge` dans `base.css`) : petit, plat, coins peu arrondis, fond teinté, sans bordure, pour ne jamais ressembler à un bouton (les boutons sont des pilules bordées). Tons `accent`, `success`, `danger` et neutre, point optionnel (`data-dot`) ; le texte porte l'information. Nouveaux tokens de fond, vérifiés en contraste : `--color-neutral-soft`, `--color-success-soft`, `--color-danger-soft`.
