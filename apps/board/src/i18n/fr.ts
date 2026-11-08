@@ -411,6 +411,47 @@ export default {
     missing: 'Demande d’autorisation incomplète : relancez la connexion depuis l’application.',
     error: 'La demande d’autorisation n’a pas pu être lue : {message}',
   },
+  modules: {
+    heading: 'Outils du thème',
+    hint: 'Un thème représente un produit ou un sujet à faire connaître. Chaque outil s’active séparément et partage les connexions et le budget du thème.',
+    curation: 'Curation',
+    curationHint:
+      'Collecter, trier et partager des contenus sur les réseaux et dans la newsletter. Désactivée : la collecte et l’envoi automatique de la newsletter s’arrêtent, et ses sections sont masquées. Les éléments, les posts déjà programmés et les flux publics restent en place.',
+    curationOff: 'La curation est désactivée pour ce thème.',
+    turnOn: 'L’activer dans les réglages',
+  },
+  product: {
+    heading: 'Produit',
+    hint: 'Ce que ce thème fait connaître. Ces informations servent à l’IA quand elle rédige au nom du produit : écrivez seulement ce qui est vrai et vérifiable.',
+    name: 'Nom du produit',
+    url: 'Adresse du site',
+    fields: {
+      description: {
+        label: 'Description',
+        hint: 'Ce qu’est le produit, ce qu’il fait, pour qui. Quelques phrases.',
+      },
+      audience: {
+        label: 'Public',
+        hint: 'Les personnes visées et les problèmes qu’elles rencontrent.',
+      },
+      messages: {
+        label: 'Positionnement et messages',
+        hint: 'Ce que vous voulez faire comprendre, et les formulations à privilégier.',
+      },
+      proof_points: {
+        label: 'Preuves',
+        hint: 'Faits vérifiables qui appuient vos messages, chacun avec sa source. Une preuve sans source n’est pas utilisée.',
+      },
+      claims_to_avoid: {
+        label: 'À ne jamais dire',
+        hint: 'Promesses interdites, formulations à éviter, comparaisons à ne pas faire.',
+      },
+    },
+    disclosure: 'Mention de votre lien avec le produit',
+    disclosurePlaceholder: 'Exemple : Je suis le créateur de CheckFox.',
+    disclosureHint:
+      'Ajoutée chaque fois que le produit est cité dans une réponse, pour que votre lien avec lui soit clair.',
+  },
   topicNav: {
     label: 'Sections du thème',
     board: 'Tri',
@@ -642,6 +683,7 @@ export default {
     tabsLabel: 'Sections des réglages',
     tabs: {
       general: 'Général',
+      product: 'Produit',
       kinds: 'Types de contenu',
       collection: 'Collecte',
       triage: 'Tri par IA',

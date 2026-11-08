@@ -86,7 +86,8 @@ export async function sendDigests(deps: {
     const { config } = topic
     let periodTo = now
     if (deps.mode === 'scheduled') {
-      if (!config.newsletter.auto_send) continue
+      // Automatic sending stops with curation; sending by hand stays possible.
+      if (!config.newsletter.auto_send || !config.modules.curation) continue
       periodTo = lastDigestTime(config.schedule, now)
       if (now.getTime() - periodTo.getTime() > MAX_DELAY_MS) continue
     }

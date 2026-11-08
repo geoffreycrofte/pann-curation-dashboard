@@ -219,3 +219,22 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 ## 2026-11-08 : badges
 
 Un seul style pour les étiquettes et statuts de toute l'application (`.badge` dans `base.css`) : petit, plat, coins peu arrondis, fond teinté, sans bordure, pour ne jamais ressembler à un bouton (les boutons sont des pilules bordées). Tons `accent`, `success`, `danger` et neutre, point optionnel (`data-dot`) ; le texte porte l'information. Nouveaux tokens de fond, vérifiés en contraste : `--color-neutral-soft`, `--color-success-soft`, `--color-danger-soft`.
+
+## 2026-11-08 : un thème, deux outils (curation et engagement)
+
+**Un thème représente un produit ou un sujet à faire connaître** (CheckFox, Kitzy, Pann, RampUp…). Il porte deux outils, activables séparément dans Réglages, Général (`topics.config.modules`) :
+
+- **curation** : ce que Pann fait déjà (collecter, trier, partager sur les réseaux et dans la newsletter) ;
+- **engagement** : repérer des conversations (Hacker News, Bluesky, Mastodon, GitHub…) où l'équipe du produit peut aider, et préparer une réponse que la personne publie elle-même.
+
+Les deux outils partagent la sémantique du thème (types de contenu, langues, sites exclus), ses connexions (clés par workspace) et son budget. Un outil séparé (dépôt `halo-marketing-tool`, brief « Growth OS ») a été écarté : il aurait refait la collecte, le tri, le board et la rédaction.
+
+**Valeurs par défaut** : curation activée, engagement désactivé. Les thèmes existants ne changent pas de comportement, aucune migration (la config est en jsonb et lue avec ses valeurs par défaut).
+
+**Curation désactivée** : la collecte des sources du thème et l'envoi automatique de la newsletter s'arrêtent ; ses sections (Tri, Diffusion, Newsletter, Sources et les réglages qui lui sont propres) sont masquées. Rien n'est supprimé : les éléments restent, les posts déjà programmés partent (c'était une décision explicite), les flux publics restent actifs tant qu'ils ne sont pas coupés. Toutes les sources actuelles alimentent la curation ; quand l'engagement aura ses propres sources, elles porteront leur outil.
+
+**Fiche produit** (`topics.config.product`, Réglages, Produit) : nom, adresse, description, public, positionnement et messages, preuves (avec leur source), ce qu'il ne faut jamais dire, et la mention du lien de l'auteur avec le produit. Ce sont des réglages de l'utilisateur, conformément à la règle « rien en dur dans les prompts » : l'IA s'en servira quand elle écrit au nom du produit (réponses d'engagement).
+
+**Garde-fous de l'engagement, à intégrer à l'outil et non aux réglages** (étapes suivantes) : une réponse n'est jamais publiée par une API, la personne l'ouvre, la copie et la marque comme publiée ; la mention du lien avec le produit est ajoutée dès que le produit est cité ; un plafond de réponses par communauté et par semaine, commun à tous les thèmes d'un même compte. Sinon, Pann ouvert en SaaS deviendrait un outil de spam.
+
+**Suite prévue** : interface de l'engagement et sources de conversations (Hacker News et Bluesky d'abord), puis tri et rédaction propres à l'engagement (une réponse dans la langue de la discussion, aux limites de la plateforme d'origine).

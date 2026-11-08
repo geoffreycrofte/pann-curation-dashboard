@@ -48,31 +48,46 @@ const { data: counts } = useQuery({
 })
 
 const announcement = ref('')
+
+// Same query as the settings page: shared cache.
+const { data: topic } = useQuery({
+  key: () => ['topic', props.topicId],
+  query: () => api.topic(props.topicId),
+})
+const curationOff = computed(() => topic.value?.config.modules.curation === false)
 </script>
 
 <template>
   <h1 tabindex="-1">{{ topicName }}</h1>
   <TopicNav :topic-id="topicId" />
-  <p v-if="anthropicMissing" class="notice" role="note">
-    {{ t('board.noAnthropicKey') }}
-    <RouterLink to="/connections">{{ t('errors.fixInConnections') }}</RouterLink>
+  <p v-if="curationOff" class="notice" role="note">
+    {{ t('modules.curationOff') }}
+    <RouterLink :to="{ name: 'settings', params: { topicId } }">
+      {{ t('modules.turnOn') }}
+    </RouterLink>
   </p>
-  <AddItemForm :topic-id="topicId" />
+  <template v-else>
+    <p v-if="anthropicMissing" class="notice" role="note">
+      {{ t('board.noAnthropicKey') }}
+      <RouterLink to="/connections">{{ t('errors.fixInConnections') }}</RouterLink>
+    </p>
+    <AddItemForm :topic-id="topicId" />
 
-  <TabsRoot v-model="status" activation-mode="manual">
-    <TabsList :aria-label="t('board.statusFilter')" class="tabs">
-      <TabsTrigger v-for="s in ITEM_TOPIC_STATUSES" :key="s" :value="s" class="button tab">
-        {{ t(`status.${s}`) }}
-        <span v-if="counts?.[s] !== undefined" class="count">
-          <span class="visually-hidden">(</span>{{ counts[s]
-          }}<span class="visually-hidden">)</span>
-        </span>
-      </TabsTrigger>
-    </TabsList>
-    <TabsContent v-for="s in ITEM_TOPIC_STATUSES" :key="s" :value="s" class="panel">
-      <ItemList :topic-id="topicId" :status="s" @announce="announcement = $event" />
-    </TabsContent>
-  </TabsRoot>
+    <TabsRoot v-model="status" activation-mode="manual">
+      <TabsList :aria-label="t('board.statusFilter')" class="tabs">
+        <TabsTrigger v-for="s in ITEM_TOPIC_STATUSES" :key="s" :value="s" class="button tab">
+          {{ t(`status.${s}`) }}
+          <span v-if="counts?.[s] !== undefined" class="count">
+            <span class="visually-hidden">(</span>{{ counts[s]
+            }}<span class="visually-hidden">)</span>
+          </span>
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent v-for="s in ITEM_TOPIC_STATUSES" :key="s" :value="s" class="panel">
+        <ItemList :topic-id="topicId" :status="s" @announce="announcement = $event" />
+      </TabsContent>
+    </TabsRoot>
+  </template>
 
   <div role="status" class="visually-hidden">{{ announcement }}</div>
 </template>

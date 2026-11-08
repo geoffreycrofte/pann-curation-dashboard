@@ -61,10 +61,53 @@ export const DEFAULT_KINDS: TopicKind[] = [
 ]
 
 /**
+ * Tools of a topic, enabled separately. A topic is a product (or a theme) to market:
+ * - curation: collect, sort and share other people's content (board, posts, newsletter);
+ * - engagement: find conversations where the product's team can help, draft replies.
+ */
+export const TOPIC_MODULES = ['curation', 'engagement'] as const
+export type TopicModule = (typeof TOPIC_MODULES)[number]
+
+const optionalUrl = z.union([z.url({ protocol: /^https?$/ }), z.literal('')]).default('')
+const productText = (max: number) => z.string().trim().max(max).default('')
+
+/**
+ * What the topic markets, written by the user. Shared by the tools of the topic; given
+ * to the AI when it writes on behalf of the product (engagement replies).
+ */
+export const productSchema = z
+  .object({
+    name: productText(100),
+    url: optionalUrl,
+    /** What the product is and does, for whom. */
+    description: productText(2000),
+    /** Who the product is for, their problems. */
+    audience: productText(2000),
+    /** Positioning and key messages. */
+    messages: productText(4000),
+    /** Verifiable facts that support the messages, with their source. */
+    proof_points: productText(4000),
+    /** Promises and wordings never to use. */
+    claims_to_avoid: productText(4000),
+    /** Sentence that discloses the author's link to the product when it is mentioned. */
+    disclosure: productText(300),
+  })
+  .prefault({})
+export type TopicProduct = z.infer<typeof productSchema>
+
+/**
  * Everything that is specific to a theme lives here (stored in topics.config, jsonb).
  * Nothing about "accessibility" is hard-coded in the application.
  */
 export const topicConfigSchema = z.object({
+  /** Existing topics were curation boards: curation on, engagement off by default. */
+  modules: z
+    .object({
+      curation: z.boolean().default(true),
+      engagement: z.boolean().default(false),
+    })
+    .prefault({}),
+  product: productSchema,
   kinds: z
     .array(kindSchema)
     .min(1)
@@ -230,6 +273,10 @@ export function safeParseTopicConfig(raw: unknown) {
 export function kindLabel(config: Pick<TopicConfig, 'kinds'>, key: string, lang: Lang): string {
   const kind = config.kinds.find((k) => k.key === key)
   return kind ? (lang === 'fr' ? kind.label_fr : kind.label_en) : key
+}
+
+export function isModuleEnabled(config: Pick<TopicConfig, 'modules'>, module: TopicModule) {
+  return config.modules[module]
 }
 
 export function isTopicKind(config: Pick<TopicConfig, 'kinds'>, key: string): boolean {

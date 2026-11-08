@@ -84,4 +84,6 @@ Workflow `Deploy` (GitHub Actions), lancé automatiquement après chaque CI réu
 - [x] 7. Newsletter (Brevo) : une campagne par langue, envoi manuel ou hebdomadaire
 - [x] Flux publics RSS et JSON Feed par thème et par langue
 - [ ] 8. Second topic
+- [x] Thème = produit à faire connaître : outils curation et engagement activables, fiche produit
+- [ ] Engagement : sources de conversations, tri et réponses à publier à la main
 - [x] 9. Serveur MCP de curation, pour Claude, connexion OAuth (Supabase Auth)
