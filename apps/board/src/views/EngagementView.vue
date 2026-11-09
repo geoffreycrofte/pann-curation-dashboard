@@ -71,7 +71,7 @@ const announcement = ref('')
   </p>
 
   <TabsRoot v-else-if="topic" v-model="section" activation-mode="manual">
-    <TabsList :aria-label="t('engagement.sectionsLabel')" class="subtabs">
+    <TabsList :aria-label="t('engagement.sectionsLabel')" v-scroll-active class="subtabs tab-row">
       <TabsTrigger v-for="name in SECTIONS" :key="name" :value="name" class="subtab">
         {{ t(`engagement.sections.${name}`) }}
       </TabsTrigger>
@@ -81,7 +81,7 @@ const announcement = ref('')
       <!-- The rule of the tool, always in view: Pann never posts a reply. -->
       <p class="notice" role="note">{{ t('engagement.neverPosted') }}</p>
       <TabsRoot v-model="status" activation-mode="manual">
-        <TabsList :aria-label="t('engagement.statusFilter')" class="tabs">
+        <TabsList :aria-label="t('engagement.statusFilter')" v-scroll-active class="tabs tab-row">
           <TabsTrigger v-for="s in STATUSES" :key="s" :value="s" class="button tab">
             {{ t(`engagement.status.${s}`) }}
             <span v-if="counts?.[s] !== undefined" class="count">
@@ -111,13 +111,13 @@ const announcement = ref('')
 <style scoped>
 .tabs {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-2);
   margin-bottom: var(--space-5);
 }
 
 .tab {
   border-color: var(--color-border-subtle);
+  white-space: nowrap;
 }
 
 /* Current status: ink fill, light text and bold (not color alone). */

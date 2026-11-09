@@ -123,7 +123,7 @@ textarea.field {
 
 .pair {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
   gap: var(--space-4);
 }
 

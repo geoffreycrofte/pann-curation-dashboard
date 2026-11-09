@@ -141,7 +141,7 @@ function submit() {
 }
 
 .names {
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
 }
 
 .names .hint {

@@ -379,7 +379,7 @@ const queryOf = (source: Source) =>
 
 .pair {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
   gap: var(--space-4);
 }
 

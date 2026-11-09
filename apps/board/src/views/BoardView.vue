@@ -74,7 +74,7 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
     <AddItemForm :topic-id="topicId" />
 
     <TabsRoot v-model="status" activation-mode="manual">
-      <TabsList :aria-label="t('board.statusFilter')" class="tabs">
+      <TabsList :aria-label="t('board.statusFilter')" v-scroll-active class="tabs tab-row">
         <TabsTrigger v-for="s in ITEM_TOPIC_STATUSES" :key="s" :value="s" class="button tab">
           {{ t(`status.${s}`) }}
           <span v-if="counts?.[s] !== undefined" class="count">
@@ -95,13 +95,13 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
 <style scoped>
 .tabs {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-2);
   margin-bottom: var(--space-5);
 }
 
 .tab {
   border-color: var(--color-border-subtle);
+  white-space: nowrap;
 }
 
 .count {
