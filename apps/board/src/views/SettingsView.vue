@@ -18,16 +18,19 @@ import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
 
-const props = defineProps<{ topicId: string }>()
+/**
+ * Settings of a topic. scope "topic": what its tools share (general, product, budget);
+ * scope "curation": what only the curation tool uses.
+ */
+const props = defineProps<{ topicId: string; scope: 'topic' | 'curation' }>()
 const { t, locale } = useI18n()
 const id = useId()
 const queryCache = useQueryCache()
 const topicName = useTopicName(() => props.topicId)
 
 // Sub-tabs, kept in the address (?tab=…) so a section can be linked and survives a reload.
-const TABS = [
-  'general',
-  'product',
+const TOPIC_TABS = ['general', 'product', 'budget'] as const
+const CURATION_TABS = [
   'kinds',
   'collection',
   'triage',
@@ -35,20 +38,15 @@ const TABS = [
   'diffusion',
   'newsletter',
   'feed',
-  'budget',
 ] as const
-type Tab = (typeof TABS)[number]
-/** Tabs shown whatever the tools of the topic; the others belong to curation. */
-const SHARED_TABS: readonly Tab[] = ['general', 'product', 'budget']
+type Tab = (typeof TOPIC_TABS)[number] | (typeof CURATION_TABS)[number]
 const route = useRoute()
 const router = useRouter()
-const tabs = computed(() =>
-  TABS.filter((name) => SHARED_TABS.includes(name) || topic.value?.config.modules.curation),
-)
+const tabs = computed<readonly Tab[]>(() => (props.scope === 'topic' ? TOPIC_TABS : CURATION_TABS))
 const tab = computed<Tab>({
   get: () => {
     const value = route.query.tab
-    return (tabs.value as readonly unknown[]).includes(value) ? (value as Tab) : 'general'
+    return (tabs.value as readonly unknown[]).includes(value) ? (value as Tab) : tabs.value[0]!
   },
   set: (value) => void router.replace({ query: { ...route.query, tab: value } }),
 })
@@ -106,8 +104,22 @@ const { mutate, isLoading } = useMutation({
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ t('settings.heading', { topic: topicName }) }}</h1>
-  <TopicNav :topic-id="topicId" />
+  <h1 tabindex="-1">
+    {{
+      t(scope === 'topic' ? 'settings.heading' : 'settings.curationHeading', { topic: topicName })
+    }}
+  </h1>
+  <TopicNav v-if="scope === 'curation'" :topic-id="topicId" />
+  <p
+    v-if="scope === 'curation' && topic?.config.modules.curation === false"
+    class="notice"
+    role="note"
+  >
+    {{ t('modules.curationOff') }}
+    <RouterLink :to="{ name: 'settings', params: { topicId } }">{{
+      t('modules.turnOn')
+    }}</RouterLink>
+  </p>
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>

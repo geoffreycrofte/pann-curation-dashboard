@@ -77,9 +77,10 @@ const { mutate: send, isLoading: sending } = useMutation({
           ? t('newsletter.nextAuto', { date: formatDate(state.next_at) })
           : t('newsletter.manual')
       }}
-      <RouterLink :to="{ name: 'settings', params: { topicId } }">{{
-        t('newsletter.settingsLink')
-      }}</RouterLink>
+      <RouterLink
+        :to="{ name: 'curation-settings', params: { topicId }, query: { tab: 'newsletter' } }"
+        >{{ t('newsletter.settingsLink') }}</RouterLink
+      >
     </p>
     <p role="status" :class="{ error: isError }">{{ message }}</p>
 

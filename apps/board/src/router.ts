@@ -1,6 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { initSession, session } from './lib/session'
 
+/** Tabs of the curation settings page (see SettingsView). */
+const CURATION_SETTINGS_TABS: readonly string[] = [
+  'kinds',
+  'collection',
+  'triage',
+  'drafting',
+  'diffusion',
+  'newsletter',
+  'feed',
+]
+
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -69,10 +80,22 @@ export const router = createRouter({
       props: true,
     },
     {
+      // Settings of the topic itself, shared by its tools: general, product, budget.
       path: '/t/:topicId/settings',
       name: 'settings',
       component: () => import('./views/SettingsView.vue'),
-      props: true,
+      props: (route) => ({ topicId: route.params.topicId, scope: 'topic' }),
+      // Older links to a curation tab (settings?tab=collection…) land on its new page.
+      beforeEnter: (to) =>
+        typeof to.query.tab === 'string' && CURATION_SETTINGS_TABS.includes(to.query.tab)
+          ? { name: 'curation-settings', params: to.params, query: to.query }
+          : true,
+    },
+    {
+      path: '/t/:topicId/curation/settings',
+      name: 'curation-settings',
+      component: () => import('./views/SettingsView.vue'),
+      props: (route) => ({ topicId: route.params.topicId, scope: 'curation' }),
     },
   ],
 })
