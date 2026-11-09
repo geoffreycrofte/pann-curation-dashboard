@@ -32,15 +32,26 @@ function apply() {
   else delete document.documentElement.dataset.theme
 }
 
-/** Swaps to the other theme and remembers the choice on this device. */
-export function toggleTheme() {
-  chosen.value = isDark() ? 'light' : 'dark'
+/** The theme picked by the person, or null when it follows the system. */
+export function chosenTheme(): Theme | null {
+  return chosen.value
+}
+
+/** Picks a theme (null: follow the system) and remembers it on this device. */
+export function setTheme(theme: Theme | null) {
+  chosen.value = theme
   apply()
   try {
-    localStorage.setItem(STORAGE_KEY, chosen.value)
+    if (theme) localStorage.setItem(STORAGE_KEY, theme)
+    else localStorage.removeItem(STORAGE_KEY)
   } catch {
     // storage unavailable: the choice lasts until the page is reloaded
   }
+}
+
+/** Swaps to the other theme. */
+export function toggleTheme() {
+  setTheme(isDark() ? 'light' : 'dark')
 }
 
 apply()
