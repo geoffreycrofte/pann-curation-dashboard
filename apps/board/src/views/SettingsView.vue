@@ -112,7 +112,7 @@ const { mutate, isLoading } = useMutation({
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
   <TabsRoot v-else-if="topic && collection && ai" v-model="tab" activation-mode="manual">
-    <TabsList :aria-label="t('settings.tabsLabel')" class="subtabs">
+    <TabsList :aria-label="t('settings.tabsLabel')" v-scroll-active class="subtabs tab-row">
       <TabsTrigger v-for="name in tabs" :key="name" :value="name" class="subtab">
         {{ t(`settings.tabs.${name}`) }}
       </TabsTrigger>
@@ -311,7 +311,7 @@ textarea.field {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
   gap: var(--space-4);
   margin-top: var(--space-3);
 }

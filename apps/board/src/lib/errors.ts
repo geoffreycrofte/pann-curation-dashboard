@@ -2,7 +2,12 @@ import { DRAFT_CHANNELS, LANGS, parseErrorCode, PROVIDERS, type Provider } from 
 
 type Translate = (key: string, params?: Record<string, unknown>) => string
 
-const OTHER_CODES = ['feed_exists', 'owner_only'] as const
+const OTHER_CODES = [
+  'feed_exists',
+  'owner_only',
+  'workspace_has_members',
+  'confirmation_mismatch',
+] as const
 
 export interface DescribedError {
   text: string

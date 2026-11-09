@@ -6,6 +6,11 @@ export const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: () => import('./views/HomeView.vue') },
     {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('./views/ProfileView.vue'),
+    },
+    {
       path: '/connections',
       name: 'connections',
       component: () => import('./views/ConnectionsView.vue'),

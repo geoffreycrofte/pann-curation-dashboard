@@ -34,7 +34,7 @@ watch(topics, (list) => {
 <style scoped>
 .topics {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
   gap: var(--space-4);
   margin: 0;
   padding: 0;

@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import PannMark from '../components/PannMark.vue'
 import LangSwitcher from '../components/LangSwitcher.vue'
 import { supabase } from '../lib/supabase'
 
 const { t } = useI18n()
+const route = useRoute()
+/** Arrived here after deleting the account (Profile page). */
+const deleted = route.query.deleted === '1'
 const email = ref('')
 const state = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
 const errorMessage = ref('')
@@ -38,6 +42,7 @@ async function submit() {
       <div class="panel-inner">
         <LangSwitcher class="lang" />
         <h1 id="login-title" tabindex="-1">{{ t('auth.title') }}</h1>
+        <p v-if="deleted" class="notice" role="status">{{ t('auth.accountDeleted') }}</p>
         <p class="hint">{{ t('auth.intro') }}</p>
         <form class="form" @submit.prevent="submit">
           <div class="form-row">

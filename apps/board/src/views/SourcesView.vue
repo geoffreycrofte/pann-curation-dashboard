@@ -220,7 +220,7 @@ function feedUrl(source: Source): string | undefined {
   <TopicNav :topic-id="topicId" />
 
   <TabsRoot v-model="tab" activation-mode="manual">
-    <TabsList :aria-label="t('sources.tabsLabel')" class="subtabs">
+    <TabsList :aria-label="t('sources.tabsLabel')" v-scroll-active class="subtabs tab-row">
       <TabsTrigger value="sources" class="subtab">{{ t('sources.tabs.sources') }}</TabsTrigger>
       <TabsTrigger value="exclusions" class="subtab">
         {{ t('sources.tabs.exclusions') }}

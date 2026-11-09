@@ -37,7 +37,7 @@ const links = computed(() =>
 
 <template>
   <nav :aria-label="t('topicNav.label')" class="topic-nav">
-    <ul>
+    <ul v-scroll-active class="tab-row">
       <li v-for="link in links" :key="link.name">
         <!-- RouterLink sets aria-current="page" on the exact active route. -->
         <RouterLink :to="{ name: link.name, params: { topicId } }" exact-active-class="active">
@@ -52,7 +52,6 @@ const links = computed(() =>
 /* Segmented control over the full width: the current section is filled in gold (and bold). */
 .topic-nav ul {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-1);
   margin: 0 0 var(--space-6);
   padding: var(--space-1);
@@ -64,10 +63,11 @@ const links = computed(() =>
 }
 
 .topic-nav li {
-  flex: 1 1 auto;
+  flex: 1 0 auto;
 }
 
 .topic-nav a {
+  white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;

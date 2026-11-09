@@ -34,6 +34,8 @@ export type JobMessage =
   | { type: 'refresh-credential'; workspaceId: string; provider: 'zernio' | 'brevo' }
   /** Newsletter sent from the board, for one topic (all its languages, or one). */
   | { type: 'send-digest'; topicId: string; lang?: Lang }
+  /** Account deletion, asked from the Profile page by the user themself. */
+  | { type: 'delete-account'; userId: string }
   /** AI rewrite of a summary or post, asked from the item page (table rewrites). */
   | { type: 'rewrite'; rewriteId: string }
 
@@ -93,6 +95,20 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     case 'refresh-credential': {
       if (message.provider === 'zernio') await refreshZernioAccounts(db, message.workspaceId)
       else await refreshBrevoAccount(db, message.workspaceId)
+      return
+    }
+    case 'delete-account': {
+      // Data first (idempotent), then the auth user: a retry finishes the job.
+      const { data, error } = await db.rpc('delete_account_data', { p_user_id: message.userId })
+      if (error?.message.includes('workspace_has_members')) {
+        // A member joined since the request: nothing is deleted.
+        console.warn(JSON.stringify({ job: 'delete-account', refused: 'workspace_has_members' }))
+        return
+      }
+      if (error) throw error
+      const { error: authError } = await db.auth.admin.deleteUser(message.userId)
+      if (authError) throw authError
+      console.log(JSON.stringify({ job: 'delete-account', result: data }))
       return
     }
     case 'rewrite': {

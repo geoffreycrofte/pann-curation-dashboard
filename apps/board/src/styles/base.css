@@ -22,6 +22,11 @@ body {
   margin: 0;
 }
 
+/* Full-screen menu open on a small screen: the page behind does not scroll. */
+html.menu-open {
+  overflow: hidden;
+}
+
 h1,
 h2,
 h3 {
@@ -49,6 +54,12 @@ h3 {
 
 p {
   text-wrap: pretty;
+}
+
+/* Addresses, keys and handles break rather than push the page sideways. */
+code,
+.hint {
+  overflow-wrap: anywhere;
 }
 
 a {
@@ -167,7 +178,10 @@ h1[tabindex='-1']:focus {
 
 .form-row {
   display: grid;
+  /* minmax(0, …): a long option or value never widens the form past the screen. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-1);
+  min-width: 0;
 }
 
 .form-row > label,
@@ -193,6 +207,8 @@ h1[tabindex='-1']:focus {
 }
 
 .field {
+  max-width: 100%;
+  min-width: 0;
   min-height: 2.75rem;
   padding: var(--space-2) var(--space-3);
   border: 1.5px solid var(--color-border);
@@ -236,6 +252,8 @@ select.field {
 }
 
 fieldset {
+  /* Fieldsets refuse to shrink below their content by default (min-content). */
+  min-width: 0;
   margin: 0;
   padding: var(--space-5) var(--space-6) var(--space-6);
   border: 1px solid var(--color-border-subtle);
@@ -397,13 +415,33 @@ legend {
  * ------------------------------------------------------------------------- */
 .subtabs {
   display: flex;
-  flex-wrap: wrap;
   gap: 0 var(--space-1);
   margin-bottom: var(--space-6);
   border-bottom: 1px solid var(--color-border);
 }
 
+/* Every row of tabs stays on one line and scrolls sideways when it does not fit
+ * (v-scroll-active keeps the current tab in view). Room is left for focus rings. */
+.tab-row {
+  /* Positioned: hidden helper texts (absolute) stay inside the scrolling row. */
+  position: relative;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--space-4);
+  scrollbar-width: thin;
+}
+
+.tab-row > * {
+  flex: none;
+}
+
+/* Inside a scrolling row, an outer focus ring would be cut: draw it inside. */
+.tab-row :focus-visible {
+  outline-offset: -3px;
+}
+
 .subtab {
+  white-space: nowrap;
   min-height: 2.75rem;
   margin-bottom: -1px;
   padding: var(--space-2) var(--space-4);
