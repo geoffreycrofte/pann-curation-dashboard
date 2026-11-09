@@ -15,6 +15,7 @@ export default {
     never: 'Jamais',
   },
   auth: {
+    accountDeleted: 'Votre compte a été supprimé. Merci d’avoir utilisé Pann.',
     pitch: 'Beaucoup de collecte, peu de sélection : ne gardez que l’essentiel de votre veille.',
     intro: 'Recevez un lien de connexion par e-mail, sans mot de passe.',
     title: 'Connexion',
@@ -54,6 +55,22 @@ export default {
     workspace: 'Espace de travail',
     workspaceHint:
       'Les clés des services (Connexions) et les thèmes appartiennent à l’espace de travail. Seul son propriétaire gère les clés.',
+    workspaceName: 'Nom de l’espace de travail',
+    rename: 'Renommer',
+    workspaceRenamed: 'Espace de travail renommé : {name}.',
+    deleteTitle: 'Supprimer mon compte',
+    deleteIntro: 'La suppression est définitive et ne peut pas être annulée.',
+    deleteWorkspaces:
+      'Les espaces de travail dont vous êtes le seul membre sont supprimés avec tout leur contenu : thèmes, sources, éléments triés, résumés, posts, newsletters, dépenses et clés des services.',
+    deleteShared:
+      'Dans les espaces partagés avec d’autres personnes, seul votre accès est retiré. Si vous êtes propriétaire d’un espace utilisé par d’autres, la suppression est refusée.',
+    deleteSent: 'Ce qui a déjà été publié sur les réseaux ou envoyé par newsletter reste en place.',
+    deleteButton: 'Supprimer mon compte',
+    deleteConfirmTitle: 'Supprimer définitivement votre compte ?',
+    deleteConfirmText:
+      'Vous serez déconnecté tout de suite, et la suppression se termine dans la minute. Pour confirmer, saisissez l’adresse e-mail du compte.',
+    deleteConfirmLabel: 'Adresse e-mail du compte ({email})',
+    deleting: 'Suppression…',
     roles: { owner: 'Propriétaire', editor: 'Éditeur' },
     security: 'Connexion et sécurité',
     magicLink:
@@ -259,7 +276,10 @@ export default {
     invalid_config: 'Configuration de la source invalide.',
     unexpected: 'Erreur inattendue.',
     feed_exists: 'Ce flux est déjà une source de ce thème.',
-    owner_only: 'Seul le propriétaire du workspace peut gérer les clés.',
+    owner_only: 'Seul le propriétaire de l’espace de travail peut faire cette modification.',
+    workspace_has_members:
+      'Vous êtes propriétaire d’un espace de travail que d’autres personnes utilisent : retirez-les d’abord, ou demandez-leur de récupérer leurs données.',
+    confirmation_mismatch: 'L’adresse saisie ne correspond pas à celle du compte.',
     fixInConnections: 'Configurer dans Connexions',
     providerErrorNamed: 'Le service {provider} n’a pas pu répondre. Nouvel essai automatique.',
     account_disconnected: 'Le compte {channel} doit être reconnecté dans Zernio.',

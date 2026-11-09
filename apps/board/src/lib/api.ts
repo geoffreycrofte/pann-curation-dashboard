@@ -184,6 +184,11 @@ export interface TopicUsage {
 
 export const api = {
   me: () => request<Me>('/me'),
+  renameWorkspace: (workspaceId: string, name: string) =>
+    request<{ id: string; name: string }>(`/workspaces/${workspaceId}`, json('PATCH', { name })),
+  /** Queues the deletion of the account; the email typed by the person confirms it. */
+  deleteAccount: (confirmEmail: string) =>
+    request<void>('/account', json('DELETE', { confirm_email: confirmEmail })),
   credentials: (workspaceId: string) =>
     request<WorkspaceCredential[]>(`/workspaces/${workspaceId}/credentials`),
   setCredential: (workspaceId: string, provider: Provider, secret: string, instance?: string) =>

@@ -11,10 +11,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from 'reka-ui'
-import { computed, ref, useId } from 'vue'
+import { useMutation, useQueryCache } from '@pinia/colada'
+import { computed, reactive, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { setLang } from '../i18n'
+import { api } from '../lib/api'
+import { describeError } from '../lib/errors'
 import { session } from '../lib/session'
 import { supabase } from '../lib/supabase'
 import { chosenTheme, setTheme, type Theme } from '../lib/theme'
@@ -24,6 +27,7 @@ import { useWorkspace } from '../lib/workspace'
 const { t, locale } = useI18n()
 const id = useId()
 const router = useRouter()
+const queryCache = useQueryCache()
 const { data: me } = useWorkspace()
 
 const user = computed(() => session.value?.user)
@@ -66,6 +70,51 @@ function pickTheme(value: Theme | 'system') {
   theme.value = value
   setTheme(value === 'system' ? null : value)
 }
+
+// ---------------------------------------------------------------------------
+// Workspace: its owner renames it
+// ---------------------------------------------------------------------------
+const names = reactive<Record<string, string>>({})
+const workspaceMessage = ref('')
+const workspaceError = ref(false)
+const { mutate: rename, isLoading: renaming } = useMutation({
+  mutation: (workspaceId: string) => api.renameWorkspace(workspaceId, names[workspaceId] ?? ''),
+  async onSuccess(workspace) {
+    workspaceError.value = false
+    workspaceMessage.value = t('profile.workspaceRenamed', { name: workspace.name })
+    await queryCache.invalidateQueries({ key: ['me'] })
+  },
+  onError(err) {
+    workspaceError.value = true
+    workspaceMessage.value = describeError(err.message, t).text
+  },
+})
+function nameOf(workspaceId: string, current: string) {
+  names[workspaceId] ??= current
+  return names[workspaceId]
+}
+
+// ---------------------------------------------------------------------------
+// Account deletion: confirmed by typing the email address of the account
+// ---------------------------------------------------------------------------
+const confirmEmail = ref('')
+const deleteMessage = ref('')
+const confirmed = computed(
+  () =>
+    !!user.value?.email &&
+    confirmEmail.value.trim().toLowerCase() === user.value.email.toLowerCase(),
+)
+const { mutate: deleteAccount, isLoading: deleting } = useMutation({
+  mutation: () => api.deleteAccount(confirmEmail.value),
+  async onSuccess() {
+    // The job deletes the account: this device signs out right away.
+    await supabase.auth.signOut({ scope: 'local' })
+    await router.push({ name: 'login', query: { deleted: '1' } })
+  },
+  onError(err) {
+    deleteMessage.value = describeError(err.message, t).text
+  },
+})
 
 // ---------------------------------------------------------------------------
 // Sessions
@@ -157,16 +206,40 @@ async function signOutEverywhere() {
 
     <section class="card section" :aria-labelledby="`${id}-workspace`">
       <h2 :id="`${id}-workspace`">{{ t('profile.workspace') }}</h2>
-      <dl class="facts">
-        <template v-for="membership in workspaces" :key="membership.workspace.id">
-          <dt>{{ membership.workspace.name }}</dt>
-          <dd>
-            <span class="badge" :data-tone="membership.role === 'owner' ? 'accent' : undefined">
-              {{ t(`profile.roles.${membership.role}`) }}
-            </span>
-          </dd>
-        </template>
-      </dl>
+      <div v-for="membership in workspaces" :key="membership.workspace.id" class="workspace">
+        <form
+          v-if="membership.role === 'owner'"
+          class="rename"
+          @submit.prevent="rename(membership.workspace.id)"
+        >
+          <div class="form-row">
+            <label :for="`${id}-ws-${membership.workspace.id}`">
+              {{ t('profile.workspaceName') }}
+            </label>
+            <div class="inline">
+              <input
+                :id="`${id}-ws-${membership.workspace.id}`"
+                :value="nameOf(membership.workspace.id, membership.workspace.name)"
+                class="field"
+                type="text"
+                required
+                maxlength="100"
+                @input="names[membership.workspace.id] = ($event.target as HTMLInputElement).value"
+              />
+              <button type="submit" class="button" :disabled="renaming">
+                {{ t('profile.rename') }}
+              </button>
+            </div>
+          </div>
+        </form>
+        <p v-else class="workspace-name">{{ membership.workspace.name }}</p>
+        <p>
+          <span class="badge" :data-tone="membership.role === 'owner' ? 'accent' : undefined">
+            {{ t(`profile.roles.${membership.role}`) }}
+          </span>
+        </p>
+      </div>
+      <p role="status" :class="{ error: workspaceError }">{{ workspaceMessage }}</p>
       <p class="hint">{{ t('profile.workspaceHint') }}</p>
     </section>
 
@@ -203,6 +276,64 @@ async function signOutEverywhere() {
                   {{ t('profile.signOutEverywhere') }}
                 </AlertDialogAction>
               </div>
+            </AlertDialogContent>
+          </AlertDialogPortal>
+        </AlertDialogRoot>
+      </div>
+    </section>
+
+    <section class="card section danger" :aria-labelledby="`${id}-delete`">
+      <h2 :id="`${id}-delete`">{{ t('profile.deleteTitle') }}</h2>
+      <p>{{ t('profile.deleteIntro') }}</p>
+      <ul class="consequences">
+        <li>{{ t('profile.deleteWorkspaces') }}</li>
+        <li>{{ t('profile.deleteShared') }}</li>
+        <li>{{ t('profile.deleteSent') }}</li>
+      </ul>
+      <div>
+        <AlertDialogRoot
+          @update:open="(open) => open || ((confirmEmail = ''), (deleteMessage = ''))"
+        >
+          <AlertDialogTrigger as-child>
+            <button type="button" class="button" data-variant="danger">
+              {{ t('profile.deleteButton') }}
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogPortal>
+            <AlertDialogOverlay class="dialog-overlay" />
+            <AlertDialogContent class="dialog">
+              <AlertDialogTitle class="dialog-title">{{
+                t('profile.deleteConfirmTitle')
+              }}</AlertDialogTitle>
+              <AlertDialogDescription>{{ t('profile.deleteConfirmText') }}</AlertDialogDescription>
+              <form class="form confirm" @submit.prevent="confirmed && deleteAccount()">
+                <div class="form-row">
+                  <label :for="`${id}-confirm`">
+                    {{ t('profile.deleteConfirmLabel', { email: user?.email }) }}
+                  </label>
+                  <input
+                    :id="`${id}-confirm`"
+                    v-model="confirmEmail"
+                    class="field"
+                    type="email"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  />
+                </div>
+                <p v-if="deleteMessage" role="alert" class="error">{{ deleteMessage }}</p>
+                <div class="dialog-actions">
+                  <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                  <button
+                    type="submit"
+                    class="button"
+                    data-variant="danger"
+                    :disabled="!confirmed || deleting"
+                  >
+                    {{ deleting ? t('profile.deleting') : t('profile.deleteButton') }}
+                  </button>
+                </div>
+              </form>
             </AlertDialogContent>
           </AlertDialogPortal>
         </AlertDialogRoot>
@@ -250,6 +381,45 @@ async function signOutEverywhere() {
   padding: 0;
   font-family: inherit;
   font-size: 1rem;
+}
+
+.workspace {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.workspace-name {
+  font-weight: 650;
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.inline .field {
+  flex: 1 1 14rem;
+}
+
+/* Account deletion: a danger edge, the text carries the warning. */
+.danger {
+  border-inline-start: 6px solid var(--color-danger);
+}
+
+.consequences {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding-inline-start: var(--space-6);
+}
+
+.confirm {
+  margin-top: var(--space-4);
+}
+
+.confirm .error {
+  margin: 0;
 }
 
 .facts {

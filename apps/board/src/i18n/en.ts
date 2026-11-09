@@ -17,6 +17,7 @@ export default {
     never: 'Never',
   },
   auth: {
+    accountDeleted: 'Your account was deleted. Thank you for using Pann.',
     pitch: 'Collect a lot, keep little: only the essentials of your watch.',
     intro: 'Get a sign-in link by email, no password needed.',
     title: 'Sign in',
@@ -56,6 +57,22 @@ export default {
     workspace: 'Workspace',
     workspaceHint:
       'Service keys (Connections) and topics belong to the workspace. Only its owner manages the keys.',
+    workspaceName: 'Workspace name',
+    rename: 'Rename',
+    workspaceRenamed: 'Workspace renamed: {name}.',
+    deleteTitle: 'Delete my account',
+    deleteIntro: 'Deletion is final and cannot be undone.',
+    deleteWorkspaces:
+      'Workspaces where you are the only member are deleted with all their content: topics, sources, sorted items, summaries, posts, newsletters, spending and service keys.',
+    deleteShared:
+      'In workspaces shared with other people, only your access is removed. If you own a workspace other people use, the deletion is refused.',
+    deleteSent: 'What was already posted on social networks or sent by newsletter stays.',
+    deleteButton: 'Delete my account',
+    deleteConfirmTitle: 'Delete your account for good?',
+    deleteConfirmText:
+      'You will be signed out right away, and the deletion completes within a minute. To confirm, type the email address of the account.',
+    deleteConfirmLabel: 'Email address of the account ({email})',
+    deleting: 'Deleting…',
     roles: { owner: 'Owner', editor: 'Editor' },
     security: 'Sign-in and security',
     magicLink: 'Pann has no password: you sign in with a single-use link sent by email.',
@@ -257,7 +274,10 @@ export default {
     invalid_config: 'Invalid source configuration.',
     unexpected: 'Unexpected error.',
     feed_exists: 'This feed is already a source of this topic.',
-    owner_only: 'Only the workspace owner can manage keys.',
+    owner_only: 'Only the owner of the workspace can make this change.',
+    workspace_has_members:
+      'You own a workspace other people use: remove them first, or ask them to keep their data elsewhere.',
+    confirmation_mismatch: 'The address typed does not match the account’s.',
     fixInConnections: 'Set up in Connections',
     providerErrorNamed: '{provider} did not respond. It will be retried automatically.',
     account_disconnected: 'The {channel} account must be reconnected in Zernio.',
