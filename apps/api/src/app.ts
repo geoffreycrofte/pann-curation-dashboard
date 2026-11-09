@@ -2,12 +2,14 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from './env'
 import { requireUser } from './middleware/auth'
+import { account } from './routes/account'
 import { credentials } from './routes/credentials'
 import { me } from './routes/me'
 import { sources } from './routes/sources'
 import { diffusion } from './routes/diffusion'
 import { newsletter } from './routes/newsletter'
 import { topics } from './routes/topics'
+import { workspaces } from './routes/workspaces'
 
 export const app = new Hono<AppEnv>().basePath('/api')
 
@@ -15,6 +17,8 @@ app.get('/health', (c) => c.json({ ok: true }))
 
 app.use('/*', async (c, next) => (c.req.path === '/api/health' ? next() : requireUser(c, next)))
 app.route('/me', me)
+app.route('/account', account)
+app.route('/workspaces', workspaces)
 app.route('/topics', topics)
 app.route('/topics', diffusion)
 app.route('/topics', newsletter)
