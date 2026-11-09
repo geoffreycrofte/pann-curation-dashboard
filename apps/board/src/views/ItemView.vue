@@ -504,9 +504,10 @@ async function savePost(postId: string, text: string) {
       <p v-if="!canDiffuse">{{ t('diffusion.notReady') }}</p>
       <p v-else-if="topic && !hasChannels">
         {{ t('diffusion.noAccount') }}
-        <RouterLink :to="{ name: 'settings', params: { topicId } }">{{
-          t('diffusion.configure')
-        }}</RouterLink>
+        <RouterLink
+          :to="{ name: 'curation-settings', params: { topicId }, query: { tab: 'diffusion' } }"
+          >{{ t('diffusion.configure') }}</RouterLink
+        >
       </p>
       <div v-else class="row">
         <button

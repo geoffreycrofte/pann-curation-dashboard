@@ -237,7 +237,7 @@ function feedUrl(source: Source): string | undefined {
         </p>
         <p>{{ t('sources.newTopicText') }}</p>
         <p>
-          <RouterLink :to="{ name: 'settings', params: { topicId } }">
+          <RouterLink :to="{ name: 'curation-settings', params: { topicId } }">
             {{ t('sources.newTopicSettings') }}
           </RouterLink>
         </p>

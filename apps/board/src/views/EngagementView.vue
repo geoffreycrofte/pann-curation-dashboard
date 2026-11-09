@@ -8,7 +8,6 @@ import { useRoute, useRouter } from 'vue-router'
 import ConversationList from '../components/ConversationList.vue'
 import EngagementSettings from '../components/EngagementSettings.vue'
 import EngagementSources from '../components/EngagementSources.vue'
-import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
 import { useTopicName } from '../lib/topic-name'
 
@@ -61,7 +60,6 @@ const announcement = ref('')
 
 <template>
   <h1 tabindex="-1">{{ t('engagement.heading', { topic: topicName }) }}</h1>
-  <TopicNav :topic-id="topicId" />
 
   <p v-if="engagementOff" class="notice" role="note">
     {{ t('engagement.off') }}
