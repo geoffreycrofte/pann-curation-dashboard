@@ -27,6 +27,11 @@ export default {
     signOut: 'Se déconnecter',
   },
   nav: {
+    accountMenu: 'Compte et préférences',
+    curation: 'Curation',
+    engagement: 'Engagement',
+    topicSettings: 'Réglages du thème',
+    topicSections: 'Outils de {topic}',
     signedInAs: 'Connecté en tant que',
     close: 'Fermer',
     settings: 'Réglages',
@@ -507,8 +512,7 @@ export default {
       'Ajoutée chaque fois que le produit est cité dans une réponse, pour que votre lien avec lui soit clair.',
   },
   topicNav: {
-    engagement: 'Engagement',
-    label: 'Sections du thème',
+    label: 'Sections de la curation',
     board: 'Tri',
     sources: 'Sources',
     settings: 'Réglages',
@@ -884,7 +888,8 @@ export default {
     threshold: 'Seuil de pertinence (0 à 100)',
     thresholdHint:
       'Les éléments notés sous ce seuil sont archivés automatiquement : ils restent consultables dans l’onglet « Archivés ».',
-    heading: 'Réglages : {topic}',
+    heading: 'Réglages du thème : {topic}',
+    curationHeading: 'Réglages de la curation : {topic}',
     title: 'Réglages',
     collection: 'Fréquence de collecte par type de contenu',
     collectionHint:

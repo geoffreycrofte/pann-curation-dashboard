@@ -3,12 +3,10 @@ import { useQuery } from '@pinia/colada'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import LangSwitcher from './components/LangSwitcher.vue'
+import AccountMenu from './components/AccountMenu.vue'
 import PannMark from './components/PannMark.vue'
-import ThemeToggle from './components/ThemeToggle.vue'
 import { api } from './lib/api'
 import { session } from './lib/session'
-import { supabase } from './lib/supabase'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -18,6 +16,32 @@ const { data: topics } = useQuery({
   key: ['topics'],
   query: api.topics,
   enabled: () => !!session.value,
+})
+
+// The current topic shows its tools under its name: curation, engagement (the ones
+// that are on) and the settings of the topic. Same query as its pages: shared cache.
+const currentTopicId = computed(() =>
+  typeof route.params.topicId === 'string' ? route.params.topicId : undefined,
+)
+const { data: currentTopic } = useQuery({
+  key: () => ['topic', currentTopicId.value ?? ''],
+  query: () => api.topic(currentTopicId.value!),
+  enabled: () => !!session.value && !!currentTopicId.value,
+})
+const CURATION_ROUTES = ['board', 'item', 'diffusion', 'newsletter', 'sources', 'curation-settings']
+const topicSections = computed(() => {
+  // Before the topic is loaded: its defaults (curation on, engagement off).
+  const modules = currentTopic.value?.config.modules ?? { curation: true, engagement: false }
+  const name = String(route.name ?? '')
+  return [
+    ...(modules.curation
+      ? [{ key: 'curation', to: 'board', active: CURATION_ROUTES.includes(name) }]
+      : []),
+    ...(modules.engagement
+      ? [{ key: 'engagement', to: 'engagement', active: name === 'engagement' }]
+      : []),
+    { key: 'topicSettings', to: 'settings', active: name === 'settings' },
+  ]
 })
 
 // Small screens: the sidebar becomes a full-screen menu under the top bar. While it is
@@ -62,19 +86,6 @@ watch(
     menuOpen.value = false
   },
 )
-
-/** Name set in the profile, else the email. */
-const displayName = computed(
-  () =>
-    (session.value?.user.user_metadata?.full_name as string | undefined)?.trim() ||
-    session.value?.user.email ||
-    '',
-)
-
-async function signOut() {
-  await supabase.auth.signOut()
-  await router.push({ name: 'login' })
-}
 </script>
 
 <template>
@@ -121,14 +132,37 @@ async function signOut() {
             <p id="nav-topics" class="nav-label">{{ t('nav.topics') }}</p>
             <ul aria-labelledby="nav-topics">
               <li v-for="topic in topics" :key="topic.id">
+                <!-- The topic opens its first section; "true": a page of it is open. -->
                 <RouterLink
-                  :to="{ name: 'board', params: { topicId: topic.id } }"
+                  :to="{
+                    name: topic.id === currentTopicId ? topicSections[0]!.to : 'board',
+                    params: { topicId: topic.id },
+                  }"
                   class="nav-link"
-                  :aria-current="route.params.topicId === topic.id ? 'page' : undefined"
+                  :aria-current="topic.id === currentTopicId ? 'true' : undefined"
                 >
                   <span class="nav-dot" aria-hidden="true"></span>
                   {{ locale === 'fr' ? topic.name_fr : topic.name_en }}
                 </RouterLink>
+                <ul
+                  v-if="topic.id === currentTopicId"
+                  class="nav-children"
+                  :aria-label="
+                    t('nav.topicSections', {
+                      topic: locale === 'fr' ? topic.name_fr : topic.name_en,
+                    })
+                  "
+                >
+                  <li v-for="section in topicSections" :key="section.key">
+                    <RouterLink
+                      :to="{ name: section.to, params: { topicId: topic.id } }"
+                      class="nav-child"
+                      :aria-current="section.active ? 'page' : undefined"
+                    >
+                      {{ t(`nav.${section.key}`) }}
+                    </RouterLink>
+                  </li>
+                </ul>
               </li>
               <li>
                 <RouterLink :to="{ name: 'new-topic' }" class="nav-link nav-add">
@@ -155,18 +189,7 @@ async function signOut() {
           </nav>
 
           <div class="sidebar-bottom">
-            <RouterLink :to="{ name: 'profile' }" class="account">
-              <span class="visually-hidden">{{ t('nav.signedInAs') }}</span>
-              <span class="account-name">{{ displayName }}</span>
-              <span v-if="displayName !== session.user.email" class="account-email">
-                {{ session.user.email }}
-              </span>
-            </RouterLink>
-            <ThemeToggle />
-            <LangSwitcher />
-            <button type="button" class="button sign-out" @click="signOut">
-              {{ t('auth.signOut') }}
-            </button>
+            <AccountMenu />
           </div>
         </div>
       </div>
@@ -331,77 +354,56 @@ nav ul {
   border-radius: 50%;
 }
 
-/* Current page: gold fill with ink text, plus the filled dot (not color alone). */
-.nav-link[aria-current='page'],
+/* Current page, or the topic a page belongs to: gold fill with ink text, plus the
+ * filled dot (not color alone). */
+.nav-link[aria-current],
 .nav-link.router-link-exact-active {
   background: var(--color-accent-fill);
   color: var(--color-on-accent);
 }
 
-.nav-link[aria-current='page'] .nav-dot,
-.nav-link.router-link-exact-active .nav-add:not(.router-link-exact-active) {
-  color: var(--color-on-ink-muted);
-}
-
-.nav-plus {
-  width: 0.5rem;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-}
-
-.nav-dot {
+.nav-link[aria-current] .nav-dot,
+.nav-link.router-link-exact-active .nav-dot {
   border-color: var(--color-on-accent);
   background: var(--color-on-accent);
+}
+
+/* Tools of the current topic, under its name. The current one: bold, with a gold bar
+ * (not color alone). */
+.nav-children {
+  display: grid;
+  gap: 0.125rem;
+  margin: var(--space-1) 0 var(--space-2);
+  padding: 0 0 0 calc(var(--space-3) + 0.25rem);
+  list-style: none;
+}
+
+.nav-child {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: var(--space-1) var(--space-3);
+  border-inline-start: 2px solid rgb(255 255 255 / 0.14);
+  color: var(--color-on-ink-muted);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nav-child:hover {
+  color: var(--color-on-ink);
+  background: rgb(255 255 255 / 0.06);
+}
+
+.nav-child[aria-current='page'] {
+  border-inline-start: 4px solid var(--color-accent-on-ink);
+  padding-inline-start: calc(var(--space-3) - 2px);
+  color: var(--color-on-ink);
+  font-weight: 750;
 }
 
 .sidebar-bottom {
   display: grid;
   gap: var(--space-3);
-}
-
-/* Who is signed in, linking to the profile. */
-.account {
-  display: grid;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius);
-  color: var(--color-on-ink);
-  text-decoration: none;
-}
-
-.account:hover {
-  background: rgb(255 255 255 / 0.06);
-}
-
-.account-name {
-  font-weight: 650;
-  overflow-wrap: anywhere;
-}
-
-.account-email {
-  font-size: 0.8125rem;
-  color: var(--color-on-ink-muted);
-  overflow-wrap: anywhere;
-}
-
-.sidebar-bottom :deep(.button) {
-  border-color: var(--color-on-ink-muted);
-  background: transparent;
-  color: var(--color-on-ink);
-}
-
-.sidebar-bottom :deep(.button[aria-pressed='true']) {
-  border-color: var(--color-accent-fill);
-  background: var(--color-accent-fill);
-  color: var(--color-on-accent);
-  box-shadow: none;
-}
-
-/* The theme itself shows the state: the toggle keeps the outline style when pressed. */
-.sidebar-bottom :deep(.theme-toggle[aria-pressed='true']) {
-  border-color: var(--color-on-ink-muted);
-  background: transparent;
-  color: var(--color-on-ink);
 }
 
 /* -------------------------------------------------------------------------
@@ -527,8 +529,12 @@ main.public {
 }
 
 @media (forced-colors: active) {
-  .nav-link[aria-current='page'] {
+  .nav-link[aria-current] {
     border: 2px solid Highlight;
+  }
+
+  .nav-child[aria-current='page'] {
+    border-inline-start-color: Highlight;
   }
 }
 </style>

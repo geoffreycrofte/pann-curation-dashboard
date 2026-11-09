@@ -29,6 +29,11 @@ export default {
     signOut: 'Sign out',
   },
   nav: {
+    accountMenu: 'Account and preferences',
+    curation: 'Curation',
+    engagement: 'Engagement',
+    topicSettings: 'Topic settings',
+    topicSections: 'Tools of {topic}',
     signedInAs: 'Signed in as',
     close: 'Close',
     settings: 'Settings',
@@ -501,8 +506,7 @@ export default {
       'Added each time the product is mentioned in a reply, so that your link with it is clear.',
   },
   topicNav: {
-    engagement: 'Engagement',
-    label: 'Topic sections',
+    label: 'Curation sections',
     board: 'Sorting',
     sources: 'Sources',
     settings: 'Settings',
@@ -868,7 +872,8 @@ export default {
     threshold: 'Relevance threshold (0 to 100)',
     thresholdHint:
       'Items scored below this threshold are archived automatically: they stay available in the “Archived” tab.',
-    heading: 'Settings: {topic}',
+    heading: 'Topic settings: {topic}',
+    curationHeading: 'Curation settings: {topic}',
     title: 'Settings',
     collection: 'Collection frequency by content type',
     collectionHint:
