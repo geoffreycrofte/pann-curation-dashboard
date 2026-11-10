@@ -16,7 +16,7 @@ export type ApiCall = (
 const INSTRUCTIONS = `Pann is a content-curation tool. Each topic (board) collects items from its sources; an AI triage scores them (0 to 100) and the user sorts them.
 Item statuses: new (to sort), validated (kept), rejected, archived (scored below the topic threshold), published (its posts went out).
 Validating an item queues the AI drafting of its summaries (French and English) and of its social posts (one per network and language). Drafting takes a few seconds to a minute: read the item again to see the drafts.
-Posts go out on the topic's slots once scheduled (schedule_item with when "next_slot"), or immediately with when "now". Publishing is public and cannot be undone from Pann: always ask the user before using "now".
+Posts go out on the topic's slots once scheduled (schedule_item with when "next_slot"), or immediately with when "now". A scheduled item no longer appears in list_items with status validated: get_queue lists it. Publishing is public and cannot be undone from Pann: always ask the user before using "now".
 Never invent an id: list topics, then items, to get them. Answers of the tools are JSON.`
 
 const json = (value: unknown) => ({

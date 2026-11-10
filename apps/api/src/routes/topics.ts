@@ -113,6 +113,17 @@ const manualItemBody = z.object({
   status: z.enum(['new', 'validated']).default('validated'),
 })
 
+/** Items of the topic with at least one post waiting for its slot (RLS applies). */
+async function scheduledItemIds(db: AppEnv['Variables']['db'], topicId: string) {
+  const { data, error } = await db
+    .from('posts')
+    .select('item_id')
+    .eq('topic_id', topicId)
+    .eq('status', 'scheduled')
+  if (error) throw error
+  return [...new Set(data.map((p: { item_id: string }) => p.item_id))]
+}
+
 export const topics = new Hono<AppEnv>()
   .get('/', async (c) => {
     const { data, error } = await c.var.db.from('topics').select(TOPIC_COLUMNS).order('created_at')
@@ -378,31 +389,28 @@ export const topics = new Hono<AppEnv>()
     const topicId = c.req.param('topicId')
     const module = TOPIC_MODULES.find((m) => m === c.req.query('module')) ?? 'curation'
     const statuses = ITEM_TOPIC_STATUSES.filter((s) => s !== 'archived')
+    // Scheduled: items with at least one post waiting for its slot (only curation publishes).
+    // They are counted there and no longer under "validated", as in the lists.
+    const scheduled = module === 'curation' ? await scheduledItemIds(c.var.db, topicId) : []
     const results = await Promise.all(
-      statuses.map((status) =>
-        c.var.db
+      statuses.map((status) => {
+        const request = c.var.db
           .from('item_topics')
           .select('item_id', { count: 'exact', head: true })
           .eq('topic_id', topicId)
           .eq('module', module)
-          .eq('status', status),
-      ),
+          .eq('status', status)
+        return status === 'validated' && scheduled.length
+          ? request.not('item_id', 'in', `(${scheduled.join(',')})`)
+          : request
+      }),
     )
     const counts: Partial<Record<ItemTopicStatus | 'scheduled', number>> = {}
     results.forEach(({ count, error }, index) => {
       if (error) throw error
       counts[statuses[index]!] = count ?? 0
     })
-    // Scheduled: items with at least one post waiting for its slot (only curation publishes).
-    if (module === 'curation') {
-      const { data: posts, error } = await c.var.db
-        .from('posts')
-        .select('item_id')
-        .eq('topic_id', topicId)
-        .eq('status', 'scheduled')
-      if (error) throw error
-      counts.scheduled = new Set(posts.map((p) => p.item_id)).size
-    }
+    if (module === 'curation') counts.scheduled = scheduled.length
     return c.json(counts)
   })
 
@@ -481,15 +489,22 @@ export const topics = new Hono<AppEnv>()
     if (!query.success) throw new HTTPException(400, { message: z.prettifyError(query.error) })
     const { status, limit, offset } = query.data
 
-    const { data, error } = await c.var.db
+    const topicId = c.req.param('topicId')
+    let request = c.var.db
       .from('item_topics')
       .select(
         'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, publish_at, kind, ' +
           'item:items (canonical_url, title, source_lang, origin, published_at, discovered_at)',
       )
-      .eq('topic_id', c.req.param('topicId'))
+      .eq('topic_id', topicId)
       .eq('module', 'curation')
       .eq('status', status)
+    // Like a kanban: a scheduled item leaves "validated" for the scheduled column.
+    if (status === 'validated') {
+      const scheduled = await scheduledItemIds(c.var.db, topicId)
+      if (scheduled.length) request = request.not('item_id', 'in', `(${scheduled.join(',')})`)
+    }
+    const { data, error } = await request
       .order('relevance_score', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
