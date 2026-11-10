@@ -219,6 +219,7 @@ const { mutate: schedule, isLoading: scheduling } = useMutation({
     }
     await queryCache.invalidateQueries({ key: key() })
     await queryCache.invalidateQueries({ key: ['queue', props.topicId] })
+    await queryCache.invalidateQueries({ key: ['items', props.topicId, 'counts'] })
   },
   onError: diffusionFailed,
 })
@@ -230,6 +231,7 @@ const { mutate: unschedule, isLoading: unscheduling } = useMutation({
     diffusionMessage.value = t('diffusion.unscheduled')
     await queryCache.invalidateQueries({ key: key() })
     await queryCache.invalidateQueries({ key: ['queue', props.topicId] })
+    await queryCache.invalidateQueries({ key: ['items', props.topicId, 'counts'] })
   },
   onError: diffusionFailed,
 })

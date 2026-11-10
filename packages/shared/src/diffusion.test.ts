@@ -6,6 +6,7 @@ import {
   dailySlots,
   nextFreeSlot,
   publishedLength,
+  startOfWeek,
   zonedTimeToUtc,
 } from './diffusion'
 import { parseTopicConfig } from './topic-config'
@@ -27,6 +28,15 @@ describe('zonedTimeToUtc', () => {
     expect(zonedTimeToUtc('2026-10-25', '16:00', 'Europe/Luxembourg').toISOString()).toBe(
       '2026-10-25T15:00:00.000Z',
     )
+  })
+})
+
+describe('startOfWeek', () => {
+  it('goes back to the Monday, across months and years', () => {
+    expect(startOfWeek('2026-11-10')).toBe('2026-11-09') // Tuesday
+    expect(startOfWeek('2026-11-09')).toBe('2026-11-09') // Monday
+    expect(startOfWeek('2026-11-15')).toBe('2026-11-09') // Sunday
+    expect(startOfWeek('2027-01-01')).toBe('2026-12-28') // Friday
   })
 })
 

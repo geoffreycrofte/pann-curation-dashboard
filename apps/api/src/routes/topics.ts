@@ -388,11 +388,21 @@ export const topics = new Hono<AppEnv>()
           .eq('status', status),
       ),
     )
-    const counts: Partial<Record<ItemTopicStatus, number>> = {}
+    const counts: Partial<Record<ItemTopicStatus | 'scheduled', number>> = {}
     results.forEach(({ count, error }, index) => {
       if (error) throw error
       counts[statuses[index]!] = count ?? 0
     })
+    // Scheduled: items with at least one post waiting for its slot (only curation publishes).
+    if (module === 'curation') {
+      const { data: posts, error } = await c.var.db
+        .from('posts')
+        .select('item_id')
+        .eq('topic_id', topicId)
+        .eq('status', 'scheduled')
+      if (error) throw error
+      counts.scheduled = new Set(posts.map((p) => p.item_id)).size
+    }
     return c.json(counts)
   })
 

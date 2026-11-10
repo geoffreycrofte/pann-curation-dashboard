@@ -232,7 +232,9 @@ export const api = {
   },
   /** Items per status; archived is not counted. */
   counts: (topicId: string, module: TopicModule = 'curation') =>
-    request<Partial<Record<ItemTopicStatus, number>>>(`/topics/${topicId}/counts?module=${module}`),
+    request<Partial<Record<ItemTopicStatus | 'scheduled', number>>>(
+      `/topics/${topicId}/counts?module=${module}`,
+    ),
   /** Conversations of the engagement tool with this status. */
   conversations: (topicId: string, status: ItemTopicStatus) =>
     request<Conversation[]>(`/topics/${topicId}/conversations?status=${status}`),
@@ -273,7 +275,11 @@ export const api = {
     ),
   unschedule: (topicId: string, itemId: string) =>
     request<void>(`/topics/${topicId}/items/${itemId}/schedule`, { method: 'DELETE' }),
-  queue: (topicId: string) => request<QueueItem[]>(`/topics/${topicId}/queue`),
+  /** From 14 days ago by default; `range` (ISO instants) narrows it to a period. */
+  queue: (topicId: string, range?: { from: string; to: string }) =>
+    request<QueueItem[]>(
+      `/topics/${topicId}/queue${range ? `?${new URLSearchParams(range)}` : ''}`,
+    ),
   newsletter: (topicId: string) => request<NewsletterState>(`/topics/${topicId}/newsletter`),
   sendNewsletter: (topicId: string, lang?: Lang) =>
     request<void>(`/topics/${topicId}/newsletter/send`, json('POST', { lang })),
