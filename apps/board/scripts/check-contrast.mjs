@@ -64,6 +64,19 @@ const PAIRS = [
   ['color-ai-violet', 'color-surface', 3],
   ['color-ai-teal', 'color-bg', 3],
   ['color-ai-teal', 'color-surface', 3],
+  // Marketing page.
+  ['color-text', 'color-paper', 4.5],
+  ['color-text-muted', 'color-paper', 4.5],
+  ['color-accent-text', 'color-paper', 4.5],
+  ['color-focus', 'color-paper', 3],
+  ['color-border', 'color-paper', 3],
+  ['color-on-olive', 'color-olive', 4.5],
+  ['color-on-olive-muted', 'color-olive', 4.5],
+  ['color-accent-fill', 'color-olive', 3],
+  ['color-focus-on-ink', 'color-olive', 3],
+  ['color-on-accent', 'color-accent-fill', 4.5],
+  ['color-ink', 'color-accent-fill', 4.5],
+  ['color-ink', 'color-plate', 4.5],
 ]
 
 let failed = false

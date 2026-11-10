@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useQuery } from '@pinia/colada'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AccountMenu from './components/AccountMenu.vue'
 import PannMark from './components/PannMark.vue'
 import { api } from './lib/api'
 import { session } from './lib/session'
+
+const LandingView = defineAsyncComponent(() => import('./views/LandingView.vue'))
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -199,6 +201,9 @@ watch(
       <RouterView />
     </main>
   </div>
+
+  <!-- Signed out on the home page: the marketing page brings its own header, main and footer. -->
+  <LandingView v-else-if="route.name === 'home'" />
 
   <main v-else id="main" tabindex="-1" class="public">
     <RouterView />

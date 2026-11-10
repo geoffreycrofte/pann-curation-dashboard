@@ -558,6 +558,114 @@ export default {
     postStatus: ' : {status}',
     view: 'Voir',
   },
+  landing: {
+    title: 'Pann : la veille lavée, les pépites gardées',
+    nav: 'Accueil',
+    how: 'Comment ça marche',
+    login: 'Se connecter',
+    otherLang: 'English',
+    otherLangLabel: 'Read this page in English',
+    hero: {
+      title: 'Lavez la veille, gardez les pépites.',
+      lead: 'Pann collecte l’actualité de votre sujet, l’IA écarte le sable, vous gardez l’or. Résumés, posts et newsletter sont prêts à partir, dans vos langues.',
+      invite: 'Sur invitation pour l’instant.',
+      alt: 'Un orpailleur souriant tient sa batée : au milieu du sable mouillé, une grosse pépite brille.',
+    },
+    problem: {
+      title: 'Des heures de veille pour une paillette',
+      text: 'Flux RSS, newsletters, réseaux, dépôts de code : l’information utile existe, noyée dans le reste. On lit tout, on garde peu, et le jour où il faudrait partager, on n’a plus le temps d’écrire.',
+      alt: 'L’orpailleur hausse les épaules devant une batée vide : un seul grain y reste.',
+    },
+    steps: {
+      title: 'De la rivière à la vitrine',
+      intro: 'Cinq étapes. Une seule vous revient vraiment : choisir.',
+      pann: 'Pann s’en charge',
+      you: 'Vous décidez',
+      collect: {
+        title: 'Collecter',
+        text: 'Flux RSS, recherche web, GitHub : chaque thème a ses sources, relevées à votre rythme. Un même lien n’arrive jamais deux fois.',
+        alt: 'Des goulottes en bois déversent sable et eau dans un grand sluice où brillent des paillettes.',
+      },
+      triage: {
+        title: 'Trier',
+        text: 'Pour chaque élément, l’IA donne une note de pertinence sur 100 et dit pourquoi, d’après les critères que vous avez écrits. Sous votre seuil, il est archivé sans vous déranger.',
+        alt: 'Un petit robot en laiton cueille les pépites retenues par les rainures du sluice pendant que le sable s’écoule.',
+      },
+      keep: {
+        title: 'Garder',
+        text: 'Vous validez ce qui mérite d’être partagé. Rien ne sort sans votre accord, et un site qui vous déçoit s’exclut en un clic.',
+        alt: 'L’orpailleur dépose une pépite dans un bocal déjà bien rempli ; les cailloux écartés font un petit tas.',
+      },
+      draft: {
+        title: 'Rédiger',
+        text: 'Dès la validation, Pann écrit les résumés et un post par réseau et par langue, en suivant vos règles de style. Raccourcir, allonger, changer de ton : la réécriture se demande en un clic.',
+        alt: 'Une pépite posée sur un coussin de velours bleu, avec une plume et une étiquette vierge.',
+      },
+      share: {
+        title: 'Diffuser',
+        text: 'Les posts partent sur LinkedIn, Bluesky et Mastodon aux créneaux que vous avez choisis. Le planning de la semaine montre ce qui est programmé et les créneaux encore libres.',
+        alt: 'Des avions en papier, chacun chargé d’une pépite, s’envolent d’un wagonnet plein d’or.',
+      },
+    },
+    newsletter: {
+      title: 'Le coffret de la semaine',
+      text: 'Les pépites validées remplissent la newsletter : un envoi par langue avec Brevo, le jour et à l’heure que vous fixez. Un flux RSS public les présente aussi sur votre site.',
+      alt: 'Une caisse en bois ouverte, pleine de pépites et nouée d’un ruban.',
+    },
+    engagement: {
+      title: 'Et quand on parle de votre sujet ailleurs ?',
+      text: 'Le module Engagement repère sur Hacker News et Bluesky les conversations où votre expertise aiderait vraiment. L’IA propose un angle et signale les risques. La réponse, c’est vous qui l’écrivez et la publiez : aucune ne part toute seule.',
+      points: [
+        'Répondre, surveiller ou passer : une décision pour chaque fil.',
+        'Un angle d’aide en une phrase, pas un argumentaire.',
+        'Les fils hostiles et les demandes de prestation sont écartés.',
+      ],
+      example: 'Exemple de conversation repérée',
+      exampleTitle: 'Ask HN: How do you audit accessibility without a full-time expert?',
+      examplePlatform: 'Hacker News',
+      exampleScore: 'Opportunité : 84 sur 100',
+      exampleDecision: 'Répondre',
+      exampleAngle:
+        'Proposer une méthode en trois temps : parcours critiques, clavier, lecteur d’écran.',
+    },
+    budget: {
+      title: 'Le poids du sable, le prix de l’or',
+      text: 'Chaque thème a son plafond mensuel. Vous branchez vos propres clés (Anthropic, Exa, Brevo, Zernio), gardées chiffrées dans votre espace, et vous voyez le coût de chaque opération. Arrivé au plafond, Pann s’arrête au lieu de dépenser.',
+      alt: 'Une balance : un tas de sable d’un côté, une seule pépite qui l’équilibre de l’autre.',
+    },
+    more: {
+      title: 'Aussi dans la batée',
+      items: [
+        {
+          term: 'Plusieurs thèmes',
+          desc: 'Un espace par sujet, avec ses sources, ses critères et son rythme.',
+        },
+        {
+          term: 'Bilingue',
+          desc: 'Chaque résumé et chaque post existe dans les langues de publication du thème.',
+        },
+        {
+          term: 'Piloté depuis Claude',
+          desc: 'Un serveur MCP pour trier, rédiger et programmer en conversation.',
+        },
+        {
+          term: 'Accessible',
+          desc: 'Une interface pensée pour le clavier, les lecteurs d’écran et les contrastes (WCAG 2.2 AA).',
+        },
+      ],
+    },
+    cta: {
+      title: 'Votre prochaine pépite est déjà dans la rivière.',
+      text: 'Pann est ouvert sur invitation. Déjà invité ? Connectez-vous avec votre adresse e-mail, sans mot de passe.',
+    },
+    footer: 'Pann, outil de curation de veille.',
+  },
+  notFound: {
+    title: 'Rien dans la batée',
+    text: 'Cette page n’existe pas ou a été déplacée.',
+    back: 'Retour à l’accueil',
+    alt: 'L’orpailleur hausse les épaules devant une batée vide : un seul grain y reste.',
+  },
   addItem: {
     toggle: 'Ajouter un lien',
     title: 'Ajouter un article ou un outil',

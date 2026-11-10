@@ -10,19 +10,19 @@
 :root {
   color-scheme: light dark;
 
-  --color-bg: light-dark(#f6f3ea, #0e0e0f);
+  --color-bg: light-dark(#f7f0e2, #0e0e0f);
   --color-surface: light-dark(#ffffff, #19191b);
-  --color-surface-2: light-dark(#fbf8f0, #212124);
+  --color-surface-2: light-dark(#fcf7ed, #212124);
   --color-text: light-dark(#18160f, #f4f1e8);
   --color-text-muted: light-dark(#5c574c, #b8b1a1);
   --color-border: light-dark(#8a8170, #85806f);
-  --color-border-subtle: light-dark(#e7e1d3, #2c2c30);
+  --color-border-subtle: light-dark(#eadfcb, #2c2c30);
   --color-accent-text: light-dark(#7a5800, #ffc72c);
   --color-accent-fill: #ffc72c;
   --color-accent-soft: light-dark(#fff1c2, #2e2610);
   --color-on-accent: #141414;
   --color-ink: light-dark(#141414, #050505);
-  --color-on-ink: light-dark(#f6f3ea, #f4f1e8);
+  --color-on-ink: light-dark(#f7f0e2, #f4f1e8);
   --color-on-ink-muted: light-dark(#b9b2a2, #b8b1a1);
   --color-accent-on-ink: #ffc72c;
   --color-success: light-dark(#1d6b34, #6fd08c);
@@ -31,9 +31,20 @@
   --color-ai-violet: light-dark(#6d4aff, #b3a1ff);
   --color-ai-teal: light-dark(#0b7f86, #4fd1c5);
   /* Badge backgrounds (with --color-text on them). */
-  --color-neutral-soft: light-dark(#ece6d8, #2b2b30);
+  --color-neutral-soft: light-dark(#efe4cf, #2b2b30);
   --color-success-soft: light-dark(#dcefe1, #133420);
   --color-danger-soft: light-dark(#fbe1dd, #3d1a16);
+  /*
+   * Illustration palette (marketing page): the sand, olive and wood of the 3D scenes.
+   * --color-paper is the background of the illustrations; --color-plate frames them
+   * in both themes. Olive is a fill with --color-on-olive text on it; wood is decorative.
+   */
+  --color-paper: light-dark(#f8ecd7, #1b1813);
+  --color-plate: #f8ecd7;
+  --color-olive: #48542a;
+  --color-on-olive: #f8ecd7;
+  --color-on-olive-muted: #d8d2b4;
+  --color-wood: #8b4e2b;
   --color-focus: light-dark(#7a5800, #ffc72c);
   --color-focus-on-ink: #ffc72c;
 

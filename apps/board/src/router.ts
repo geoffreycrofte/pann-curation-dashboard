@@ -15,7 +15,13 @@ const CURATION_SETTINGS_TABS: readonly string[] = [
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', name: 'home', component: () => import('./views/HomeView.vue') },
+    // Signed in: the topics. Signed out: App shows the marketing page instead.
+    {
+      path: '/',
+      name: 'home',
+      component: () => import('./views/HomeView.vue'),
+      meta: { public: true },
+    },
     {
       path: '/profile',
       name: 'profile',
@@ -96,6 +102,12 @@ export const router = createRouter({
       name: 'curation-settings',
       component: () => import('./views/SettingsView.vue'),
       props: (route) => ({ topicId: route.params.topicId, scope: 'curation' }),
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('./views/NotFoundView.vue'),
+      meta: { public: true },
     },
   ],
 })
