@@ -108,6 +108,13 @@ export function addDays(day: string, days: number): string {
   return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`
 }
 
+/** Monday (YYYY-MM-DD) of the week of a calendar day: weeks start on Monday. */
+export function startOfWeek(day: string): string {
+  const [y, m, d] = day.split('-').map(Number) as [number, number, number]
+  const weekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay()
+  return addDays(day, -((weekday + 6) % 7))
+}
+
 /** A slot closer than this is skipped: it leaves time to read the posts once more. */
 export const MIN_LEAD_MINUTES = 5
 

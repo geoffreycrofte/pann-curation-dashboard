@@ -15,6 +15,10 @@ import type { AppEnv } from '../env'
 import { parseJson } from '../lib/validation'
 
 const scheduleBody = z.object({ when: z.enum(['next_slot', 'now']).default('next_slot') })
+const queueRange = z.object({
+  from: z.iso.datetime({ offset: true }).optional(),
+  to: z.iso.datetime({ offset: true }).optional(),
+})
 
 interface PostRow {
   id: string
@@ -137,16 +141,22 @@ export const diffusion = new Hono<AppEnv>()
   })
 
   /** Items on the queue (upcoming slots) and the last ones published, with their posts. */
+  /**
+   * Items with a publication time: by default from 14 days ago onward; `from` and
+   * `to` (ISO dates) narrow it to a period, the week of the planning say.
+   */
   .get('/:topicId/queue', async (c) => {
     const topicId = c.req.param('topicId')
-    const since = new Date(Date.now() - 14 * 24 * 3600_000).toISOString()
-    const { data: items, error } = await c.var.db
+    const range = queueRange.safeParse(c.req.query())
+    if (!range.success) throw new HTTPException(400, { message: z.prettifyError(range.error) })
+    const since = range.data.from ?? new Date(Date.now() - 14 * 24 * 3600_000).toISOString()
+    let query = c.var.db
       .from('item_topics')
       .select('item_id, status, publish_at, item:items (title, canonical_url, source_lang)')
       .eq('topic_id', topicId)
       .gte('publish_at', since)
-      .order('publish_at', { ascending: true })
-      .limit(100)
+    if (range.data.to) query = query.lt('publish_at', range.data.to)
+    const { data: items, error } = await query.order('publish_at', { ascending: true }).limit(100)
     if (error) throw error
     if (!items.length) return c.json([])
     // posts has no foreign key to item_topics: read them separately.
