@@ -1,4 +1,9 @@
-import { parseTopicConfig, type CredentialMeta, type NewsletterProvider } from '@pann/shared'
+import {
+  parseTopicConfig,
+  type BrevoSender,
+  type CredentialMeta,
+  type NewsletterProvider,
+} from '@pann/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { readBrevoAccount } from './brevo'
 import { readSendfoxAccount } from './sendfox'
@@ -111,8 +116,10 @@ export async function refreshNewsletterAccount(
 ) {
   const key = await providerKey(db, workspaceId, provider)
   if (!key) return
-  const result =
-    provider === 'sendfox' ? await readSendfoxAccount(key) : await readBrevoAccount(key)
+  const brevo = provider === 'brevo' ? await readBrevoAccount(key) : null
+  const result = brevo ?? (await readSendfoxAccount(key))
+  // Brevo only: the senders to choose from.
+  const senders: BrevoSender[] | undefined = brevo?.ok ? brevo.senders : undefined
   const now = new Date().toISOString()
   const update = result.ok
     ? {
@@ -121,7 +128,7 @@ export async function refreshNewsletterAccount(
         checked_at: now,
         meta: {
           lists: result.lists,
-          ...('senders' in result ? { senders: result.senders } : {}),
+          ...(senders ? { senders } : {}),
           refreshed_at: now,
         } satisfies CredentialMeta,
       }
