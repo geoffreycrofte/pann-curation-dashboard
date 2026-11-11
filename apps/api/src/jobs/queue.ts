@@ -9,9 +9,9 @@ import { claudeEngagementModel } from '../engagement/model'
 import { supabaseEngagementStore } from '../engagement/store'
 import { triageConversations } from '../engagement/triage'
 import type { Lang } from '@pann/shared'
-import { sendBrevoCampaign } from '../newsletter/brevo'
 import { sendDigests } from '../newsletter/digest'
-import { refreshBrevoAccount, supabaseDigestStore } from '../newsletter/store'
+import { sendCampaign } from '../newsletter/send'
+import { refreshNewsletterAccount, supabaseDigestStore } from '../newsletter/store'
 import { publishWithZernio, publishToMastodon } from '../publish/networks'
 import { publish } from '../publish/publish'
 import { refreshZernioAccounts, supabasePublishStore } from '../publish/store'
@@ -31,7 +31,11 @@ export type JobMessage =
   | { type: 'draft'; topicId: string; itemId: string }
   /** Publish what is due now (after "publish now", or a retry). */
   | { type: 'publish' }
-  | { type: 'refresh-credential'; workspaceId: string; provider: 'zernio' | 'brevo' }
+  | {
+      type: 'refresh-credential'
+      workspaceId: string
+      provider: 'zernio' | 'brevo' | 'sendfox'
+    }
   /** Newsletter sent from the board, for one topic (all its languages, or one). */
   | { type: 'send-digest'; topicId: string; lang?: Lang }
   /** Account deletion, asked from the Profile page by the user themself. */
@@ -94,7 +98,7 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     }
     case 'refresh-credential': {
       if (message.provider === 'zernio') await refreshZernioAccounts(db, message.workspaceId)
-      else await refreshBrevoAccount(db, message.workspaceId)
+      else await refreshNewsletterAccount(db, message.workspaceId, message.provider)
       return
     }
     case 'delete-account': {
@@ -118,7 +122,7 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     case 'send-digest': {
       const reports = await sendDigests({
         store: supabaseDigestStore(db),
-        send: sendBrevoCampaign,
+        send: sendCampaign,
         mode: 'now',
         topicId: message.topicId,
         langs: message.lang ? [message.lang] : undefined,

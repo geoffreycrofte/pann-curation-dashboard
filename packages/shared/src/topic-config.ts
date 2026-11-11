@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { DRAFT_MODES, LANGS, type Lang } from './domain'
 import { DRAFT_CHANNELS } from './drafting'
+import { NEWSLETTER_PROVIDERS } from './providers'
 import { domainSchema } from './source-config'
 
 /** Interval bounds, in hours: 1 hour to 90 days. */
@@ -186,14 +187,17 @@ export const topicConfigSchema = z.object({
     })
     .prefault({}),
   /**
-   * Weekly newsletter (Brevo): one campaign per output language, sent to the list of
-   * that language. Content: the items validated since the previous newsletter.
+   * Weekly newsletter (Brevo or SendFox): one campaign per output language, sent to the
+   * list of that language. Content: the items scheduled or published on the social networks
+   * that no earlier issue of this language held.
    */
   newsletter: z
     .object({
       /** Off: the newsletter is only sent from the board ("Send now"). */
       auto_send: z.boolean().default(false),
-      /** Brevo sender id (Brevo checks the sender address). */
+      /** Service that sends it; its key is set on the Connections page. */
+      provider: z.enum(NEWSLETTER_PROVIDERS).default('brevo'),
+      /** Brevo sender id (Brevo checks the sender address). SendFox uses the account's sender. */
       sender_id: z.number().int().positive().nullable().default(null),
       lists: z
         .object({
@@ -207,6 +211,23 @@ export const topicConfigSchema = z.object({
       /** Short text at the top of each issue, written by the user. */
       intro_fr: z.string().trim().max(2000).default(''),
       intro_en: z.string().trim().max(2000).default(''),
+      /**
+       * Start of the first issue (YYYY-MM-DD): the items scheduled or published since
+       * this day. Empty: the last DEFAULT_DIGEST_DAYS days.
+       */
+      first_issue_from: z.union([z.iso.date(), z.literal('')]).default(''),
+      /** Look of the email. Logo: an https image shown above the name (decorative). */
+      logo_url: z.union([z.url({ protocol: /^https$/ }), z.literal('')]).default(''),
+      /** Decorative color: a band at the top and a mark beside each item (no text on it). */
+      accent_color: z
+        .string()
+        .regex(/^#[0-9a-f]{6}$/i)
+        .default('#ffc72c'),
+      /** Text at the bottom of each issue (who sends it, an address, a link…). */
+      footer_fr: z.string().trim().max(1000).default(''),
+      footer_en: z.string().trim().max(1000).default(''),
+      /** Items grouped under the content kinds of the topic, in their order. */
+      group_by_kind: z.boolean().default(false),
     })
     .prefault({}),
   /**

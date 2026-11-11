@@ -1,13 +1,15 @@
 import {
-  DEFAULT_DIGEST_DAYS,
+  digestLook,
+  digestWindowStart,
   errorCode,
   lastDigestTime,
   renderDigest,
   type Lang,
+  type NewsletterProvider,
   type TopicConfig,
 } from '@pann/shared'
-import type { Campaign, CampaignResult } from './brevo'
 import type { DigestContent } from './content'
+import type { SendCampaign } from './send'
 
 export interface DigestTopic {
   id: string
@@ -40,22 +42,23 @@ export interface DigestStore {
   /** Active topics; one topic when `topicId` is given. */
   topics(topicId?: string): Promise<DigestTopic[]>
   issueExists(topicId: string, lang: Lang, periodTo: Date): Promise<boolean>
-  lastIssueEnd(topicId: string, lang: Lang): Promise<Date | null>
+  /** Start of the last issue sent in this language (digestWindowStart). */
+  lastSentIssueStart(topicId: string, lang: Lang): Promise<Date | null>
   content(q: {
     topicId: string
     workspaceId: string
     lang: Lang
     from: Date
-    to: Date
   }): Promise<DigestContent>
-  brevoKey(workspaceId: string): Promise<string | undefined>
+  /** Records the items of an issue: they are left out of the next ones once it is sent. */
+  addIssueItems(issueId: string, itemIds: string[]): Promise<void>
+  /** Key of the newsletter service in this workspace. */
+  newsletterKey(workspaceId: string, provider: NewsletterProvider): Promise<string | undefined>
   /** Null when this issue already exists (another run took it). */
   createIssue(row: IssueRow): Promise<string | null>
   updateIssue(id: string, patch: IssuePatch): Promise<void>
-  markCredentialInvalid(workspaceId: string): Promise<void>
+  markCredentialInvalid(workspaceId: string, provider: NewsletterProvider): Promise<void>
 }
-
-export type SendCampaign = (apiKey: string, campaign: Campaign) => Promise<CampaignResult>
 
 /** A scheduled issue is not sent more than this late (the Worker was down, say). */
 const MAX_DELAY_MS = 6 * 3600_000
@@ -68,9 +71,9 @@ export interface DigestReport {
 }
 
 /**
- * Sends the newsletter of each language as a Brevo campaign. `scheduled`: the topics
+ * Sends the newsletter of each language as a campaign of the topic's service (Brevo, SendFox). `scheduled`: the topics
  * whose weekly time has come and that send automatically; `now`: one topic, from the
- * board. An issue holds the items validated since the end of the last issue sent.
+ * board. An issue holds the items scheduled or published that no issue sent yet.
  */
 export async function sendDigests(deps: {
   store: DigestStore
@@ -109,28 +112,30 @@ async function sendIssue(
 ): Promise<DigestReport> {
   const { store } = deps
   const { newsletter, schedule } = topic.config
-  const from =
-    (await store.lastIssueEnd(topic.id, lang)) ??
-    new Date(periodTo.getTime() - DEFAULT_DIGEST_DAYS * 24 * 3600_000)
+  const from = digestWindowStart(
+    await store.lastSentIssueStart(topic.id, lang),
+    topic.config,
+    periodTo,
+  )
   const base = { topic_id: topic.id, lang, period_from: from, period_to: periodTo }
   const stop = async (status: 'failed' | 'skipped', error: string): Promise<DigestReport> => {
     await store.createIssue({ ...base, status, last_error: error })
     return { topic_id: topic.id, lang, status, error }
   }
 
+  const { provider } = newsletter
   const listId = newsletter.lists[lang]
-  if (!listId || !newsletter.sender_id)
+  if (!listId || (provider === 'brevo' && !newsletter.sender_id))
     return stop('failed', errorCode('newsletter_not_configured', lang))
   const content = await store.content({
     topicId: topic.id,
     workspaceId: topic.workspace_id,
     lang,
     from,
-    to: periodTo,
   })
   if (!content.items.length) return stop('skipped', 'empty_digest')
-  const apiKey = await store.brevoKey(topic.workspace_id)
-  if (!apiKey) return stop('failed', errorCode('missing_credential', 'brevo'))
+  const apiKey = await store.newsletterKey(topic.workspace_id, provider)
+  if (!apiKey) return stop('failed', errorCode('missing_credential', provider))
 
   const { subject, html } = renderDigest({
     lang,
@@ -139,6 +144,7 @@ async function sendIssue(
     items: content.items,
     date: periodTo,
     timezone: schedule.timezone,
+    ...digestLook(topic.config, lang),
   })
   const id = await store.createIssue({
     ...base,
@@ -147,8 +153,9 @@ async function sendIssue(
     item_count: content.items.length,
   })
   if (!id) return { topic_id: topic.id, lang, status: 'skipped', error: 'already_sent' }
+  await store.addIssueItems(id, content.item_ids)
 
-  const result = await deps.send(apiKey, {
+  const result = await deps.send(provider, apiKey, {
     name: `Pann ${topic.slug} ${lang} ${periodTo.toISOString().slice(0, 10)}`,
     subject,
     senderId: newsletter.sender_id,
@@ -164,7 +171,7 @@ async function sendIssue(
     })
     return { topic_id: topic.id, lang, status: 'sent' }
   }
-  if (result.invalidCredential) await store.markCredentialInvalid(topic.workspace_id)
+  if (result.invalidCredential) await store.markCredentialInvalid(topic.workspace_id, provider)
   await store.updateIssue(id, {
     status: 'failed',
     last_error: result.error,

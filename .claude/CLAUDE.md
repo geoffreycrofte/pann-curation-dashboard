@@ -8,6 +8,7 @@ Complète le `CLAUDE.md` à la racine (produit, commandes, règles de code).
 - Types : `feat` (fonctionnalité), `fix` (correction), `chore` (outillage, CI, dépendances), `docs` (documentation), `refactor` (sans changement de comportement).
 - Jamais de nom généré ni de préfixe d'outil (`ccr-…`, `claude/…`).
 - Une branche par sujet : un nouveau sujet part de `main` à jour, sur une nouvelle branche.
+- Des sujets liés demandés ensemble (qui touchent les mêmes fichiers) vont dans **une seule branche et une seule PR**, pas dans des PR empilées : chaque fusion relance la CI et le déploiement et crée des conflits dans les suivantes.
 
 ## Commits
 
@@ -22,5 +23,7 @@ Complète le `CLAUDE.md` à la racine (produit, commandes, règles de code).
 - Messages en anglais : un titre court à l'impératif, puis le pourquoi dans le corps.
 
 ## Pull requests
+
+- Le moins de PR possible : une par lot de travail demandé, pas une par sous-sujet.
 
 - Pas de mention « Generated with Claude Code » ni de lien de session dans la description d'une PR ou dans un commentaire.

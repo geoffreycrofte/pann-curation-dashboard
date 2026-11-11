@@ -291,3 +291,32 @@ Trois réseaux de plus, publiés **par Zernio** comme LinkedIn et Bluesky (même
 - **Discord** : un compte Zernio par salon ; `platformSpecificData.channelId` est obligatoire, lu au moment de publier (`GET /v1/accounts/{id}/discord-settings`) pour suivre un changement de salon. 2 000 caractères.
 
 **Rédaction** : LinkedIn, Bluesky et Mastodon restent rédigés pour chaque élément ; X, Facebook et Discord seulement dans les thèmes qui ont un compte pour eux (`draftChannels`), pour ne pas payer des posts que personne ne publiera. Un compte ajouté après coup : relancer la rédaction de l'élément. W reste sans API de publication connue.
+
+## 2026-11-11 : la newsletter part de la file de diffusion
+
+Une newsletter reprenait les éléments **validés** depuis la précédente. Elle reprend désormais les éléments **programmés ou publiés** sur les réseaux (Programmés et Publiés du tri) : ce qu'on a choisi de diffuser, et rien d'autre. Un élément validé mais jamais programmé n'y figure pas.
+
+- **Pas de doublon** : chaque envoi enregistre ses éléments (`digest_items`, écrite par les jobs, lue par les membres). Un élément déjà dans un envoi en cours ou envoyé de la même langue est écarté ; un envoi en échec ne compte pas, ses éléments partent avec le suivant.
+- **Fenêtre** : depuis le début du dernier envoi (un élément manqué faute de résumé a une seconde chance), ou, pour le premier envoi, depuis le jour réglé par l'utilisateur (`newsletter.first_issue_from`), à défaut les 7 derniers jours.
+- Un élément programmé pour la semaine suivante peut donc partir dans la newsletter avant son post : c'est voulu, la newsletter annonce ce qui est choisi.
+- Au plus 100 éléments par envoi, dans l'ordre de leur créneau.
+
+## 2026-11-11 : apparence de la newsletter
+
+Réglages du thème (Newsletter, Apparence), appliqués à l'aperçu et à l'envoi (`digestLook`) :
+
+- **Logo** : une image en https au-dessus du nom, décorative (`alt=""`) car le nom suit en texte ; une adresse qui n'est pas en https est ignorée.
+- **Couleur d'accent** : un bandeau en haut et un trait à gauche de chaque élément, sans texte posé dessus, donc sans contrainte de contraste. Pann la refuse si ce n'est pas une couleur `#rrggbb`.
+- **Pied de page** par langue, au-dessus de la mention d'inscription et du lien de désabonnement, qui restent toujours.
+- **Regroupement par type de contenu** : un titre par type (dans l'ordre des types du thème), les éléments passent en titres de niveau 3 ; les éléments sans type connu sous « Autres ».
+
+Le reste du gabarit reste fixe : il garantit l'accessibilité de l'e-mail (langue, rôle article, titres, liens soulignés, contrastes).
+
+## 2026-11-11 : SendFox, second service de newsletter
+
+Chaque thème choisit son service d'envoi (`newsletter.provider` : `brevo` par défaut, ou `sendfox`) ; la clé se règle dans Connexions comme les autres. Vérifié le 2026-11-11 sur sendfox.com/developer/docs (API 1.6.0) :
+
+- **Clé** : un jeton d'accès personnel (`Authorization: Bearer`), vérifié par `GET /me` ; les listes viennent de `GET /lists` (abonnés joignables : `subscribed_contacts_count`).
+- **Envoi** : `POST /campaigns` (brouillon adressé à la liste de la langue, `web_publish: false` car les flux publics de Pann publient sur le web), puis `POST /campaigns/{id}/send`. Pas d'expéditeur à choisir : SendFox envoie avec celui du compte, et exige un fuseau horaire réglé dans le compte.
+- **Gabarit** : SendFox exige `{{unsubscribe_url}}` et un `<body>` ; il n'a pas de lien « voir en ligne », la ligne disparaît (`renderDigest` choisit les liens selon le service). Hors mise en page « Code Your Own », SendFox retire les balises hors de son éditeur : à vérifier sur un premier envoi réel.
+- 60 requêtes par minute, partagées entre tous les appels : un envoi en fait deux par langue.
