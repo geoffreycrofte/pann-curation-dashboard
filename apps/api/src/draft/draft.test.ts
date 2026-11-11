@@ -150,10 +150,25 @@ describe('draft prompt', () => {
   })
 
   it('maps the model output to storage rows', () => {
-    expect(toDraftWrite(output, 'claude-sonnet-5-5').posts[0]).toEqual({
-      channel: 'linkedin',
-      lang: 'fr',
-      body: 'LI fr',
+    const write = toDraftWrite(output, 'claude-sonnet-5-5', ['linkedin', 'bluesky', 'mastodon'])
+    expect(write.posts[0]).toEqual({ channel: 'linkedin', lang: 'fr', body: 'LI fr' })
+    expect(write.posts).toHaveLength(6)
+  })
+
+  it('asks for X, Facebook or Discord posts only when the topic publishes there', async () => {
+    const asked: string[][] = []
+    const model: DraftModel = async (call) => {
+      asked.push([...call.channels])
+      return { ok: true, output, usage, model: 'claude-sonnet-5-5' }
+    }
+    const withDiscord = parseTopicConfig({
+      channels: [{ channel: 'discord', account_id: 'd1', langs: ['fr'] }],
     })
+    const { store } = memoryStore([item('a'), item('b', { topic_config: withDiscord })])
+    await draft({ store, model })
+    expect(asked).toEqual([
+      ['linkedin', 'bluesky', 'mastodon'],
+      ['linkedin', 'bluesky', 'mastodon', 'discord'],
+    ])
   })
 })

@@ -215,15 +215,15 @@ export default {
       zernio: {
         name: 'Zernio',
         purpose:
-          'Publication on LinkedIn and Bluesky. Your accounts are connected in Zernio, and Pann publishes through it.',
+          'Publication on LinkedIn, Bluesky, X, Facebook (a Page) and Discord (a channel). Your accounts are connected in Zernio, and Pann publishes through it.',
         steps: [
           'Create an account on zernio.com.',
-          'In Zernio, connect your LinkedIn and Bluesky accounts.',
+          'In Zernio, connect your accounts: LinkedIn, Bluesky, X, a Facebook Page (you must be its admin or editor) or a Discord channel (the Zernio bot joins your server).',
           'Open the “API keys” page of the dashboard, then click “Create API key”.',
           'Copy the key (it starts with sk_): it is shown only once.',
-          'Once saved, choose in the settings of each topic which account publishes which language.',
+          'Once saved, choose in the settings of each topic which account publishes which language. An account connected later in Zernio shows up after “Refresh the list of accounts”.',
         ],
-        cost: 'Depends on your Zernio plan. Pann only publishes the posts you scheduled.',
+        cost: 'Depends on your Zernio plan. X also bills each call to its API, which Zernio passes on without markup. Pann only publishes the posts you scheduled.',
         link: 'Open the Zernio keys page',
       },
       mastodon: {
@@ -372,7 +372,14 @@ export default {
     saved: 'Saved.',
     posts: 'Post drafts',
     postLabel: '{channel}, in {lang}',
-    channels: { linkedin: 'LinkedIn', bluesky: 'Bluesky', mastodon: 'Mastodon' },
+    channels: {
+      linkedin: 'LinkedIn',
+      bluesky: 'Bluesky',
+      mastodon: 'Mastodon',
+      x: 'X',
+      facebook: 'Facebook',
+      discord: 'Discord',
+    },
     length: '{count} characters of {limit}',
     tooLong: '{over} characters too long for {channel}.',
     regenerate: 'Draft again',

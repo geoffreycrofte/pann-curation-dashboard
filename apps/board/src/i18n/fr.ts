@@ -216,15 +216,15 @@ export default {
       zernio: {
         name: 'Zernio',
         purpose:
-          'Publication sur LinkedIn et Bluesky. Vos comptes se connectent dans Zernio, Pann publie à travers lui.',
+          'Publication sur LinkedIn, Bluesky, X, Facebook (une Page) et Discord (un salon). Vos comptes se connectent dans Zernio, Pann publie à travers lui.',
         steps: [
           'Créez un compte sur zernio.com.',
-          'Dans Zernio, connectez vos comptes LinkedIn et Bluesky.',
+          'Dans Zernio, connectez vos comptes : LinkedIn, Bluesky, X, une Page Facebook (vous devez en être administrateur ou éditeur) ou un salon Discord (le robot de Zernio rejoint votre serveur).',
           'Ouvrez la page « API keys » du tableau de bord, puis cliquez sur « Create API key ».',
           'Copiez la clé (elle commence par sk_) : elle ne s’affiche qu’une seule fois.',
-          'Après l’enregistrement, choisissez dans les réglages de chaque thème quel compte publie quelle langue.',
+          'Après l’enregistrement, choisissez dans les réglages de chaque thème quel compte publie quelle langue. Un compte connecté plus tard dans Zernio apparaît après « Actualiser la liste des comptes ».',
         ],
-        cost: 'Selon l’abonnement Zernio. Pann ne publie que les posts que vous avez programmés.',
+        cost: 'Selon l’abonnement Zernio. X facture en plus chaque appel à son API, que Zernio refacture sans marge. Pann ne publie que les posts que vous avez programmés.',
         link: 'Ouvrir la page des clés Zernio',
       },
       mastodon: {
@@ -376,7 +376,14 @@ export default {
     saved: 'Enregistré.',
     posts: 'Brouillons de posts',
     postLabel: '{channel}, en {lang}',
-    channels: { linkedin: 'LinkedIn', bluesky: 'Bluesky', mastodon: 'Mastodon' },
+    channels: {
+      linkedin: 'LinkedIn',
+      bluesky: 'Bluesky',
+      mastodon: 'Mastodon',
+      x: 'X',
+      facebook: 'Facebook',
+      discord: 'Discord',
+    },
     length: '{count} caractères sur {limit}',
     tooLong: 'Trop long de {over} caractères pour {channel}.',
     regenerate: 'Relancer la rédaction',
