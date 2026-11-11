@@ -73,17 +73,21 @@ describe('mastodonInstance', () => {
 })
 
 describe('social credentials', () => {
-  it('lists the LinkedIn and Bluesky accounts of a Zernio key', async () => {
+  it('lists the accounts of a Zernio key on the networks Pann publishes to', async () => {
     respond(200, {
       accounts: [
         { _id: 'a1', platform: 'linkedin', username: 'geoffrey', isActive: true },
         { _id: 'a2', platform: 'instagram', username: 'x' },
+        { _id: 'a3', platform: 'twitter', username: 'gcrofte' },
+        { _id: 'a4', platform: 'discord', username: 'news', displayName: 'Pann - #news' },
       ],
     })
     const check = await checkCredential('zernio', 'sk_xxxxxxxx')
     expect(check.status).toBe('ok')
     expect(check.meta?.accounts).toEqual([
       { id: 'a1', platform: 'linkedin', username: 'geoffrey', active: true },
+      { id: 'a3', platform: 'x', username: 'gcrofte', active: true },
+      { id: 'a4', platform: 'discord', username: 'Pann - #news', active: true },
     ])
     expect(calls[0]).toBe('https://zernio.com/api/v1/accounts')
   })

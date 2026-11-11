@@ -1,4 +1,11 @@
-import { errorCode, type DraftChannel, type Lang, type ZernioAccount } from '@pann/shared'
+import {
+  errorCode,
+  ZERNIO_PLATFORMS,
+  type DraftChannel,
+  type Lang,
+  type ZernioAccount,
+  type ZernioChannel,
+} from '@pann/shared'
 import { USER_AGENT } from '../lib/fetch-text'
 
 /** Checked 2026-10-02 on docs.zernio.com. */
@@ -44,15 +51,46 @@ interface ZernioPlatformEntry {
 const ZERNIO_DISCONNECTED = new Set(['auth_expired', 'account_issue'])
 const ZERNIO_REJECTED = new Set(['user_content', 'platform_rejected', 'user_abuse'])
 
+const zernioHeaders = (apiKey: string) => ({
+  Authorization: `Bearer ${apiKey}`,
+  'User-Agent': USER_AGENT,
+})
+
 /**
- * LinkedIn and Bluesky, published now through Zernio. A post that fails on the network
- * still answers 2xx (207): the outcome is read on the platform entry.
+ * Discord: the channel an account posts to (platformSpecificData.channelId is required,
+ * one connected account serves one channel). Read at publish time, so a channel switched
+ * in Zernio is followed.
+ */
+async function discordChannelId(apiKey: string, accountId: string): Promise<string | null> {
+  const res = await send(
+    `${ZERNIO_API}/accounts/${encodeURIComponent(accountId)}/discord-settings`,
+    {
+      headers: zernioHeaders(apiKey),
+    },
+  )
+  if (!res?.ok) return null
+  const body = (await res.json().catch(() => ({}))) as { account?: { channelId?: string } }
+  return body.account?.channelId ?? null
+}
+
+/**
+ * LinkedIn, Bluesky, X, Facebook (a Page) and Discord, published now through Zernio.
+ * A post that fails on the network still answers 2xx (207): the outcome is read on the
+ * platform entry. Checked 2026-11-11 on docs.zernio.com.
  */
 export async function publishWithZernio(
   apiKey: string,
   accountId: string,
   request: PublishRequest,
 ): Promise<PublishResult> {
+  const platform = ZERNIO_PLATFORMS[request.channel as ZernioChannel]
+  if (!platform) return failure(errorCode('post_rejected', request.channel), false)
+  const entry: Record<string, unknown> = { platform, accountId }
+  if (request.channel === 'discord') {
+    const channelId = await discordChannelId(apiKey, accountId)
+    if (!channelId) return failure(errorCode('account_disconnected', request.channel), false)
+    entry.platformSpecificData = { channelId }
+  }
   const res = await send(`${ZERNIO_API}/posts`, {
     method: 'POST',
     headers: {
@@ -63,7 +101,7 @@ export async function publishWithZernio(
     },
     body: JSON.stringify({
       content: request.content,
-      platforms: [{ platform: request.channel, accountId }],
+      platforms: [entry],
       publishNow: true,
     }),
   })
@@ -85,16 +123,16 @@ export async function publishWithZernio(
   if (!res.ok) return failure(errorCode('provider_error', 'zernio'), true)
 
   const post = body.post
-  const entry = post?.platforms?.find((p) => p.platform === request.channel) ?? post?.platforms?.[0]
-  if (entry?.status === 'failed' || post?.status === 'failed') {
-    const category = entry?.errorCategory ?? ''
+  const result = post?.platforms?.find((p) => p.platform === platform) ?? post?.platforms?.[0]
+  if (result?.status === 'failed' || post?.status === 'failed') {
+    const category = result?.errorCategory ?? ''
     if (ZERNIO_DISCONNECTED.has(category))
       return failure(errorCode('account_disconnected', request.channel), false)
     if (ZERNIO_REJECTED.has(category))
       return failure(errorCode('post_rejected', request.channel), false)
     return failure(errorCode('provider_error', 'zernio'), true)
   }
-  return { ok: true, external_id: post?._id ?? null, url: entry?.platformPostUrl ?? null }
+  return { ok: true, external_id: post?._id ?? null, url: result?.platformPostUrl ?? null }
 }
 
 export interface MastodonAccount {
@@ -138,26 +176,37 @@ export type AccountsResult =
 /** Social accounts connected in Zernio, limited to the networks Pann publishes to. */
 export async function listZernioAccounts(apiKey: string): Promise<AccountsResult> {
   const res = await send(`${ZERNIO_API}/accounts`, {
-    headers: { Authorization: `Bearer ${apiKey}`, 'User-Agent': USER_AGENT },
+    headers: zernioHeaders(apiKey),
   })
   if (!res) return { ok: false, invalid: false }
   if (res.status === 401 || res.status === 403) return { ok: false, invalid: true }
   if (!res.ok) return { ok: false, invalid: false }
   const body = (await res.json().catch(() => ({}))) as {
-    accounts?: { _id?: string; platform?: string; username?: string; isActive?: boolean }[]
+    accounts?: {
+      _id?: string
+      platform?: string
+      username?: string
+      displayName?: string
+      isActive?: boolean
+    }[]
   }
-  const accounts = (body.accounts ?? []).flatMap((a): ZernioAccount[] =>
-    a._id && (a.platform === 'linkedin' || a.platform === 'bluesky')
-      ? [
-          {
-            id: a._id,
-            platform: a.platform,
-            username: a.username ?? a._id,
-            active: a.isActive !== false,
-          },
-        ]
-      : [],
-  )
+  // Zernio's platform name to Pann's channel (X is "twitter" at Zernio).
+  const channelOf = new Map(
+    Object.entries(ZERNIO_PLATFORMS).map(([channel, platform]) => [platform, channel]),
+  ) as Map<string, ZernioChannel>
+  const accounts = (body.accounts ?? []).flatMap((a): ZernioAccount[] => {
+    const channel = a.platform ? channelOf.get(a.platform) : undefined
+    if (!a._id || !channel) return []
+    return [
+      {
+        id: a._id,
+        platform: channel,
+        // Discord: "Server - #channel" says where the posts go better than the channel name.
+        username: (channel === 'discord' ? a.displayName : a.username) ?? a.username ?? a._id,
+        active: a.isActive !== false,
+      },
+    ]
+  })
   return { ok: true, accounts }
 }
 

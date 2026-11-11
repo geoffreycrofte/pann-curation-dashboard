@@ -1,4 +1,4 @@
-import { bodyLimit, DRAFT_CHANNELS, SOURCE_NATURES_LIST, type TopicConfig } from '@pann/shared'
+import { bodyLimit, SOURCE_NATURES_LIST, type DraftChannel, type TopicConfig } from '@pann/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes. Stored with each summary (summaries.prompt_version). */
@@ -9,23 +9,35 @@ export const DRAFT_CONTENT_CHARS = 24_000
 
 const postsByLang = z.object({ fr: z.string(), en: z.string() })
 
-export const draftOutputSchema = z.object({
-  insufficient_content: z
-    .boolean()
-    .describe('true when the content is missing, paywalled or too thin to summarise'),
-  summary_fr: z.string(),
-  summary_en: z.string(),
-  key_excerpt: z
-    .string()
-    .describe('Verbatim quote of at most 25 words, in the language of the source'),
-  source_type: z.enum(SOURCE_NATURES_LIST),
-  posts: z.object({
-    linkedin: postsByLang,
-    bluesky: postsByLang,
-    mastodon: postsByLang,
-  }),
-})
-export type DraftOutput = z.infer<typeof draftOutputSchema>
+export type PostsByLang = z.infer<typeof postsByLang>
+
+/**
+ * Output of a drafting call. Posts are asked only for the channels of the topic
+ * (draftChannels): a topic that does not publish to X gets no X post, and pays for none.
+ */
+export function draftOutputSchema(channels: readonly DraftChannel[]) {
+  return z.object({
+    insufficient_content: z
+      .boolean()
+      .describe('true when the content is missing, paywalled or too thin to summarise'),
+    summary_fr: z.string(),
+    summary_en: z.string(),
+    key_excerpt: z
+      .string()
+      .describe('Verbatim quote of at most 25 words, in the language of the source'),
+    source_type: z.enum(SOURCE_NATURES_LIST),
+    posts: z.object(Object.fromEntries(channels.map((c) => [c, postsByLang]))),
+  })
+}
+
+export interface DraftOutput {
+  insufficient_content: boolean
+  summary_fr: string
+  summary_en: string
+  key_excerpt: string
+  source_type: (typeof SOURCE_NATURES_LIST)[number]
+  posts: Partial<Record<DraftChannel, PostsByLang>>
+}
 
 /**
  * Only how the tool works is built in: grounding in the source, output contract,
@@ -66,15 +78,15 @@ export interface DraftSource {
   content: string
 }
 
-export function draftUserMessage(item: DraftSource): string {
+export function draftUserMessage(item: DraftSource, channels: readonly DraftChannel[]): string {
   return [
     `Title: ${item.title}`,
     `URL: ${item.canonical_url}`,
     item.published_at ? `Published: ${item.published_at.slice(0, 10)}` : null,
     item.source_lang ? `Source language: ${item.source_lang}` : null,
-    `Maximum length of the text of each post: ${DRAFT_CHANNELS.map(
-      (channel) => `${channel} ${bodyLimit(channel, item.canonical_url)}`,
-    ).join(', ')} characters.`,
+    `Maximum length of the text of each post: ${channels
+      .map((channel) => `${channel} ${bodyLimit(channel, item.canonical_url)}`)
+      .join(', ')} characters.`,
     '',
     'Source content:',
     item.content.slice(0, DRAFT_CONTENT_CHARS).trim() || '(no content available)',

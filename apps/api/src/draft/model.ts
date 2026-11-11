@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
+import type { DraftChannel } from '@pann/shared'
 import { draftOutputSchema, type DraftOutput } from './prompt'
 
 export interface DraftCall {
@@ -8,6 +9,8 @@ export interface DraftCall {
   effort: 'low' | 'medium' | 'high'
   system: string
   user: string
+  /** Channels to write a post for. */
+  channels: readonly DraftChannel[]
 }
 
 export interface TokenUsage {
@@ -41,7 +44,14 @@ function usageOf(usage: Anthropic.Beta.BetaUsage): TokenUsage {
  * One drafting call: structured outputs, cached system prompt (identical for every item
  * of a topic), and server-side refusal fallback ("default" routing by refusal category).
  */
-export const claudeDraftModel: DraftModel = async ({ apiKey, model, effort, system, user }) => {
+export const claudeDraftModel: DraftModel = async ({
+  apiKey,
+  model,
+  effort,
+  system,
+  user,
+  channels,
+}) => {
   const client = new Anthropic({ apiKey, maxRetries: 2, timeout: 120_000 })
   try {
     const response = await client.beta.messages.parse({
@@ -51,7 +61,7 @@ export const claudeDraftModel: DraftModel = async ({ apiKey, model, effort, syst
       fallbacks: 'default',
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: user }],
-      output_config: { effort, format: betaZodOutputFormat(draftOutputSchema) },
+      output_config: { effort, format: betaZodOutputFormat(draftOutputSchema(channels)) },
     })
     const usage = usageOf(response.usage)
     if (response.stop_reason === 'refusal')
@@ -59,7 +69,12 @@ export const claudeDraftModel: DraftModel = async ({ apiKey, model, effort, syst
     if (!response.parsed_output)
       return { ok: false, error: 'invalid_output', usage, model: response.model }
     // The model that actually answered (a fallback may have served the request).
-    return { ok: true, output: response.parsed_output, usage, model: response.model }
+    return {
+      ok: true,
+      output: response.parsed_output as DraftOutput,
+      usage,
+      model: response.model,
+    }
   } catch (err) {
     if (
       err instanceof Anthropic.AuthenticationError ||
