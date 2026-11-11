@@ -1,6 +1,6 @@
 import {
   claudeCostUsd,
-  DRAFT_CHANNELS,
+  draftChannels,
   LANGS,
   type DraftChannel,
   type Lang,
@@ -63,7 +63,11 @@ export interface DraftReport {
   skipped: number
 }
 
-export function toDraftWrite(output: DraftOutput, model: string): DraftWrite {
+export function toDraftWrite(
+  output: DraftOutput,
+  model: string,
+  channels: readonly DraftChannel[],
+): DraftWrite {
   return {
     model,
     prompt_version: DRAFT_PROMPT_VERSION,
@@ -73,9 +77,10 @@ export function toDraftWrite(output: DraftOutput, model: string): DraftWrite {
     })),
     key_excerpt: output.key_excerpt.trim(),
     source_nature: output.source_type,
-    posts: DRAFT_CHANNELS.flatMap((channel) =>
-      LANGS.map((lang) => ({ channel, lang, body: output.posts[channel][lang].trim() })),
-    ),
+    posts: channels.flatMap((channel) => {
+      const posts = output.posts[channel]
+      return posts ? LANGS.map((lang) => ({ channel, lang, body: posts[lang].trim() })) : []
+    }),
   }
 }
 
@@ -132,12 +137,14 @@ export async function draft(deps: {
       content = (await deps.store.fetchContent(item)) ?? content
 
     const requestedModel = item.topic_config.ai.draft_model
+    const channels = draftChannels(item.topic_config)
     const result = await deps.model({
+      channels,
       apiKey,
       model: requestedModel,
       effort: item.topic_config.ai.draft_effort,
       system: draftSystemPrompt({ name_en: item.topic_name_en, config: item.topic_config }),
-      user: draftUserMessage({ ...item, content }),
+      user: draftUserMessage({ ...item, content }, channels),
     })
     const usage = usageEntry(result, requestedModel)
     if (usage) await deps.store.logUsage(item, usage)
@@ -148,7 +155,7 @@ export async function draft(deps: {
         report.failed++
         continue
       }
-      await deps.store.saveDraft(item, toDraftWrite(result.output, result.model))
+      await deps.store.saveDraft(item, toDraftWrite(result.output, result.model, channels))
       report.drafted++
       continue
     }

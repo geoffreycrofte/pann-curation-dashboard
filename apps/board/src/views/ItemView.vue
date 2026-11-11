@@ -162,6 +162,10 @@ const hasAccount = (post: PostDraft) =>
 
 const posts = computed(() => detail.value?.posts ?? [])
 /** Posts of a network, always in the order of LANGS: saving one must not move it. */
+/** Channels with at least one post: X, Facebook and Discord only where the topic uses them. */
+const postChannels = computed(() =>
+  DRAFT_CHANNELS.filter((channel) => posts.value.some((p) => p.channel === channel)),
+)
 const postsOf = (channel: DraftChannel) =>
   posts.value
     .filter((p) => p.channel === channel)
@@ -426,11 +430,7 @@ async function savePost(postId: string, text: string) {
 
     <section v-if="detail.posts.length" class="block" aria-labelledby="posts">
       <h2 id="posts">{{ t('draft.posts') }}</h2>
-      <section
-        v-for="channel in DRAFT_CHANNELS"
-        :key="channel"
-        :aria-labelledby="`posts-${channel}`"
-      >
+      <section v-for="channel in postChannels" :key="channel" :aria-labelledby="`posts-${channel}`">
         <h3 :id="`posts-${channel}`">{{ t(`draft.channels.${channel}`) }}</h3>
         <div class="pair">
           <div v-for="post in postsOf(channel)" :key="post.id" class="post">
