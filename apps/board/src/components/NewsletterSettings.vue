@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type TopicConfig } from '@pann/shared'
+import { NEWSLETTER_PROVIDERS, type TopicConfig } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -18,11 +18,12 @@ const { data: credentials } = useQuery({
   query: () => api.credentials(workspaceId.value!),
   enabled: () => !!workspaceId.value,
 })
-const brevo = computed(() => credentials.value?.find((c) => c.provider === 'brevo'))
 const weekdays = computed(() => (tm('settings.weekdays') as unknown[]).map((d) => rt(d as string)))
 
 const form = ref<TopicConfig['newsletter']>(structuredClone(props.config.newsletter))
 const digest = ref<TopicConfig['schedule']['digest']>(structuredClone(props.config.schedule.digest))
+/** Key of the service chosen for this topic: its lists (and, for Brevo, its senders). */
+const service = computed(() => credentials.value?.find((c) => c.provider === form.value.provider))
 watch(
   () => props.config,
   (config) => {
@@ -56,8 +57,22 @@ const { mutate, isLoading } = useMutation({
   <form class="form newsletter" :aria-labelledby="`${id}-title`" @submit.prevent="mutate()">
     <h2 :id="`${id}-title`">{{ t('settings.newsletter') }}</h2>
     <p class="hint">{{ t('settings.newsletterHint') }}</p>
-    <p v-if="credentials && !brevo">
-      {{ t('settings.noBrevo') }}
+    <div class="form-row">
+      <label :for="`${id}-provider`">{{ t('settings.newsletterProvider') }}</label>
+      <select
+        :id="`${id}-provider`"
+        v-model="form.provider"
+        class="field"
+        :aria-describedby="`${id}-provider-hint`"
+      >
+        <option v-for="p in NEWSLETTER_PROVIDERS" :key="p" :value="p">
+          {{ t(`connections.providers.${p}.name`) }}
+        </option>
+      </select>
+      <p :id="`${id}-provider-hint`" class="hint">{{ t('settings.newsletterProviderHint') }}</p>
+    </div>
+    <p v-if="credentials && !service">
+      {{ form.provider === 'sendfox' ? t('settings.noSendfox') : t('settings.noBrevo') }}
       <RouterLink to="/connections">{{ t('nav.connections') }}</RouterLink>
     </p>
 
@@ -102,11 +117,11 @@ const { mutate, isLoading } = useMutation({
         />
         <p :id="`${id}-first-hint`" class="hint">{{ t('settings.firstIssueFromHint') }}</p>
       </div>
-      <div class="form-row">
+      <div v-if="form.provider === 'brevo'" class="form-row">
         <label :for="`${id}-sender`">{{ t('settings.sender') }}</label>
         <select :id="`${id}-sender`" v-model="form.sender_id" class="field">
           <option :value="null">{{ t('settings.noSender') }}</option>
-          <option v-for="sender in brevo?.meta.senders ?? []" :key="sender.id" :value="sender.id">
+          <option v-for="sender in service?.meta.senders ?? []" :key="sender.id" :value="sender.id">
             {{
               sender.active
                 ? t('connections.senderLine', { name: sender.name, email: sender.email })
@@ -127,7 +142,7 @@ const { mutate, isLoading } = useMutation({
         </label>
         <select :id="`${id}-list-${lang}`" v-model="form.lists[lang]" class="field">
           <option :value="null">{{ t('settings.noList') }}</option>
-          <option v-for="list in brevo?.meta.lists ?? []" :key="list.id" :value="list.id">
+          <option v-for="list in service?.meta.lists ?? []" :key="list.id" :value="list.id">
             {{ t('connections.listLine', { name: list.name, count: list.subscribers ?? '?' }) }}
           </option>
         </select>

@@ -156,13 +156,14 @@ export default {
     refreshRequested: 'Refresh requested: the list updates in a few seconds.',
     mastodonAccount: 'Account: {acct}',
     mastodonLimit: 'Maximum length of a post on this instance: {count} characters.',
-    listsTitle: 'Contact lists in Brevo',
+    listsTitle: 'Contact lists in {service}',
     sendersTitle: 'Senders in Brevo',
-    noLists: 'No contact list in Brevo yet.',
+    noLists: 'No contact list in {service} yet.',
     noSenders: 'No sender in Brevo yet.',
     listLine: '{name} ({count} contacts)',
     senderLine: '{name} <{email}>',
     refreshBrevo: 'Refresh the lists and senders',
+    refreshLists: 'Refresh the lists',
     detail: {
       no_free_check:
         'This service has no free check: the key will be verified on the first collection of an “Exa search” source. To verify it right away, use “Collect now” on one of these sources.',
@@ -253,6 +254,19 @@ export default {
         ],
         cost: 'The free Brevo plan limits the number of emails sent per day: check that it covers your lists.',
         link: 'Brevo help: create and manage API keys',
+      },
+      sendfox: {
+        name: 'SendFox',
+        purpose:
+          'Sends the newsletter, one campaign per language, to the contact list of that language. Another option than Brevo.',
+        steps: [
+          'Create an account on sendfox.com, then one contact list per language.',
+          'In the account settings, save the default sender (name and address) and the time zone: Pann sends with this sender, and SendFox needs the time zone to create a campaign.',
+          'Open the token page (Account, OAuth) and create a personal access token named “Pann”, then copy it.',
+          'Then, in the settings of each topic (Newsletter), choose SendFox and the list of each language.',
+        ],
+        cost: 'Depends on your SendFox plan. Campaigns sent through the API go through its usual checks: content approval and the sending limits of a new account.',
+        link: 'Create a SendFox token',
       },
     },
   },
@@ -408,7 +422,7 @@ export default {
   newsletter: {
     heading: 'Newsletter: {topic}',
     intro:
-      'Each issue holds the items scheduled or published on the social networks that no issue has sent yet, with their summary in the language of the issue. One Brevo campaign per language.',
+      'Each issue holds the items scheduled or published on the social networks that no issue has sent yet, with their summary in the language of the issue. One campaign per language, with Brevo or SendFox.',
     nextAuto: 'Next automatic sending: {date}.',
     manual: 'Automatic sending is off: the newsletter goes out when you click “Send now”.',
     settingsLink: 'Set up the newsletter',
@@ -602,7 +616,7 @@ export default {
     },
     newsletter: {
       title: 'The box of the week',
-      text: 'Scheduled and published nuggets fill the newsletter: one sending per language with Brevo, on the day and at the time you set. A public RSS feed also shows them on your site.',
+      text: 'Scheduled and published nuggets fill the newsletter: one sending per language with Brevo or SendFox, on the day and at the time you set. A public RSS feed also shows them on your site.',
       alt: 'An open wooden crate, full of nuggets and tied with a ribbon.',
     },
     engagement: {
@@ -1021,7 +1035,7 @@ export default {
     accountMissing: 'Account not found in Zernio: {account}. Refresh the list in Connections.',
     newsletter: 'Newsletter',
     newsletterHint:
-      'One Brevo campaign per language, with the items scheduled or published on the social networks that no issue has sent yet. The name and the introduction are yours.',
+      'One campaign per language, with the items scheduled or published on the social networks that no issue has sent yet. The name and the introduction are yours.',
     autoSend: 'Send automatically every week',
     autoSendHint:
       'Otherwise, the newsletter only goes out from the “Newsletter” tab, when you decide.',
@@ -1054,6 +1068,10 @@ export default {
     newsletterGroup: 'Group the items by content kind',
     newsletterGroupHint: 'In the order of the kinds of the topic; items without a kind come last.',
     noBrevo: 'First add a Brevo key in Connections to choose the sender and the lists.',
+    noSendfox: 'First add a SendFox token in Connections to choose the lists.',
+    newsletterProvider: 'Sending service',
+    newsletterProviderHint:
+      'The key of the service is set in Connections. SendFox sends with the default sender of your account.',
     feed: 'Public feed',
     feedHint:
       'RSS and JSON feeds of the validated items, with their summary, one per language. For a feed reader or a curation page (CheckFox, for example).',

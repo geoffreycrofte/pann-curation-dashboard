@@ -1,5 +1,6 @@
 import { errorCode, type BrevoList, type BrevoSender } from '@pann/shared'
 import { USER_AGENT } from '../lib/fetch-text'
+import type { Campaign, CampaignResult } from './send'
 
 /** Checked 2026-10-02 on developers.brevo.com. */
 export const BREVO_API = 'https://api.brevo.com/v3'
@@ -66,19 +67,6 @@ export async function readBrevoAccount(apiKey: string): Promise<BrevoAccount> {
   )
   return { ok: true, lists, senders }
 }
-
-export interface Campaign {
-  /** Internal name, shown in Brevo only. */
-  name: string
-  subject: string
-  senderId: number
-  listId: number
-  html: string
-}
-
-export type CampaignResult =
-  | { ok: true; campaignId: number }
-  | { ok: false; error: string; invalidCredential?: boolean; campaignId?: number }
 
 /** Creates the campaign, then sends it now. A created campaign is reported even on failure. */
 export async function sendBrevoCampaign(

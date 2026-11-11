@@ -70,7 +70,9 @@ export const newsletter = new Hono<AppEnv>()
           period_from: from.toISOString(),
           item_count: content.items.length,
           without_summary: content.without_summary,
-          configured: !!settings.lists[lang] && !!settings.sender_id,
+          // SendFox sends from the account's default sender: only Brevo needs one here.
+          configured:
+            !!settings.lists[lang] && (settings.provider === 'sendfox' || !!settings.sender_id),
           subject,
           html,
         }

@@ -1,5 +1,6 @@
 import { addDays, zonedDay, zonedTimeToUtc } from './diffusion'
 import type { Lang } from './domain'
+import type { NewsletterProvider } from './providers'
 import type { TopicConfig } from './topic-config'
 
 // ---------------------------------------------------------------------------
@@ -79,8 +80,10 @@ export interface DigestInput {
   /** Date of the issue, written in the language of the issue. */
   date: Date
   timezone: string
-  /** Preview in the board: Brevo placeholders are not replaced there. */
+  /** Preview in the board: the placeholders of the service are not replaced there. */
   preview?: boolean
+  /** Service that sends the issue: its placeholders for the links. Default: Brevo. */
+  provider?: NewsletterProvider
   /** https image above the name; decorative (the name follows as text). */
   logoUrl?: string
   /** Decorative color: top band and a mark beside each item. Default: Pann gold. */
@@ -154,9 +157,10 @@ export function digestSubject(input: Pick<DigestInput, 'lang' | 'title' | 'date'
 export function digestLook(
   config: Pick<TopicConfig, 'newsletter' | 'kinds'>,
   lang: Lang,
-): Pick<DigestInput, 'logoUrl' | 'accentColor' | 'footer' | 'groups'> {
+): Pick<DigestInput, 'provider' | 'logoUrl' | 'accentColor' | 'footer' | 'groups'> {
   const { newsletter } = config
   return {
+    provider: newsletter.provider,
     logoUrl: newsletter.logo_url,
     accentColor: newsletter.accent_color,
     footer: lang === 'fr' ? newsletter.footer_fr : newsletter.footer_en,
@@ -164,6 +168,16 @@ export function digestLook(
       ? config.kinds.map((k) => ({ key: k.key, label: lang === 'fr' ? k.label_fr : k.label_en }))
       : undefined,
   }
+}
+
+/**
+ * Placeholders each service replaces when sending. Checked 2026-11-11: Brevo
+ * ({{ mirror }}, {{ unsubscribe }}); SendFox requires {{unsubscribe_url}} and has no
+ * web version link (its web issues live on a Smart Page).
+ */
+const PROVIDER_LINKS: Record<NewsletterProvider, { mirror: string | null; unsubscribe: string }> = {
+  brevo: { mirror: '{{ mirror }}', unsubscribe: '{{ unsubscribe }}' },
+  sendfox: { mirror: null, unsubscribe: '{{unsubscribe_url}}' },
 }
 
 // Email colors: dark text on white, contrast above 7:1 for the text, 4.5:1 for the meta.
@@ -221,8 +235,9 @@ export function renderDigest(input: DigestInput): { subject: string; html: strin
     dateStyle: 'full',
     timeZone: input.timezone,
   }).format(input.date)
-  const mirror = input.preview ? '#' : '{{ mirror }}'
-  const unsubscribe = input.preview ? '#' : '{{ unsubscribe }}'
+  const links = PROVIDER_LINKS[input.provider ?? 'brevo']
+  const mirror = links.mirror && (input.preview ? '#' : links.mirror)
+  const unsubscribe = input.preview ? '#' : links.unsubscribe
 
   const accent = /^#[0-9a-f]{6}$/i.test(input.accentColor ?? '')
     ? input.accentColor!
@@ -249,8 +264,7 @@ export function renderDigest(input: DigestInput): { subject: string; html: strin
 <tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border-radius:12px;border-top:6px solid ${accent};">
 <tr><td style="padding:24px 28px 16px;${FONT}color:${INK};">
-<p style="margin:0 0 20px;font-size:13px;"><a href="${mirror}" style="color:${LINK};text-decoration:underline;">${escapeHtml(s.mirror)}</a></p>
-${logo}<h1 style="margin:0;font-size:28px;line-height:1.2;">${escapeHtml(input.title)}</h1>
+${mirror ? `<p style="margin:0 0 20px;font-size:13px;"><a href="${mirror}" style="color:${LINK};text-decoration:underline;">${escapeHtml(s.mirror)}</a></p>\n` : ''}${logo}<h1 style="margin:0;font-size:28px;line-height:1.2;">${escapeHtml(input.title)}</h1>
 <p style="margin:8px 0 0;font-size:14px;color:${MUTED};">${escapeHtml(date)}</p>
 ${paragraphs(input.intro, 'margin:16px 0 0;font-size:16px;line-height:1.55;')}
 </td></tr>

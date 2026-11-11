@@ -1,7 +1,9 @@
 import { parseTopicConfig, type Lang } from '@pann/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { readBrevoAccount, sendBrevoCampaign, type Campaign } from './brevo'
+import { readBrevoAccount, sendBrevoCampaign } from './brevo'
 import { sendDigests, type DigestStore, type IssueRow } from './digest'
+import type { Campaign } from './send'
+import { readSendfoxAccount, sendSendfoxCampaign } from './sendfox'
 
 const config = parseTopicConfig({
   newsletter: { sender_id: 3, lists: { fr: 10, en: 11 }, title_fr: 'Lede', auto_send: true },
@@ -26,7 +28,7 @@ function fakeStore(overrides: Partial<DigestStore> = {}) {
     lastSentIssueStart: async () => new Date('2026-10-02T06:00:00Z'),
     content: async () => ({ items: [item], item_ids: ['i1'], without_summary: 0 }),
     addIssueItems: async (id, ids) => void recorded.push([id, ids]),
-    brevoKey: async () => 'xkeysib-1',
+    newsletterKey: async (_workspace, provider) => (provider === 'brevo' ? 'xkeysib-1' : undefined),
     createIssue: async (row) => (created.push(row), `d${created.length}`),
     updateIssue: async (id, patch) => void updates.push([id, patch.status, patch.last_error]),
     markCredentialInvalid: async () => {},
@@ -44,7 +46,7 @@ describe('sendDigests', () => {
     const { store, created, updates, recorded } = fakeStore()
     const reports = await sendDigests({
       store,
-      send: async (_key, c) => (campaigns.push(c), { ok: true, campaignId: 7 }),
+      send: async (_provider, _key, c) => (campaigns.push(c), { ok: true, campaignId: 7 }),
       mode: 'scheduled',
       now,
     })
@@ -133,6 +135,107 @@ describe('sendDigests', () => {
       now,
     })
     expect(updates[0]).toEqual(['d1', 'failed', 'credits_exhausted:brevo'])
+  })
+
+  it('sends with SendFox when the topic uses it, without a Brevo sender', async () => {
+    const sendfox = {
+      ...topic,
+      config: parseTopicConfig({
+        newsletter: { provider: 'sendfox', lists: { fr: 5, en: null }, auto_send: true },
+      }),
+    }
+    const calls: [string, string, Campaign][] = []
+    const { store } = fakeStore({
+      topics: async () => [sendfox],
+      newsletterKey: async (_w, provider) => (provider === 'sendfox' ? 'sf-token' : undefined),
+    })
+    const [report] = await sendDigests({
+      store,
+      send: async (provider, key, c) => (
+        calls.push([provider, key, c]),
+        { ok: true, campaignId: 9 }
+      ),
+      mode: 'now',
+      langs: ['fr'],
+      now,
+    })
+    expect(report).toMatchObject({ lang: 'fr', status: 'sent' })
+    expect(calls[0]?.slice(0, 2)).toEqual(['sendfox', 'sf-token'])
+    expect(calls[0]?.[2].html).toContain('{{unsubscribe_url}}')
+  })
+
+  it('names the service whose key is missing', async () => {
+    const { store } = fakeStore({ newsletterKey: async () => undefined })
+    const [report] = await sendDigests({ store, send: vi.fn(), mode: 'now', langs: ['fr'], now })
+    expect(report?.error).toBe('missing_credential:brevo')
+  })
+})
+
+describe('SendFox API', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  function respond(...answers: [number, unknown][]) {
+    const requests: { url: string; init: RequestInit }[] = []
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      requests.push({ url, init })
+      const [status, body] = answers[Math.min(requests.length, answers.length) - 1]!
+      return new Response(JSON.stringify(body), { status })
+    })
+    return requests
+  }
+
+  it('creates a draft campaign for the list, then sends it', async () => {
+    const requests = respond([201, { id: 12 }], [200, { id: 12 }])
+    const result = await sendSendfoxCampaign('sf-token', {
+      name: 'Pann a11y fr',
+      subject: 'Lede',
+      senderId: null,
+      listId: 5,
+      html: '<body><a href="{{unsubscribe_url}}">x</a></body>',
+    })
+    expect(result).toEqual({ ok: true, campaignId: 12 })
+    expect(requests.map((r) => r.url)).toEqual([
+      'https://api.sendfox.com/campaigns',
+      'https://api.sendfox.com/campaigns/12/send',
+    ])
+    expect(new Headers(requests[0]!.init.headers).get('Authorization')).toBe('Bearer sf-token')
+    expect(JSON.parse(requests[0]!.init.body as string)).toMatchObject({
+      title: 'Pann a11y fr',
+      subject: 'Lede',
+      lists: [5],
+      web_publish: false,
+    })
+  })
+
+  it('reports a refused send with the campaign it created', async () => {
+    respond([201, { id: 12 }], [403, { message: 'warmup' }])
+    expect(
+      await sendSendfoxCampaign('sf-token', {
+        name: 'n',
+        subject: 's',
+        senderId: null,
+        listId: 5,
+        html: '<body></body>',
+      }),
+    ).toEqual({
+      ok: false,
+      error: 'provider_response:sendfox',
+      campaignId: 12,
+      invalidCredential: undefined,
+    })
+  })
+
+  it('reads the lists of the account and rejects a wrong token', async () => {
+    respond(
+      [200, { id: 1, email: 'me@example.org' }],
+      [200, { data: [{ id: 5, name: 'Lettre FR', subscribed_contacts_count: 80 }], total: 1 }],
+    )
+    expect(await readSendfoxAccount('sf-token')).toEqual({
+      ok: true,
+      lists: [{ id: 5, name: 'Lettre FR', subscribers: 80 }],
+    })
+    respond([401, { message: 'Unauthenticated.' }])
+    expect(await readSendfoxAccount('bad')).toEqual({ ok: false, detail: 'invalid_key' })
   })
 })
 

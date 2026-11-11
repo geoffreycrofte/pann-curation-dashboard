@@ -196,7 +196,7 @@ export const api = {
       `/workspaces/${workspaceId}/credentials/${provider}`,
       json('PUT', { secret, instance }),
     ),
-  refreshCredential: (workspaceId: string, provider: 'zernio' | 'brevo') =>
+  refreshCredential: (workspaceId: string, provider: 'zernio' | 'brevo' | 'sendfox') =>
     request<void>(`/workspaces/${workspaceId}/credentials/${provider}/refresh`, {
       method: 'POST',
     }),

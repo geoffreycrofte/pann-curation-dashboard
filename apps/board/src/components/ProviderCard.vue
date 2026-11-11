@@ -124,7 +124,8 @@ const { mutate: save, isLoading: saving } = useMutation({
 
 // The accounts are listed by a job: read them again a few seconds later.
 const { mutate: refreshAccounts, isLoading: refreshing } = useMutation({
-  mutation: () => api.refreshCredential(props.workspaceId, props.provider as 'zernio' | 'brevo'),
+  mutation: () =>
+    api.refreshCredential(props.workspaceId, props.provider as 'zernio' | 'brevo' | 'sendfox'),
   onSuccess() {
     isError.value = false
     message.value = t('connections.refreshRequested')
@@ -206,25 +207,35 @@ const { mutate: remove } = useMutation({
           </button>
         </div>
       </template>
-      <template v-if="provider === 'brevo' && credential">
-        <h4 :id="`${id}-lists`" class="sub-title">{{ t('connections.listsTitle') }}</h4>
+      <template v-if="(provider === 'brevo' || provider === 'sendfox') && credential">
+        <h4 :id="`${id}-lists`" class="sub-title">
+          {{
+            t('connections.listsTitle', { service: t(`connections.providers.${provider}.name`) })
+          }}
+        </h4>
         <ul v-if="credential.meta.lists?.length" :aria-labelledby="`${id}-lists`">
           <li v-for="list in credential.meta.lists" :key="list.id">
             {{ t('connections.listLine', { name: list.name, count: list.subscribers ?? '?' }) }}
           </li>
         </ul>
-        <p v-else>{{ t('connections.noLists') }}</p>
-        <h4 :id="`${id}-senders`" class="sub-title">{{ t('connections.sendersTitle') }}</h4>
-        <ul v-if="credential.meta.senders?.length" :aria-labelledby="`${id}-senders`">
-          <li v-for="sender in credential.meta.senders" :key="sender.id">
-            {{ t('connections.senderLine', { name: sender.name, email: sender.email }) }}
-            <span v-if="!sender.active">({{ t('connections.inactive') }})</span>
-          </li>
-        </ul>
-        <p v-else>{{ t('connections.noSenders') }}</p>
+        <p v-else>
+          {{ t('connections.noLists', { service: t(`connections.providers.${provider}.name`) }) }}
+        </p>
+        <template v-if="provider === 'brevo'">
+          <h4 :id="`${id}-senders`" class="sub-title">{{ t('connections.sendersTitle') }}</h4>
+          <ul v-if="credential.meta.senders?.length" :aria-labelledby="`${id}-senders`">
+            <li v-for="sender in credential.meta.senders" :key="sender.id">
+              {{ t('connections.senderLine', { name: sender.name, email: sender.email }) }}
+              <span v-if="!sender.active">({{ t('connections.inactive') }})</span>
+            </li>
+          </ul>
+          <p v-else>{{ t('connections.noSenders') }}</p>
+        </template>
         <div>
           <button type="button" class="button" :disabled="refreshing" @click="refreshAccounts()">
-            {{ t('connections.refreshBrevo') }}
+            {{
+              provider === 'brevo' ? t('connections.refreshBrevo') : t('connections.refreshLists')
+            }}
           </button>
         </div>
       </template>

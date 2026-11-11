@@ -1,18 +1,19 @@
-import { parseTopicConfig, type CredentialMeta } from '@pann/shared'
+import { parseTopicConfig, type CredentialMeta, type NewsletterProvider } from '@pann/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { readBrevoAccount } from './brevo'
+import { readSendfoxAccount } from './sendfox'
 import { lastSentIssueStart, loadDigestContent } from './content'
 import type { DigestStore } from './digest'
 
 const day = (date: Date) => date.toISOString().slice(0, 10)
 
-async function brevoKey(db: SupabaseClient, workspaceId: string) {
+async function providerKey(db: SupabaseClient, workspaceId: string, provider: NewsletterProvider) {
   const { data, error } = await db.rpc('workspace_credentials_for_jobs', {
     p_workspace_id: workspaceId,
   })
   if (error) throw error
   return ((data ?? []) as { provider: string; secret: string }[]).find(
-    (r) => r.provider === 'brevo',
+    (r) => r.provider === provider,
   )?.secret
 }
 
@@ -43,7 +44,7 @@ export function supabaseDigestStore(db: SupabaseClient): DigestStore {
 
     lastSentIssueStart: (topicId, lang) => lastSentIssueStart(db, topicId, lang),
     content: (q) => loadDigestContent(db, q),
-    brevoKey: (workspaceId) => brevoKey(db, workspaceId),
+    newsletterKey: (workspaceId, provider) => providerKey(db, workspaceId, provider),
 
     async createIssue(row) {
       const { data, error } = await db
@@ -87,7 +88,7 @@ export function supabaseDigestStore(db: SupabaseClient): DigestStore {
       if (error) throw error
     },
 
-    async markCredentialInvalid(workspaceId) {
+    async markCredentialInvalid(workspaceId, provider) {
       const { error } = await db
         .from('workspace_credentials')
         .update({
@@ -96,17 +97,22 @@ export function supabaseDigestStore(db: SupabaseClient): DigestStore {
           checked_at: new Date().toISOString(),
         })
         .eq('workspace_id', workspaceId)
-        .eq('provider', 'brevo')
+        .eq('provider', provider)
       if (error) throw error
     },
   }
 }
 
-/** Lists and senders read again (new list in Brevo, sender validated…). */
-export async function refreshBrevoAccount(db: SupabaseClient, workspaceId: string) {
-  const key = await brevoKey(db, workspaceId)
+/** Lists (and Brevo senders) read again: a new list, a sender validated… */
+export async function refreshNewsletterAccount(
+  db: SupabaseClient,
+  workspaceId: string,
+  provider: NewsletterProvider,
+) {
+  const key = await providerKey(db, workspaceId, provider)
   if (!key) return
-  const result = await readBrevoAccount(key)
+  const result =
+    provider === 'sendfox' ? await readSendfoxAccount(key) : await readBrevoAccount(key)
   const now = new Date().toISOString()
   const update = result.ok
     ? {
@@ -115,7 +121,7 @@ export async function refreshBrevoAccount(db: SupabaseClient, workspaceId: strin
         checked_at: now,
         meta: {
           lists: result.lists,
-          senders: result.senders,
+          ...('senders' in result ? { senders: result.senders } : {}),
           refreshed_at: now,
         } satisfies CredentialMeta,
       }
@@ -126,6 +132,6 @@ export async function refreshBrevoAccount(db: SupabaseClient, workspaceId: strin
     .from('workspace_credentials')
     .update(update)
     .eq('workspace_id', workspaceId)
-    .eq('provider', 'brevo')
+    .eq('provider', provider)
   if (error) throw error
 }

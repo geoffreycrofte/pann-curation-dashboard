@@ -8,7 +8,7 @@ import { claudeEngagementModel } from '../engagement/model'
 import { supabaseEngagementStore } from '../engagement/store'
 import { triageConversations } from '../engagement/triage'
 import type { Env } from '../env'
-import { sendBrevoCampaign } from '../newsletter/brevo'
+import { sendCampaign } from '../newsletter/send'
 import { sendDigests } from '../newsletter/digest'
 import { supabaseDigestStore } from '../newsletter/store'
 import { publish } from '../publish/publish'
@@ -53,7 +53,7 @@ export async function runScheduled(controller: ScheduledController, env: Env): P
       // Newsletters whose weekly time has come (topics that send automatically).
       const digests = await sendDigests({
         store: supabaseDigestStore(db),
-        send: sendBrevoCampaign,
+        send: sendCampaign,
         mode: 'scheduled',
       })
       if (digests.length) console.log(JSON.stringify({ job: 'digest', reports: digests }))

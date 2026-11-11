@@ -1,7 +1,15 @@
 import type { SourceType } from './domain'
 
 /** External services whose keys are set per workspace, from the board. */
-export const PROVIDERS = ['anthropic', 'exa', 'github', 'zernio', 'mastodon', 'brevo'] as const
+export const PROVIDERS = [
+  'anthropic',
+  'exa',
+  'github',
+  'zernio',
+  'mastodon',
+  'brevo',
+  'sendfox',
+] as const
 export type Provider = (typeof PROVIDERS)[number]
 
 export const CREDENTIAL_STATUSES = ['unchecked', 'ok', 'invalid'] as const
@@ -36,17 +44,22 @@ export interface CredentialMeta {
   acct?: string
   /** mastodon: maximum length of a post on this instance. */
   max_characters?: number
-  /** brevo: contact lists and senders, to choose them in the topic settings. */
-  lists?: BrevoList[]
+  /** brevo, sendfox: contact lists (and Brevo senders), to choose them in the topic settings. */
+  lists?: NewsletterList[]
   senders?: BrevoSender[]
   refreshed_at?: string
 }
 
-export interface BrevoList {
+/** Services that send the newsletter. */
+export const NEWSLETTER_PROVIDERS = ['brevo', 'sendfox'] as const
+export type NewsletterProvider = (typeof NEWSLETTER_PROVIDERS)[number]
+
+export interface NewsletterList {
   id: number
   name: string
   subscribers: number | null
 }
+export type BrevoList = NewsletterList
 
 export interface BrevoSender {
   id: number
@@ -84,6 +97,8 @@ export const PROVIDER_INFO: Record<Provider, ProviderInfo> = {
     need: 'newsletter',
     url: 'https://help.brevo.com/hc/en-us/articles/209467485-Create-and-manage-your-API-keys',
   },
+  // Checked 2026-11-11 (sendfox.com/developer/docs): personal access tokens.
+  sendfox: { need: 'newsletter', url: 'https://sendfox.com/account/oauth' },
 }
 
 /** Provider whose key a source type needs to run (GitHub works without, but is rate limited). */

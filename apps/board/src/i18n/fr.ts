@@ -155,13 +155,14 @@ export default {
     refreshRequested: 'Actualisation demandée : la liste se met à jour dans quelques secondes.',
     mastodonAccount: 'Compte : {acct}',
     mastodonLimit: 'Longueur maximale d’un post sur cette instance : {count} caractères.',
-    listsTitle: 'Listes de contacts dans Brevo',
+    listsTitle: 'Listes de contacts dans {service}',
     sendersTitle: 'Expéditeurs dans Brevo',
-    noLists: 'Aucune liste de contacts dans Brevo pour l’instant.',
+    noLists: 'Aucune liste de contacts dans {service} pour l’instant.',
     noSenders: 'Aucun expéditeur dans Brevo pour l’instant.',
     listLine: '{name} ({count} contacts)',
     senderLine: '{name} <{email}>',
     refreshBrevo: 'Actualiser les listes et les expéditeurs',
+    refreshLists: 'Actualiser les listes',
     detail: {
       no_free_check:
         'Ce service ne propose pas de vérification gratuite : la clé sera vérifiée à la première collecte d’une source « Recherche Exa ». Pour la vérifier tout de suite, utilisez « Collecter maintenant » sur une de ces sources.',
@@ -254,6 +255,19 @@ export default {
         ],
         cost: 'Le plan gratuit de Brevo limite le nombre d’e-mails envoyés par jour : vérifiez qu’il couvre vos listes.',
         link: 'Aide Brevo : créer et gérer ses clés API',
+      },
+      sendfox: {
+        name: 'SendFox',
+        purpose:
+          'Envoi de la newsletter, une campagne par langue, à la liste de contacts de cette langue. Une autre option que Brevo.',
+        steps: [
+          'Créez un compte sur sendfox.com, puis une liste de contacts par langue.',
+          'Dans les réglages du compte, enregistrez l’expéditeur par défaut (nom et adresse) et le fuseau horaire : Pann envoie avec cet expéditeur, et SendFox exige le fuseau pour créer une campagne.',
+          'Ouvrez la page des jetons (Account, OAuth) et créez un jeton d’accès personnel nommé « Pann », puis copiez-le.',
+          'Ensuite, dans les réglages de chaque thème (Newsletter), choisissez SendFox et la liste de chaque langue.',
+        ],
+        cost: 'Selon l’offre SendFox. Les campagnes envoyées par l’API passent par ses contrôles habituels : validation du contenu et limites d’envoi d’un nouveau compte.',
+        link: 'Créer un jeton SendFox',
       },
     },
   },
@@ -413,7 +427,7 @@ export default {
   newsletter: {
     heading: 'Newsletter : {topic}',
     intro:
-      'Chaque newsletter reprend les éléments programmés ou publiés sur les réseaux qu’aucune newsletter n’a encore envoyés, avec leur résumé dans sa langue. Une campagne Brevo par langue.',
+      'Chaque newsletter reprend les éléments programmés ou publiés sur les réseaux qu’aucune newsletter n’a encore envoyés, avec leur résumé dans sa langue. Une campagne par langue, avec Brevo ou SendFox.',
     nextAuto: 'Prochain envoi automatique : {date}.',
     manual:
       'Envoi automatique désactivé : la newsletter part quand vous cliquez sur « Envoyer maintenant ».',
@@ -608,7 +622,7 @@ export default {
     },
     newsletter: {
       title: 'Le coffret de la semaine',
-      text: 'Les pépites programmées et publiées remplissent la newsletter : un envoi par langue avec Brevo, le jour et à l’heure que vous fixez. Un flux RSS public les présente aussi sur votre site.',
+      text: 'Les pépites programmées et publiées remplissent la newsletter : un envoi par langue avec Brevo ou SendFox, le jour et à l’heure que vous fixez. Un flux RSS public les présente aussi sur votre site.',
       alt: 'Une caisse en bois ouverte, pleine de pépites et nouée d’un ruban.',
     },
     engagement: {
@@ -1040,7 +1054,7 @@ export default {
       'Compte introuvable dans Zernio : {account}. Actualisez la liste dans Connexions.',
     newsletter: 'Newsletter',
     newsletterHint:
-      'Une campagne Brevo par langue, avec les éléments programmés ou publiés sur les réseaux qu’aucune newsletter n’a encore envoyés. Le nom et l’introduction sont les vôtres.',
+      'Une campagne par langue, avec les éléments programmés ou publiés sur les réseaux qu’aucune newsletter n’a encore envoyés. Le nom et l’introduction sont les vôtres.',
     autoSend: 'Envoyer automatiquement chaque semaine',
     autoSendHint:
       'Sinon, la newsletter ne part que depuis l’onglet « Newsletter », quand vous le décidez.',
@@ -1075,6 +1089,10 @@ export default {
       'Dans l’ordre des types du thème ; les éléments sans type viennent à la fin.',
     noBrevo:
       'Ajoutez d’abord une clé Brevo dans Connexions pour choisir l’expéditeur et les listes.',
+    noSendfox: 'Ajoutez d’abord un jeton SendFox dans Connexions pour choisir les listes.',
+    newsletterProvider: 'Service d’envoi',
+    newsletterProviderHint:
+      'La clé du service se règle dans Connexions. SendFox envoie avec l’expéditeur par défaut de votre compte.',
     feed: 'Flux public',
     feedHint:
       'Flux RSS et JSON des éléments validés, avec leur résumé, un par langue. À brancher sur un lecteur de flux ou sur une page de veille (CheckFox, par exemple).',

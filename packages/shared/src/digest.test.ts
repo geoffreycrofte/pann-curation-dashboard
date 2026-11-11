@@ -78,6 +78,13 @@ describe('renderDigest', () => {
     expect(renderDigest({ ...input, preview: true }).html).not.toContain('{{')
   })
 
+  it('uses the SendFox unsubscribe link, without a web version link', () => {
+    const { html } = renderDigest({ ...input, provider: 'sendfox' })
+    expect(html).toContain('href="{{unsubscribe_url}}"')
+    expect(html).not.toContain('{{ mirror }}')
+    expect(html).toContain('<body')
+  })
+
   it('applies the look set by the user: logo, accent, footer', () => {
     const { html } = renderDigest({
       ...input,

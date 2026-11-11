@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { DRAFT_MODES, LANGS, type Lang } from './domain'
 import { DRAFT_CHANNELS } from './drafting'
+import { NEWSLETTER_PROVIDERS } from './providers'
 import { domainSchema } from './source-config'
 
 /** Interval bounds, in hours: 1 hour to 90 days. */
@@ -186,15 +187,17 @@ export const topicConfigSchema = z.object({
     })
     .prefault({}),
   /**
-   * Weekly newsletter (Brevo): one campaign per output language, sent to the list of
-   * that language. Content: the items scheduled or published on the social networks
+   * Weekly newsletter (Brevo or SendFox): one campaign per output language, sent to the
+   * list of that language. Content: the items scheduled or published on the social networks
    * that no earlier issue of this language held.
    */
   newsletter: z
     .object({
       /** Off: the newsletter is only sent from the board ("Send now"). */
       auto_send: z.boolean().default(false),
-      /** Brevo sender id (Brevo checks the sender address). */
+      /** Service that sends it; its key is set on the Connections page. */
+      provider: z.enum(NEWSLETTER_PROVIDERS).default('brevo'),
+      /** Brevo sender id (Brevo checks the sender address). SendFox uses the account's sender. */
       sender_id: z.number().int().positive().nullable().default(null),
       lists: z
         .object({

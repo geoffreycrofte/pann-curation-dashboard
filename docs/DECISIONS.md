@@ -301,3 +301,12 @@ Réglages du thème (Newsletter, Apparence), appliqués à l'aperçu et à l'env
 - **Regroupement par type de contenu** : un titre par type (dans l'ordre des types du thème), les éléments passent en titres de niveau 3 ; les éléments sans type connu sous « Autres ».
 
 Le reste du gabarit reste fixe : il garantit l'accessibilité de l'e-mail (langue, rôle article, titres, liens soulignés, contrastes).
+
+## 2026-11-11 : SendFox, second service de newsletter
+
+Chaque thème choisit son service d'envoi (`newsletter.provider` : `brevo` par défaut, ou `sendfox`) ; la clé se règle dans Connexions comme les autres. Vérifié le 2026-11-11 sur sendfox.com/developer/docs (API 1.6.0) :
+
+- **Clé** : un jeton d'accès personnel (`Authorization: Bearer`), vérifié par `GET /me` ; les listes viennent de `GET /lists` (abonnés joignables : `subscribed_contacts_count`).
+- **Envoi** : `POST /campaigns` (brouillon adressé à la liste de la langue, `web_publish: false` car les flux publics de Pann publient sur le web), puis `POST /campaigns/{id}/send`. Pas d'expéditeur à choisir : SendFox envoie avec celui du compte, et exige un fuseau horaire réglé dans le compte.
+- **Gabarit** : SendFox exige `{{unsubscribe_url}}` et un `<body>` ; il n'a pas de lien « voir en ligne », la ligne disparaît (`renderDigest` choisit les liens selon le service). Hors mise en page « Code Your Own », SendFox retire les balises hors de son éditeur : à vérifier sur un premier envoi réel.
+- 60 requêtes par minute, partagées entre tous les appels : un envoi en fait deux par langue.

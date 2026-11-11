@@ -65,13 +65,13 @@ export const credentials = new Hono<AppEnv>()
   })
 
   /**
-   * Reads the Zernio accounts or the Brevo lists and senders again. The key is read
+   * Reads the Zernio accounts, or the Brevo or SendFox lists (and Brevo senders), again. The key is read
    * by a job (secret key), after RLS has shown that the user is a member.
    */
   .post('/:provider/refresh', async (c) => {
     const workspaceId = c.req.param('workspaceId')!
     const p = provider(c.req.param('provider'))
-    if (p !== 'zernio' && p !== 'brevo')
+    if (p !== 'zernio' && p !== 'brevo' && p !== 'sendfox')
       throw new HTTPException(404, { message: 'Nothing to refresh' })
     const { data, error } = await c.var.db
       .from('workspace_credentials')
