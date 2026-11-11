@@ -1041,6 +1041,18 @@ export default {
     newsletterTitleHint: 'Left empty, the topic name is used.',
     newsletterIntro: 'Introduction in {lang}',
     newsletterIntroHint: 'Text at the top of each issue. Optional.',
+    newsletterFooter: 'Footer in {lang}',
+    newsletterFooterHint:
+      'Below the items: who sends the newsletter, an address, a link. Optional. The unsubscribe link is always added.',
+    newsletterLook: 'Look',
+    newsletterLogo: 'Logo (address of an image)',
+    newsletterLogoHint:
+      'An https image, shown above the name (160 pixels wide). Some email clients hide images: the name stays written as text.',
+    newsletterAccent: 'Accent color',
+    newsletterAccentHint:
+      'Decorative: a band at the top and a mark beside each item. No text is placed on it.',
+    newsletterGroup: 'Group the items by content kind',
+    newsletterGroupHint: 'In the order of the kinds of the topic; items without a kind come last.',
     noBrevo: 'First add a Brevo key in Connections to choose the sender and the lists.',
     feed: 'Public feed',
     feedHint:

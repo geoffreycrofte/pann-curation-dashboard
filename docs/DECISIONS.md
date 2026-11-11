@@ -290,3 +290,14 @@ Une newsletter reprenait les éléments **validés** depuis la précédente. Ell
 - **Fenêtre** : depuis le début du dernier envoi (un élément manqué faute de résumé a une seconde chance), ou, pour le premier envoi, depuis le jour réglé par l'utilisateur (`newsletter.first_issue_from`), à défaut les 7 derniers jours.
 - Un élément programmé pour la semaine suivante peut donc partir dans la newsletter avant son post : c'est voulu, la newsletter annonce ce qui est choisi.
 - Au plus 100 éléments par envoi, dans l'ordre de leur créneau.
+
+## 2026-11-11 : apparence de la newsletter
+
+Réglages du thème (Newsletter, Apparence), appliqués à l'aperçu et à l'envoi (`digestLook`) :
+
+- **Logo** : une image en https au-dessus du nom, décorative (`alt=""`) car le nom suit en texte ; une adresse qui n'est pas en https est ignorée.
+- **Couleur d'accent** : un bandeau en haut et un trait à gauche de chaque élément, sans texte posé dessus, donc sans contrainte de contraste. Pann la refuse si ce n'est pas une couleur `#rrggbb`.
+- **Pied de page** par langue, au-dessus de la mention d'inscription et du lien de désabonnement, qui restent toujours.
+- **Regroupement par type de contenu** : un titre par type (dans l'ordre des types du thème), les éléments passent en titres de niveau 3 ; les éléments sans type connu sous « Autres ».
+
+Le reste du gabarit reste fixe : il garantit l'accessibilité de l'e-mail (langue, rôle article, titres, liens soulignés, contrastes).

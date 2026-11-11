@@ -5,6 +5,7 @@ interface Row {
   item_id: string
   status: string
   publish_at: string
+  kind: string | null
   item: { title: string; canonical_url: string; source_lang: string | null }
 }
 
@@ -31,7 +32,7 @@ export async function loadDigestContent(
 ): Promise<DigestContent> {
   const { data, error } = await db
     .from('item_topics')
-    .select('item_id, status, publish_at, item:items (title, canonical_url, source_lang)')
+    .select('item_id, status, publish_at, kind, item:items (title, canonical_url, source_lang)')
     .eq('topic_id', q.topicId)
     .eq('module', 'curation')
     .in('status', ['validated', 'published'])
@@ -77,6 +78,7 @@ export async function loadDigestContent(
       url: row.item.canonical_url,
       summary: byItem.get(row.item_id)!,
       source_lang: row.item.source_lang,
+      kind: row.kind,
     })),
     item_ids: kept.map((row) => row.item_id),
     without_summary: eligible.length - kept.length,

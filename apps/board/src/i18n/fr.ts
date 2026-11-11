@@ -1060,6 +1060,19 @@ export default {
     newsletterTitleHint: 'Laissé vide, le nom du thème est utilisé.',
     newsletterIntro: 'Introduction en {lang}',
     newsletterIntroHint: 'Texte en haut de chaque newsletter. Facultatif.',
+    newsletterFooter: 'Pied de page en {lang}',
+    newsletterFooterHint:
+      'Sous les éléments : qui envoie la newsletter, une adresse, un lien. Facultatif. Le lien de désabonnement est toujours ajouté.',
+    newsletterLook: 'Apparence',
+    newsletterLogo: 'Logo (adresse d’une image)',
+    newsletterLogoHint:
+      'Une image en https, affichée au-dessus du nom (160 pixels de large). Certaines messageries masquent les images : le nom reste écrit en texte.',
+    newsletterAccent: 'Couleur d’accent',
+    newsletterAccentHint:
+      'Décorative : un bandeau en haut et un trait à côté de chaque élément. Aucun texte n’est posé dessus.',
+    newsletterGroup: 'Regrouper les éléments par type de contenu',
+    newsletterGroupHint:
+      'Dans l’ordre des types du thème ; les éléments sans type viennent à la fin.',
     noBrevo:
       'Ajoutez d’abord une clé Brevo dans Connexions pour choisir l’expéditeur et les listes.',
     feed: 'Flux public',

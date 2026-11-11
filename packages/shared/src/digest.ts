@@ -66,6 +66,8 @@ export interface DigestItem {
   summary: string
   /** Language of the title (titles stay in the language of the source). */
   source_lang: string | null
+  /** Content kind of the item in the topic (key), for grouping. */
+  kind?: string | null
 }
 
 export interface DigestInput {
@@ -79,25 +81,37 @@ export interface DigestInput {
   timezone: string
   /** Preview in the board: Brevo placeholders are not replaced there. */
   preview?: boolean
+  /** https image above the name; decorative (the name follows as text). */
+  logoUrl?: string
+  /** Decorative color: top band and a mark beside each item. Default: Pann gold. */
+  accentColor?: string
+  /** Text at the bottom, written by the user. */
+  footer?: string
+  /** When set, items are grouped under these kinds, in this order (label in `lang`). */
+  groups?: { key: string; label: string }[]
 }
 
 /**
  * Fixed texts of the email: links that the law or the email clients require. Everything
  * the user may want to change (name, introduction) comes from the topic settings.
  */
-export const DIGEST_STRINGS: Record<Lang, { mirror: string; unsubscribe: string; reason: string }> =
-  {
-    fr: {
-      mirror: 'Voir dans le navigateur',
-      unsubscribe: 'Se désabonner',
-      reason: 'Vous recevez cette newsletter suite à votre inscription.',
-    },
-    en: {
-      mirror: 'View in your browser',
-      unsubscribe: 'Unsubscribe',
-      reason: 'You receive this newsletter because you subscribed to it.',
-    },
-  }
+export const DIGEST_STRINGS: Record<
+  Lang,
+  { mirror: string; unsubscribe: string; reason: string; other: string }
+> = {
+  fr: {
+    mirror: 'Voir dans le navigateur',
+    unsubscribe: 'Se désabonner',
+    reason: 'Vous recevez cette newsletter suite à votre inscription.',
+    other: 'Autres',
+  },
+  en: {
+    mirror: 'View in your browser',
+    unsubscribe: 'Unsubscribe',
+    reason: 'You receive this newsletter because you subscribed to it.',
+    other: 'Other',
+  },
+}
 
 const ESCAPES: Record<string, string> = {
   '&': '&amp;',
@@ -136,6 +150,22 @@ export function digestSubject(input: Pick<DigestInput, 'lang' | 'title' | 'date'
   return `${input.title}, ${date}`
 }
 
+/** The look of an issue in `lang`, from the newsletter settings of the topic. */
+export function digestLook(
+  config: Pick<TopicConfig, 'newsletter' | 'kinds'>,
+  lang: Lang,
+): Pick<DigestInput, 'logoUrl' | 'accentColor' | 'footer' | 'groups'> {
+  const { newsletter } = config
+  return {
+    logoUrl: newsletter.logo_url,
+    accentColor: newsletter.accent_color,
+    footer: lang === 'fr' ? newsletter.footer_fr : newsletter.footer_en,
+    groups: newsletter.group_by_kind
+      ? config.kinds.map((k) => ({ key: k.key, label: lang === 'fr' ? k.label_fr : k.label_en }))
+      : undefined,
+  }
+}
+
 // Email colors: dark text on white, contrast above 7:1 for the text, 4.5:1 for the meta.
 const INK = '#141414'
 const MUTED = '#5f5a4e'
@@ -143,6 +173,40 @@ const LINK = '#5c4300'
 const PAGE = '#f6f3ea'
 const LINE = '#e6e1d3'
 const FONT = 'font-family:Arial,Helvetica,sans-serif;'
+const DEFAULT_ACCENT = '#ffc72c'
+
+function itemRow(item: DigestItem, lang: Lang, heading: 'h2' | 'h3', accent: string): string {
+  const titleLang =
+    item.source_lang && item.source_lang !== lang ? ` lang="${escapeHtml(item.source_lang)}"` : ''
+  return `<tr><td style="padding:20px 28px 20px 24px;border-top:1px solid ${LINE};border-left:4px solid ${accent};${FONT}color:${INK};">
+<${heading} style="margin:0 0 8px;font-size:19px;line-height:1.35;"><a href="${escapeHtml(item.url)}"${titleLang} style="color:${INK};text-decoration:underline;">${escapeHtml(item.title)}</a></${heading}>
+<p style="margin:0 0 8px;font-size:16px;line-height:1.55;">${escapeHtml(item.summary)}</p>
+<p style="margin:0;font-size:13px;line-height:1.4;color:${MUTED};">${escapeHtml(host(item.url))}</p>
+</td></tr>`
+}
+
+/** Items under their kind (h2), kinds in the order given, items without a known kind last. */
+function groupedRows(input: DigestInput, accent: string): string {
+  const groups = input.groups ?? []
+  const known = new Set(groups.map((g) => g.key))
+  const sections = [
+    ...groups.map((g) => ({ label: g.label, items: input.items.filter((i) => i.kind === g.key) })),
+    {
+      label: DIGEST_STRINGS[input.lang].other,
+      items: input.items.filter((i) => !i.kind || !known.has(i.kind)),
+    },
+  ].filter((section) => section.items.length)
+  return sections
+    .map(
+      (
+        section,
+      ) => `<tr><td style="padding:24px 28px 8px;border-top:1px solid ${LINE};${FONT}color:${INK};">
+<h2 style="margin:0;font-size:22px;line-height:1.3;">${escapeHtml(section.label)}</h2>
+</td></tr>
+${section.items.map((item) => itemRow(item, input.lang, 'h3', accent)).join('\n')}`,
+    )
+    .join('\n')
+}
 
 /**
  * Accessible HTML email: language declared, content wrapped as recommended by the Email
@@ -160,19 +224,16 @@ export function renderDigest(input: DigestInput): { subject: string; html: strin
   const mirror = input.preview ? '#' : '{{ mirror }}'
   const unsubscribe = input.preview ? '#' : '{{ unsubscribe }}'
 
-  const items = input.items
-    .map((item) => {
-      const titleLang =
-        item.source_lang && item.source_lang !== input.lang
-          ? ` lang="${escapeHtml(item.source_lang)}"`
-          : ''
-      return `<tr><td style="padding:20px 28px;border-top:1px solid ${LINE};${FONT}color:${INK};">
-<h2 style="margin:0 0 8px;font-size:19px;line-height:1.35;"><a href="${escapeHtml(item.url)}"${titleLang} style="color:${INK};text-decoration:underline;">${escapeHtml(item.title)}</a></h2>
-<p style="margin:0 0 8px;font-size:16px;line-height:1.55;">${escapeHtml(item.summary)}</p>
-<p style="margin:0;font-size:13px;line-height:1.4;color:${MUTED};">${escapeHtml(host(item.url))}</p>
-</td></tr>`
-    })
-    .join('\n')
+  const accent = /^#[0-9a-f]{6}$/i.test(input.accentColor ?? '')
+    ? input.accentColor!
+    : DEFAULT_ACCENT
+  const items = input.groups
+    ? groupedRows(input, accent)
+    : input.items.map((item) => itemRow(item, input.lang, 'h2', accent)).join('\n')
+  // Decorative: the name of the newsletter follows as text.
+  const logo = /^https:\/\//.test(input.logoUrl ?? '')
+    ? `<img src="${escapeHtml(input.logoUrl!)}" alt="" width="160" style="display:block;max-width:160px;height:auto;margin:0 0 16px;border:0;">\n`
+    : ''
 
   const html = `<!doctype html>
 <html lang="${input.lang}">
@@ -186,15 +247,16 @@ export function renderDigest(input: DigestInput): { subject: string; html: strin
 <div role="article" aria-roledescription="email" aria-label="${escapeHtml(subject)}" lang="${input.lang}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${PAGE};">
 <tr><td align="center" style="padding:24px 12px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border-radius:12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border-radius:12px;border-top:6px solid ${accent};">
 <tr><td style="padding:24px 28px 16px;${FONT}color:${INK};">
 <p style="margin:0 0 20px;font-size:13px;"><a href="${mirror}" style="color:${LINK};text-decoration:underline;">${escapeHtml(s.mirror)}</a></p>
-<h1 style="margin:0;font-size:28px;line-height:1.2;">${escapeHtml(input.title)}</h1>
+${logo}<h1 style="margin:0;font-size:28px;line-height:1.2;">${escapeHtml(input.title)}</h1>
 <p style="margin:8px 0 0;font-size:14px;color:${MUTED};">${escapeHtml(date)}</p>
 ${paragraphs(input.intro, 'margin:16px 0 0;font-size:16px;line-height:1.55;')}
 </td></tr>
 ${items}
 <tr><td style="padding:20px 28px 24px;border-top:1px solid ${LINE};${FONT}font-size:13px;line-height:1.5;color:${MUTED};">
+${paragraphs(input.footer ?? '', 'margin:0 0 8px;')}
 <p style="margin:0 0 8px;">${escapeHtml(s.reason)}</p>
 <p style="margin:0;"><a href="${unsubscribe}" style="color:${LINK};text-decoration:underline;">${escapeHtml(s.unsubscribe)}</a></p>
 </td></tr>

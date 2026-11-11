@@ -162,6 +162,65 @@ const { mutate, isLoading } = useMutation({
         ></textarea>
         <p :id="`${id}-intro-${lang}-hint`" class="hint">{{ t('settings.newsletterIntroHint') }}</p>
       </div>
+      <div class="form-row">
+        <label :for="`${id}-footer-${lang}`">
+          {{ t('settings.newsletterFooter', { lang: t(`draft.langs.${lang}`) }) }}
+        </label>
+        <textarea
+          :id="`${id}-footer-${lang}`"
+          v-model="form[lang === 'fr' ? 'footer_fr' : 'footer_en']"
+          class="field"
+          rows="2"
+          maxlength="1000"
+          :lang="lang"
+          :aria-describedby="`${id}-footer-${lang}-hint`"
+        ></textarea>
+        <p :id="`${id}-footer-${lang}-hint`" class="hint">
+          {{ t('settings.newsletterFooterHint') }}
+        </p>
+      </div>
+    </fieldset>
+
+    <fieldset class="lang-block">
+      <legend>{{ t('settings.newsletterLook') }}</legend>
+      <div class="form-row">
+        <label :for="`${id}-logo`">{{ t('settings.newsletterLogo') }}</label>
+        <input
+          :id="`${id}-logo`"
+          v-model.trim="form.logo_url"
+          class="field"
+          type="url"
+          inputmode="url"
+          pattern="https://.*"
+          placeholder="https://"
+          :aria-describedby="`${id}-logo-hint`"
+        />
+        <p :id="`${id}-logo-hint`" class="hint">{{ t('settings.newsletterLogoHint') }}</p>
+      </div>
+      <div class="form-row">
+        <label :for="`${id}-accent`">{{ t('settings.newsletterAccent') }}</label>
+        <div class="color">
+          <input
+            :id="`${id}-accent`"
+            v-model="form.accent_color"
+            class="swatch"
+            type="color"
+            :aria-describedby="`${id}-accent-hint`"
+          />
+          <code>{{ form.accent_color }}</code>
+        </div>
+        <p :id="`${id}-accent-hint`" class="hint">{{ t('settings.newsletterAccentHint') }}</p>
+      </div>
+      <div class="check-row">
+        <input
+          :id="`${id}-group`"
+          v-model="form.group_by_kind"
+          type="checkbox"
+          :aria-describedby="`${id}-group-hint`"
+        />
+        <label :for="`${id}-group`">{{ t('settings.newsletterGroup') }}</label>
+      </div>
+      <p :id="`${id}-group-hint`" class="hint">{{ t('settings.newsletterGroupHint') }}</p>
     </fieldset>
 
     <div>
@@ -191,6 +250,23 @@ const { mutate, isLoading } = useMutation({
   grid-template-columns: repeat(auto-fill, minmax(min(12rem, 100%), 1fr));
   align-items: start;
   gap: var(--space-4);
+}
+
+.color {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* The native color picker, at the size of a touch target. */
+.swatch {
+  width: 3rem;
+  height: 2.75rem;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  cursor: pointer;
 }
 
 .grid .field {

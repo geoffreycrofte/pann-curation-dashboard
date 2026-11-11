@@ -1,4 +1,5 @@
 import {
+  digestLook,
   digestWindowStart,
   errorCode,
   lastDigestTime,
@@ -142,6 +143,7 @@ async function sendIssue(
     items: content.items,
     date: periodTo,
     timezone: schedule.timezone,
+    ...digestLook(topic.config, lang),
   })
   const id = await store.createIssue({
     ...base,

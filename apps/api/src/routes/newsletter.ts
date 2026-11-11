@@ -1,4 +1,5 @@
 import {
+  digestLook,
   digestWindowStart,
   LANGS,
   nextDigestTime,
@@ -62,6 +63,7 @@ export const newsletter = new Hono<AppEnv>()
           date: now,
           timezone: schedule.timezone,
           preview: true,
+          ...digestLook(topic.config, lang),
         })
         return {
           lang,

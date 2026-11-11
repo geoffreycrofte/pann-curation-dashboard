@@ -213,6 +213,18 @@ export const topicConfigSchema = z.object({
        * this day. Empty: the last DEFAULT_DIGEST_DAYS days.
        */
       first_issue_from: z.union([z.iso.date(), z.literal('')]).default(''),
+      /** Look of the email. Logo: an https image shown above the name (decorative). */
+      logo_url: z.union([z.url({ protocol: /^https$/ }), z.literal('')]).default(''),
+      /** Decorative color: a band at the top and a mark beside each item (no text on it). */
+      accent_color: z
+        .string()
+        .regex(/^#[0-9a-f]{6}$/i)
+        .default('#ffc72c'),
+      /** Text at the bottom of each issue (who sends it, an address, a link…). */
+      footer_fr: z.string().trim().max(1000).default(''),
+      footer_en: z.string().trim().max(1000).default(''),
+      /** Items grouped under the content kinds of the topic, in their order. */
+      group_by_kind: z.boolean().default(false),
     })
     .prefault({}),
   /**
