@@ -264,9 +264,11 @@ Les faits d'une conversation (plateforme, auteur, fil, points, réponses) sont s
 
 ## 2026-11-10 : onglet « Programmés » du tri
 
-« Programmés » n'est pas un statut : ce sont les éléments validés dont au moins un post attend son créneau (`posts.status = 'scheduled'`). L'onglet se place après « Validés » dans le tri, sans toucher aux transitions de statut ; un élément programmé reste aussi dans « Validés ». Son compteur vient de `GET /topics/:id/counts` (clé `scheduled`, curation seulement).
+« Programmés » n'est pas un statut : ce sont les éléments validés dont au moins un post attend son créneau (`posts.status = 'scheduled'`). L'onglet se place après « Validés » dans le tri, sans toucher aux transitions de statut. Son compteur vient de `GET /topics/:id/counts` (clé `scheduled`, curation seulement).
 
 Deux vues, gardées dans l'adresse (`view=week`, `week=AAAA-MM-JJ`) : une liste des prochaines publications groupées par jour, et un planning de la semaine (du lundi au dimanche) qui montre aussi ce qui est parti ou a échoué, et les créneaux encore libres à partir de maintenant. Jours et heures sont ceux du fuseau du thème (`schedule.timezone`), comme les créneaux. Le planning lit `GET /topics/:id/queue?from=&to=`. Un jour par ligne plutôt que sept colonnes : à la largeur du contenu, une colonne ferait 120 pixels et les titres seraient illisibles.
+
+**Mise à jour (2026-11-10) : les filtres du tri en kanban.** Un élément programmé quitte « Validés » : la liste et le compteur `validated` excluent les éléments dont un post attend son créneau, l'onglet « Programmés » les reprend. Le statut en base reste `validated` (rien ne change dans les transitions) ; s'il est retiré de la file, l'élément revient dans « Validés ». Même règle pour `list_items` côté MCP, qui renvoie vers `get_queue`.
 
 ## 2026-11-10 : page d'accueil publique
 
