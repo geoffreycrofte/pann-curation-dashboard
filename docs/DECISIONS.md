@@ -281,3 +281,13 @@ Deux vues, gardées dans l'adresse (`view=week`, `week=AAAA-MM-JJ`) : une liste 
 **Mise à jour (2026-11-11) : illustrations détourées.** Le « plateau » sable qui encadrait les images ne rendait pas bien en thème sombre ni sur les fonds encre, or et olive. Chaque scène existe désormais en deux versions : la scène, dont le fond a été uni à la couleur exacte de sa section (`--color-scene-hero`, `--color-paper` pour les étapes, `--color-scene-budget`), avec les ombres au sol conservées ; et un détourage (fond transparent, ombre portée en CSS) pour le thème sombre et les sections colorées. Détourage fait avec rembg (modèle `isnet-general-use`), puis retouché : tas de sable du héros récupéré par la couleur, étiquette et avions en papier rendus opaques. L'en-tête ne garde que le nom et le bouton clair/sombre (les liens sont dans le héros) ; le choix de la langue passe dans le pied de page.
 
 **Mouvement** : un seul moment au chargement (la pépite du héros scintille, des grains tombent de la batée), les avions en papier qui dérivent, et le rail des étapes qui se remplit d'or au défilement (animation liée au défilement, rail plein là où elle n'existe pas). Tout est coupé avec `prefers-reduced-motion`.
+
+## 2026-11-11 : X, Facebook et Discord
+
+Trois réseaux de plus, publiés **par Zernio** comme LinkedIn et Bluesky (même clé, comptes connectés dans Zernio). Vérifié le 2026-11-11 sur docs.zernio.com :
+
+- **X** (`twitter` chez Zernio) : 280 caractères pour un compte gratuit, lien compté 23, emoji compté 2. X facture chaque appel à son API, refacturé par Zernio.
+- **Facebook** : une Page (pas de profil personnel). Facebook accepte 63 206 caractères mais coupe vers 480 derrière « Voir plus » : Pann garde la limite de LinkedIn (3 000).
+- **Discord** : un compte Zernio par salon ; `platformSpecificData.channelId` est obligatoire, lu au moment de publier (`GET /v1/accounts/{id}/discord-settings`) pour suivre un changement de salon. 2 000 caractères.
+
+**Rédaction** : LinkedIn, Bluesky et Mastodon restent rédigés pour chaque élément ; X, Facebook et Discord seulement dans les thèmes qui ont un compte pour eux (`draftChannels`), pour ne pas payer des posts que personne ne publiera. Un compte ajouté après coup : relancer la rédaction de l'élément. W reste sans API de publication connue.

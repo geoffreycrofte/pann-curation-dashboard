@@ -4,6 +4,7 @@ import {
   bodyLimit,
   composePost,
   dailySlots,
+  draftChannels,
   nextFreeSlot,
   publishedLength,
   startOfWeek,
@@ -72,11 +73,28 @@ describe('post length', () => {
     expect(composePost(' Hello ', url)).toBe(`Hello\n\n${url}`)
   })
 
+  it('counts links and emoji as X does', () => {
+    // 5 characters, blank line, link as 23; an emoji counts twice.
+    expect(publishedLength('x', 'Hello', url)).toBe(5 + 2 + 23)
+    expect(publishedLength('x', 'Hi 🎉', url)).toBe(5 + 2 + 23)
+    expect(bodyLimit('x', url)).toBe(280 - 2 - 23)
+  })
+
   it('counts links as Mastodon does', () => {
     expect(publishedLength('mastodon', 'Hello', url)).toBe(5 + 2 + 23)
     expect(publishedLength('bluesky', 'Hello', url)).toBe(5 + 2 + url.length)
     expect(bodyLimit('bluesky', url)).toBe(300 - 2 - url.length)
     expect(bodyLimit('mastodon', url, 1000)).toBe(1000 - 2 - 23)
+  })
+})
+
+describe('draftChannels', () => {
+  it('drafts the default channels, plus the ones the topic publishes to', () => {
+    expect(draftChannels(parseTopicConfig({}))).toEqual(['linkedin', 'bluesky', 'mastodon'])
+    const config = parseTopicConfig({
+      channels: [{ channel: 'discord', account_id: 'd1', langs: ['fr'] }],
+    })
+    expect(draftChannels(config)).toEqual(['linkedin', 'bluesky', 'mastodon', 'discord'])
   })
 })
 

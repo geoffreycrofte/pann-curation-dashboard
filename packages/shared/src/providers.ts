@@ -19,10 +19,21 @@ export interface WorkspaceCredential {
   meta: CredentialMeta
 }
 
+/** Pann channels published through Zernio, with Zernio's name for each platform. */
+export const ZERNIO_PLATFORMS = {
+  linkedin: 'linkedin',
+  bluesky: 'bluesky',
+  x: 'twitter',
+  facebook: 'facebook',
+  discord: 'discord',
+} as const
+export type ZernioChannel = keyof typeof ZERNIO_PLATFORMS
+
 /** Social accounts reachable through Zernio (only the channels Pann publishes to). */
 export interface ZernioAccount {
   id: string
-  platform: 'linkedin' | 'bluesky'
+  /** The Pann channel of the account (X is "twitter" at Zernio). */
+  platform: ZernioChannel
   username: string
   active: boolean
 }
