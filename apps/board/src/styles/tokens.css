@@ -36,11 +36,13 @@
   --color-danger-soft: light-dark(#fbe1dd, #3d1a16);
   /*
    * Illustration palette (marketing page): the sand, olive and wood of the 3D scenes.
-   * --color-paper is the background of the illustrations; --color-plate frames them
-   * in both themes. Olive is a fill with --color-on-olive text on it; wood is decorative.
+   * --color-paper is the background of the illustrations (steps section); the hero and
+   * budget sections take their own scene's. Olive is a fill with --color-on-olive text on it; wood is decorative.
    */
   --color-paper: light-dark(#f8ecd7, #1b1813);
-  --color-plate: #f8ecd7;
+  /* Backgrounds of the hero and budget scenes: their sections take them in the light theme. */
+  --color-scene-hero: light-dark(#fbecd3, #1b1813);
+  --color-scene-budget: light-dark(#faedda, #1b1813);
   --color-olive: #48542a;
   --color-on-olive: #f8ecd7;
   --color-on-olive-muted: #d8d2b4;

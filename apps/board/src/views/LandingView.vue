@@ -5,6 +5,7 @@ import LandingFigure from '../components/LandingFigure.vue'
 import PannMark from '../components/PannMark.vue'
 import { setLang } from '../i18n'
 import { ILLUSTRATIONS } from '../lib/landing-images'
+import { isDark, toggleTheme } from '../lib/theme'
 
 const { t, tm, rt, locale } = useI18n()
 
@@ -41,21 +42,25 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
         <PannMark :size="40" />
         <span class="brand-name">{{ t('app.name') }}</span>
       </RouterLink>
-      <nav :aria-label="t('landing.nav')" class="top-nav">
-        <a href="#how" class="top-link">{{ t('landing.how') }}</a>
-        <button
-          type="button"
-          class="top-link lang"
-          :lang="otherLang"
-          :aria-label="t('landing.otherLangLabel')"
-          @click="setLang(otherLang)"
-        >
-          {{ t('landing.otherLang') }}
-        </button>
-        <RouterLink :to="{ name: 'login' }" class="button" data-variant="primary">
-          {{ t('landing.login') }}
-        </RouterLink>
-      </nav>
+      <!-- The links are in the hero; the bar keeps the name and the theme. -->
+      <button
+        type="button"
+        class="theme"
+        :aria-pressed="isDark()"
+        :aria-label="t('theme.dark')"
+        :title="t('theme.dark')"
+        @click="toggleTheme()"
+      >
+        <svg v-if="isDark()" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4.5" />
+          <path
+            d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"
+          />
+        </svg>
+        <svg v-else viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
+        </svg>
+      </button>
     </header>
 
     <main id="main" tabindex="-1">
@@ -75,6 +80,7 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
         <LandingFigure
           class="hero-figure"
           :image="ILLUSTRATIONS.hero"
+          on-scene
           :alt="t('landing.hero.alt')"
           sizes="(min-width: 56rem) 34rem, 80vw"
           eager
@@ -119,6 +125,7 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
               class="step-figure"
               :class="{ drift: step.key === 'share' }"
               :image="ILLUSTRATIONS[step.key]"
+              on-scene
               :alt="t(`landing.steps.${step.key}.alt`)"
               sizes="(min-width: 56rem) 26rem, 80vw"
             />
@@ -169,9 +176,10 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
       </section>
 
       <!-- Budget, back on sand. -->
-      <section class="band paper" aria-labelledby="budget-title">
+      <section class="band budget" aria-labelledby="budget-title">
         <div class="split">
           <LandingFigure
+            on-scene
             :image="ILLUSTRATIONS.budget"
             :alt="t('landing.budget.alt')"
             :sizes="HALF"
@@ -205,6 +213,15 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
     <footer class="foot">
       <PannMark :size="32" />
       <p>{{ t('landing.footer') }}</p>
+      <button
+        type="button"
+        class="foot-lang"
+        :lang="otherLang"
+        :aria-label="t('landing.otherLangLabel')"
+        @click="setLang(otherLang)"
+      >
+        {{ t('landing.otherLang') }}
+      </button>
     </footer>
   </div>
 </template>
@@ -214,7 +231,8 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
   --gutter: clamp(1rem, 5vw, 4rem);
   --measure: 34rem;
 
-  background: var(--color-paper);
+  /* The bar and the hero stand on the hero scene's own background. */
+  background: var(--color-scene-hero);
   color: var(--color-text);
 }
 
@@ -225,7 +243,6 @@ main:focus {
 /* ---------------------------------------------------------------- top bar */
 .top {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3) var(--space-6);
@@ -249,31 +266,31 @@ main:focus {
   letter-spacing: -0.03em;
 }
 
-.top-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-5);
-}
-
-.top-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
+.theme {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
   padding: 0;
-  border: 0;
-  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: transparent;
   color: var(--color-text);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.25em;
   cursor: pointer;
 }
 
-.top-link:hover {
-  text-decoration-thickness: 3px;
+.theme:hover {
+  border-color: var(--color-text);
+}
+
+.theme svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* ---------------------------------------------------------------- type */
@@ -359,11 +376,11 @@ h1 {
   font-size: 0.9375rem;
 }
 
-/* In sand sections the plate is the page: no visible frame in the light theme. */
 .hero-figure {
-  max-width: 34rem;
+  --cut-max-height: 40rem;
+
+  width: min(100%, 32rem);
   justify-self: center;
-  border-radius: 3rem;
 }
 
 /* The nugget catches the light; grains of sand fall from the rim of the pan. */
@@ -470,6 +487,10 @@ h1 {
   background: var(--color-paper);
 }
 
+.budget {
+  background: var(--color-scene-budget);
+}
+
 .surface {
   background: var(--color-surface);
 }
@@ -503,12 +524,12 @@ h1 {
   gap: var(--space-8) clamp(2rem, 6vw, 6rem);
 }
 
-.split > .plate {
-  max-width: 30rem;
+.split > .figure {
+  width: min(100%, 28rem);
   justify-self: center;
 }
 
-.split.reverse > .plate {
+.split.reverse > .figure {
   order: 2;
 }
 
@@ -599,6 +620,10 @@ h1 {
   font-family: var(--font-display);
   font-size: 1.375rem;
   font-weight: 800;
+}
+
+.step-figure {
+  --cut-max-height: 24rem;
 }
 
 .step-copy {
@@ -809,6 +834,27 @@ h1 {
   margin: 0;
 }
 
+.foot-lang {
+  min-height: 2.75rem;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--color-on-ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+
+.foot-lang:hover {
+  text-decoration-thickness: 3px;
+}
+
+.foot-lang:focus-visible {
+  outline-color: var(--color-focus-on-ink);
+}
+
 /* ---------------------------------------------------------------- narrow */
 @media (max-width: 56rem) {
   .hero,
@@ -817,15 +863,19 @@ h1 {
   }
 
   .hero-figure {
-    max-width: 24rem;
+    --cut-max-height: 28rem;
+
+    width: min(100%, 24rem);
   }
 
-  .split.reverse > .plate {
+  .split.reverse > .figure {
     order: 0;
   }
 
-  .split > .plate {
-    max-width: 22rem;
+  .split > .figure {
+    --cut-max-height: 22rem;
+
+    width: min(100%, 22rem);
   }
 
   .step,

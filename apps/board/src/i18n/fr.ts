@@ -560,7 +560,6 @@ export default {
   },
   landing: {
     title: 'Pann : la veille lavée, les pépites gardées',
-    nav: 'Accueil',
     how: 'Comment ça marche',
     login: 'Se connecter',
     otherLang: 'English',

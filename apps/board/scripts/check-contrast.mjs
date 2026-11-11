@@ -76,7 +76,12 @@ const PAIRS = [
   ['color-focus-on-ink', 'color-olive', 3],
   ['color-on-accent', 'color-accent-fill', 4.5],
   ['color-ink', 'color-accent-fill', 4.5],
-  ['color-ink', 'color-plate', 4.5],
+  ['color-text', 'color-scene-hero', 4.5],
+  ['color-text-muted', 'color-scene-hero', 4.5],
+  ['color-border', 'color-scene-hero', 3],
+  ['color-focus', 'color-scene-hero', 3],
+  ['color-text', 'color-scene-budget', 4.5],
+  ['color-text-muted', 'color-scene-budget', 4.5],
 ]
 
 let failed = false

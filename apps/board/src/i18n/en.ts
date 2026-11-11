@@ -554,7 +554,6 @@ export default {
   },
   landing: {
     title: 'Pann: wash the news, keep the nuggets',
-    nav: 'Home',
     how: 'How it works',
     login: 'Sign in',
     otherLang: 'Français',

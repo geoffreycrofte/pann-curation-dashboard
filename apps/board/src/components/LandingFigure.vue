@@ -1,43 +1,78 @@
 <script setup lang="ts">
-import type { Illustration } from '../lib/landing-images'
+import { computed } from 'vue'
+import type { Scene } from '../lib/landing-images'
+import { isDark } from '../lib/theme'
 
-/** An illustration on its sand plate: it blends into sand sections and frames itself elsewhere. */
-defineProps<{ image: Illustration; alt: string; sizes: string; eager?: boolean }>()
+/**
+ * An illustration. On a section painted with the scene's own background (`onScene`,
+ * light theme), the whole scene is shown and melts into it; elsewhere (dark theme, ink,
+ * gold or olive sections) the cut-out stands on the section with a soft shadow.
+ */
+const props = defineProps<{
+  image: Scene
+  alt: string
+  sizes: string
+  onScene?: boolean
+  eager?: boolean
+}>()
+
+const cut = computed(() => !props.onScene || isDark())
+const picture = computed(() => (cut.value ? props.image.cut : props.image.scene))
 </script>
 
 <template>
-  <div class="plate">
-    <img
-      :src="image.src"
-      :srcset="image.srcset"
-      :sizes="sizes"
-      :width="image.width"
-      :height="image.height"
-      :alt="alt"
-      :loading="eager ? 'eager' : 'lazy'"
-      :fetchpriority="eager ? 'high' : undefined"
-      decoding="async"
-    />
-    <slot />
+  <div class="figure" :data-variant="cut ? 'cut' : 'scene'">
+    <!-- The frame hugs the picture: decorations in the slot are placed on it. -->
+    <div class="frame">
+      <img
+        :key="picture.src"
+        :src="picture.src"
+        :srcset="picture.srcset"
+        :sizes="sizes"
+        :width="picture.width"
+        :height="picture.height"
+        :alt="alt"
+        :loading="eager ? 'eager' : 'lazy'"
+        :fetchpriority="eager ? 'high' : undefined"
+        decoding="async"
+      />
+      <slot />
+    </div>
   </div>
 </template>
 
 <style scoped>
-.plate {
+.frame {
   position: relative;
-  overflow: hidden;
-  border-radius: 2.5rem;
-  background: var(--color-plate);
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
 }
 
-/* Soft edges: the background of each scene melts into the plate (and into sand sections). */
+[data-variant='scene'] .frame {
+  width: 100%;
+}
+
 img {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* The scene's background is the section's: soft edges hide its slight vignette. */
+[data-variant='scene'] img {
   mask:
-    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
-    linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+    linear-gradient(to right, transparent, #000 12%, #000 88%, transparent),
+    linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
   mask-composite: intersect;
+}
+
+/* Cut-out: the ground shadow went with the background, a drop shadow replaces it. */
+[data-variant='cut'] img {
+  width: auto;
+  max-width: 100%;
+  max-height: var(--cut-max-height, 28rem);
+  margin-inline: auto;
+  filter: drop-shadow(0 1.25rem 1.5rem rgb(0 0 0 / 0.35));
 }
 </style>
