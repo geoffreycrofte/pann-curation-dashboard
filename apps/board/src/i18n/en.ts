@@ -552,6 +552,113 @@ export default {
     postStatus: ': {status}',
     view: 'View',
   },
+  landing: {
+    title: 'Pann: wash the news, keep the nuggets',
+    nav: 'Home',
+    how: 'How it works',
+    login: 'Sign in',
+    otherLang: 'Français',
+    otherLangLabel: 'Lire cette page en français',
+    hero: {
+      title: 'Wash the news, keep the nuggets.',
+      lead: 'Pann gathers the news of your subject, AI washes away the sand, you keep the gold. Summaries, posts and newsletter are ready to go, in your languages.',
+      invite: 'Invitation only for now.',
+      alt: 'A smiling prospector holds his pan: in the wet sand, a big nugget shines.',
+    },
+    problem: {
+      title: 'Hours of reading for a speck of gold',
+      text: 'Feeds, newsletters, social networks, code repositories: the useful news is out there, buried in the rest. You read everything, keep little, and when it is time to share, there is no time left to write.',
+      alt: 'The prospector shrugs over an empty pan: a single grain is left in it.',
+    },
+    steps: {
+      title: 'From the river to the showcase',
+      intro: 'Five steps. Only one is really yours: choosing.',
+      pann: 'Pann does it',
+      you: 'You decide',
+      collect: {
+        title: 'Collect',
+        text: 'Feeds, web search, GitHub: each topic has its own sources, checked at your pace. The same link never comes twice.',
+        alt: 'Wooden chutes pour sand and water into a large sluice where flakes of gold glint.',
+      },
+      triage: {
+        title: 'Sort',
+        text: 'For each item, AI gives a relevance score out of 100 and says why, based on the criteria you wrote. Below your threshold, it is archived without bothering you.',
+        alt: 'A small brass robot picks the nuggets caught by the ridges of the sluice while the sand flows away.',
+      },
+      keep: {
+        title: 'Keep',
+        text: 'You validate what deserves to be shared. Nothing goes out without your say, and a site that lets you down is excluded in one click.',
+        alt: 'The prospector drops a nugget into a jar that is already well filled; the rejected pebbles make a small pile.',
+      },
+      draft: {
+        title: 'Write',
+        text: 'As soon as you validate, Pann writes the summaries and one post per network and language, following your style rules. Shorter, longer, another tone: a rewrite is one click away.',
+        alt: 'A gold nugget on a blue velvet cushion, next to a quill and a blank label.',
+      },
+      share: {
+        title: 'Share',
+        text: 'Posts go out on LinkedIn, Bluesky and Mastodon at the slots you chose. The week planning shows what is scheduled and which slots are still free.',
+        alt: 'Paper planes, each carrying a nugget, fly out of a mine cart full of gold.',
+      },
+    },
+    newsletter: {
+      title: 'The box of the week',
+      text: 'Validated nuggets fill the newsletter: one sending per language with Brevo, on the day and at the time you set. A public RSS feed also shows them on your site.',
+      alt: 'An open wooden crate, full of nuggets and tied with a ribbon.',
+    },
+    engagement: {
+      title: 'And when people talk about your subject elsewhere?',
+      text: 'The Engagement module finds, on Hacker News and Bluesky, the conversations where your expertise would really help. AI suggests an angle and flags the risks. You write and post the reply yourself: none goes out on its own.',
+      points: [
+        'Reply, watch or skip: one decision for each thread.',
+        'A way to help in one sentence, not a sales pitch.',
+        'Hostile threads and requests for services are set aside.',
+      ],
+      example: 'Example of a conversation found',
+      exampleTitle: 'Ask HN: How do you audit accessibility without a full-time expert?',
+      examplePlatform: 'Hacker News',
+      exampleScore: 'Opportunity: 84 out of 100',
+      exampleDecision: 'Reply',
+      exampleAngle: 'Suggest a three-step method: critical journeys, keyboard, screen reader.',
+    },
+    budget: {
+      title: 'The weight of sand, the price of gold',
+      text: 'Each topic has its monthly cap. You plug in your own keys (Anthropic, Exa, Brevo, Zernio), kept encrypted in your workspace, and you see the cost of each operation. At the cap, Pann stops instead of spending.',
+      alt: 'A balance scale: a pile of sand on one side, a single nugget balancing it on the other.',
+    },
+    more: {
+      title: 'Also in the pan',
+      items: [
+        {
+          term: 'Several topics',
+          desc: 'One space per subject, with its sources, criteria and pace.',
+        },
+        {
+          term: 'Bilingual',
+          desc: 'Each summary and post exists in the publishing languages of the topic.',
+        },
+        {
+          term: 'Driven from Claude',
+          desc: 'An MCP server to sort, write and schedule in a conversation.',
+        },
+        {
+          term: 'Accessible',
+          desc: 'An interface designed for keyboards, screen readers and contrast (WCAG 2.2 AA).',
+        },
+      ],
+    },
+    cta: {
+      title: 'Your next nugget is already in the river.',
+      text: 'Pann is open by invitation. Already invited? Sign in with your email address, no password needed.',
+    },
+    footer: 'Pann, content curation tool.',
+  },
+  notFound: {
+    title: 'Nothing in the pan',
+    text: 'This page does not exist or has moved.',
+    back: 'Back to the home page',
+    alt: 'The prospector shrugs over an empty pan: a single grain is left in it.',
+  },
   addItem: {
     toggle: 'Add a link',
     title: 'Add an article or a tool',

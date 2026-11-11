@@ -19,12 +19,21 @@ Pistes écartées : la batée en perspective avec une pépite cubique (une poêl
 
 | Rôle                                | Clair                 | Sombre                |
 | ----------------------------------- | --------------------- | --------------------- |
-| Fond                                | `#f6f3ea` crème       | `#0e0e0f`             |
+| Fond                                | `#f7f0e2` crème       | `#0e0e0f`             |
 | Cartes                              | `#ffffff`             | `#19191b`             |
 | Encre (barre latérale, texte)       | `#141414` / `#18160f` | `#050505` / `#f4f1e8` |
 | Or vif (aplats, boutons principaux) | `#ffc72c`             | `#ffc72c`             |
 | Or foncé (liens, texte doré)        | `#7a5800`             | `#ffc72c`             |
 | Or pâle (bandeaux, scores moyens)   | `#fff1c2`             | `#2e2610`             |
+
+Palette des illustrations (page d'accueil), tirée des scènes 3D :
+
+| Rôle                                  | Clair     | Sombre    |
+| ------------------------------------- | --------- | --------- |
+| Sable (fond des sections illustrées)  | `#f8ecd7` | `#1b1813` |
+| Plateau des illustrations (fixe)      | `#f8ecd7` | `#f8ecd7` |
+| Olive (aplat, texte `#f8ecd7` dessus) | `#48542a` | `#48542a` |
+| Bois (décoratif : rail des étapes)    | `#8b4e2b` | `#8b4e2b` |
 
 Règles : l'or vif est un **aplat** avec du texte encre dessus, jamais une couleur de texte sur fond clair. Tous les couples texte/fond sont vérifiés par `apps/board/scripts/check-contrast.mjs` (`pnpm test`).
 
