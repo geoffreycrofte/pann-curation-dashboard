@@ -408,15 +408,15 @@ export default {
   newsletter: {
     heading: 'Newsletter: {topic}',
     intro:
-      'Each issue holds the items validated since the previous issue, with their summary in the language of the issue. One Brevo campaign per language.',
+      'Each issue holds the items scheduled or published on the social networks that no issue has sent yet, with their summary in the language of the issue. One Brevo campaign per language.',
     nextAuto: 'Next automatic sending: {date}.',
     manual: 'Automatic sending is off: the newsletter goes out when you click “Send now”.',
     settingsLink: 'Set up the newsletter',
     preview: 'Next issue in {lang}',
-    period: 'Items validated since {date}',
+    period: 'Items scheduled or published since {date}',
     count: 'No item | One item | {n} items',
     withoutSummary:
-      'One validated item has no summary in {lang} yet: it will wait for the next issue. | {n} validated items have no summary in {lang} yet: they will wait for the next issue.',
+      'One scheduled or published item has no summary in {lang} yet: it will wait for the next issue. | {n} scheduled or published items have no summary in {lang} yet: they will wait for the next issue.',
     subject: 'Subject: {subject}',
     notConfigured:
       'Newsletter in {lang} not set up: choose the sender and the list in the settings.',
@@ -602,7 +602,7 @@ export default {
     },
     newsletter: {
       title: 'The box of the week',
-      text: 'Validated nuggets fill the newsletter: one sending per language with Brevo, on the day and at the time you set. A public RSS feed also shows them on your site.',
+      text: 'Scheduled and published nuggets fill the newsletter: one sending per language with Brevo, on the day and at the time you set. A public RSS feed also shows them on your site.',
       alt: 'An open wooden crate, full of nuggets and tied with a ribbon.',
     },
     engagement: {
@@ -1021,7 +1021,7 @@ export default {
     accountMissing: 'Account not found in Zernio: {account}. Refresh the list in Connections.',
     newsletter: 'Newsletter',
     newsletterHint:
-      'One Brevo campaign per language, with the items validated since the previous issue. The name and the introduction are yours.',
+      'One Brevo campaign per language, with the items scheduled or published on the social networks that no issue has sent yet. The name and the introduction are yours.',
     autoSend: 'Send automatically every week',
     autoSendHint:
       'Otherwise, the newsletter only goes out from the “Newsletter” tab, when you decide.',
@@ -1029,6 +1029,9 @@ export default {
     weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     time: 'Sending time',
     timeHint: 'In the time zone of the diffusion.',
+    firstIssueFrom: 'First issue: items since',
+    firstIssueFromHint:
+      'Only used for the first sending of each language; then each issue picks up where the previous one stopped. Left empty: the last 7 days.',
     sender: 'Sender',
     noSender: 'Choose a sender',
     senderInactive: '{sender} (not verified)',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { lastDigestTime, nextDigestTime, renderDigest } from './digest'
+import { digestWindowStart, lastDigestTime, nextDigestTime, renderDigest } from './digest'
 import { parseTopicConfig } from './topic-config'
 
 const schedule = parseTopicConfig({}).schedule // Friday 08:00, Europe/Luxembourg
@@ -16,6 +16,26 @@ describe('digest time', () => {
     expect(lastDigestTime(schedule, friday).toISOString()).toBe('2026-10-09T06:00:00.000Z')
     const before = new Date('2026-10-09T05:30:00Z')
     expect(lastDigestTime(schedule, before).toISOString()).toBe('2026-10-02T06:00:00.000Z')
+  })
+})
+
+describe('digestWindowStart', () => {
+  const now = new Date('2026-11-11T12:00:00Z')
+
+  it('starts where the last issue sent started', () => {
+    const last = new Date('2026-11-06T07:00:00Z')
+    expect(digestWindowStart(last, parseTopicConfig({}), now)).toEqual(last)
+  })
+
+  it('starts the first issue on the day set, at midnight in the topic time zone', () => {
+    const config = parseTopicConfig({ newsletter: { first_issue_from: '2026-10-01' } })
+    expect(digestWindowStart(null, config, now).toISOString()).toBe('2026-09-30T22:00:00.000Z')
+  })
+
+  it('looks 7 days back otherwise', () => {
+    expect(digestWindowStart(null, parseTopicConfig({}), now).toISOString()).toBe(
+      '2026-11-04T12:00:00.000Z',
+    )
   })
 })
 

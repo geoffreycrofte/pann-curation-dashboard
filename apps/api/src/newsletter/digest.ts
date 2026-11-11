@@ -1,5 +1,5 @@
 import {
-  DEFAULT_DIGEST_DAYS,
+  digestWindowStart,
   errorCode,
   lastDigestTime,
   renderDigest,
@@ -40,14 +40,16 @@ export interface DigestStore {
   /** Active topics; one topic when `topicId` is given. */
   topics(topicId?: string): Promise<DigestTopic[]>
   issueExists(topicId: string, lang: Lang, periodTo: Date): Promise<boolean>
-  lastIssueEnd(topicId: string, lang: Lang): Promise<Date | null>
+  /** Start of the last issue sent in this language (digestWindowStart). */
+  lastSentIssueStart(topicId: string, lang: Lang): Promise<Date | null>
   content(q: {
     topicId: string
     workspaceId: string
     lang: Lang
     from: Date
-    to: Date
   }): Promise<DigestContent>
+  /** Records the items of an issue: they are left out of the next ones once it is sent. */
+  addIssueItems(issueId: string, itemIds: string[]): Promise<void>
   brevoKey(workspaceId: string): Promise<string | undefined>
   /** Null when this issue already exists (another run took it). */
   createIssue(row: IssueRow): Promise<string | null>
@@ -70,7 +72,7 @@ export interface DigestReport {
 /**
  * Sends the newsletter of each language as a Brevo campaign. `scheduled`: the topics
  * whose weekly time has come and that send automatically; `now`: one topic, from the
- * board. An issue holds the items validated since the end of the last issue sent.
+ * board. An issue holds the items scheduled or published that no issue sent yet.
  */
 export async function sendDigests(deps: {
   store: DigestStore
@@ -109,9 +111,11 @@ async function sendIssue(
 ): Promise<DigestReport> {
   const { store } = deps
   const { newsletter, schedule } = topic.config
-  const from =
-    (await store.lastIssueEnd(topic.id, lang)) ??
-    new Date(periodTo.getTime() - DEFAULT_DIGEST_DAYS * 24 * 3600_000)
+  const from = digestWindowStart(
+    await store.lastSentIssueStart(topic.id, lang),
+    topic.config,
+    periodTo,
+  )
   const base = { topic_id: topic.id, lang, period_from: from, period_to: periodTo }
   const stop = async (status: 'failed' | 'skipped', error: string): Promise<DigestReport> => {
     await store.createIssue({ ...base, status, last_error: error })
@@ -126,7 +130,6 @@ async function sendIssue(
     workspaceId: topic.workspace_id,
     lang,
     from,
-    to: periodTo,
   })
   if (!content.items.length) return stop('skipped', 'empty_digest')
   const apiKey = await store.brevoKey(topic.workspace_id)
@@ -147,6 +150,7 @@ async function sendIssue(
     item_count: content.items.length,
   })
   if (!id) return { topic_id: topic.id, lang, status: 'skipped', error: 'already_sent' }
+  await store.addIssueItems(id, content.item_ids)
 
   const result = await deps.send(apiKey, {
     name: `Pann ${topic.slug} ${lang} ${periodTo.toISOString().slice(0, 10)}`,

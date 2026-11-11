@@ -1,7 +1,7 @@
 import { parseTopicConfig, type CredentialMeta } from '@pann/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { readBrevoAccount } from './brevo'
-import { lastIssueEnd, loadDigestContent } from './content'
+import { lastSentIssueStart, loadDigestContent } from './content'
 import type { DigestStore } from './digest'
 
 const day = (date: Date) => date.toISOString().slice(0, 10)
@@ -41,7 +41,7 @@ export function supabaseDigestStore(db: SupabaseClient): DigestStore {
       return (count ?? 0) > 0
     },
 
-    lastIssueEnd: (topicId, lang) => lastIssueEnd(db, topicId, lang),
+    lastSentIssueStart: (topicId, lang) => lastSentIssueStart(db, topicId, lang),
     content: (q) => loadDigestContent(db, q),
     brevoKey: (workspaceId) => brevoKey(db, workspaceId),
 
@@ -65,6 +65,14 @@ export function supabaseDigestStore(db: SupabaseClient): DigestStore {
       if (error?.code === '23505') return null
       if (error) throw error
       return data.id as string
+    },
+
+    async addIssueItems(issueId, itemIds) {
+      if (!itemIds.length) return
+      const { error } = await db
+        .from('digest_items')
+        .insert(itemIds.map((item_id) => ({ digest_id: issueId, item_id })))
+      if (error) throw error
     },
 
     async updateIssue(id, patch) {

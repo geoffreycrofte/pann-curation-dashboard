@@ -92,6 +92,17 @@ const { mutate, isLoading } = useMutation({
         <p :id="`${id}-time-hint`" class="hint">{{ t('settings.timeHint') }}</p>
       </div>
       <div class="form-row">
+        <label :for="`${id}-first`">{{ t('settings.firstIssueFrom') }}</label>
+        <input
+          :id="`${id}-first`"
+          v-model="form.first_issue_from"
+          class="field"
+          type="date"
+          :aria-describedby="`${id}-first-hint`"
+        />
+        <p :id="`${id}-first-hint`" class="hint">{{ t('settings.firstIssueFromHint') }}</p>
+      </div>
+      <div class="form-row">
         <label :for="`${id}-sender`">{{ t('settings.sender') }}</label>
         <select :id="`${id}-sender`" v-model="form.sender_id" class="field">
           <option :value="null">{{ t('settings.noSender') }}</option>

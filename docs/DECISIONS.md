@@ -281,3 +281,12 @@ Deux vues, gardées dans l'adresse (`view=week`, `week=AAAA-MM-JJ`) : une liste 
 **Mise à jour (2026-11-11) : illustrations détourées.** Le « plateau » sable qui encadrait les images ne rendait pas bien en thème sombre ni sur les fonds encre, or et olive. Chaque scène existe désormais en deux versions : la scène, dont le fond a été uni à la couleur exacte de sa section (`--color-scene-hero`, `--color-paper` pour les étapes, `--color-scene-budget`), avec les ombres au sol conservées ; et un détourage (fond transparent, ombre portée en CSS) pour le thème sombre et les sections colorées. Détourage fait avec rembg (modèle `isnet-general-use`), puis retouché : tas de sable du héros récupéré par la couleur, étiquette et avions en papier rendus opaques. L'en-tête ne garde que le nom et le bouton clair/sombre (les liens sont dans le héros) ; le choix de la langue passe dans le pied de page.
 
 **Mouvement** : un seul moment au chargement (la pépite du héros scintille, des grains tombent de la batée), les avions en papier qui dérivent, et le rail des étapes qui se remplit d'or au défilement (animation liée au défilement, rail plein là où elle n'existe pas). Tout est coupé avec `prefers-reduced-motion`.
+
+## 2026-11-11 : la newsletter part de la file de diffusion
+
+Une newsletter reprenait les éléments **validés** depuis la précédente. Elle reprend désormais les éléments **programmés ou publiés** sur les réseaux (Programmés et Publiés du tri) : ce qu'on a choisi de diffuser, et rien d'autre. Un élément validé mais jamais programmé n'y figure pas.
+
+- **Pas de doublon** : chaque envoi enregistre ses éléments (`digest_items`, écrite par les jobs, lue par les membres). Un élément déjà dans un envoi en cours ou envoyé de la même langue est écarté ; un envoi en échec ne compte pas, ses éléments partent avec le suivant.
+- **Fenêtre** : depuis le début du dernier envoi (un élément manqué faute de résumé a une seconde chance), ou, pour le premier envoi, depuis le jour réglé par l'utilisateur (`newsletter.first_issue_from`), à défaut les 7 derniers jours.
+- Un élément programmé pour la semaine suivante peut donc partir dans la newsletter avant son post : c'est voulu, la newsletter annonce ce qui est choisi.
+- Au plus 100 éléments par envoi, dans l'ordre de leur créneau.

@@ -413,16 +413,16 @@ export default {
   newsletter: {
     heading: 'Newsletter : {topic}',
     intro:
-      'Chaque newsletter reprend les éléments validés depuis la précédente, avec leur résumé dans sa langue. Une campagne Brevo par langue.',
+      'Chaque newsletter reprend les éléments programmés ou publiés sur les réseaux qu’aucune newsletter n’a encore envoyés, avec leur résumé dans sa langue. Une campagne Brevo par langue.',
     nextAuto: 'Prochain envoi automatique : {date}.',
     manual:
       'Envoi automatique désactivé : la newsletter part quand vous cliquez sur « Envoyer maintenant ».',
     settingsLink: 'Régler la newsletter',
     preview: 'Prochaine newsletter en {lang}',
-    period: 'Éléments validés depuis le {date}',
+    period: 'Éléments programmés ou publiés depuis le {date}',
     count: 'Aucun élément | Un élément | {n} éléments',
     withoutSummary:
-      'Un élément validé n’a pas encore de résumé en {lang} : il attendra la prochaine newsletter. | {n} éléments validés n’ont pas encore de résumé en {lang} : ils attendront la prochaine newsletter.',
+      'Un élément programmé ou publié n’a pas encore de résumé en {lang} : il attendra la prochaine newsletter. | {n} éléments programmés ou publiés n’ont pas encore de résumé en {lang} : ils attendront la prochaine newsletter.',
     subject: 'Objet : {subject}',
     notConfigured:
       'Newsletter en {lang} non configurée : choisissez l’expéditeur et la liste dans les réglages.',
@@ -608,7 +608,7 @@ export default {
     },
     newsletter: {
       title: 'Le coffret de la semaine',
-      text: 'Les pépites validées remplissent la newsletter : un envoi par langue avec Brevo, le jour et à l’heure que vous fixez. Un flux RSS public les présente aussi sur votre site.',
+      text: 'Les pépites programmées et publiées remplissent la newsletter : un envoi par langue avec Brevo, le jour et à l’heure que vous fixez. Un flux RSS public les présente aussi sur votre site.',
       alt: 'Une caisse en bois ouverte, pleine de pépites et nouée d’un ruban.',
     },
     engagement: {
@@ -1040,7 +1040,7 @@ export default {
       'Compte introuvable dans Zernio : {account}. Actualisez la liste dans Connexions.',
     newsletter: 'Newsletter',
     newsletterHint:
-      'Une campagne Brevo par langue, avec les éléments validés depuis la newsletter précédente. Le nom et l’introduction sont les vôtres.',
+      'Une campagne Brevo par langue, avec les éléments programmés ou publiés sur les réseaux qu’aucune newsletter n’a encore envoyés. Le nom et l’introduction sont les vôtres.',
     autoSend: 'Envoyer automatiquement chaque semaine',
     autoSendHint:
       'Sinon, la newsletter ne part que depuis l’onglet « Newsletter », quand vous le décidez.',
@@ -1048,6 +1048,9 @@ export default {
     weekdays: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
     time: 'Heure d’envoi',
     timeHint: 'Dans le fuseau horaire de la diffusion.',
+    firstIssueFrom: 'Première newsletter : éléments depuis le',
+    firstIssueFromHint:
+      'Ne sert qu’au premier envoi de chaque langue, ensuite chaque newsletter reprend où la précédente s’est arrêtée. Laissé vide : les 7 derniers jours.',
     sender: 'Expéditeur',
     noSender: 'Choisir un expéditeur',
     senderInactive: '{sender} (non validé)',

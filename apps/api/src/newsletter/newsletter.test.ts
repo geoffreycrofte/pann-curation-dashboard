@@ -19,18 +19,20 @@ const item = { title: 'T', url: 'https://e.org/a', summary: 'S', source_lang: 'e
 function fakeStore(overrides: Partial<DigestStore> = {}) {
   const created: IssueRow[] = []
   const updates: unknown[] = []
+  const recorded: [string, string[]][] = []
   const store: DigestStore = {
     topics: async () => [topic],
     issueExists: async () => false,
-    lastIssueEnd: async () => new Date('2026-10-02T06:00:00Z'),
-    content: async () => ({ items: [item], without_summary: 0 }),
+    lastSentIssueStart: async () => new Date('2026-10-02T06:00:00Z'),
+    content: async () => ({ items: [item], item_ids: ['i1'], without_summary: 0 }),
+    addIssueItems: async (id, ids) => void recorded.push([id, ids]),
     brevoKey: async () => 'xkeysib-1',
     createIssue: async (row) => (created.push(row), `d${created.length}`),
     updateIssue: async (id, patch) => void updates.push([id, patch.status, patch.last_error]),
     markCredentialInvalid: async () => {},
     ...overrides,
   }
-  return { store, created, updates }
+  return { store, created, updates, recorded }
 }
 
 describe('sendDigests', () => {
@@ -39,7 +41,7 @@ describe('sendDigests', () => {
 
   it('sends one campaign per language to the list of that language', async () => {
     const campaigns: Campaign[] = []
-    const { store, created, updates } = fakeStore()
+    const { store, created, updates, recorded } = fakeStore()
     const reports = await sendDigests({
       store,
       send: async (_key, c) => (campaigns.push(c), { ok: true, campaignId: 7 }),
@@ -58,6 +60,11 @@ describe('sendDigests', () => {
       period_to: new Date('2026-10-09T06:00:00Z'),
     })
     expect(updates[0]).toEqual(['d1', 'sent', null])
+    // The items of the issue are recorded before sending: they will not go out twice.
+    expect(recorded).toEqual([
+      ['d1', ['i1']],
+      ['d2', ['i1']],
+    ])
   })
 
   it('does nothing before the weekly time, nor when automatic sending is off', async () => {
@@ -88,7 +95,9 @@ describe('sendDigests', () => {
 
   it('records an empty week and a missing list without calling Brevo', async () => {
     const send = vi.fn()
-    const empty = fakeStore({ content: async () => ({ items: [], without_summary: 2 }) })
+    const empty = fakeStore({
+      content: async () => ({ items: [], item_ids: [], without_summary: 2 }),
+    })
     const reports = await sendDigests({ store: empty.store, send, mode: 'now', langs: ['fr'], now })
     expect(reports).toEqual([
       { topic_id: 't1', lang: 'fr', status: 'skipped', error: 'empty_digest' },

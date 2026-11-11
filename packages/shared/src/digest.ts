@@ -36,8 +36,25 @@ export function nextDigestTime(schedule: TopicConfig['schedule'], now = new Date
   return now
 }
 
-/** Without a previous issue, a newsletter covers the last 7 days. */
+/** Without a previous issue nor a first-issue day, a newsletter covers the last 7 days. */
 export const DEFAULT_DIGEST_DAYS = 7
+
+/**
+ * How far back an issue looks for items scheduled or published. After a sent issue: from
+ * where that issue started, so an item it missed (no summary yet) gets a second chance;
+ * items already sent are left out by the issue records. First issue: from the day set by
+ * the user (midnight, time zone of the topic), else DEFAULT_DIGEST_DAYS back.
+ */
+export function digestWindowStart(
+  lastSentFrom: Date | null,
+  config: Pick<TopicConfig, 'newsletter' | 'schedule'>,
+  now = new Date(),
+): Date {
+  if (lastSentFrom) return lastSentFrom
+  const day = config.newsletter.first_issue_from
+  if (day) return zonedTimeToUtc(day, '00:00', config.schedule.timezone)
+  return new Date(now.getTime() - DEFAULT_DIGEST_DAYS * 24 * 3600_000)
+}
 
 // ---------------------------------------------------------------------------
 // What

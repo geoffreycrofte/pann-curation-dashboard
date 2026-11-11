@@ -187,7 +187,8 @@ export const topicConfigSchema = z.object({
     .prefault({}),
   /**
    * Weekly newsletter (Brevo): one campaign per output language, sent to the list of
-   * that language. Content: the items validated since the previous newsletter.
+   * that language. Content: the items scheduled or published on the social networks
+   * that no earlier issue of this language held.
    */
   newsletter: z
     .object({
@@ -207,6 +208,11 @@ export const topicConfigSchema = z.object({
       /** Short text at the top of each issue, written by the user. */
       intro_fr: z.string().trim().max(2000).default(''),
       intro_en: z.string().trim().max(2000).default(''),
+      /**
+       * Start of the first issue (YYYY-MM-DD): the items scheduled or published since
+       * this day. Empty: the last DEFAULT_DIGEST_DAYS days.
+       */
+      first_issue_from: z.union([z.iso.date(), z.literal('')]).default(''),
     })
     .prefault({}),
   /**

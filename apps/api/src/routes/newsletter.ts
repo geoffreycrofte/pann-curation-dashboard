@@ -1,5 +1,5 @@
 import {
-  DEFAULT_DIGEST_DAYS,
+  digestWindowStart,
   LANGS,
   nextDigestTime,
   parseTopicConfig,
@@ -11,7 +11,7 @@ import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { parseJson } from '../lib/validation'
-import { lastIssueEnd, loadDigestContent } from '../newsletter/content'
+import { lastSentIssueStart, loadDigestContent } from '../newsletter/content'
 
 const sendBody = z.object({ lang: z.enum(LANGS).optional() })
 
@@ -43,15 +43,16 @@ export const newsletter = new Hono<AppEnv>()
 
     const previews = await Promise.all(
       topic.config.output_langs.map(async (lang: Lang) => {
-        const from =
-          (await lastIssueEnd(c.var.db, topicId, lang)) ??
-          new Date(now.getTime() - DEFAULT_DIGEST_DAYS * 24 * 3600_000)
+        const from = digestWindowStart(
+          await lastSentIssueStart(c.var.db, topicId, lang),
+          topic.config,
+          now,
+        )
         const content = await loadDigestContent(c.var.db, {
           topicId,
           workspaceId: topic.workspace_id,
           lang,
           from,
-          to: now,
         })
         const { subject, html } = renderDigest({
           lang,
@@ -90,7 +91,7 @@ export const newsletter = new Hono<AppEnv>()
     })
   })
 
-  /** Sends now (job): the items validated since the last issue, per language. */
+  /** Sends now (job): the items scheduled or published that no issue sent yet, per language. */
   .post('/:topicId/newsletter/send', async (c) => {
     const { lang } = await parseJson(sendBody, c.req.raw)
     const topicId = c.req.param('topicId')
