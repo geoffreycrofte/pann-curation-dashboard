@@ -26,12 +26,13 @@ Pistes écartées : la batée en perspective avec une pépite cubique (une poêl
 | Or foncé (liens, texte doré)        | `#7a5800`             | `#ffc72c`             |
 | Or pâle (bandeaux, scores moyens)   | `#fff1c2`             | `#2e2610`             |
 
-Palette des illustrations (page d'accueil), tirée des scènes 3D :
+Palette des illustrations (page d'accueil), tirée des scènes 3D. Chaque scène existe aussi détourée (`*-cut-*.webp`) pour le thème sombre et les sections colorées :
 
 | Rôle                                  | Clair     | Sombre    |
 | ------------------------------------- | --------- | --------- |
 | Sable (fond des sections illustrées)  | `#f8ecd7` | `#1b1813` |
-| Plateau des illustrations (fixe)      | `#f8ecd7` | `#f8ecd7` |
+| Fond de la scène du héros             | `#fbecd3` | `#1b1813` |
+| Fond de la scène du budget            | `#faedda` | `#1b1813` |
 | Olive (aplat, texte `#f8ecd7` dessus) | `#48542a` | `#48542a` |
 | Bois (décoratif : rail des étapes)    | `#8b4e2b` | `#8b4e2b` |
 
