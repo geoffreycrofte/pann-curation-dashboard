@@ -1,17 +1,33 @@
 import type { Lang } from './domain'
 
-/** Channels that get a post draft for each validated item. */
-export const DRAFT_CHANNELS = ['linkedin', 'bluesky', 'mastodon'] as const
+/** Channels Pann can write a post for. X, Facebook and Discord publish through Zernio. */
+export const DRAFT_CHANNELS = [
+  'linkedin',
+  'bluesky',
+  'mastodon',
+  'x',
+  'facebook',
+  'discord',
+] as const
 export type DraftChannel = (typeof DRAFT_CHANNELS)[number]
+
+/** Always drafted, as before X, Facebook and Discord. The others only when a topic uses them. */
+export const DEFAULT_DRAFT_CHANNELS: readonly DraftChannel[] = ['linkedin', 'bluesky', 'mastodon']
 
 /**
  * Length limits of a post, in characters (graphemes for Bluesky). Mastodon: the default
- * of mastodon.social; other instances can differ. Checked 2026-10-01.
+ * of mastodon.social; other instances can differ. Checked 2026-10-01. X: 280 for a free
+ * account (25,000 with Premium); Discord: 2,000 per message (docs.zernio.com, 2026-11-11).
+ * Facebook allows 63,206 but cuts the post at about 480 behind "See more": Pann keeps
+ * the LinkedIn length.
  */
 export const POST_LIMITS: Record<DraftChannel, number> = {
   linkedin: 3000,
   bluesky: 300,
   mastodon: 500,
+  x: 280,
+  facebook: 3000,
+  discord: 2000,
 }
 
 export const DRAFT_STATUSES = ['none', 'pending', 'ready', 'failed'] as const

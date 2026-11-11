@@ -178,6 +178,38 @@ describe('networks', () => {
     })
   })
 
+  it('names X "twitter" at Zernio', async () => {
+    const requests = respond(201, {
+      post: { _id: 'z2', platforms: [{ platform: 'twitter', status: 'published' }] },
+    })
+    expect(await publishWithZernio('sk_x', 'acc', { ...request, channel: 'x' })).toMatchObject({
+      ok: true,
+    })
+    expect(JSON.parse(requests[0]!.init.body as string).platforms).toEqual([
+      { platform: 'twitter', accountId: 'acc' },
+    ])
+  })
+
+  it('posts to the Discord channel of the account', async () => {
+    const requests: string[] = []
+    const bodies: unknown[] = []
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      requests.push(url)
+      if (url.endsWith('/discord-settings'))
+        return Response.json({ account: { channelId: '123', guildId: '9' } })
+      bodies.push(JSON.parse(init.body as string))
+      return Response.json({ post: { _id: 'z3', platforms: [{ platform: 'discord' }] } })
+    })
+    const result = await publishWithZernio('sk_x', 'acc', { ...request, channel: 'discord' })
+    expect(result).toMatchObject({ ok: true, external_id: 'z3' })
+    expect(requests[0]).toBe('https://zernio.com/api/v1/accounts/acc/discord-settings')
+    expect(bodies[0]).toMatchObject({
+      platforms: [
+        { platform: 'discord', accountId: 'acc', platformSpecificData: { channelId: '123' } },
+      ],
+    })
+  })
+
   it('treats a duplicate (409) as already published', async () => {
     respond(409, { error: 'duplicate', details: { existingPostId: 'z0' } })
     expect(await publishWithZernio('sk_x', 'acc', request)).toEqual({
