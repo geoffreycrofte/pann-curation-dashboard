@@ -4,6 +4,7 @@ import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { checkCredential, mastodonInstance } from '../lib/check-credential'
+import { blueskyHandle, discordWebhookUrl } from '../publish/direct'
 import { parseJson } from '../lib/validation'
 
 const COLUMNS = 'workspace_id, provider, hint, status, status_detail, checked_at, updated_at, meta'
@@ -11,6 +12,8 @@ const setBody = z.object({
   secret: z.string().trim().min(8).max(500),
   /** Mastodon only: the instance of the account. */
   instance: z.string().trim().max(200).optional(),
+  /** Bluesky only: the handle of the account (the secret is an app password). */
+  handle: z.string().trim().max(300).optional(),
 })
 
 function provider(value: string): Provider {
@@ -39,14 +42,25 @@ export const credentials = new Hono<AppEnv>()
       instance = mastodonInstance(body.instance ?? '') ?? undefined
       if (!instance) throw new HTTPException(422, { message: 'invalid_config' })
     }
-    const check = await checkCredential(p, body.secret, { instance })
+    let handle: string | undefined
+    if (p === 'bluesky') {
+      handle = blueskyHandle(body.handle ?? '') ?? undefined
+      if (!handle) throw new HTTPException(422, { message: 'invalid_config' })
+    }
+    // Discord: the secret is the webhook address; only Discord's own hosts are accepted.
+    let secret = body.secret
+    if (p === 'discord') {
+      secret = discordWebhookUrl(body.secret) ?? ''
+      if (!secret) throw new HTTPException(422, { message: 'invalid_config' })
+    }
+    const check = await checkCredential(p, secret, { instance, handle })
     if (check.status === 'invalid')
       throw new HTTPException(422, { message: `invalid_credential:${p}` })
 
     const { error } = await c.var.db.rpc('set_workspace_credential', {
       p_workspace_id: c.req.param('workspaceId'),
       p_provider: p,
-      p_secret: body.secret,
+      p_secret: secret,
       p_status: check.status,
       p_status_detail: check.detail,
       p_meta: check.meta ?? {},

@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { CredentialMeta, CredentialStatus, Provider } from '@pann/shared'
 import { readBrevoAccount } from '../newsletter/brevo'
 import { readSendfoxAccount } from '../newsletter/sendfox'
+import { checkBluesky, checkDiscordWebhook } from '../publish/direct'
 import { checkMastodon, listZernioAccounts } from '../publish/networks'
 import { PRIVATE_HOST, USER_AGENT } from './fetch-text'
 
@@ -37,7 +38,7 @@ export function mastodonInstance(input: string): string | null {
 export async function checkCredential(
   provider: Provider,
   secret: string,
-  options: { instance?: string } = {},
+  options: { instance?: string; handle?: string } = {},
 ): Promise<CredentialCheck> {
   try {
     if (provider === 'zernio') {
@@ -82,6 +83,34 @@ export async function checkCredential(
       return result.detail === 'provider_unreachable'
         ? { status: 'unchecked', detail: 'provider_unreachable', meta: {} }
         : { status: 'invalid', detail: 'invalid_key' }
+    }
+    if (provider === 'bluesky') {
+      const result = await checkBluesky(options.handle ?? '', secret)
+      if (result.ok)
+        return {
+          status: 'ok',
+          detail: null,
+          meta: { handle: result.handle, did: result.did, pds: result.pds },
+        }
+      return result.invalid
+        ? { status: 'invalid', detail: 'invalid_key' }
+        : { status: 'unchecked', detail: 'provider_unreachable', meta: { handle: options.handle } }
+    }
+    if (provider === 'discord') {
+      const result = await checkDiscordWebhook(secret)
+      if (result.ok)
+        return {
+          status: 'ok',
+          detail: null,
+          meta: {
+            webhook_name: result.name,
+            ...(result.guild_id ? { guild_id: result.guild_id } : {}),
+            ...(result.channel_id ? { channel_id: result.channel_id } : {}),
+          },
+        }
+      return result.invalid
+        ? { status: 'invalid', detail: 'invalid_key' }
+        : { status: 'unchecked', detail: 'provider_unreachable', meta: {} }
     }
     if (provider === 'mastodon') {
       const instance = options.instance ?? ''

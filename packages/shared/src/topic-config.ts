@@ -250,10 +250,17 @@ export const topicConfigSchema = z.object({
    * accounts are Zernio account ids; Mastodon uses the workspace's Mastodon account.
    */
   channels: z.preprocess(
-    // Entries written by an older version (account_ref, no languages) are dropped.
+    // Entries written by an older version (account_ref, no languages) are dropped, and so
+    // are the channels Pann no longer publishes to (X, left out on 2026-11-12).
     (value) =>
       Array.isArray(value)
-        ? value.filter((e) => typeof e === 'object' && e !== null && 'account_id' in e)
+        ? value.filter(
+            (e) =>
+              typeof e === 'object' &&
+              e !== null &&
+              'account_id' in e &&
+              (DRAFT_CHANNELS as readonly unknown[]).includes((e as { channel?: unknown }).channel),
+          )
         : value,
     z
       .array(

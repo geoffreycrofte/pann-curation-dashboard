@@ -6,6 +6,7 @@ import {
   type Lang,
   type TopicConfig,
 } from '@pann/shared'
+import type { BlueskyAccount, DiscordWebhook } from './direct'
 import type { MastodonAccount, PublishRequest, PublishResult } from './networks'
 
 export interface DuePost {
@@ -24,7 +25,12 @@ export interface DuePost {
 export interface PublishCredentials {
   zernio?: string
   mastodon?: MastodonAccount
+  bluesky?: BlueskyAccount
+  discord?: DiscordWebhook
 }
+
+/** Who publishes a channel: Zernio for the networks with app review, the others directly. */
+export type PublishService = 'zernio' | 'mastodon' | 'bluesky' | 'discord'
 
 export interface PublishStore {
   /** Takes the due posts; another run will not take them for 10 minutes. */
@@ -35,7 +41,7 @@ export interface PublishStore {
   markFailed(post: DuePost, error: string, final: boolean, retryAt?: Date): Promise<void>
   /** Leaves the post scheduled, to be taken again after `retryAt` (rate limits). */
   release(post: DuePost, retryAt: Date): Promise<void>
-  markCredentialInvalid(workspaceId: string, provider: 'zernio' | 'mastodon'): Promise<void>
+  markCredentialInvalid(workspaceId: string, provider: PublishService): Promise<void>
   /** An item whose posts have all left the queue, with at least one sent, is published. */
   finishItem(topicId: string, itemId: string): Promise<void>
 }
@@ -43,6 +49,11 @@ export interface PublishStore {
 export interface Networks {
   zernio(apiKey: string, accountId: string, request: PublishRequest): Promise<PublishResult>
   mastodon(account: MastodonAccount, request: PublishRequest): Promise<PublishResult>
+  bluesky(
+    account: BlueskyAccount,
+    request: PublishRequest & { url: string },
+  ): Promise<PublishResult>
+  discord(webhook: DiscordWebhook, request: PublishRequest): Promise<PublishResult>
 }
 
 export const MAX_PUBLISH_ATTEMPTS = 3
@@ -55,7 +66,8 @@ export interface PublishReport {
   retried: number
 }
 
-const provider = (channel: DraftChannel) => (channel === 'mastodon' ? 'mastodon' : 'zernio')
+const provider = (channel: DraftChannel): PublishService =>
+  channel === 'mastodon' || channel === 'bluesky' || channel === 'discord' ? channel : 'zernio'
 
 /**
  * Publishes the posts whose slot has come. One post per channel and language, sent
@@ -108,22 +120,20 @@ export async function publish(deps: {
       content: composePost(post.body, post.canonical_url),
       idempotencyKey: `pann-${post.id}-${post.publish_attempts}`,
     }
-    let result: PublishResult
-    if (service === 'zernio') {
-      if (!keys.zernio) {
-        await deps.store.markFailed(post, errorCode('missing_credential', 'zernio'), true)
-        report.failed++
-        continue
-      }
-      result = await deps.networks.zernio(keys.zernio, account.account_id, request)
-    } else {
-      if (!keys.mastodon) {
-        await deps.store.markFailed(post, errorCode('missing_credential', 'mastodon'), true)
-        report.failed++
-        continue
-      }
-      result = await deps.networks.mastodon(keys.mastodon, request)
+    const key = keys[service]
+    if (!key) {
+      await deps.store.markFailed(post, errorCode('missing_credential', service), true)
+      report.failed++
+      continue
     }
+    const result: PublishResult =
+      service === 'zernio'
+        ? await deps.networks.zernio(keys.zernio!, account.account_id, request)
+        : service === 'mastodon'
+          ? await deps.networks.mastodon(keys.mastodon!, request)
+          : service === 'bluesky'
+            ? await deps.networks.bluesky(keys.bluesky!, { ...request, url: post.canonical_url })
+            : await deps.networks.discord(keys.discord!, request)
 
     if (result.ok) {
       await deps.store.markSent(post, result)

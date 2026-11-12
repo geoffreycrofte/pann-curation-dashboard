@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { LANGS, type DraftChannel, type Lang, type TopicConfig } from '@pann/shared'
+import {
+  LANGS,
+  ZERNIO_PLATFORMS,
+  type DraftChannel,
+  type Lang,
+  type TopicConfig,
+} from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -60,12 +66,34 @@ watch(
 const accounts = computed<AccountRow[]>(() => {
   const rows: AccountRow[] = []
   const zernio = credentials.value?.find((c) => c.provider === 'zernio')
-  for (const a of zernio?.meta.accounts ?? [])
+  // Accounts listed before Bluesky and Discord went direct (or X was left out) are skipped.
+  for (const a of zernio?.meta.accounts ?? []) {
+    if (!(a.platform in ZERNIO_PLATFORMS)) continue
     rows.push({
       key: `${a.platform}/${a.id}`,
       channel: a.platform,
       account_id: a.id,
       name: a.username,
+      missing: false,
+    })
+  }
+  // Published directly: one account per workspace, set on the Connections page.
+  const handle = credentials.value?.find((c) => c.provider === 'bluesky')?.meta.handle
+  if (handle)
+    rows.push({
+      key: `bluesky/${handle}`,
+      channel: 'bluesky',
+      account_id: handle,
+      name: `@${handle}`,
+      missing: false,
+    })
+  const discord = credentials.value?.find((c) => c.provider === 'discord')
+  if (discord)
+    rows.push({
+      key: `discord/${discord.meta.channel_id ?? 'webhook'}`,
+      channel: 'discord',
+      account_id: discord.meta.channel_id ?? 'webhook',
+      name: discord.meta.webhook_name ?? 'Discord',
       missing: false,
     })
   const acct = credentials.value?.find((c) => c.provider === 'mastodon')?.meta.acct

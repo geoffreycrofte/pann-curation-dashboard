@@ -12,6 +12,7 @@ import type { Lang } from '@pann/shared'
 import { sendDigests } from '../newsletter/digest'
 import { sendCampaign } from '../newsletter/send'
 import { refreshNewsletterAccount, supabaseDigestStore } from '../newsletter/store'
+import { publishToBluesky, publishToDiscord } from '../publish/direct'
 import { publishWithZernio, publishToMastodon } from '../publish/networks'
 import { publish } from '../publish/publish'
 import { refreshZernioAccounts, supabasePublishStore } from '../publish/store'
@@ -43,7 +44,12 @@ export type JobMessage =
   /** AI rewrite of a summary or post, asked from the item page (table rewrites). */
   | { type: 'rewrite'; rewriteId: string }
 
-export const networks = { zernio: publishWithZernio, mastodon: publishToMastodon }
+export const networks = {
+  zernio: publishWithZernio,
+  mastodon: publishToMastodon,
+  bluesky: publishToBluesky,
+  discord: publishToDiscord,
+}
 
 export async function runJob(message: JobMessage, env: Env): Promise<void> {
   const db = jobClient(env)

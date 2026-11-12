@@ -191,10 +191,16 @@ export const api = {
     request<void>('/account', json('DELETE', { confirm_email: confirmEmail })),
   credentials: (workspaceId: string) =>
     request<WorkspaceCredential[]>(`/workspaces/${workspaceId}/credentials`),
-  setCredential: (workspaceId: string, provider: Provider, secret: string, instance?: string) =>
+  /** `instance`: Mastodon only; `handle`: Bluesky only. */
+  setCredential: (
+    workspaceId: string,
+    provider: Provider,
+    secret: string,
+    extra: { instance?: string; handle?: string } = {},
+  ) =>
     request<WorkspaceCredential>(
       `/workspaces/${workspaceId}/credentials/${provider}`,
-      json('PUT', { secret, instance }),
+      json('PUT', { secret, ...extra }),
     ),
   refreshCredential: (workspaceId: string, provider: 'zernio' | 'brevo' | 'sendfox') =>
     request<void>(`/workspaces/${workspaceId}/credentials/${provider}/refresh`, {

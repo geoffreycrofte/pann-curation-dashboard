@@ -81,6 +81,7 @@ async function setExpanded(value: boolean) {
 
 const secret = ref('')
 const instance = ref(props.credential?.meta.instance?.replace(/^https:\/\//, '') ?? '')
+const handle = ref(props.credential?.meta.handle ?? '')
 const message = ref('')
 const isError = ref(false)
 
@@ -90,12 +91,10 @@ async function refresh() {
 
 const { mutate: save, isLoading: saving } = useMutation({
   mutation: () =>
-    api.setCredential(
-      props.workspaceId,
-      props.provider,
-      secret.value,
-      props.provider === 'mastodon' ? instance.value : undefined,
-    ),
+    api.setCredential(props.workspaceId, props.provider, secret.value, {
+      instance: props.provider === 'mastodon' ? instance.value : undefined,
+      handle: props.provider === 'bluesky' ? handle.value : undefined,
+    }),
   async onSuccess(credential) {
     secret.value = ''
     isError.value = false
@@ -239,6 +238,12 @@ const { mutate: remove } = useMutation({
           </button>
         </div>
       </template>
+      <p v-if="provider === 'bluesky' && credential?.meta.handle">
+        {{ t('connections.blueskyAccount', { handle: credential.meta.handle }) }}
+      </p>
+      <p v-if="provider === 'discord' && credential?.meta.webhook_name">
+        {{ t('connections.discordWebhook', { name: credential.meta.webhook_name }) }}
+      </p>
       <template v-if="provider === 'mastodon' && credential?.meta.acct">
         <p>{{ t('connections.mastodonAccount', { acct: credential.meta.acct }) }}</p>
         <p v-if="credential.meta.max_characters" class="hint">
@@ -263,9 +268,13 @@ const { mutate: remove } = useMutation({
         <div class="form-row">
           <label :for="`${id}-secret`">
             {{
-              credential
-                ? t('connections.keyLabelReplace', { provider: name })
-                : t('connections.keyLabel', { provider: name })
+              provider === 'bluesky'
+                ? t('connections.appPasswordLabel')
+                : provider === 'discord'
+                  ? t('connections.webhookLabel')
+                  : credential
+                    ? t('connections.keyLabelReplace', { provider: name })
+                    : t('connections.keyLabel', { provider: name })
             }}
           </label>
           <input
@@ -279,6 +288,20 @@ const { mutate: remove } = useMutation({
             required
             minlength="8"
           />
+        </div>
+        <div v-if="provider === 'bluesky'" class="form-row">
+          <label :for="`${id}-handle`">{{ t('connections.handleLabel') }}</label>
+          <input
+            :id="`${id}-handle`"
+            v-model="handle"
+            class="field"
+            type="text"
+            autocomplete="username"
+            spellcheck="false"
+            required
+            :aria-describedby="`${id}-handle-hint`"
+          />
+          <p :id="`${id}-handle-hint`" class="hint">{{ t('connections.handleHint') }}</p>
         </div>
         <div v-if="provider === 'mastodon'" class="form-row">
           <label :for="`${id}-instance`">{{ t('connections.instanceLabel') }}</label>

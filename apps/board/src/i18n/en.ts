@@ -148,8 +148,14 @@ export default {
     removed: '{provider} key deleted.',
     instanceLabel: 'Address of your Mastodon instance',
     instanceHint: 'For example mastodon.social or fosstodon.org.',
+    handleLabel: 'Bluesky handle',
+    handleHint: 'For instance you.bsky.social, or your domain name if you use it as your handle.',
+    appPasswordLabel: 'App password',
+    webhookLabel: 'Discord webhook URL',
+    blueskyAccount: "Account: {'@'}{handle}",
+    discordWebhook: 'Webhook: {name}',
     accountsTitle: 'Accounts connected in Zernio',
-    noAccounts: 'No LinkedIn or Bluesky account connected in Zernio yet.',
+    noAccounts: 'No LinkedIn or Facebook account connected in Zernio yet.',
     inactive: 'inactive',
     accountLine: '{network}: {name}',
     refreshAccounts: 'Refresh the list of accounts',
@@ -215,15 +221,15 @@ export default {
       zernio: {
         name: 'Zernio',
         purpose:
-          'Publication on LinkedIn, Bluesky, X, Facebook (a Page) and Discord (a channel). Your accounts are connected in Zernio, and Pann publishes through it.',
+          'Publication on LinkedIn and Facebook (a Page), two networks that open their API to approved apps only. Your accounts are connected in Zernio, and Pann publishes through it.',
         steps: [
           'Create an account on zernio.com.',
-          'In Zernio, connect your accounts: LinkedIn, Bluesky, X, a Facebook Page (you must be its admin or editor) or a Discord channel (the Zernio bot joins your server).',
+          'In Zernio, connect your LinkedIn account and, if needed, a Facebook Page (you must be its admin or editor).',
           'Open the “API keys” page of the dashboard, then click “Create API key”.',
           'Copy the key (it starts with sk_): it is shown only once.',
           'Once saved, choose in the settings of each topic which account publishes which language. An account connected later in Zernio shows up after “Refresh the list of accounts”.',
         ],
-        cost: 'Depends on your Zernio plan. X also bills each call to its API, which Zernio passes on without markup. Pann only publishes the posts you scheduled.',
+        cost: 'Depends on your Zernio plan (the first two accounts are free). Pann only publishes the posts you scheduled.',
         link: 'Open the Zernio keys page',
       },
       mastodon: {
@@ -239,6 +245,30 @@ export default {
         ],
         cost: 'Free.',
         link: 'Mastodon documentation: access tokens',
+      },
+      bluesky: {
+        name: 'Bluesky',
+        purpose:
+          'Publication on Bluesky, directly, with the language of each post and a clickable link.',
+        steps: [
+          'In Bluesky, open Settings, then Privacy and security, then App passwords.',
+          'Add an app password named “Pann”, without access to direct messages, and copy it: it is shown only once.',
+          'Paste this password and your handle here (for instance you.bsky.social). Your main password is never asked for.',
+        ],
+        cost: 'Free.',
+        link: 'Open the Bluesky app passwords',
+      },
+      discord: {
+        name: 'Discord',
+        purpose:
+          'Publication in a channel of your Discord server, through a webhook. Mentions are turned off: a post never notifies the whole server.',
+        steps: [
+          'On your server, open Server settings, Integrations, then Webhooks (you need the right to manage webhooks).',
+          'Create a webhook named “Pann”, choose the channel to post in, then copy the webhook URL.',
+          'Paste this address here: it works as a key, do not share it.',
+        ],
+        cost: 'Free.',
+        link: 'Discord help: webhooks',
       },
       brevo: {
         name: 'Brevo',
@@ -376,7 +406,6 @@ export default {
       linkedin: 'LinkedIn',
       bluesky: 'Bluesky',
       mastodon: 'Mastodon',
-      x: 'X',
       facebook: 'Facebook',
       discord: 'Discord',
     },
@@ -617,7 +646,7 @@ export default {
       },
       share: {
         title: 'Share',
-        text: 'Posts go out on LinkedIn, Bluesky and Mastodon at the slots you chose. The week planning shows what is scheduled and which slots are still free.',
+        text: 'Posts go out on LinkedIn, Facebook, Bluesky, Mastodon and Discord at the slots you chose. The week planning shows what is scheduled and which slots are still free.',
         alt: 'Paper planes, each carrying a nugget, fly out of a mine cart full of gold.',
       },
     },
@@ -1036,7 +1065,7 @@ export default {
     accountsHint:
       'Tick the languages each account publishes. One account per network and language.',
     noAccounts:
-      'No account available. Add a Zernio key (LinkedIn, Bluesky) or a Mastodon key in Connections.',
+      'No account available. In Connections, add Bluesky, Mastodon, Discord or a Zernio key (LinkedIn, Facebook).',
     accountLangs: 'Languages published by {account}',
     accountConflict: 'Two accounts publish {channel} in {lang}: keep only one.',
     accountMissing: 'Account not found in Zernio: {account}. Refresh the list in Connections.',

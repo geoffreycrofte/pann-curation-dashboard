@@ -55,7 +55,7 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
           .from('workspace_credentials')
           .select('provider, meta')
           .eq('workspace_id', workspaceId)
-          .in('provider', ['zernio', 'mastodon']),
+          .in('provider', ['zernio', 'mastodon', 'bluesky', 'discord']),
       ])
       if (secrets.error) throw secrets.error
       if (rows.error) throw rows.error
@@ -63,14 +63,29 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         ((secrets.data ?? []) as { provider: string; secret: string }[]).find(
           (r) => r.provider === p,
         )?.secret
-      const meta = (rows.data.find((r) => r.provider === 'mastodon')?.meta ?? {}) as CredentialMeta
+      const metaOf = (p: string) =>
+        (rows.data.find((r) => r.provider === p)?.meta ?? {}) as CredentialMeta
+      const mastodon = metaOf('mastodon')
+      const bluesky = metaOf('bluesky')
       const mastodonToken = secret('mastodon')
+      const blueskyPassword = secret('bluesky')
+      const discordUrl = secret('discord')
       return {
         zernio: secret('zernio'),
         mastodon:
-          mastodonToken && meta.instance
-            ? { token: mastodonToken, instance: meta.instance }
+          mastodonToken && mastodon.instance
+            ? { token: mastodonToken, instance: mastodon.instance }
             : undefined,
+        bluesky:
+          blueskyPassword && bluesky.did && bluesky.pds && bluesky.handle
+            ? {
+                password: blueskyPassword,
+                did: bluesky.did,
+                pds: bluesky.pds,
+                handle: bluesky.handle,
+              }
+            : undefined,
+        discord: discordUrl ? { url: discordUrl, guild_id: metaOf('discord').guild_id } : undefined,
       }
     },
 

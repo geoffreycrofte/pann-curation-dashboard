@@ -320,3 +320,14 @@ Chaque thème choisit son service d'envoi (`newsletter.provider` : `brevo` par d
 - **Envoi** : `POST /campaigns` (brouillon adressé à la liste de la langue, `web_publish: false` car les flux publics de Pann publient sur le web), puis `POST /campaigns/{id}/send`. Pas d'expéditeur à choisir : SendFox envoie avec celui du compte, et exige un fuseau horaire réglé dans le compte.
 - **Gabarit** : SendFox exige `{{unsubscribe_url}}` et un `<body>` ; il n'a pas de lien « voir en ligne », la ligne disparaît (`renderDigest` choisit les liens selon le service). Hors mise en page « Code Your Own », SendFox retire les balises hors de son éditeur : à vérifier sur un premier envoi réel.
 - 60 requêtes par minute, partagées entre tous les appels : un envoi en fait deux par langue.
+
+## 2026-11-12 : réseaux en direct ou via Zernio, X abandonné
+
+Suite de l'étude `docs/studies/social-publishing.md` : modèle hybride.
+
+- **En direct**, parce que leur API est ouverte et gratuite : Mastodon (déjà), **Bluesky** et **Discord**. Une clé par espace dans le Vault, comme les autres.
+  - Bluesky : identifiant et mot de passe d'application (jamais le mot de passe principal). L'identifiant est résolu en DID, puis en serveur (PDS) via le document DID ; une session est ouverte à chaque publication. Le post porte sa langue et le lien en « facet » (sinon il n'est pas cliquable), en octets UTF-8.
+  - Discord : l'adresse du webhook d'un salon, qui fait office de clé ; seuls les hôtes de Discord sont acceptés. Mentions désactivées (`allowed_mentions`), pour qu'un post ne notifie jamais tout un serveur. Un seul webhook par espace pour l'instant.
+- **Via Zernio** : LinkedIn et Facebook, dont l'API n'est ouverte qu'aux applications validées.
+- **X abandonné** par principe (et 0,20 $ par post avec lien). Les entrées X d'une configuration de thème sont ignorées à la lecture ; la valeur reste dans l'enum `channel` de la base (on ne retire pas une valeur d'enum).
+- Un compte Bluesky réglé via Zernio doit être reconnecté en direct (Connexions), puis ses langues recochées dans les réglages de diffusion.
