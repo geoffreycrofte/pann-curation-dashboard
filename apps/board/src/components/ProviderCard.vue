@@ -265,30 +265,7 @@ const { mutate: remove } = useMutation({
       </details>
 
       <form v-if="showForm" :id="`${id}-form`" class="form key-form" @submit.prevent="save()">
-        <div class="form-row">
-          <label :for="`${id}-secret`">
-            {{
-              provider === 'bluesky'
-                ? t('connections.appPasswordLabel')
-                : provider === 'discord'
-                  ? t('connections.webhookLabel')
-                  : credential
-                    ? t('connections.keyLabelReplace', { provider: name })
-                    : t('connections.keyLabel', { provider: name })
-            }}
-          </label>
-          <input
-            :id="`${id}-secret`"
-            ref="secretInput"
-            v-model="secret"
-            class="field"
-            type="password"
-            autocomplete="off"
-            spellcheck="false"
-            required
-            minlength="8"
-          />
-        </div>
+        <!-- Who first (account, instance), then the secret: the usual order of a sign-in. -->
         <div v-if="provider === 'bluesky'" class="form-row">
           <label :for="`${id}-handle`">{{ t('connections.handleLabel') }}</label>
           <input
@@ -317,6 +294,30 @@ const { mutate: remove } = useMutation({
             :aria-describedby="`${id}-instance-hint`"
           />
           <p :id="`${id}-instance-hint`" class="hint">{{ t('connections.instanceHint') }}</p>
+        </div>
+        <div class="form-row">
+          <label :for="`${id}-secret`">
+            {{
+              provider === 'bluesky'
+                ? t('connections.appPasswordLabel')
+                : provider === 'discord'
+                  ? t('connections.webhookLabel')
+                  : credential
+                    ? t('connections.keyLabelReplace', { provider: name })
+                    : t('connections.keyLabel', { provider: name })
+            }}
+          </label>
+          <input
+            :id="`${id}-secret`"
+            ref="secretInput"
+            v-model="secret"
+            class="field"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            required
+            minlength="8"
+          />
         </div>
       </form>
 
