@@ -57,24 +57,7 @@ const zernioHeaders = (apiKey: string) => ({
 })
 
 /**
- * Discord: the channel an account posts to (platformSpecificData.channelId is required,
- * one connected account serves one channel). Read at publish time, so a channel switched
- * in Zernio is followed.
- */
-async function discordChannelId(apiKey: string, accountId: string): Promise<string | null> {
-  const res = await send(
-    `${ZERNIO_API}/accounts/${encodeURIComponent(accountId)}/discord-settings`,
-    {
-      headers: zernioHeaders(apiKey),
-    },
-  )
-  if (!res?.ok) return null
-  const body = (await res.json().catch(() => ({}))) as { account?: { channelId?: string } }
-  return body.account?.channelId ?? null
-}
-
-/**
- * LinkedIn, Bluesky, X, Facebook (a Page) and Discord, published now through Zernio.
+ * LinkedIn and Facebook (a Page), published now through Zernio.
  * A post that fails on the network still answers 2xx (207): the outcome is read on the
  * platform entry. Checked 2026-11-11 on docs.zernio.com.
  */
@@ -85,12 +68,7 @@ export async function publishWithZernio(
 ): Promise<PublishResult> {
   const platform = ZERNIO_PLATFORMS[request.channel as ZernioChannel]
   if (!platform) return failure(errorCode('post_rejected', request.channel), false)
-  const entry: Record<string, unknown> = { platform, accountId }
-  if (request.channel === 'discord') {
-    const channelId = await discordChannelId(apiKey, accountId)
-    if (!channelId) return failure(errorCode('account_disconnected', request.channel), false)
-    entry.platformSpecificData = { channelId }
-  }
+  const entry = { platform, accountId }
   const res = await send(`${ZERNIO_API}/posts`, {
     method: 'POST',
     headers: {
@@ -201,8 +179,7 @@ export async function listZernioAccounts(apiKey: string): Promise<AccountsResult
       {
         id: a._id,
         platform: channel,
-        // Discord: "Server - #channel" says where the posts go better than the channel name.
-        username: (channel === 'discord' ? a.displayName : a.username) ?? a.username ?? a._id,
+        username: a.username ?? a.displayName ?? a._id,
         active: a.isActive !== false,
       },
     ]

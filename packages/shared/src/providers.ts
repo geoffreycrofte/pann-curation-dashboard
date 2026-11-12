@@ -7,6 +7,8 @@ export const PROVIDERS = [
   'github',
   'zernio',
   'mastodon',
+  'bluesky',
+  'discord',
   'brevo',
   'sendfox',
 ] as const
@@ -27,20 +29,20 @@ export interface WorkspaceCredential {
   meta: CredentialMeta
 }
 
-/** Pann channels published through Zernio, with Zernio's name for each platform. */
+/**
+ * Pann channels published through Zernio, with Zernio's name for each platform: the
+ * networks whose API needs an approved app. Bluesky, Mastodon and Discord are direct.
+ */
 export const ZERNIO_PLATFORMS = {
   linkedin: 'linkedin',
-  bluesky: 'bluesky',
-  x: 'twitter',
   facebook: 'facebook',
-  discord: 'discord',
 } as const
 export type ZernioChannel = keyof typeof ZERNIO_PLATFORMS
 
 /** Social accounts reachable through Zernio (only the channels Pann publishes to). */
 export interface ZernioAccount {
   id: string
-  /** The Pann channel of the account (X is "twitter" at Zernio). */
+  /** The Pann channel of the account. */
   platform: ZernioChannel
   username: string
   active: boolean
@@ -55,6 +57,14 @@ export interface CredentialMeta {
   acct?: string
   /** mastodon: maximum length of a post on this instance. */
   max_characters?: number
+  /** bluesky: the account (handle, DID) and the server that hosts it (PDS). */
+  handle?: string
+  did?: string
+  pds?: string
+  /** discord: the webhook and the channel it posts to. */
+  webhook_name?: string
+  guild_id?: string
+  channel_id?: string
   /** brevo, sendfox: contact lists (and Brevo senders), to choose them in the topic settings. */
   lists?: NewsletterList[]
   senders?: BrevoSender[]
@@ -103,6 +113,12 @@ export const PROVIDER_INFO: Record<Provider, ProviderInfo> = {
   // Checked 2026-10-02 (docs.zernio.com, docs.joinmastodon.org).
   zernio: { need: 'diffusion', url: 'https://zernio.com/dashboard/api-keys' },
   mastodon: { need: 'diffusion', url: 'https://docs.joinmastodon.org/client/token/' },
+  // Checked 2026-11-12: Bluesky app passwords, Discord channel webhooks.
+  bluesky: { need: 'diffusion', url: 'https://bsky.app/settings/app-passwords' },
+  discord: {
+    need: 'diffusion',
+    url: 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks',
+  },
   // Checked 2026-10-02 (help.brevo.com).
   brevo: {
     need: 'newsletter',

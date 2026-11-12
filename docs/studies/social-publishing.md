@@ -1,6 +1,6 @@
 # Publier sur les réseaux : intégration maison ou Zernio en mode plateforme
 
-Étude du 2026-11-12. Les prix et conditions viennent des pages officielles quand elles étaient lisibles (docs.x.com, zernio.com/pricing, docs Microsoft Learn de LinkedIn, docs Meta) ; les points tirés de guides tiers sont signalés. À revérifier avant de décider : ces conditions changent souvent.
+Étude du 2026-11-12. **Décision du même jour** (voir DECISIONS) : Bluesky et Discord en direct, LinkedIn et Facebook via Zernio, X abandonné. Les prix et conditions viennent des pages officielles quand elles étaient lisibles (docs.x.com, zernio.com/pricing, docs Microsoft Learn de LinkedIn, docs Meta) ; les points tirés de guides tiers sont signalés. À revérifier avant de décider : ces conditions changent souvent.
 
 ## En bref
 

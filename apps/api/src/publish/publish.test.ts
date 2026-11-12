@@ -1,5 +1,6 @@
 import { parseTopicConfig } from '@pann/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { blueskyHandle, discordWebhookUrl, publishToBluesky, publishToDiscord } from './direct'
 import { publishToMastodon, publishWithZernio, type PublishResult } from './networks'
 import { publish, type DuePost, type Networks, type PublishStore } from './publish'
 
@@ -56,6 +57,8 @@ describe('publish', () => {
     const networks: Networks = {
       zernio: async (key, account, request) => (calls.push([key, account, request]), ok),
       mastodon: async (account, request) => (calls.push([account.instance, request]), ok),
+      bluesky: async () => ok,
+      discord: async () => ok,
     }
     const { store, log } = fakeStore([post(), post({ id: 'p2', channel: 'mastodon' })])
     expect(await publish({ store, networks, now })).toEqual({ sent: 2, failed: 0, retried: 0 })
@@ -73,14 +76,24 @@ describe('publish', () => {
   })
 
   it('fails a post whose channel and language have no account', async () => {
-    const networks: Networks = { zernio: async () => ok, mastodon: async () => ok }
+    const networks: Networks = {
+      zernio: async () => ok,
+      mastodon: async () => ok,
+      bluesky: async () => ok,
+      discord: async () => ok,
+    }
     const { store, log } = fakeStore([post({ channel: 'mastodon', lang: 'en' })])
     await publish({ store, networks, now })
     expect(log[0]).toBe('failed p1 channel_not_configured:mastodon/en final')
   })
 
   it('fails without a Zernio key', async () => {
-    const networks: Networks = { zernio: async () => ok, mastodon: async () => ok }
+    const networks: Networks = {
+      zernio: async () => ok,
+      mastodon: async () => ok,
+      bluesky: async () => ok,
+      discord: async () => ok,
+    }
     const { store, log } = fakeStore([post()], { zernio: '', mastodon: true })
     await publish({ store, networks, now })
     expect(log[0]).toBe('failed p1 missing_credential:zernio final')
@@ -90,6 +103,8 @@ describe('publish', () => {
     const networks: Networks = {
       zernio: async () => ({ ok: false, error: 'provider_error:zernio', retry: true }),
       mastodon: async () => ok,
+      bluesky: async () => ok,
+      discord: async () => ok,
     }
     const first = fakeStore([post()])
     await publish({ store: first.store, networks, now })
@@ -109,6 +124,8 @@ describe('publish', () => {
         invalidCredential: true,
       }),
       mastodon: async () => ok,
+      bluesky: async () => ok,
+      discord: async () => ok,
     }
     const { store, log } = fakeStore([post(), post({ id: 'p2', lang: 'en' })])
     await publish({ store, networks, now })
@@ -133,7 +150,7 @@ describe('networks', () => {
   }
 
   const request = {
-    channel: 'bluesky' as const,
+    channel: 'linkedin' as const,
     lang: 'en' as const,
     content: 'Hi\n\nhttps://example.org',
     idempotencyKey: 'pann-p1-0',
@@ -145,20 +162,20 @@ describe('networks', () => {
         _id: 'z1',
         status: 'published',
         platforms: [
-          { platform: 'bluesky', status: 'published', platformPostUrl: 'https://bsky.app/x' },
+          { platform: 'linkedin', status: 'published', platformPostUrl: 'https://linkedin.com/x' },
         ],
       },
     })
     expect(await publishWithZernio('sk_x', 'acc', request)).toEqual({
       ok: true,
       external_id: 'z1',
-      url: 'https://bsky.app/x',
+      url: 'https://linkedin.com/x',
     })
     expect(requests[0]!.url).toBe('https://zernio.com/api/v1/posts')
     expect(new Headers(requests[0]!.init.headers).get('Idempotency-Key')).toBe('pann-p1-0')
     expect(JSON.parse(requests[0]!.init.body as string)).toEqual({
       content: request.content,
-      platforms: [{ platform: 'bluesky', accountId: 'acc' }],
+      platforms: [{ platform: 'linkedin', accountId: 'acc' }],
       publishNow: true,
     })
   })
@@ -168,46 +185,104 @@ describe('networks', () => {
       post: {
         _id: 'z1',
         status: 'failed',
-        platforms: [{ platform: 'bluesky', status: 'failed', errorCategory: 'auth_expired' }],
+        platforms: [{ platform: 'linkedin', status: 'failed', errorCategory: 'auth_expired' }],
       },
     })
     expect(await publishWithZernio('sk_x', 'acc', request)).toMatchObject({
       ok: false,
-      error: 'account_disconnected:bluesky',
+      error: 'account_disconnected:linkedin',
       retry: false,
     })
   })
 
-  it('names X "twitter" at Zernio', async () => {
-    const requests = respond(201, {
-      post: { _id: 'z2', platforms: [{ platform: 'twitter', status: 'published' }] },
-    })
-    expect(await publishWithZernio('sk_x', 'acc', { ...request, channel: 'x' })).toMatchObject({
-      ok: true,
-    })
-    expect(JSON.parse(requests[0]!.init.body as string).platforms).toEqual([
-      { platform: 'twitter', accountId: 'acc' },
-    ])
+  it('leaves Bluesky and Discord out of Zernio', async () => {
+    const requests = respond(201, {})
+    expect(
+      await publishWithZernio('sk_x', 'acc', { ...request, channel: 'bluesky' }),
+    ).toMatchObject({ ok: false, retry: false })
+    expect(requests).toHaveLength(0)
   })
 
-  it('posts to the Discord channel of the account', async () => {
-    const requests: string[] = []
-    const bodies: unknown[] = []
+  it('posts to Bluesky with the app password, the language and a link facet', async () => {
+    const calls: { url: string; body: Record<string, unknown> }[] = []
     vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
-      requests.push(url)
-      if (url.endsWith('/discord-settings'))
-        return Response.json({ account: { channelId: '123', guildId: '9' } })
-      bodies.push(JSON.parse(init.body as string))
-      return Response.json({ post: { _id: 'z3', platforms: [{ platform: 'discord' }] } })
+      calls.push({ url, body: JSON.parse(init.body as string) })
+      if (url.endsWith('createSession')) return Response.json({ accessJwt: 'jwt' })
+      return Response.json({ uri: 'at://did:plc:abc/app.bsky.feed.post/3kxyz', cid: 'c' })
     })
-    const result = await publishWithZernio('sk_x', 'acc', { ...request, channel: 'discord' })
-    expect(result).toMatchObject({ ok: true, external_id: 'z3' })
-    expect(requests[0]).toBe('https://zernio.com/api/v1/accounts/acc/discord-settings')
-    expect(bodies[0]).toMatchObject({
-      platforms: [
-        { platform: 'discord', accountId: 'acc', platformSpecificData: { channelId: '123' } },
-      ],
+    const content = 'Été accessible\n\nhttps://example.org/a'
+    const result = await publishToBluesky(
+      {
+        did: 'did:plc:abc',
+        pds: 'https://pds.example',
+        password: 'app-pass',
+        handle: 'me.bsky.social',
+      },
+      {
+        channel: 'bluesky',
+        lang: 'fr',
+        content,
+        idempotencyKey: 'k',
+        url: 'https://example.org/a',
+      },
+    )
+    expect(result).toEqual({
+      ok: true,
+      external_id: 'at://did:plc:abc/app.bsky.feed.post/3kxyz',
+      url: 'https://bsky.app/profile/me.bsky.social/post/3kxyz',
     })
+    expect(calls[0]).toMatchObject({
+      url: 'https://pds.example/xrpc/com.atproto.server.createSession',
+      body: { identifier: 'did:plc:abc', password: 'app-pass' },
+    })
+    const record = calls[1]!.body.record as {
+      langs: string[]
+      facets: { index: { byteStart: number; byteEnd: number }; features: { uri: string }[] }[]
+    }
+    expect(record.langs).toEqual(['fr'])
+    // "Été accessible" is 14 characters but 16 bytes: facets count bytes.
+    expect(record.facets[0]!.index).toEqual({ byteStart: 18, byteEnd: 18 + 21 })
+    expect(record.facets[0]!.features[0]!.uri).toBe('https://example.org/a')
+  })
+
+  it('reports a refused Bluesky app password as a bad key', async () => {
+    respond(401, { error: 'AuthenticationRequired' })
+    expect(
+      await publishToBluesky(
+        { did: 'did:plc:abc', pds: 'https://pds.example', password: 'x', handle: 'me.bsky.social' },
+        { ...request, channel: 'bluesky', url: 'https://example.org' },
+      ),
+    ).toMatchObject({ ok: false, error: 'invalid_credential:bluesky', invalidCredential: true })
+  })
+
+  it('posts to the Discord webhook without pinging anyone', async () => {
+    const requests = respond(200, { id: 'm1', channel_id: 'c1' })
+    const result = await publishToDiscord(
+      { url: 'https://discord.com/api/webhooks/1/tok', guild_id: 'g1' },
+      { ...request, channel: 'discord' },
+    )
+    expect(result).toEqual({
+      ok: true,
+      external_id: 'm1',
+      url: 'https://discord.com/channels/g1/c1/m1',
+    })
+    expect(requests[0]!.url).toBe('https://discord.com/api/webhooks/1/tok?wait=true')
+    expect(JSON.parse(requests[0]!.init.body as string)).toEqual({
+      content: request.content,
+      allowed_mentions: { parse: [] },
+    })
+  })
+
+  it('accepts only Discord webhook addresses and Bluesky handles', () => {
+    expect(discordWebhookUrl('https://discordapp.com/api/webhooks/123/ab-C_d')).toBe(
+      'https://discord.com/api/webhooks/123/ab-C_d',
+    )
+    expect(discordWebhookUrl('https://evil.example/api/webhooks/123/abc')).toBeNull()
+    expect(blueskyHandle('@Geoffrey.bsky.social')).toBe('geoffrey.bsky.social')
+    expect(blueskyHandle('https://bsky.app/profile/geoffrey.bsky.social')).toBe(
+      'geoffrey.bsky.social',
+    )
+    expect(blueskyHandle('not a handle')).toBeNull()
   })
 
   it('treats a duplicate (409) as already published', async () => {

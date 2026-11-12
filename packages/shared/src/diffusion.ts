@@ -11,26 +11,20 @@ import type { TopicConfig } from './topic-config'
 /** The link to the source goes after the text of the post, separated by a blank line. */
 export const LINK_SEPARATOR = '\n\n'
 
-/** Mastodon and X count every link as 23 characters, whatever its length. */
-const SHORT_URL_LENGTH = 23
+/** Mastodon counts every link as 23 characters, whatever its length. */
+const MASTODON_URL_LENGTH = 23
 
 export function composePost(body: string, url: string): string {
   return `${body.trim()}${LINK_SEPARATOR}${url}`
 }
 
 function urlLength(channel: DraftChannel, url: string): number {
-  return channel === 'mastodon' || channel === 'x' ? SHORT_URL_LENGTH : postLength(url)
-}
-
-/** X counts an emoji as two characters. */
-function textLength(channel: DraftChannel, text: string): number {
-  if (channel !== 'x') return postLength(text)
-  return postLength(text) + (text.match(/\p{Extended_Pictographic}/gu)?.length ?? 0)
+  return channel === 'mastodon' ? MASTODON_URL_LENGTH : postLength(url)
 }
 
 /** Length of the published post (text, blank line and link), as the network counts it. */
 export function publishedLength(channel: DraftChannel, body: string, url: string): number {
-  return textLength(channel, body.trim()) + LINK_SEPARATOR.length + urlLength(channel, url)
+  return postLength(body.trim()) + LINK_SEPARATOR.length + urlLength(channel, url)
 }
 
 /** Room left for the text once the link is added. */

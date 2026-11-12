@@ -147,8 +147,15 @@ export default {
     removed: 'Clé {provider} supprimée.',
     instanceLabel: 'Adresse de votre instance Mastodon',
     instanceHint: 'Par exemple mastodon.social ou piaille.fr.',
+    handleLabel: 'Identifiant Bluesky',
+    handleHint:
+      'Par exemple vous.bsky.social, ou votre nom de domaine si vous l’utilisez comme identifiant.',
+    appPasswordLabel: 'Mot de passe d’application',
+    webhookLabel: 'URL du webhook Discord',
+    blueskyAccount: "Compte : {'@'}{handle}",
+    discordWebhook: 'Webhook : {name}',
     accountsTitle: 'Comptes connectés dans Zernio',
-    noAccounts: 'Aucun compte LinkedIn ou Bluesky connecté dans Zernio pour l’instant.',
+    noAccounts: 'Aucun compte LinkedIn ou Facebook connecté dans Zernio pour l’instant.',
     inactive: 'inactif',
     accountLine: '{network} : {name}',
     refreshAccounts: 'Actualiser la liste des comptes',
@@ -216,15 +223,15 @@ export default {
       zernio: {
         name: 'Zernio',
         purpose:
-          'Publication sur LinkedIn, Bluesky, X, Facebook (une Page) et Discord (un salon). Vos comptes se connectent dans Zernio, Pann publie à travers lui.',
+          'Publication sur LinkedIn et Facebook (une Page), deux réseaux qui n’ouvrent leur API qu’aux applications validées. Vos comptes se connectent dans Zernio, Pann publie à travers lui.',
         steps: [
           'Créez un compte sur zernio.com.',
-          'Dans Zernio, connectez vos comptes : LinkedIn, Bluesky, X, une Page Facebook (vous devez en être administrateur ou éditeur) ou un salon Discord (le robot de Zernio rejoint votre serveur).',
+          'Dans Zernio, connectez votre compte LinkedIn et, si besoin, une Page Facebook (vous devez en être administrateur ou éditeur).',
           'Ouvrez la page « API keys » du tableau de bord, puis cliquez sur « Create API key ».',
           'Copiez la clé (elle commence par sk_) : elle ne s’affiche qu’une seule fois.',
           'Après l’enregistrement, choisissez dans les réglages de chaque thème quel compte publie quelle langue. Un compte connecté plus tard dans Zernio apparaît après « Actualiser la liste des comptes ».',
         ],
-        cost: 'Selon l’abonnement Zernio. X facture en plus chaque appel à son API, que Zernio refacture sans marge. Pann ne publie que les posts que vous avez programmés.',
+        cost: 'Selon l’abonnement Zernio (les deux premiers comptes sont gratuits). Pann ne publie que les posts que vous avez programmés.',
         link: 'Ouvrir la page des clés Zernio',
       },
       mastodon: {
@@ -240,6 +247,30 @@ export default {
         ],
         cost: 'Gratuit.',
         link: 'Documentation Mastodon : jetons d’accès',
+      },
+      bluesky: {
+        name: 'Bluesky',
+        purpose:
+          'Publication sur Bluesky, directement, avec la langue de chaque post et le lien cliquable.',
+        steps: [
+          'Dans Bluesky, ouvrez Réglages, puis Confidentialité et sécurité, puis Mots de passe d’application.',
+          'Ajoutez un mot de passe d’application nommé « Pann », sans l’accès aux messages privés, et copiez-le : il ne s’affiche qu’une fois.',
+          'Collez ici ce mot de passe et votre identifiant (par exemple vous.bsky.social). Votre mot de passe principal n’est jamais demandé.',
+        ],
+        cost: 'Gratuit.',
+        link: 'Ouvrir les mots de passe d’application de Bluesky',
+      },
+      discord: {
+        name: 'Discord',
+        purpose:
+          'Publication dans un salon de votre serveur Discord, par un webhook. Les mentions sont désactivées : un post ne notifie jamais tout le serveur.',
+        steps: [
+          'Sur votre serveur, ouvrez Paramètres du serveur, Intégrations, puis Webhooks (il faut le droit de gérer les webhooks).',
+          'Créez un webhook nommé « Pann », choisissez le salon où publier, puis copiez l’URL du webhook.',
+          'Collez ici cette adresse : elle fait office de clé, ne la partagez pas.',
+        ],
+        cost: 'Gratuit.',
+        link: 'Aide Discord : les webhooks',
       },
       brevo: {
         name: 'Brevo',
@@ -380,7 +411,6 @@ export default {
       linkedin: 'LinkedIn',
       bluesky: 'Bluesky',
       mastodon: 'Mastodon',
-      x: 'X',
       facebook: 'Facebook',
       discord: 'Discord',
     },
@@ -623,7 +653,7 @@ export default {
       },
       share: {
         title: 'Diffuser',
-        text: 'Les posts partent sur LinkedIn, Bluesky et Mastodon aux créneaux que vous avez choisis. Le planning de la semaine montre ce qui est programmé et les créneaux encore libres.',
+        text: 'Les posts partent sur LinkedIn, Facebook, Bluesky, Mastodon et Discord aux créneaux que vous avez choisis. Le planning de la semaine montre ce qui est programmé et les créneaux encore libres.',
         alt: 'Des avions en papier, chacun chargé d’une pépite, s’envolent d’un wagonnet plein d’or.',
       },
     },
@@ -1054,7 +1084,7 @@ export default {
     accountsHint:
       'Cochez les langues que publie chaque compte. Un seul compte par réseau et par langue.',
     noAccounts:
-      'Aucun compte disponible. Ajoutez une clé Zernio (LinkedIn, Bluesky) ou Mastodon dans Connexions.',
+      'Aucun compte disponible. Dans Connexions, ajoutez Bluesky, Mastodon, Discord ou une clé Zernio (LinkedIn, Facebook).',
     accountLangs: 'Langues publiées par {account}',
     accountConflict: 'Deux comptes publient {channel} en {lang} : n’en gardez qu’un.',
     accountMissing:
