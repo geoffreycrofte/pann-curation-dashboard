@@ -22,6 +22,7 @@ import { session } from '../lib/session'
 import { supabase } from '../lib/supabase'
 import { chosenTheme, setTheme, type Theme } from '../lib/theme'
 import { useWorkspace } from '../lib/workspace'
+import { toast } from '../lib/toast'
 
 /** The account of the signed-in person: identity, preferences, workspace, sessions. */
 const { t, locale } = useI18n()
@@ -57,9 +58,9 @@ async function saveIdentity() {
     identityMessage.value = t('profile.identityFailed', { message: error.message })
     return
   }
-  identityMessage.value = emailChanged
-    ? t('profile.emailPending', { email: newEmail })
-    : t('common.saved')
+  // A pending email change needs reading (a link to follow): it stays next to the form.
+  identityMessage.value = emailChanged ? t('profile.emailPending', { email: newEmail }) : ''
+  if (!emailChanged) toast(t('common.saved'))
 }
 
 // ---------------------------------------------------------------------------

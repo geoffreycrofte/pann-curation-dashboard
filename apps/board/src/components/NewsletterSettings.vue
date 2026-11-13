@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useWorkspace } from '../lib/workspace'
+import { toast } from '../lib/toast'
 
 const props = defineProps<{ topicId: string; config: TopicConfig }>()
 const { t, tm, rt } = useI18n()
@@ -42,7 +43,8 @@ const { mutate, isLoading } = useMutation({
     }),
   async onSuccess() {
     isError.value = false
-    message.value = t('common.saved')
+    message.value = ''
+    toast(t('common.saved'))
     await queryCache.invalidateQueries({ key: ['topic', props.topicId] })
     await queryCache.invalidateQueries({ key: ['newsletter', props.topicId] })
   },

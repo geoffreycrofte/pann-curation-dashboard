@@ -1,7 +1,7 @@
 import { parseTopicConfig, type CredentialMeta, type DraftChannel, type Lang } from '@pann/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { listZernioAccounts } from './networks'
-import type { DuePost, PublishStore } from './publish'
+import type { DuePost, PublishCredentials, PublishStore } from './publish'
 
 interface ClaimedRow {
   id: string
@@ -53,40 +53,42 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         db.rpc('workspace_credentials_for_jobs', { p_workspace_id: workspaceId }),
         db
           .from('workspace_credentials')
-          .select('provider, meta')
+          .select('provider, account, meta')
           .eq('workspace_id', workspaceId)
           .in('provider', ['zernio', 'mastodon', 'bluesky', 'discord']),
       ])
       if (secrets.error) throw secrets.error
       if (rows.error) throw rows.error
-      const secret = (p: string) =>
-        ((secrets.data ?? []) as { provider: string; secret: string }[]).find(
-          (r) => r.provider === p,
-        )?.secret
-      const metaOf = (p: string) =>
-        (rows.data.find((r) => r.provider === p)?.meta ?? {}) as CredentialMeta
-      const mastodon = metaOf('mastodon')
-      const bluesky = metaOf('bluesky')
-      const mastodonToken = secret('mastodon')
-      const blueskyPassword = secret('bluesky')
-      const discordUrl = secret('discord')
-      return {
-        zernio: secret('zernio'),
-        mastodon:
-          mastodonToken && mastodon.instance
-            ? { token: mastodonToken, instance: mastodon.instance }
-            : undefined,
-        bluesky:
-          blueskyPassword && bluesky.did && bluesky.pds && bluesky.handle
-            ? {
-                password: blueskyPassword,
-                did: bluesky.did,
-                pds: bluesky.pds,
-                handle: bluesky.handle,
-              }
-            : undefined,
-        discord: discordUrl ? { url: discordUrl, guild_id: metaOf('discord').guild_id } : undefined,
+      const keys = (secrets.data ?? []) as { provider: string; account: string; secret: string }[]
+      const result: PublishCredentials = {
+        zernio: keys.find((k) => k.provider === 'zernio')?.secret,
+        mastodon: {},
+        bluesky: {},
+        discord: {},
       }
+      for (const row of rows.data as {
+        provider: string
+        account: string
+        meta: CredentialMeta
+      }[]) {
+        const secret = keys.find(
+          (k) => k.provider === row.provider && k.account === row.account,
+        )?.secret
+        if (!secret) continue
+        const { meta, account } = row
+        if (row.provider === 'mastodon' && meta.instance)
+          result.mastodon[account] = { token: secret, instance: meta.instance }
+        if (row.provider === 'bluesky' && meta.did && meta.pds && meta.handle)
+          result.bluesky[account] = {
+            password: secret,
+            did: meta.did,
+            pds: meta.pds,
+            handle: meta.handle,
+          }
+        if (row.provider === 'discord')
+          result.discord[account] = { url: secret, guild_id: meta.guild_id }
+      }
+      return result
     },
 
     async markSent(post, result) {
@@ -127,7 +129,7 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
       if (error) throw error
     },
 
-    async markCredentialInvalid(workspaceId, provider) {
+    async markCredentialInvalid(workspaceId, provider, account = '') {
       const { error } = await db
         .from('workspace_credentials')
         .update({
@@ -137,6 +139,7 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         })
         .eq('workspace_id', workspaceId)
         .eq('provider', provider)
+        .eq('account', account)
       if (error) throw error
     },
 

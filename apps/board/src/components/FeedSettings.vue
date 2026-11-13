@@ -16,6 +16,7 @@ import { ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { toast } from '../lib/toast'
 
 const props = defineProps<{ topicId: string; config: TopicConfig; feedKey: string | null }>()
 const { t } = useI18n()
@@ -61,7 +62,8 @@ const { mutate: save, isLoading: saving } = useMutation({
   mutation: () => api.updateConfig(props.topicId, { feed: form.value }),
   async onSuccess() {
     isError.value = false
-    message.value = t('common.saved')
+    message.value = ''
+    toast(t('common.saved'))
     await refresh()
   },
   onError: fail,

@@ -5,6 +5,7 @@ import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api, type TopicWithConfig } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { toast } from '../lib/toast'
 
 const props = defineProps<{ topic: TopicWithConfig }>()
 const { t } = useI18n()
@@ -29,7 +30,8 @@ const { mutate, isLoading } = useMutation({
   },
   async onSuccess() {
     isError.value = false
-    message.value = t('common.saved')
+    message.value = ''
+    toast(t('common.saved'))
     await queryCache.invalidateQueries({ key: ['topics'] })
     await queryCache.invalidateQueries({ key: ['topic', props.topic.id] })
   },

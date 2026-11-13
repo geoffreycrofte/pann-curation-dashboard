@@ -331,3 +331,16 @@ Suite de l'étude `docs/studies/social-publishing.md` : modèle hybride.
 - **Via Zernio** : LinkedIn et Facebook, dont l'API n'est ouverte qu'aux applications validées.
 - **X abandonné** par principe (et 0,20 $ par post avec lien). Les entrées X d'une configuration de thème sont ignorées à la lecture ; la valeur reste dans l'enum `channel` de la base (on ne retire pas une valeur d'enum).
 - Un compte Bluesky réglé via Zernio doit être reconnecté en direct (Connexions), puis ses langues recochées dans les réglages de diffusion.
+
+## 2026-11-13 : plusieurs comptes par réseau direct, choisis par thème
+
+Besoin : publier avec des comptes différents selon le thème (profil perso pour un thème, page pro pour un autre). Plutôt qu'une connexion par thème qui remplacerait celle de l'espace, l'espace garde **toutes** les clés et peut avoir **plusieurs comptes** pour les réseaux publiés en direct (Bluesky, Mastodon, Discord) ; chaque thème coche ses comptes dans Réglages, Diffusion, comme pour LinkedIn et Facebook via Zernio. Un compte utilisé par plusieurs thèmes ne se saisit qu'une fois, et les clés restent au même endroit.
+
+- `workspace_credentials.account` : l'identifiant Bluesky, `utilisateur@instance` pour Mastodon, l'identifiant du webhook Discord ; vide pour les autres services, qui gardent une clé par espace (la base le vérifie). Clé primaire `(workspace_id, provider, account)`.
+- Les comptes existants sont repris par la migration, et les thèmes réglés avec l'ancien webhook Discord pointent vers son identifiant.
+- À la publication, le thème désigne le compte ; s'il n'en désigne pas un qui existe et que l'espace n'en a qu'un, celui-ci est pris. Un compte refusé ne bloque que lui, pas les autres comptes du même réseau.
+- Connexions : une carte par compte, puis une carte « Autre compte » pour en ajouter un.
+
+## 2026-11-13 : confirmations en toast
+
+Les confirmations d'enregistrement s'affichent dans un toast vert en bas à droite (`lib/toast.ts`, `Toaster.vue`) : zone `role="status"` présente dès le chargement (annoncée par les lecteurs d'écran), disparition après 5 secondes sauf tant que le pointeur ou le focus est dessus, bouton de fermeture. Les erreurs, et les messages qui demandent une action (clé enregistrée mais non vérifiée, e-mail à confirmer), restent à côté de leur formulaire.

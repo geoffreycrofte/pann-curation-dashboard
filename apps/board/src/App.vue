@@ -4,6 +4,7 @@ import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, watch }
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AccountMenu from './components/AccountMenu.vue'
+import Toaster from './components/Toaster.vue'
 import PannMark from './components/PannMark.vue'
 import { api } from './lib/api'
 import { session } from './lib/session'
@@ -208,6 +209,7 @@ watch(
   <main v-else id="main" tabindex="-1" class="public">
     <RouterView />
   </main>
+  <Toaster />
 </template>
 
 <style scoped>

@@ -28,6 +28,7 @@ import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
 import { api, type RewriteInput } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useWorkspace } from '../lib/workspace'
+import { toast } from '../lib/toast'
 
 const props = defineProps<{ topicId: string; itemId: string }>()
 const { t, d } = useI18n()
@@ -88,7 +89,8 @@ const { mutate: saveKind, isLoading: savingKind } = useMutation({
   mutation: (kind: string | null) => api.setItemKind(props.topicId, props.itemId, kind),
   async onSuccess() {
     isError.value = false
-    message.value = t('itemKind.saved')
+    message.value = ''
+    toast(t('itemKind.saved'))
     await queryCache.invalidateQueries({ key: key() })
     await queryCache.invalidateQueries({ key: ['items', props.topicId] })
   },

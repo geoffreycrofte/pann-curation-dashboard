@@ -1,4 +1,4 @@
-import { PROVIDERS, type Provider } from '@pann/shared'
+import { isMultiAccount, PROVIDERS, type CredentialMeta, type Provider } from '@pann/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
@@ -7,7 +7,8 @@ import { checkCredential, mastodonInstance } from '../lib/check-credential'
 import { blueskyHandle, discordWebhookUrl } from '../publish/direct'
 import { parseJson } from '../lib/validation'
 
-const COLUMNS = 'workspace_id, provider, hint, status, status_detail, checked_at, updated_at, meta'
+const COLUMNS =
+  'workspace_id, provider, account, hint, status, status_detail, checked_at, updated_at, meta'
 const setBody = z.object({
   secret: z.string().trim().min(8).max(500),
   /** Mastodon only: the instance of the account. */
@@ -15,6 +16,20 @@ const setBody = z.object({
   /** Bluesky only: the handle of the account (the secret is an app password). */
   handle: z.string().trim().max(300).optional(),
 })
+
+/**
+ * Which account a key belongs to, for the networks with several accounts per workspace:
+ * the handle (Bluesky), user@instance (Mastodon, the instance host if it did not answer),
+ * the webhook id (Discord). Empty for the other services.
+ */
+function accountOf(p: Provider, secret: string, meta: CredentialMeta, instance?: string) {
+  if (p === 'bluesky') return meta.handle ?? ''
+  if (p === 'mastodon') return meta.acct ?? (instance ? new URL(instance).host : '')
+  if (p === 'discord') return secret.match(/\/webhooks\/(\d+)\//)?.[1] ?? ''
+  return ''
+}
+
+const accountQuery = z.object({ account: z.string().max(300).default('') })
 
 function provider(value: string): Provider {
   if (!(PROVIDERS as readonly string[]).includes(value))
@@ -56,6 +71,8 @@ export const credentials = new Hono<AppEnv>()
     const check = await checkCredential(p, secret, { instance, handle })
     if (check.status === 'invalid')
       throw new HTTPException(422, { message: `invalid_credential:${p}` })
+    const account = accountOf(p, secret, { ...check.meta, handle }, instance)
+    if (isMultiAccount(p) && !account) throw new HTTPException(422, { message: 'invalid_config' })
 
     const { error } = await c.var.db.rpc('set_workspace_credential', {
       p_workspace_id: c.req.param('workspaceId'),
@@ -64,6 +81,7 @@ export const credentials = new Hono<AppEnv>()
       p_status: check.status,
       p_status_detail: check.detail,
       p_meta: check.meta ?? {},
+      p_account: account,
     })
     if (error?.code === '42501') throw new HTTPException(403, { message: 'owner_only' })
     if (error) throw error
@@ -73,6 +91,7 @@ export const credentials = new Hono<AppEnv>()
       .select(COLUMNS)
       .eq('workspace_id', c.req.param('workspaceId')!)
       .eq('provider', p)
+      .eq('account', account)
       .single()
     if (readError) throw readError
     return c.json(data)
@@ -92,6 +111,7 @@ export const credentials = new Hono<AppEnv>()
       .select('provider')
       .eq('workspace_id', workspaceId)
       .eq('provider', p)
+      .eq('account', '')
       .maybeSingle()
     if (error) throw error
     if (!data) throw new HTTPException(404, { message: `missing_credential:${p}` })
@@ -99,10 +119,14 @@ export const credentials = new Hono<AppEnv>()
     return c.body(null, 202)
   })
 
+  /** Removes a key; `?account=` names which one for the networks with several accounts. */
   .delete('/:provider', async (c) => {
+    const query = accountQuery.safeParse(c.req.query())
+    if (!query.success) throw new HTTPException(400, { message: 'invalid_config' })
     const { error } = await c.var.db.rpc('delete_workspace_credential', {
       p_workspace_id: c.req.param('workspaceId'),
       p_provider: provider(c.req.param('provider')),
+      p_account: query.data.account,
     })
     if (error?.code === '42501') throw new HTTPException(403, { message: 'owner_only' })
     if (error) throw error

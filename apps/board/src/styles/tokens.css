@@ -26,6 +26,9 @@
   --color-on-ink-muted: light-dark(#b9b2a2, #b8b1a1);
   --color-accent-on-ink: #ffc72c;
   --color-success: light-dark(#1d6b34, #6fd08c);
+  /* Success confirmations (toasts): a solid green with its own text color. */
+  --color-success-fill: light-dark(#1d6b34, #6fd08c);
+  --color-on-success: light-dark(#ffffff, #0d2414);
   --color-danger: light-dark(#b42318, #ff8a80);
   /* AI at work: colors of the animated halo, with --color-accent-fill (3:1 on the backgrounds). */
   --color-ai-violet: light-dark(#6d4aff, #b3a1ff);
