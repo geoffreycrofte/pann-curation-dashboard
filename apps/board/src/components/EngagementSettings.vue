@@ -4,6 +4,7 @@ import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api, type TopicWithConfig } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { toast } from '../lib/toast'
 
 /** How the engagement triage judges conversations: user settings of the topic. */
 const props = defineProps<{ topic: TopicWithConfig }>()
@@ -28,7 +29,8 @@ const { mutate, isLoading } = useMutation({
     }),
   async onSuccess() {
     isError.value = false
-    message.value = t('common.saved')
+    message.value = ''
+    toast(t('common.saved'))
     await queryCache.invalidateQueries({ key: ['topic', props.topic.id] })
   },
   onError(err) {

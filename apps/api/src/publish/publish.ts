@@ -22,11 +22,33 @@ export interface DuePost {
   topic_config: TopicConfig
 }
 
+/**
+ * Keys of a workspace. The networks published directly can have several accounts, keyed
+ * by their account name (handle, user@instance, webhook id).
+ */
 export interface PublishCredentials {
   zernio?: string
-  mastodon?: MastodonAccount
-  bluesky?: BlueskyAccount
-  discord?: DiscordWebhook
+  mastodon: Record<string, MastodonAccount>
+  bluesky: Record<string, BlueskyAccount>
+  discord: Record<string, DiscordWebhook>
+}
+
+/**
+ * The account a topic chose for a network published directly. A topic set when the
+ * workspace had a single account (or an older id) still finds it while there is one.
+ */
+/** The account name under which a direct network's key is stored. */
+function credentialAccount(keys: PublishCredentials, service: PublishService, found: unknown) {
+  if (service === 'zernio') return undefined
+  const accounts = keys[service] as Record<string, unknown>
+  return Object.keys(accounts).find((name) => accounts[name] === found)
+}
+
+export function pickAccount<T>(accounts: Record<string, T>, accountId: string): T | undefined {
+  const found = accounts[accountId]
+  if (found) return found
+  const all = Object.values(accounts)
+  return all.length === 1 ? all[0] : undefined
 }
 
 /** Who publishes a channel: Zernio for the networks with app review, the others directly. */
@@ -41,7 +63,11 @@ export interface PublishStore {
   markFailed(post: DuePost, error: string, final: boolean, retryAt?: Date): Promise<void>
   /** Leaves the post scheduled, to be taken again after `retryAt` (rate limits). */
   release(post: DuePost, retryAt: Date): Promise<void>
-  markCredentialInvalid(workspaceId: string, provider: PublishService): Promise<void>
+  markCredentialInvalid(
+    workspaceId: string,
+    provider: PublishService,
+    account?: string,
+  ): Promise<void>
   /** An item whose posts have all left the queue, with at least one sent, is published. */
   finishItem(topicId: string, itemId: string): Promise<void>
 }
@@ -92,13 +118,6 @@ export async function publish(deps: {
   for (const post of posts) {
     items.add(`${post.topic_id}/${post.item_id}`)
     const service = provider(post.channel)
-    const blockKey = `${post.workspace_id}/${service}`
-    if (blocked.has(blockKey)) {
-      await deps.store.release(post, later(1))
-      report.retried++
-      continue
-    }
-
     const account = post.lang ? accountFor(post.topic_config, post.channel, post.lang) : undefined
     if (!post.lang || !account) {
       await deps.store.markFailed(
@@ -107,6 +126,13 @@ export async function publish(deps: {
         true,
       )
       report.failed++
+      continue
+    }
+    // Zernio is one key; a direct network can have several accounts, blocked one by one.
+    const blockKey = `${post.workspace_id}/${service}/${service === 'zernio' ? '' : account.account_id}`
+    if (blocked.has(blockKey)) {
+      await deps.store.release(post, later(1))
+      report.retried++
       continue
     }
 
@@ -120,8 +146,18 @@ export async function publish(deps: {
       content: composePost(post.body, post.canonical_url),
       idempotencyKey: `pann-${post.id}-${post.publish_attempts}`,
     }
-    const key = keys[service]
-    if (!key) {
+    const mastodon = pickAccount(keys.mastodon, account.account_id)
+    const bluesky = pickAccount(keys.bluesky, account.account_id)
+    const discord = pickAccount(keys.discord, account.account_id)
+    const found =
+      service === 'zernio'
+        ? keys.zernio
+        : service === 'mastodon'
+          ? mastodon
+          : service === 'bluesky'
+            ? bluesky
+            : discord
+    if (!found) {
       await deps.store.markFailed(post, errorCode('missing_credential', service), true)
       report.failed++
       continue
@@ -130,10 +166,10 @@ export async function publish(deps: {
       service === 'zernio'
         ? await deps.networks.zernio(keys.zernio!, account.account_id, request)
         : service === 'mastodon'
-          ? await deps.networks.mastodon(keys.mastodon!, request)
+          ? await deps.networks.mastodon(mastodon!, request)
           : service === 'bluesky'
-            ? await deps.networks.bluesky(keys.bluesky!, { ...request, url: post.canonical_url })
-            : await deps.networks.discord(keys.discord!, request)
+            ? await deps.networks.bluesky(bluesky!, { ...request, url: post.canonical_url })
+            : await deps.networks.discord(discord!, request)
 
     if (result.ok) {
       await deps.store.markSent(post, result)
@@ -141,7 +177,11 @@ export async function publish(deps: {
       continue
     }
     if (result.invalidCredential) {
-      await deps.store.markCredentialInvalid(post.workspace_id, service)
+      await deps.store.markCredentialInvalid(
+        post.workspace_id,
+        service,
+        service === 'zernio' ? undefined : credentialAccount(keys, service, found),
+      )
       blocked.add(blockKey)
     }
     if (result.error.startsWith('rate_limited')) {

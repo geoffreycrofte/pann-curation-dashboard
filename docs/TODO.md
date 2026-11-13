@@ -11,7 +11,6 @@ Liste vivante : une ligne passe dans `DECISIONS.md` (et sort d'ici) quand elle e
   - **Enterprise** : sur mesure, sur contact.
   - Acquisition : un mois d'essai gratuit, et au lancement seulement Light et Medium ; Curator et Enterprise quand le coût réel et la rentabilité seront connus.
   - À prévoir : facturation (Stripe), quotas d'IA par espace, plusieurs IA prises en charge (aujourd'hui Anthropic seul), mode « comptes gérés par Pann » pour Zernio.
-- **Plusieurs webhooks Discord** par espace (un salon par thème ou par langue) : aujourd'hui un seul.
 - **Streak de publication** : compter les semaines d'affilée avec au moins une publication, l'afficher, et prévenir quand la semaine en cours n'a encore rien de programmé (« vous êtes sur le point de casser votre streak, choisissez des éléments à publier »). Préciser le canal de la notification (dans le board, par e-mail).
 - **Pause de la collecte** : réglage « au-delà de N éléments dans À trier, Pann se met en pause », pour ne pas accumuler plus qu'on ne peut trier (et ne pas payer le tri par IA pour rien). Reprise automatique sous le seuil.
 

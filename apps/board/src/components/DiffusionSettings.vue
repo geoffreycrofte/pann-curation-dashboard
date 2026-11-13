@@ -12,6 +12,7 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useWorkspace } from '../lib/workspace'
+import { toast } from '../lib/toast'
 
 const props = defineProps<{ topicId: string; config: TopicConfig }>()
 const { t } = useI18n()
@@ -77,34 +78,24 @@ const accounts = computed<AccountRow[]>(() => {
       missing: false,
     })
   }
-  // Published directly: one account per workspace, set on the Connections page.
-  const handle = credentials.value?.find((c) => c.provider === 'bluesky')?.meta.handle
-  if (handle)
-    rows.push({
-      key: `bluesky/${handle}`,
-      channel: 'bluesky',
-      account_id: handle,
-      name: `@${handle}`,
-      missing: false,
-    })
-  const discord = credentials.value?.find((c) => c.provider === 'discord')
-  if (discord)
-    rows.push({
-      key: `discord/${discord.meta.channel_id ?? 'webhook'}`,
-      channel: 'discord',
-      account_id: discord.meta.channel_id ?? 'webhook',
-      name: discord.meta.webhook_name ?? 'Discord',
-      missing: false,
-    })
-  const acct = credentials.value?.find((c) => c.provider === 'mastodon')?.meta.acct
-  if (acct)
-    rows.push({
-      key: `mastodon/${acct}`,
-      channel: 'mastodon',
-      account_id: acct,
-      name: acct,
-      missing: false,
-    })
+  // Published directly: as many accounts as the workspace connected (Connections page).
+  for (const c of credentials.value ?? []) {
+    if (!c.account) continue
+    const name =
+      c.provider === 'bluesky'
+        ? `@${c.meta.handle ?? c.account}`
+        : c.provider === 'discord'
+          ? (c.meta.webhook_name ?? 'Discord')
+          : c.account
+    if (c.provider === 'bluesky' || c.provider === 'mastodon' || c.provider === 'discord')
+      rows.push({
+        key: `${c.provider}/${c.account}`,
+        channel: c.provider,
+        account_id: c.account,
+        name,
+        missing: false,
+      })
+  }
   // Accounts set in the topic that the services no longer list stay visible.
   for (const c of props.config.channels) {
     const key = `${c.channel}/${c.account_id}`
@@ -164,7 +155,8 @@ const { mutate, isLoading } = useMutation({
     }),
   async onSuccess() {
     isError.value = false
-    message.value = t('common.saved')
+    message.value = ''
+    toast(t('common.saved'))
     await queryCache.invalidateQueries({ key: ['topic', props.topicId] })
   },
   onError(err) {

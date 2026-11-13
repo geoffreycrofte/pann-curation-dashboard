@@ -17,6 +17,7 @@ import {
 } from 'reka-ui'
 import { computed, nextTick, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { toast } from '../lib/toast'
 
 export type RewritePreset = 'shorter' | 'longer' | 'formal' | 'casual' | 'custom'
 
@@ -64,7 +65,8 @@ async function submit() {
   try {
     await props.save(text.value)
     isError.value = false
-    message.value = t('draft.saved')
+    message.value = ''
+    toast(t('draft.saved'))
     beforeRewrite.value = null
   } catch (err) {
     isError.value = true

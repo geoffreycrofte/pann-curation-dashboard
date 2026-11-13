@@ -2,7 +2,14 @@ import { parseTopicConfig } from '@pann/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { blueskyHandle, discordWebhookUrl, publishToBluesky, publishToDiscord } from './direct'
 import { publishToMastodon, publishWithZernio, type PublishResult } from './networks'
-import { publish, type DuePost, type Networks, type PublishStore } from './publish'
+import {
+  pickAccount,
+  publish,
+  type DuePost,
+  type Networks,
+  type PublishCredentials,
+  type PublishStore,
+} from './publish'
 
 const config = parseTopicConfig({
   channels: [
@@ -31,9 +38,13 @@ function fakeStore(posts: DuePost[], keys = { zernio: 'sk_x', mastodon: true }) 
   const log: string[] = []
   const store: PublishStore = {
     claimDue: async () => posts,
-    credentials: async () => ({
+    credentials: async (): Promise<PublishCredentials> => ({
       zernio: keys.zernio || undefined,
-      mastodon: keys.mastodon ? { instance: 'https://mastodon.social', token: 't' } : undefined,
+      mastodon: keys.mastodon
+        ? { 'me@mastodon.social': { instance: 'https://mastodon.social', token: 't' } }
+        : {},
+      bluesky: {},
+      discord: {},
     }),
     markSent: async (p, r) => void log.push(`sent ${p.id} ${r.url}`),
     markFailed: async (p, error, final, retryAt) =>
@@ -134,6 +145,19 @@ describe('publish', () => {
       'failed p1 invalid_credential:zernio final',
       'release p2',
     ])
+  })
+})
+
+describe('pickAccount', () => {
+  const accounts = { 'a.bsky.social': 'A', 'b.bsky.social': 'B' }
+
+  it('takes the account the topic chose', () => {
+    expect(pickAccount(accounts, 'b.bsky.social')).toBe('B')
+  })
+
+  it('falls back on the only account, and refuses to guess between several', () => {
+    expect(pickAccount({ only: 'O' }, 'an-older-id')).toBe('O')
+    expect(pickAccount(accounts, 'c.bsky.social')).toBeUndefined()
   })
 })
 

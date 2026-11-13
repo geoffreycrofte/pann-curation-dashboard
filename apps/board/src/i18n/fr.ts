@@ -1,5 +1,6 @@
 export default {
   app: { name: 'Pann', tagline: 'Outil de curation de veille' },
+  toast: { close: 'Fermer la notification « {text} »' },
   a11y: { skipToContent: 'Aller au contenu' },
   lang: { label: 'Langue', fr: 'Français', en: 'English' },
   theme: { dark: 'Mode sombre' },
@@ -147,6 +148,8 @@ export default {
     removed: 'Clé {provider} supprimée.',
     instanceLabel: 'Adresse de votre instance Mastodon',
     instanceHint: 'Par exemple mastodon.social ou piaille.fr.',
+    addAccount: 'Ajouter un compte',
+    addAccountTitle: 'Autre compte {provider}',
     handleLabel: 'Identifiant Bluesky',
     handleHint:
       'Par exemple vous.bsky.social, ou votre nom de domaine si vous l’utilisez comme identifiant.',

@@ -5,6 +5,7 @@ import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api, type TopicWithConfig } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { toast } from '../lib/toast'
 
 /**
  * Kinds of content of the topic: Pann's defaults to start with, then renamed, added or
@@ -84,7 +85,8 @@ const { mutate, isLoading } = useMutation({
   },
   async onSuccess({ config }) {
     isError.value = false
-    message.value = t('kinds.saved')
+    message.value = ''
+    toast(t('kinds.saved'))
     rows.value = config.kinds.map((k) => ({ ...k, isNew: false, uid: nextUid++ }))
     removed.value = []
     await queryCache.invalidateQueries({ key: ['topic', props.topic.id] })

@@ -20,6 +20,11 @@ export type CredentialStatus = (typeof CREDENTIAL_STATUSES)[number]
 export interface WorkspaceCredential {
   workspace_id: string
   provider: Provider
+  /**
+   * Which account of the service: the handle (Bluesky), user@instance (Mastodon), the
+   * webhook id (Discord). Empty for the other services, which have one key per workspace.
+   */
+  account: string
   hint: string
   status: CredentialStatus
   status_detail: string | null
@@ -69,6 +74,14 @@ export interface CredentialMeta {
   lists?: NewsletterList[]
   senders?: BrevoSender[]
   refreshed_at?: string
+}
+
+/** Networks published directly, where a workspace can connect several accounts. */
+export const MULTI_ACCOUNT_PROVIDERS = ['mastodon', 'bluesky', 'discord'] as const
+export type MultiAccountProvider = (typeof MULTI_ACCOUNT_PROVIDERS)[number]
+
+export function isMultiAccount(provider: Provider): provider is MultiAccountProvider {
+  return (MULTI_ACCOUNT_PROVIDERS as readonly string[]).includes(provider)
 }
 
 /** Services that send the newsletter. */

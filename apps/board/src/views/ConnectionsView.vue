@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PROVIDER_INFO, PROVIDERS } from '@pann/shared'
+import { isMultiAccount, PROVIDER_INFO, PROVIDERS, type Provider } from '@pann/shared'
 import { useQuery } from '@pinia/colada'
 import { useI18n } from 'vue-i18n'
 import McpSection from '../components/McpSection.vue'
@@ -38,6 +38,9 @@ const {
   query: () => api.credentials(workspaceId.value!),
   enabled: () => !!workspaceId.value,
 })
+
+const accountsOf = (provider: Provider) =>
+  (credentials.value ?? []).filter((c) => c.provider === provider)
 </script>
 
 <template>
@@ -54,14 +57,34 @@ const {
     <section v-for="group in groups" :key="group.key" :aria-labelledby="`group-${group.key}`">
       <h2 :id="`group-${group.key}`" class="group-title">{{ t(group.label) }}</h2>
       <div class="providers">
-        <ProviderCard
-          v-for="provider in group.providers"
-          :key="provider"
-          :provider="provider"
-          :workspace-id="workspaceId"
-          :credential="credentials?.find((c) => c.provider === provider)"
-          :can-edit="isOwner"
-        />
+        <template v-for="provider in group.providers" :key="provider">
+          <!-- Networks with several accounts: one card per account, then one to add another. -->
+          <template v-if="isMultiAccount(provider)">
+            <ProviderCard
+              v-for="credential in accountsOf(provider)"
+              :key="`${provider}/${credential.account}`"
+              :provider="provider"
+              :workspace-id="workspaceId"
+              :credential="credential"
+              :can-edit="isOwner"
+            />
+            <ProviderCard
+              v-if="isOwner || !accountsOf(provider).length"
+              :key="`${provider}/new`"
+              :provider="provider"
+              :workspace-id="workspaceId"
+              :can-edit="isOwner"
+              :adding="accountsOf(provider).length > 0"
+            />
+          </template>
+          <ProviderCard
+            v-else
+            :provider="provider"
+            :workspace-id="workspaceId"
+            :credential="credentials?.find((c) => c.provider === provider)"
+            :can-edit="isOwner"
+          />
+        </template>
       </div>
     </section>
     <McpSection />

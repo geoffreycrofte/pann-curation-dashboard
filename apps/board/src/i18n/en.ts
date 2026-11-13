@@ -2,6 +2,7 @@ import type fr from './fr'
 
 export default {
   app: { name: 'Pann', tagline: 'Content curation tool' },
+  toast: { close: 'Close the notification “{text}”' },
   a11y: { skipToContent: 'Skip to content' },
   lang: { label: 'Language', fr: 'Français', en: 'English' },
   theme: { dark: 'Dark mode' },
@@ -148,6 +149,8 @@ export default {
     removed: '{provider} key deleted.',
     instanceLabel: 'Address of your Mastodon instance',
     instanceHint: 'For example mastodon.social or fosstodon.org.',
+    addAccount: 'Add an account',
+    addAccountTitle: 'Another {provider} account',
     handleLabel: 'Bluesky handle',
     handleHint: 'For instance you.bsky.social, or your domain name if you use it as your handle.',
     appPasswordLabel: 'App password',

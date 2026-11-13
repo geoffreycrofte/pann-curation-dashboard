@@ -64,6 +64,8 @@ const PAIRS = [
   ['color-ai-violet', 'color-surface', 3],
   ['color-ai-teal', 'color-bg', 3],
   ['color-ai-teal', 'color-surface', 3],
+  // Toasts.
+  ['color-on-success', 'color-success-fill', 4.5],
   // Marketing page.
   ['color-text', 'color-paper', 4.5],
   ['color-text-muted', 'color-paper', 4.5],

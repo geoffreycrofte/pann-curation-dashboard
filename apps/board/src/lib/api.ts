@@ -206,8 +206,12 @@ export const api = {
     request<void>(`/workspaces/${workspaceId}/credentials/${provider}/refresh`, {
       method: 'POST',
     }),
-  deleteCredential: (workspaceId: string, provider: Provider) =>
-    request<void>(`/workspaces/${workspaceId}/credentials/${provider}`, { method: 'DELETE' }),
+  /** `account`: which one, for the networks with several accounts (Bluesky, Mastodon, Discord). */
+  deleteCredential: (workspaceId: string, provider: Provider, account = '') =>
+    request<void>(
+      `/workspaces/${workspaceId}/credentials/${provider}${account ? `?${new URLSearchParams({ account })}` : ''}`,
+      { method: 'DELETE' },
+    ),
 
   topics: () => request<Topic[]>('/topics'),
   createTopic: (input: NewTopicInput) => request<Topic>('/topics', json('POST', input)),

@@ -17,6 +17,7 @@ import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
+import { toast } from '../lib/toast'
 
 /**
  * Settings of a topic. scope "topic": what its tools share (general, product, budget);
@@ -92,7 +93,8 @@ const { mutate, isLoading } = useMutation({
   mutation: () => api.updateConfig(props.topicId, { collection: collection.value, ai: ai.value }),
   async onSuccess() {
     isError.value = false
-    message.value = t('common.saved')
+    message.value = ''
+    toast(t('common.saved'))
     await queryCache.invalidateQueries({ key: ['topic', props.topicId] })
     await queryCache.invalidateQueries({ key: ['sources', props.topicId] })
   },

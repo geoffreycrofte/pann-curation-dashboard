@@ -16,12 +16,15 @@ import { computed, nextTick, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { toast } from '../lib/toast'
 
 const props = defineProps<{
   provider: Provider
   workspaceId: string
   credential?: WorkspaceCredential
   canEdit: boolean
+  /** A card to connect one more account (networks with several accounts). */
+  adding?: boolean
 }>()
 const { t, tm, rt } = useI18n()
 const id = useId()
@@ -33,10 +36,19 @@ const steps = computed(() =>
   (tm(`connections.providers.${props.provider}.steps`) as unknown[]).map((s) => rt(s as string)),
 )
 const status = computed(() => props.credential?.status ?? 'none')
+/** Which account this card holds, for the networks with several accounts. */
+const accountLabel = computed(() => {
+  const meta = props.credential?.meta
+  if (!meta) return ''
+  if (props.provider === 'bluesky' && meta.handle) return `@${meta.handle}`
+  if (props.provider === 'mastodon') return meta.acct ?? ''
+  if (props.provider === 'discord') return meta.webhook_name ?? ''
+  return ''
+})
 
 // A checked key needs nothing more: the card shrinks to its name, status and purpose,
 // and opens on demand (to replace the key, see the accounts…).
-const expanded = ref(status.value !== 'ok')
+const expanded = ref(status.value !== 'ok' && !props.adding)
 const toggle = ref<HTMLButtonElement>()
 watch(status, async (value, previous) => {
   if (value === 'ok' && previous !== 'ok') {
@@ -100,14 +112,19 @@ const { mutate: save, isLoading: saving } = useMutation({
     isError.value = false
     const wasReplacing = replacing.value
     replacing.value = false
-    const detail = credential.status_detail
-      ? ` ${t(`connections.detail.${credential.status_detail}`)}`
-      : ''
-    message.value =
-      t('connections.saved', {
-        provider: name.value,
-        status: t(`connections.status.${credential.status}`),
-      }) + detail
+    const saved = t('connections.saved', {
+      provider: name.value,
+      status: t(`connections.status.${credential.status}`),
+    })
+    // A key saved but not checked needs reading (why, what to do): it stays in the card.
+    if (credential.status_detail) {
+      message.value = `${saved} ${t(`connections.detail.${credential.status_detail}`)}`
+    } else {
+      message.value = ''
+      toast(saved)
+    }
+    // The new account gets its own card: this one folds back for the next.
+    if (props.adding) expanded.value = false
     await refresh()
     // The form (and the focused save button) is gone: focus the replace button.
     if (wasReplacing && expanded.value) {
@@ -137,10 +154,16 @@ const { mutate: refreshAccounts, isLoading: refreshing } = useMutation({
 })
 
 const { mutate: remove } = useMutation({
-  mutation: () => api.deleteCredential(props.workspaceId, props.provider),
+  mutation: () =>
+    api.deleteCredential(props.workspaceId, props.provider, props.credential?.account ?? ''),
   async onSuccess() {
     isError.value = false
-    message.value = t('connections.removed', { provider: name.value })
+    message.value = ''
+    toast(
+      t('connections.removed', {
+        provider: accountLabel.value ? `${name.value} ${accountLabel.value}` : name.value,
+      }),
+    )
     await refresh()
   },
   onError(err) {
@@ -153,17 +176,20 @@ const { mutate: remove } = useMutation({
 <template>
   <section class="card" :data-card="id" :data-collapsed="!expanded" :aria-labelledby="`${id}-name`">
     <header class="card-header">
-      <h3 :id="`${id}-name`">{{ name }}</h3>
-      <p v-if="expanded" class="need">{{ t(`connections.need.${info.need}`) }}</p>
-      <p v-else class="status" :data-status="status">
+      <h3 :id="`${id}-name`">
+        {{ adding ? t('connections.addAccountTitle', { provider: name }) : name }}
+        <span v-if="accountLabel" class="account">{{ accountLabel }}</span>
+      </h3>
+      <p v-if="expanded && !adding" class="need">{{ t(`connections.need.${info.need}`) }}</p>
+      <p v-else-if="!adding" class="status" :data-status="status">
         <span class="status-label">{{ t(`connections.status.${status}`) }}</span>
       </p>
     </header>
 
-    <p class="purpose">{{ t(`connections.providers.${provider}.purpose`) }}</p>
+    <p v-if="!adding" class="purpose">{{ t(`connections.providers.${provider}.purpose`) }}</p>
 
     <button
-      v-if="status === 'ok' && !expanded"
+      v-if="(status === 'ok' || adding) && !expanded"
       ref="toggle"
       type="button"
       class="button toggle"
@@ -171,14 +197,18 @@ const { mutate: remove } = useMutation({
       :aria-controls="`${id}-details`"
       @click="setExpanded(true)"
     >
-      {{ t('connections.manage') }}<span class="visually-hidden">&nbsp;{{ name }}</span>
+      <template v-if="adding">{{ t('connections.addAccount') }}</template>
+      <template v-else>
+        {{ t('connections.manage')
+        }}<span class="visually-hidden">&nbsp;{{ name }} {{ accountLabel }}</span>
+      </template>
       <svg class="chevron" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
         <path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="2" />
       </svg>
     </button>
 
     <div v-show="expanded" :id="`${id}-details`" class="details">
-      <p class="status" :data-status="status">
+      <p v-if="!adding" class="status" :data-status="status">
         <span class="status-label">{{ t(`connections.status.${status}`) }}</span>
         <span v-if="credential">{{ t('connections.hint', { hint: credential.hint }) }}</span>
       </p>
@@ -265,30 +295,7 @@ const { mutate: remove } = useMutation({
       </details>
 
       <form v-if="showForm" :id="`${id}-form`" class="form key-form" @submit.prevent="save()">
-        <div class="form-row">
-          <label :for="`${id}-secret`">
-            {{
-              provider === 'bluesky'
-                ? t('connections.appPasswordLabel')
-                : provider === 'discord'
-                  ? t('connections.webhookLabel')
-                  : credential
-                    ? t('connections.keyLabelReplace', { provider: name })
-                    : t('connections.keyLabel', { provider: name })
-            }}
-          </label>
-          <input
-            :id="`${id}-secret`"
-            ref="secretInput"
-            v-model="secret"
-            class="field"
-            type="password"
-            autocomplete="off"
-            spellcheck="false"
-            required
-            minlength="8"
-          />
-        </div>
+        <!-- Who first (account, instance), then the secret: the usual order of a sign-in. -->
         <div v-if="provider === 'bluesky'" class="form-row">
           <label :for="`${id}-handle`">{{ t('connections.handleLabel') }}</label>
           <input
@@ -317,6 +324,30 @@ const { mutate: remove } = useMutation({
             :aria-describedby="`${id}-instance-hint`"
           />
           <p :id="`${id}-instance-hint`" class="hint">{{ t('connections.instanceHint') }}</p>
+        </div>
+        <div class="form-row">
+          <label :for="`${id}-secret`">
+            {{
+              provider === 'bluesky'
+                ? t('connections.appPasswordLabel')
+                : provider === 'discord'
+                  ? t('connections.webhookLabel')
+                  : credential
+                    ? t('connections.keyLabelReplace', { provider: name })
+                    : t('connections.keyLabel', { provider: name })
+            }}
+          </label>
+          <input
+            :id="`${id}-secret`"
+            ref="secretInput"
+            v-model="secret"
+            class="field"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            required
+            minlength="8"
+          />
         </div>
       </form>
 
@@ -371,7 +402,7 @@ const { mutate: remove } = useMutation({
           </AlertDialogPortal>
         </AlertDialogRoot>
         <button
-          v-if="status === 'ok'"
+          v-if="status === 'ok' || adding"
           ref="footerToggle"
           type="button"
           class="button footer-toggle"
@@ -422,6 +453,13 @@ const { mutate: remove } = useMutation({
 
 .card[data-collapsed='true'] .card-header h3 {
   font-size: 1.0625rem;
+}
+
+/* The account of a network with several accounts, after its name. */
+.account {
+  margin-inline-start: var(--space-2);
+  color: var(--color-text-muted);
+  font-weight: 600;
 }
 
 .card[data-collapsed='true'] .purpose {
