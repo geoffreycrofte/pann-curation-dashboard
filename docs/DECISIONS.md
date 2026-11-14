@@ -344,3 +344,7 @@ Besoin : publier avec des comptes différents selon le thème (profil perso pour
 ## 2026-11-13 : confirmations en toast
 
 Les confirmations d'enregistrement s'affichent dans un toast vert en bas à droite (`lib/toast.ts`, `Toaster.vue`) : zone `role="status"` présente dès le chargement (annoncée par les lecteurs d'écran), disparition après 5 secondes sauf tant que le pointeur ou le focus est dessus, bouton de fermeture. Les erreurs, et les messages qui demandent une action (clé enregistrée mais non vérifiée, e-mail à confirmer), restent à côté de leur formulaire.
+
+## 2026-11-13 : logo, la pépite seule
+
+La batée vue de dessus était trop détaillée et pas assez imagée. Nouvelles pistes autour de la pépite sur son coussin (écrin, présentoir, trait d'encre, pépite enfoncée dans le coussin, pépite seule), comparées aux petites tailles. Choix de Geoffrey : **la pépite seule**, taillée en facettes, avec un éclat. Le symbole n'a pas de fond : l'éclat suit la couleur du texte, ce qui le rend lisible en clair comme en sombre sans deux composants. Le favicon retire l'éclat et agrandit la pépite pour rester net à 16 px ; les icônes d'app la posent sur une tuile encre. Le mot « Pann » des logos complets est vectorisé pour ne pas dépendre de la police. Fichiers et usages : `docs/brand/README.md`.
