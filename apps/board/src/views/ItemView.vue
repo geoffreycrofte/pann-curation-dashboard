@@ -4,6 +4,7 @@ import {
   DRAFT_CHANNELS,
   LANGS,
   POST_LIMITS,
+  postSignature,
   SOURCE_TEXT_MAX,
   SOURCE_TEXT_MIN,
   publishedLength,
@@ -25,6 +26,7 @@ import {
 } from 'reka-ui'
 import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import FirstCommentEditor from '../components/FirstCommentEditor.vue'
 import KindSelect from '../components/KindSelect.vue'
 import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
 import { api, type RewriteInput } from '../lib/api'
@@ -271,6 +273,17 @@ const { mutate: unschedule, isLoading: unscheduling } = useMutation({
   onError: diffusionFailed,
 })
 
+/** Text added at the end of the post when published (LinkedIn signature of the topic). */
+const signatureOf = (post: PostDraft) =>
+  topic.value && post.lang ? postSignature(topic.value.config, post.channel, post.lang) : ''
+const defaultCommentOf = (post: PostDraft) =>
+  topic.value && post.lang ? topic.value.config.linkedin.first_comment[post.lang] : ''
+
+async function saveFirstComment(postId: string, value: string | null) {
+  await api.updateFirstComment(props.topicId, postId, value)
+  await queryCache.invalidateQueries({ key: key() })
+}
+
 async function savePost(postId: string, text: string) {
   await api.updatePost(props.topicId, postId, text)
   await queryCache.invalidateQueries({ key: key() })
@@ -507,8 +520,10 @@ async function savePost(postId: string, text: string) {
               :lang="post.lang ?? undefined"
               :limit="limitOf(channel)"
               :limit-name="t(`draft.channels.${channel}`)"
-              :measure="(text) => publishedLength(channel, text, url)"
-              length-key="diffusion.lengthWithLink"
+              :measure="(text) => publishedLength(channel, text, url, signatureOf(post))"
+              :length-key="
+                signatureOf(post) ? 'diffusion.lengthWithSignature' : 'diffusion.lengthWithLink'
+              "
               :readonly="post.status === 'sent' || !!post.claimed_at"
               :edited="post.edited_by_human"
               :save="(text) => savePost(post.id, text)"
@@ -523,6 +538,18 @@ async function savePost(postId: string, text: string) {
                       )
                   : undefined
               "
+            />
+            <p v-if="signatureOf(post)" class="hint signature" :lang="post.lang ?? undefined">
+              <span>{{ t('diffusion.signature') }}</span>
+              {{ signatureOf(post) }}
+            </p>
+            <FirstCommentEditor
+              v-if="channel === 'linkedin'"
+              :value="post.first_comment"
+              :default-text="defaultCommentOf(post)"
+              :lang="post.lang ?? undefined"
+              :readonly="post.status === 'sent' || !!post.claimed_at"
+              :save="(value) => saveFirstComment(post.id, value)"
             />
             <p class="post-status" :data-status="post.status">
               <span class="badge" data-dot :data-tone="postTone(post)">{{
@@ -844,6 +871,16 @@ async function savePost(postId: string, text: string) {
 .post {
   display: grid;
   gap: var(--space-2);
+}
+
+.signature {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.signature span {
+  display: block;
+  font-weight: 600;
 }
 
 .post-status {

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {
+  FIRST_COMMENT_MAX,
   LANGS,
+  LINKEDIN_SIGNATURE_MAX,
   ZERNIO_PLATFORMS,
   type DraftChannel,
   type Lang,
@@ -50,6 +52,9 @@ const slotsText = ref('')
 const timezone = ref('')
 /** Languages ticked for each account (key: channel/account_id). */
 const langs = ref<Record<string, Lang[]>>({})
+/** LinkedIn extras, per language. */
+const signature = ref<Record<Lang, string>>({ fr: '', en: '' })
+const firstComment = ref<Record<Lang, string>>({ fr: '', en: '' })
 
 watch(
   () => props.config,
@@ -60,6 +65,8 @@ watch(
     langs.value = Object.fromEntries(
       config.channels.map((c) => [`${c.channel}/${c.account_id}`, [...c.langs]]),
     )
+    signature.value = { ...config.linkedin.signature }
+    firstComment.value = { ...config.linkedin.first_comment }
   },
   { immediate: true },
 )
@@ -111,6 +118,10 @@ const accounts = computed<AccountRow[]>(() => {
   return rows
 })
 
+/** LinkedIn extras are shown once the workspace has a LinkedIn account. */
+const hasLinkedin = computed(() => accounts.value.some((row) => row.channel === 'linkedin'))
+const linkedinLangs = computed(() => props.config.output_langs)
+
 const slots = computed(() =>
   slotsText.value
     .split(/[,;\s]+/)
@@ -152,6 +163,10 @@ const { mutate, isLoading } = useMutation({
           account_id: row.account_id,
           langs: langs.value[row.key]!,
         })),
+      linkedin: {
+        signature: { ...signature.value },
+        first_comment: { ...firstComment.value },
+      },
     }),
   async onSuccess() {
     isError.value = false
@@ -271,6 +286,41 @@ function submit() {
       </p>
     </fieldset>
 
+    <fieldset v-if="hasLinkedin" class="linkedin" :aria-describedby="`${id}-linkedin-hint`">
+      <legend>{{ t('settings.linkedin.title') }}</legend>
+      <p :id="`${id}-linkedin-hint`" class="hint">{{ t('settings.linkedin.hint') }}</p>
+      <div v-for="lang in linkedinLangs" :key="lang" class="linkedin-lang">
+        <div class="form-row">
+          <label :for="`${id}-signature-${lang}`">
+            {{ t('settings.linkedin.signature', { lang: t(`draft.langs.${lang}`) }) }}
+          </label>
+          <textarea
+            :id="`${id}-signature-${lang}`"
+            v-model="signature[lang]"
+            class="field"
+            rows="3"
+            :maxlength="LINKEDIN_SIGNATURE_MAX"
+            :aria-describedby="`${id}-signature-hint`"
+          ></textarea>
+        </div>
+        <div class="form-row">
+          <label :for="`${id}-comment-${lang}`">
+            {{ t('settings.linkedin.firstComment', { lang: t(`draft.langs.${lang}`) }) }}
+          </label>
+          <textarea
+            :id="`${id}-comment-${lang}`"
+            v-model="firstComment[lang]"
+            class="field"
+            rows="3"
+            :maxlength="FIRST_COMMENT_MAX"
+            :aria-describedby="`${id}-comment-hint`"
+          ></textarea>
+        </div>
+      </div>
+      <p :id="`${id}-signature-hint`" class="hint">{{ t('settings.linkedin.signatureHint') }}</p>
+      <p :id="`${id}-comment-hint`" class="hint">{{ t('settings.linkedin.firstCommentHint') }}</p>
+    </fieldset>
+
     <div>
       <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
         {{ isLoading ? t('common.saving') : t('common.save') }}
@@ -337,6 +387,16 @@ fieldset {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-5);
+}
+
+.linkedin-lang {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.linkedin textarea {
+  width: 100%;
+  resize: vertical;
 }
 
 .check {

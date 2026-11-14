@@ -431,6 +431,17 @@ export default {
     empty: 'Nothing drafted yet.',
     model: 'Written by {model}',
   },
+  firstComment: {
+    title: 'First comment',
+    default: 'The topic one',
+    noDefault: 'None set in the topic.',
+    none: 'No comment',
+    own: 'A comment for this post only',
+    ownLabel: 'Comment text',
+    save: 'Save the comment',
+    saved: 'Comment saved.',
+    empty: 'Write the comment, or pick another option.',
+  },
   diffusion: {
     title: 'Diffusion',
     intro:
@@ -456,6 +467,8 @@ export default {
     view: 'View the post',
     viewLabel: 'View the {channel} post in {lang}',
     lengthWithLink: '{count} of {limit} characters, link included',
+    lengthWithSignature: '{count} of {limit} characters, link and signature included',
+    signature: 'Signature added when published',
     queueTitle: 'Diffusion',
     queueHeading: 'Diffusion: {topic}',
     queueSlots: 'Slots: {slots} ({timezone}).',
@@ -1081,6 +1094,16 @@ export default {
       'No account available. In Connections, add Bluesky, Mastodon, Discord or a Zernio key (LinkedIn, Facebook).',
     accountLangs: 'Languages published by {account}',
     accountConflict: 'Two accounts publish {channel} in {lang}: keep only one.',
+    linkedin: {
+      title: 'LinkedIn',
+      hint: 'Added to every LinkedIn post of this topic, in its language. Leave empty to add nothing.',
+      signature: 'Signature in {lang}',
+      signatureHint:
+        'The signature goes at the end of the post, after the link, for instance: “I am Geoffrey, I demystify accessibility. Find me on example.org”. It counts in the 3,000 characters of the post.',
+      firstComment: 'Default first comment in {lang}',
+      firstCommentHint:
+        'Published as a comment right after each post, for instance to promote a link. Each post can replace it or turn it off.',
+    },
     accountMissing: 'Account not found in Zernio: {account}. Refresh the list in Connections.',
     newsletter: 'Newsletter',
     newsletterHint:

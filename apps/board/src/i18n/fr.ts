@@ -436,6 +436,17 @@ export default {
     empty: 'Aucun texte rédigé pour l’instant.',
     model: 'Rédigé par {model}',
   },
+  firstComment: {
+    title: 'Premier commentaire',
+    default: 'Celui du thème',
+    noDefault: 'Aucun réglé dans le thème.',
+    none: 'Pas de commentaire',
+    own: 'Un commentaire propre à ce post',
+    ownLabel: 'Texte du commentaire',
+    save: 'Enregistrer le commentaire',
+    saved: 'Commentaire enregistré.',
+    empty: 'Écrivez le commentaire, ou choisissez une autre option.',
+  },
   diffusion: {
     title: 'Diffusion',
     intro:
@@ -461,6 +472,8 @@ export default {
     view: 'Voir le post',
     viewLabel: 'Voir le post {channel} en {lang}',
     lengthWithLink: '{count} caractères sur {limit}, lien compris',
+    lengthWithSignature: '{count} caractères sur {limit}, lien et signature compris',
+    signature: 'Signature ajoutée à la publication',
     queueTitle: 'Diffusion',
     queueHeading: 'Diffusion : {topic}',
     queueSlots: 'Créneaux : {slots} ({timezone}).',
@@ -1100,6 +1113,16 @@ export default {
       'Aucun compte disponible. Dans Connexions, ajoutez Bluesky, Mastodon, Discord ou une clé Zernio (LinkedIn, Facebook).',
     accountLangs: 'Langues publiées par {account}',
     accountConflict: 'Deux comptes publient {channel} en {lang} : n’en gardez qu’un.',
+    linkedin: {
+      title: 'LinkedIn',
+      hint: 'Ajoutés à chaque post LinkedIn de ce thème, dans sa langue. Laissez vide pour ne rien ajouter.',
+      signature: 'Signature en {lang}',
+      signatureHint:
+        'La signature s’ajoute à la fin du post, après le lien, par exemple : « Je suis Geoffrey, je démystifie l’accessibilité. Retrouvez-moi sur example.org ». Elle compte dans les 3 000 caractères du post.',
+      firstComment: 'Premier commentaire par défaut en {lang}',
+      firstCommentHint:
+        'Publié en commentaire juste après chaque post, par exemple pour mettre en avant un lien. Chaque post peut le remplacer ou le désactiver.',
+    },
     accountMissing:
       'Compte introuvable dans Zernio : {account}. Actualisez la liste dans Connexions.',
     newsletter: 'Newsletter',

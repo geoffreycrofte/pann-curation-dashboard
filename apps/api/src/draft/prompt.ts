@@ -78,14 +78,25 @@ export interface DraftSource {
   content: string
 }
 
-export function draftUserMessage(item: DraftSource, channels: readonly DraftChannel[]): string {
+/**
+ * `signatures`: text added at the end of the posts of a channel (LinkedIn), the longest of
+ * its languages; the limit given to the model leaves room for it.
+ */
+export function draftUserMessage(
+  item: DraftSource,
+  channels: readonly DraftChannel[],
+  signatures: Partial<Record<DraftChannel, string>> = {},
+): string {
   return [
     `Title: ${item.title}`,
     `URL: ${item.canonical_url}`,
     item.published_at ? `Published: ${item.published_at.slice(0, 10)}` : null,
     item.source_lang ? `Source language: ${item.source_lang}` : null,
     `Maximum length of the text of each post: ${channels
-      .map((channel) => `${channel} ${bodyLimit(channel, item.canonical_url)}`)
+      .map(
+        (channel) =>
+          `${channel} ${bodyLimit(channel, item.canonical_url, undefined, signatures[channel])}`,
+      )
       .join(', ')} characters.`,
     '',
     'Source content:',

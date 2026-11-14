@@ -284,6 +284,12 @@ export const api = {
     }>(`/topics/${topicId}/rewrites/${rewriteId}`),
   updatePost: (topicId: string, postId: string, text: string) =>
     request<PostDraft>(`/topics/${topicId}/posts/${postId}`, json('PATCH', { text })),
+  /** LinkedIn first comment: null = default of the topic, '' = none. */
+  updateFirstComment: (topicId: string, postId: string, firstComment: string | null) =>
+    request<PostDraft>(
+      `/topics/${topicId}/posts/${postId}/first-comment`,
+      json('PATCH', { first_comment: firstComment }),
+    ),
   schedule: (topicId: string, itemId: string, when: 'next_slot' | 'now') =>
     request<{ publish_at: string }>(
       `/topics/${topicId}/items/${itemId}/schedule`,

@@ -5,7 +5,9 @@ import {
   composePost,
   dailySlots,
   draftChannels,
+  firstCommentFor,
   nextFreeSlot,
+  postSignature,
   publishedLength,
   startOfWeek,
   zonedTimeToUtc,
@@ -136,5 +138,47 @@ describe('accounts', () => {
 
   it('refuses an unknown time zone', () => {
     expect(() => parseTopicConfig({ schedule: { timezone: 'Mars/Olympus' } })).toThrow()
+  })
+})
+
+describe('LinkedIn signature and first comment', () => {
+  const url = 'https://example.org/article'
+  const config = parseTopicConfig({
+    linkedin: {
+      signature: { fr: 'Je suis Geoffrey.', en: '' },
+      first_comment: { fr: 'Lire aussi : https://example.org', en: '' },
+    },
+  })
+
+  it('adds the signature after the link, separated by a blank line', () => {
+    expect(composePost('Texte', url, ' Je suis Geoffrey. ')).toBe(
+      `Texte\n\n${url}\n\nJe suis Geoffrey.`,
+    )
+    expect(composePost('Texte', url, '  ')).toBe(`Texte\n\n${url}`)
+  })
+
+  it('counts the signature in the length and takes it from the room left', () => {
+    const signature = 'Je suis Geoffrey.'
+    const extra = 2 + signature.length
+    expect(publishedLength('linkedin', 'Texte', url, signature)).toBe(
+      publishedLength('linkedin', 'Texte', url) + extra,
+    )
+    expect(bodyLimit('linkedin', url, undefined, signature)).toBe(
+      bodyLimit('linkedin', url) - extra,
+    )
+  })
+
+  it('applies the signature to LinkedIn only, per language', () => {
+    expect(postSignature(config, 'linkedin', 'fr')).toBe('Je suis Geoffrey.')
+    expect(postSignature(config, 'linkedin', 'en')).toBe('')
+    expect(postSignature(config, 'bluesky', 'fr')).toBe('')
+  })
+
+  it('takes the post choice over the topic default for the first comment', () => {
+    expect(firstCommentFor(config, 'linkedin', 'fr', null)).toBe('Lire aussi : https://example.org')
+    expect(firstCommentFor(config, 'linkedin', 'fr', '')).toBeNull()
+    expect(firstCommentFor(config, 'linkedin', 'fr', 'Autre lien')).toBe('Autre lien')
+    expect(firstCommentFor(config, 'linkedin', 'en', null)).toBeNull()
+    expect(firstCommentFor(config, 'mastodon', 'fr', 'x')).toBeNull()
   })
 })

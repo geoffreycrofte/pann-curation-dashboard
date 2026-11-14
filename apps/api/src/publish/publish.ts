@@ -1,6 +1,8 @@
 import {
   accountFor,
   composePost,
+  firstCommentFor,
+  postSignature,
   errorCode,
   type DraftChannel,
   type Lang,
@@ -17,6 +19,8 @@ export interface DuePost {
   channel: DraftChannel
   lang: Lang | null
   body: string
+  /** null: default of the topic; '': none (LinkedIn only). */
+  first_comment: string | null
   publish_attempts: number
   canonical_url: string
   topic_config: TopicConfig
@@ -143,7 +147,12 @@ export async function publish(deps: {
     const request: PublishRequest = {
       channel: post.channel,
       lang: post.lang,
-      content: composePost(post.body, post.canonical_url),
+      content: composePost(
+        post.body,
+        post.canonical_url,
+        postSignature(post.topic_config, post.channel, post.lang),
+      ),
+      firstComment: firstCommentFor(post.topic_config, post.channel, post.lang, post.first_comment),
       idempotencyKey: `pann-${post.id}-${post.publish_attempts}`,
     }
     const mastodon = pickAccount(keys.mastodon, account.account_id)
