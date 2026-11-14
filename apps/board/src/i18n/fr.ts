@@ -382,7 +382,7 @@ export default {
       'Claude rédige à nouveau les résumés, l’extrait et les posts à partir de la source.',
     confirmKept:
       'Les textes modifiés à la main sont conservés tels quels : seuls les autres sont remplacés.',
-    confirmCost: 'Cet appel est facturé et compte dans le budget mensuel du thème.',
+    confirmCost: 'Cet appel compte dans le budget mensuel du thème.',
     statusWithError: '{status} : {error}',
     status: {
       none: 'Pas encore rédigé',

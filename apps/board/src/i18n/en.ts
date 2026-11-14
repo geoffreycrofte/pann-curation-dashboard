@@ -377,7 +377,7 @@ export default {
     confirmReplaced:
       'Claude writes the summaries, the excerpt and the posts again from the source.',
     confirmKept: 'Texts edited by hand are kept as they are: only the others are replaced.',
-    confirmCost: 'This call is billed and counts toward the monthly budget of the topic.',
+    confirmCost: 'This call counts toward the monthly budget of the topic.',
     statusWithError: '{status}: {error}',
     status: {
       none: 'Not drafted yet',

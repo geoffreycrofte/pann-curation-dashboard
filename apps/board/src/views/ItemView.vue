@@ -401,7 +401,13 @@ async function savePost(postId: string, text: string) {
         </AlertDialogRoot>
         <p id="regenerate-hint" class="hint">{{ t('draft.regenerateHint') }}</p>
       </div>
-      <p role="status" class="state-message" :class="{ error: isError }">{{ message }}</p>
+      <p
+        role="status"
+        class="state-message"
+        :class="{ error: isError, 'visually-hidden': !isError }"
+      >
+        {{ message }}
+      </p>
     </section>
 
     <section v-if="detail.summaries.length" class="block" aria-labelledby="summaries">
@@ -558,7 +564,9 @@ async function savePost(postId: string, text: string) {
       </div>
       <p role="status" :class="{ error: diffusionError }">{{ diffusionMessage }}</p>
     </section>
-    <p v-else-if="detail.draft_status !== 'pending'" class="hint">{{ t('draft.empty') }}</p>
+    <p v-else-if="detail.draft_status !== 'pending'" class="hint empty-note">
+      {{ t('draft.empty') }}
+    </p>
   </template>
 </template>
 
@@ -642,6 +650,12 @@ async function savePost(postId: string, text: string) {
 
 .state-message:empty {
   position: absolute;
+}
+
+/* No draft yet: a quiet line, centred and set apart from the status block. */
+.empty-note {
+  margin: var(--space-6) 0 0;
+  text-align: center;
 }
 
 .confirm-text p {
