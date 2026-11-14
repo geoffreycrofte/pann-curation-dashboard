@@ -24,6 +24,14 @@ export const POST_LIMITS: Record<DraftChannel, number> = {
   discord: 2000,
 }
 
+/**
+ * Source text pasted by a person when Pann could not read the page (paywall, script-only
+ * page). Below the minimum, drafting fetches the page again and could keep a longer teaser
+ * instead; the maximum leaves room above what drafting reads.
+ */
+export const SOURCE_TEXT_MIN = 600
+export const SOURCE_TEXT_MAX = 60_000
+
 export const DRAFT_STATUSES = ['none', 'pending', 'ready', 'failed'] as const
 export type DraftStatus = (typeof DRAFT_STATUSES)[number]
 

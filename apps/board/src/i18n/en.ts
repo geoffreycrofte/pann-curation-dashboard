@@ -377,7 +377,7 @@ export default {
     confirmReplaced:
       'Claude writes the summaries, the excerpt and the posts again from the source.',
     confirmKept: 'Texts edited by hand are kept as they are: only the others are replaced.',
-    confirmCost: 'This call is billed and counts toward the monthly budget of the topic.',
+    confirmCost: 'This call counts toward the monthly budget of the topic.',
     statusWithError: '{status}: {error}',
     status: {
       none: 'Not drafted yet',
@@ -417,6 +417,16 @@ export default {
     regenerate: 'Draft again',
     regenerateHint: 'Texts edited by hand are kept.',
     regenerated: 'Drafting started again.',
+    sourceText: {
+      toggle: 'Provide the source text',
+      intro:
+        'Pann could not read the page (paywall, empty page or page built by script)? Paste the text of the article you have access to: drafting starts again from it.',
+      label: 'Article text',
+      hint: '{count} characters, {min} minimum. Only paste content you are allowed to read. This call counts toward the monthly budget of the topic.',
+      submit: 'Draft from this text',
+      sent: 'Text saved, drafting started again.',
+      tooShort: 'Text too short: {min} characters minimum.',
+    },
     notValidated: 'Drafting happens when the item is validated.',
     empty: 'Nothing drafted yet.',
     model: 'Written by {model}',

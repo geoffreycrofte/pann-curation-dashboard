@@ -13,6 +13,8 @@ import {
   kindSchema,
   topicConfigSchema,
   TOPIC_MODULES,
+  SOURCE_TEXT_MAX,
+  SOURCE_TEXT_MIN,
   type ItemTopicStatus,
 } from '@pann/shared'
 import { Hono } from 'hono'
@@ -580,6 +582,28 @@ export const topics = new Hono<AppEnv>()
     const { data: queued, error } = await c.var.db.rpc('request_draft', {
       p_topic_id: topicId,
       p_item_id: itemId,
+    })
+    if (error?.code === '42501') throw new HTTPException(404, { message: 'Topic not found' })
+    if (error) throw error
+    if (!queued) throw new HTTPException(409, { message: 'Only validated items can be drafted' })
+    await c.env.JOBS.send({ type: 'draft', topicId, itemId })
+    return c.json({ draft_status: 'pending' }, 202)
+  })
+
+  /**
+   * Source text pasted by a person (paywalled or unreadable page): it replaces the stored
+   * content of the item, then drafting runs again from it. Access is checked by the RPC.
+   */
+  .post('/:topicId/items/:itemId/source-text', async (c) => {
+    const { topicId, itemId } = c.req.param()
+    const { text } = await parseJson(
+      z.object({ text: z.string().trim().min(SOURCE_TEXT_MIN).max(SOURCE_TEXT_MAX) }),
+      c.req.raw,
+    )
+    const { data: queued, error } = await c.var.db.rpc('set_item_source_text', {
+      p_topic_id: topicId,
+      p_item_id: itemId,
+      p_text: text,
     })
     if (error?.code === '42501') throw new HTTPException(404, { message: 'Topic not found' })
     if (error) throw error

@@ -261,6 +261,12 @@ export const api = {
     request<{ draft_status: string }>(`/topics/${topicId}/items/${itemId}/draft`, {
       method: 'POST',
     }),
+  /** Pasted source text replaces the unreadable page content, then drafting runs again. */
+  submitSourceText: (topicId: string, itemId: string, text: string) =>
+    request<{ draft_status: string }>(
+      `/topics/${topicId}/items/${itemId}/source-text`,
+      json('POST', { text }),
+    ),
   updateSummary: (topicId: string, itemId: string, lang: string, text: string) =>
     request<Summary>(
       `/topics/${topicId}/items/${itemId}/summaries/${lang}`,
