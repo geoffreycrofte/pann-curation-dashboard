@@ -344,3 +344,7 @@ Besoin : publier avec des comptes différents selon le thème (profil perso pour
 ## 2026-11-13 : confirmations en toast
 
 Les confirmations d'enregistrement s'affichent dans un toast vert en bas à droite (`lib/toast.ts`, `Toaster.vue`) : zone `role="status"` présente dès le chargement (annoncée par les lecteurs d'écran), disparition après 5 secondes sauf tant que le pointeur ou le focus est dessus, bouton de fermeture. Les erreurs, et les messages qui demandent une action (clé enregistrée mais non vérifiée, e-mail à confirmer), restent à côté de leur formulaire.
+
+## 2026-11-14 : texte de la source fourni à la main
+
+Quand Pann ne peut pas lire une page (accès payant, page vide ou construite par script), la rédaction échoue avec `insufficient_content`. La personne peut désormais coller le texte de l'article dans le bloc de rédaction (« Fournir le texte de la source », ouvert d'office après cet échec). Le texte remplace `items.fetched_content` via la fonction `set_item_source_text`, qui vérifie l'accès au thème comme `request_draft`, puis la rédaction habituelle repart : même ancrage dans la source, mêmes posts, même budget, pas de second circuit. Le texte vaut pour tous les thèmes qui suivent l'élément, puisque c'est le même article. Bornes communes à l'API, à la base et au board (`SOURCE_TEXT_MIN` = 600, seuil sous lequel la rédaction récupère à nouveau la page et pourrait garder une accroche plus longue  ; `SOURCE_TEXT_MAX` = 60 000). Un rappel invite à ne coller qu'un contenu qu'on a le droit de lire.

@@ -4,6 +4,8 @@ import {
   DRAFT_CHANNELS,
   LANGS,
   POST_LIMITS,
+  SOURCE_TEXT_MAX,
+  SOURCE_TEXT_MIN,
   publishedLength,
   type DraftChannel,
   type Lang,
@@ -21,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from 'reka-ui'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import KindSelect from '../components/KindSelect.vue'
 import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
@@ -111,6 +113,33 @@ const { mutate: regenerate, isLoading: regenerating } = useMutation({
     message.value = describeError(err.message, t).text
   },
 })
+
+// Pasted source text: for pages Pann cannot read (paywall, page built by script).
+const sourceTextId = useId()
+const sourceText = ref('')
+const sourceTextLength = computed(() => sourceText.value.trim().length)
+const insufficient = computed(() => detail.value?.draft_error === 'insufficient_content')
+const { mutate: submitSourceText, isLoading: submittingSource } = useMutation({
+  mutation: () => api.submitSourceText(props.topicId, props.itemId, sourceText.value.trim()),
+  async onSuccess() {
+    isError.value = false
+    message.value = t('draft.sourceText.sent')
+    sourceText.value = ''
+    await queryCache.invalidateQueries({ key: key() })
+  },
+  onError(err) {
+    isError.value = true
+    message.value = describeError(err.message, t).text
+  },
+})
+function sendSourceText() {
+  if (sourceTextLength.value < SOURCE_TEXT_MIN) {
+    isError.value = true
+    message.value = t('draft.sourceText.tooShort', { min: SOURCE_TEXT_MIN })
+    return
+  }
+  submitSourceText()
+}
 
 // AI rewrite: the job usually answers in a few seconds; the board polls its result.
 async function rewriteText(
@@ -401,6 +430,31 @@ async function savePost(postId: string, text: string) {
         </AlertDialogRoot>
         <p id="regenerate-hint" class="hint">{{ t('draft.regenerateHint') }}</p>
       </div>
+      <details
+        v-if="canDraft && detail.draft_status !== 'pending'"
+        class="source-text"
+        :open="insufficient"
+      >
+        <summary>{{ t('draft.sourceText.toggle') }}</summary>
+        <form class="source-text-form" @submit.prevent="sendSourceText">
+          <p>{{ t('draft.sourceText.intro') }}</p>
+          <label :for="`${sourceTextId}-text`">{{ t('draft.sourceText.label') }}</label>
+          <textarea
+            :id="`${sourceTextId}-text`"
+            v-model="sourceText"
+            class="field"
+            rows="10"
+            :maxlength="SOURCE_TEXT_MAX"
+            :aria-describedby="`${sourceTextId}-hint`"
+          ></textarea>
+          <p :id="`${sourceTextId}-hint`" class="hint">
+            {{ t('draft.sourceText.hint', { count: sourceTextLength, min: SOURCE_TEXT_MIN }) }}
+          </p>
+          <button type="submit" class="button" data-variant="primary" :disabled="submittingSource">
+            {{ t('draft.sourceText.submit') }}
+          </button>
+        </form>
+      </details>
       <p
         role="status"
         class="state-message"
@@ -672,7 +726,46 @@ async function savePost(postId: string, text: string) {
   animation: spin 1s linear infinite;
 }
 
+/* Pasted source text: a full-width row under the status. */
+.source-text {
+  grid-column: 2 / -1;
+}
+
+.source-text summary {
+  width: fit-content;
+  min-height: 1.5rem;
+  color: var(--color-accent-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.source-text-form {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.source-text-form p {
+  margin: 0;
+}
+
+.source-text-form textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.source-text-form .button {
+  justify-self: start;
+}
+
 @media (max-width: 40rem) {
+  .source-text {
+    grid-column: 1 / -1;
+  }
+
   .draft-state {
     grid-template-columns: auto minmax(0, 1fr);
   }

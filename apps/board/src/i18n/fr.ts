@@ -422,6 +422,16 @@ export default {
     regenerate: 'Relancer la rédaction',
     regenerateHint: 'Les textes modifiés à la main sont conservés.',
     regenerated: 'Rédaction relancée.',
+    sourceText: {
+      toggle: 'Fournir le texte de la source',
+      intro:
+        'Pann n’a pas pu lire la page (accès payant, page vide ou générée par script) ? Collez ici le texte de l’article auquel vous avez accès : la rédaction repart de ce texte.',
+      label: 'Texte de l’article',
+      hint: '{count} caractères, {min} au minimum. Ne collez qu’un contenu que vous avez le droit de lire. Cet appel compte dans le budget mensuel du thème.',
+      submit: 'Rédiger à partir de ce texte',
+      sent: 'Texte enregistré, rédaction relancée.',
+      tooShort: 'Texte trop court : {min} caractères au minimum.',
+    },
     notValidated: 'La rédaction est faite quand l’élément est validé.',
     empty: 'Aucun texte rédigé pour l’instant.',
     model: 'Rédigé par {model}',

@@ -2,6 +2,7 @@ import {
   claudeCostUsd,
   draftChannels,
   LANGS,
+  SOURCE_TEXT_MIN,
   type DraftChannel,
   type Lang,
   type TopicConfig,
@@ -55,7 +56,7 @@ export interface DraftStore {
 export const MAX_DRAFT_ATTEMPTS = 3
 export const MAX_DRAFTS_PER_RUN = 5
 /** Below this, the stored content is considered too thin and the page is fetched. */
-const MIN_CONTENT_CHARS = 600
+const MIN_CONTENT_CHARS = SOURCE_TEXT_MIN
 
 export interface DraftReport {
   drafted: number
