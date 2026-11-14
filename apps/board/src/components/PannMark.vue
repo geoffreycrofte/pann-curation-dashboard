@@ -1,5 +1,10 @@
 <script setup lang="ts">
-/** Pann mark: the pan seen from above, water swirling, sand grains, and the nugget that stays. */
+/**
+ * Pann mark: the faceted gold nugget on its own, with a sparkle.
+ * Transparent, so it sits on any background; the sparkle takes the text
+ * colour (`currentColor`), which keeps it visible in light and dark modes.
+ * Sources and exports: docs/brand/logo/.
+ */
 defineProps<{ size?: number }>()
 </script>
 
@@ -13,36 +18,17 @@ defineProps<{ size?: number }>()
     aria-hidden="true"
     focusable="false"
   >
-    <rect width="64" height="64" rx="16" fill="#141414" />
-    <circle cx="32" cy="33" r="24" fill="#26241F" />
-    <circle cx="32" cy="33" r="24" fill="none" stroke="#5C574C" stroke-width="2" />
-    <circle cx="32" cy="33" r="15" fill="none" stroke="#3A372F" stroke-width="1.5" />
-    <path
-      d="M14 28c4-9 15-13 24-10M50 39c-4 8-14 11-22 9"
-      fill="none"
-      stroke="#8A8170"
-      stroke-width="1.6"
-      stroke-linecap="round"
-    />
-    <circle cx="19" cy="40" r="1.1" fill="#8A8170" />
-    <circle cx="45" cy="25" r="1" fill="#8A8170" />
-    <circle cx="24" cy="47" r=".9" fill="#8A8170" />
-    <circle cx="41" cy="45" r="1" fill="#8A8170" />
-    <g transform="translate(9.5 8.5) scale(.7)">
-      <path
-        d="M22.5 37.5c-2.6-3.4-.6-8.6 3.6-9.8 1.6-3.6 6.4-4.8 9.4-2.4 3.8-.6 7 2.4 6.6 6.2 2.4 2.6 1.4 7-1.8 8.2-1.2 3.4-5.6 4.6-8.4 2.6-3.4 1.6-7.6-.4-8.6-3.8-.4-.2-.6-.6-.8-1z"
-        fill="#FFC72C"
-      />
-      <path
-        d="M28.6 29.6l6.2 3.2 6.6-2.2M34.8 32.8l-1.6 8.6M28.6 29.6l-3.4 7.4"
-        fill="none"
-        stroke="#B88A00"
-        stroke-width="1.3"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-      />
-      <path d="M26.2 30.6l2.4-1 .9 2.6-2.4 1.2z" fill="#FFF1C2" opacity=".9" />
+    <g transform="translate(32 32) scale(1.3) translate(-33.5 -30)">
+      <path d="M18 34 L22 22 L32 16 L44 19 L49 30 L45 40 L33 44 L22 42 Z" fill="#FFC72C" />
+      <path d="M22 22 L32 16 L34 27 L25 30 Z" fill="#FFE38A" />
+      <path d="M32 16 L44 19 L41 28 L34 27 Z" fill="#FFD75A" />
+      <path d="M44 19 L49 30 L45 40 L41 28 Z" fill="#E0A100" />
+      <path d="M41 28 L45 40 L33 44 Z" fill="#C98A00" />
+      <path d="M18 34 L25 30 L22 42 Z" fill="#F2B400" />
     </g>
-    <path d="M44 12l1.3 3.5 3.5 1.3-3.5 1.3L44 21.6l-1.3-3.5-3.5-1.3 3.5-1.3z" fill="#FFF1C2" />
+    <path
+      d="M54 3 L55.5 7.5 L60 9 L55.5 10.5 L54 15 L52.5 10.5 L48 9 L52.5 7.5 Z"
+      fill="currentColor"
+    />
   </svg>
 </template>
