@@ -1,7 +1,12 @@
 import { parseTopicConfig } from '@pann/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { blueskyHandle, discordWebhookUrl, publishToBluesky, publishToDiscord } from './direct'
-import { publishToMastodon, publishWithZernio, type PublishResult } from './networks'
+import {
+  publishToMastodon,
+  publishWithZernio,
+  type PublishRequest,
+  type PublishResult,
+} from './networks'
 import {
   pickAccount,
   publish,
@@ -27,6 +32,7 @@ function post(overrides: Partial<DuePost> = {}): DuePost {
     channel: 'linkedin',
     lang: 'fr',
     body: 'Un texte.',
+    first_comment: null,
     publish_attempts: 0,
     canonical_url: 'https://example.org/a',
     topic_config: config,
@@ -81,9 +87,44 @@ describe('publish', () => {
         lang: 'fr',
         content: 'Un texte.\n\nhttps://example.org/a',
         idempotencyKey: 'pann-p1-0',
+        firstComment: null,
       },
     ])
     expect(log).toContain('finish t1/i1')
+  })
+
+  it('adds the LinkedIn signature and the first comment, the post overriding the topic', async () => {
+    const linkedin = parseTopicConfig({
+      ...config,
+      linkedin: {
+        signature: { fr: 'Je suis Geoffrey.' },
+        first_comment: { fr: 'À lire : https://example.org' },
+      },
+    })
+    const requests: PublishRequest[] = []
+    const networks: Networks = {
+      zernio: async (_key, _account, request) => (requests.push(request), ok),
+      mastodon: async (_account, request) => (requests.push(request), ok),
+      bluesky: async () => ok,
+      discord: async () => ok,
+    }
+    const { store } = fakeStore([
+      post({ topic_config: linkedin }),
+      post({ id: 'p2', topic_config: linkedin, first_comment: '' }),
+      post({ id: 'p3', topic_config: linkedin, first_comment: 'Autre lien' }),
+      post({ id: 'p4', topic_config: linkedin, channel: 'mastodon' }),
+    ])
+    await publish({ store, networks, now })
+    expect(requests[0]).toMatchObject({
+      content: 'Un texte.\n\nhttps://example.org/a\n\nJe suis Geoffrey.',
+      firstComment: 'À lire : https://example.org',
+    })
+    expect(requests[1]!.firstComment).toBeNull()
+    expect(requests[2]!.firstComment).toBe('Autre lien')
+    expect(requests[3]).toMatchObject({
+      content: 'Un texte.\n\nhttps://example.org/a',
+      firstComment: null,
+    })
   })
 
   it('fails a post whose channel and language have no account', async () => {
@@ -202,6 +243,20 @@ describe('networks', () => {
       platforms: [{ platform: 'linkedin', accountId: 'acc' }],
       publishNow: true,
     })
+  })
+
+  it('sends the first comment on the LinkedIn entry', async () => {
+    const requests = respond(201, {
+      post: {
+        _id: 'z1',
+        status: 'published',
+        platforms: [{ platform: 'linkedin', status: 'published' }],
+      },
+    })
+    await publishWithZernio('sk_x', 'acc', { ...request, firstComment: 'À lire' })
+    expect(JSON.parse(requests[0]!.init.body as string).platforms).toEqual([
+      { platform: 'linkedin', accountId: 'acc', platformSpecificData: { firstComment: 'À lire' } },
+    ])
   })
 
   it('reads a failure on the platform entry of a 207 answer', async () => {

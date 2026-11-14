@@ -1,5 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { bodyLimit, claudeCostUsd, parseTopicConfig, POST_LIMITS } from '@pann/shared'
+import {
+  bodyLimit,
+  claudeCostUsd,
+  parseTopicConfig,
+  POST_LIMITS,
+  postSignature,
+} from '@pann/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   REWRITE_PROMPT_VERSION,
@@ -126,7 +132,12 @@ export async function runRewrite(db: SupabaseClient, id: string, model: RewriteM
         .maybeSingle<{ meta: { max_characters?: number } }>()
       limit = mastodon?.meta.max_characters ?? limit
     }
-    maxChars = bodyLimit(target.channel, row.item.canonical_url, limit)
+    maxChars = bodyLimit(
+      target.channel,
+      row.item.canonical_url,
+      limit,
+      postSignature(config, target.channel, target.lang),
+    )
   }
 
   const modelId = config.ai.draft_model

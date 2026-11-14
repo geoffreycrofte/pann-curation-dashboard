@@ -132,7 +132,7 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
       // Posts: replace the drafts nobody edited; keep edited ones and anything scheduled or sent.
       const { data: existing, error: postsError } = await db
         .from('posts')
-        .select('id, channel, lang, status, edited_by_human')
+        .select('id, channel, lang, status, edited_by_human, first_comment')
         .eq('item_id', item.item_id)
         .eq('topic_id', item.topic_id)
       if (postsError) throw postsError
@@ -152,6 +152,10 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
           )
         if (error) throw error
       }
+      // A first comment chosen on a replaced draft carries over to its new text.
+      const firstComments = new Map(
+        replaceable.map((p) => [`${p.channel}/${p.lang}`, p.first_comment as string | null]),
+      )
       const posts = draft.posts
         .filter((p) => !kept.has(`${p.channel}/${p.lang}`))
         .map((p) => ({
@@ -160,6 +164,7 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
           channel: p.channel,
           lang: p.lang,
           body: p.body,
+          first_comment: firstComments.get(`${p.channel}/${p.lang}`) ?? null,
         }))
       if (posts.length) {
         const { error } = await db.from('posts').insert(posts)

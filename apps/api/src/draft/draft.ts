@@ -2,6 +2,8 @@ import {
   claudeCostUsd,
   draftChannels,
   LANGS,
+  postLength,
+  postSignature,
   SOURCE_TEXT_MIN,
   type DraftChannel,
   type Lang,
@@ -57,6 +59,14 @@ export const MAX_DRAFT_ATTEMPTS = 3
 export const MAX_DRAFTS_PER_RUN = 5
 /** Below this, the stored content is considered too thin and the page is fetched. */
 const MIN_CONTENT_CHARS = SOURCE_TEXT_MIN
+
+/** Longest LinkedIn signature of the topic, so that every language fits. */
+function longestSignature(config: TopicConfig): string {
+  return LANGS.map((lang) => postSignature(config, 'linkedin', lang)).reduce(
+    (longest, s) => (postLength(s) > postLength(longest) ? s : longest),
+    '',
+  )
+}
 
 export interface DraftReport {
   drafted: number
@@ -145,7 +155,9 @@ export async function draft(deps: {
       model: requestedModel,
       effort: item.topic_config.ai.draft_effort,
       system: draftSystemPrompt({ name_en: item.topic_name_en, config: item.topic_config }),
-      user: draftUserMessage({ ...item, content }, channels),
+      user: draftUserMessage({ ...item, content }, channels, {
+        linkedin: longestSignature(item.topic_config),
+      }),
     })
     const usage = usageEntry(result, requestedModel)
     if (usage) await deps.store.logUsage(item, usage)

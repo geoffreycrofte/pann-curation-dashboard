@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { DRAFT_MODES, LANGS, type Lang } from './domain'
-import { DRAFT_CHANNELS } from './drafting'
+import { DRAFT_CHANNELS, FIRST_COMMENT_MAX, LINKEDIN_SIGNATURE_MAX } from './drafting'
 import { NEWSLETTER_PROVIDERS } from './providers'
 import { domainSchema } from './source-config'
 
@@ -242,6 +242,29 @@ export const topicConfigSchema = z.object({
       description_en: z.string().trim().max(500).default(''),
       /** Page that presents the feed (e.g. a curation page on a website). */
       site_url: z.union([z.url({ protocol: /^https?$/ }), z.literal('')]).default(''),
+    })
+    .prefault({}),
+  /**
+   * LinkedIn extras, per language (empty = none).
+   * - `signature`: text added at the end of every LinkedIn post, after the link
+   *   ("I am…, find me on…"). Counted in the 3,000 characters of the post.
+   * - `first_comment`: comment published right after each post (through Zernio), e.g. a
+   *   link to promote. A post can replace it or turn it off (`posts.first_comment`).
+   */
+  linkedin: z
+    .object({
+      signature: z
+        .object({
+          fr: z.string().trim().max(LINKEDIN_SIGNATURE_MAX).default(''),
+          en: z.string().trim().max(LINKEDIN_SIGNATURE_MAX).default(''),
+        })
+        .prefault({}),
+      first_comment: z
+        .object({
+          fr: z.string().trim().max(FIRST_COMMENT_MAX).default(''),
+          en: z.string().trim().max(FIRST_COMMENT_MAX).default(''),
+        })
+        .prefault({}),
     })
     .prefault({}),
   /**

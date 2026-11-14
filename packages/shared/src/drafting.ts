@@ -32,6 +32,13 @@ export const POST_LIMITS: Record<DraftChannel, number> = {
 export const SOURCE_TEXT_MIN = 600
 export const SOURCE_TEXT_MAX = 60_000
 
+/**
+ * LinkedIn extras (topic settings and posts). The signature takes room from the post
+ * itself; the first comment is capped by Pann, well under what a post allows.
+ */
+export const LINKEDIN_SIGNATURE_MAX = 600
+export const FIRST_COMMENT_MAX = 1250
+
 export const DRAFT_STATUSES = ['none', 'pending', 'ready', 'failed'] as const
 export type DraftStatus = (typeof DRAFT_STATUSES)[number]
 
@@ -59,6 +66,8 @@ export interface PostDraft {
   channel: DraftChannel
   lang: Lang | null
   body: string
+  /** LinkedIn: null = default of the topic, '' = none, else this comment. */
+  first_comment: string | null
   status: 'draft' | 'scheduled' | 'sent' | 'failed'
   edited_by_human: boolean
   scheduled_at: string | null

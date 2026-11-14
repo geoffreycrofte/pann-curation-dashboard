@@ -4,6 +4,7 @@ import {
   parseTopicConfig,
   POST_LIMITS,
   publishedLength,
+  postSignature,
   type CredentialMeta,
   type DraftChannel,
   type Lang,
@@ -84,7 +85,13 @@ export const diffusion = new Hono<AppEnv>()
         (mastodon?.meta as CredentialMeta | undefined)?.max_characters ?? POST_LIMITS.mastodon,
     }
     const tooLong = candidates.find(
-      (p) => publishedLength(p.channel, p.body, url) > limits[p.channel],
+      (p) =>
+        publishedLength(
+          p.channel,
+          p.body,
+          url,
+          p.lang ? postSignature(config, p.channel, p.lang) : '',
+        ) > limits[p.channel],
     )
     if (tooLong)
       throw new HTTPException(422, { message: `post_too_long:${tooLong.channel}/${tooLong.lang}` })

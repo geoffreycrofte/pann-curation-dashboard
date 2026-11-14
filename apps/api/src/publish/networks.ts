@@ -23,6 +23,8 @@ export interface PublishRequest {
   content: string
   /** Same key for the retries of one attempt: a lost answer is not published twice. */
   idempotencyKey: string
+  /** LinkedIn: comment Zernio publishes right after the post. */
+  firstComment?: string | null
 }
 
 const failure = (error: string, retry: boolean, invalidCredential = false): PublishResult => ({
@@ -68,7 +70,12 @@ export async function publishWithZernio(
 ): Promise<PublishResult> {
   const platform = ZERNIO_PLATFORMS[request.channel as ZernioChannel]
   if (!platform) return failure(errorCode('post_rejected', request.channel), false)
-  const entry = { platform, accountId }
+  // First comment: platformSpecificData.firstComment on the LinkedIn entry
+  // (docs.zernio.com/platforms/linkedin/posts, checked 2026-11-14).
+  const entry =
+    request.channel === 'linkedin' && request.firstComment
+      ? { platform, accountId, platformSpecificData: { firstComment: request.firstComment } }
+      : { platform, accountId }
   const res = await send(`${ZERNIO_API}/posts`, {
     method: 'POST',
     headers: {

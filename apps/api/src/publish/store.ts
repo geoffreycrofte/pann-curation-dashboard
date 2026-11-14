@@ -10,6 +10,7 @@ interface ClaimedRow {
   channel: DraftChannel
   lang: Lang | null
   body: string
+  first_comment: string | null
   publish_attempts: number
 }
 

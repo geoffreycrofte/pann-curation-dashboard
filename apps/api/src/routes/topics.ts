@@ -14,6 +14,7 @@ import {
   topicConfigSchema,
   TOPIC_MODULES,
   SOURCE_TEXT_MAX,
+  FIRST_COMMENT_MAX,
   SOURCE_TEXT_MIN,
   type ItemTopicStatus,
 } from '@pann/shared'
@@ -106,7 +107,7 @@ const DETAIL_COLUMNS =
   'item:items (canonical_url, title, source_lang, origin, published_at, discovered_at)'
 
 const POST_COLUMNS =
-  'id, channel, lang, body, status, edited_by_human, scheduled_at, sent_at, published_url, last_error, claimed_at'
+  'id, channel, lang, body, first_comment, status, edited_by_human, scheduled_at, sent_at, published_url, last_error, claimed_at'
 
 const manualItemBody = z.object({
   url: z.url({ protocol: /^https?$/ }),
@@ -637,6 +638,30 @@ export const topics = new Hono<AppEnv>()
       .update({ body: text, edited_by_human: true, updated_at: new Date().toISOString() })
       .eq('topic_id', c.req.param('topicId'))
       .eq('id', c.req.param('postId'))
+      .in('status', ['draft', 'scheduled', 'failed'])
+      .is('claimed_at', null)
+      .select(POST_COLUMNS)
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Draft not found' })
+    return c.json(data)
+  })
+
+  /**
+   * First comment of a LinkedIn post: null takes the default of the topic, '' turns it
+   * off, any other text replaces the default. Editable until a job starts publishing.
+   */
+  .patch('/:topicId/posts/:postId/first-comment', async (c) => {
+    const { first_comment } = await parseJson(
+      z.object({ first_comment: z.string().trim().max(FIRST_COMMENT_MAX).nullable() }),
+      c.req.raw,
+    )
+    const { data, error } = await c.var.db
+      .from('posts')
+      .update({ first_comment, updated_at: new Date().toISOString() })
+      .eq('topic_id', c.req.param('topicId'))
+      .eq('id', c.req.param('postId'))
+      .eq('channel', 'linkedin')
       .in('status', ['draft', 'scheduled', 'failed'])
       .is('claimed_at', null)
       .select(POST_COLUMNS)
