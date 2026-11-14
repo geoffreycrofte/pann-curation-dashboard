@@ -2,18 +2,31 @@
 
 ## Logo
 
-Deux déclinaisons, choisies le 2026-10-02 parmi quatre pistes (`logo-explorations.png`) :
+**La pépite seule**, choisie le 2026-11-13 (`docs/DECISIONS.md`) : la pépite d'or taillée en facettes, avec un éclat en haut à droite. Pas de fond, pas de coussin : l'or porte toute l'identité.
 
-- **Logo et icône d'app** (`pann-mark.svg`, piste D) : la **batée vue de dessus**, sombre, avec le remous de l'eau, quelques grains de sable, et la **pépite** dorée qui reste au fond, avec son éclat. L'or est réservé à la pépite.
-- **Favicon** (`pann-favicon.svg`, piste A) : la **pépite seule** avec son éclat et quelques grains, plus lisible à 16 px que la batée.
+Sources et exports dans `logo/` :
 
-Icônes d'app générées depuis `pann-mark.svg` : `apps/board/public/apple-touch-icon.png` (180 px), `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (fond plein, la plateforme arrondit), déclarées dans `manifest.webmanifest`.
+| Fichier                                    | Usage                                                                     |
+| ------------------------------------------ | ------------------------------------------------------------------------- |
+| `pann-mark.svg`, `pann-mark-512.png`       | Symbole seul, fond transparent, éclat encre : sur fond clair              |
+| `pann-mark-dark.svg`, `-dark-512.png`      | Symbole seul, éclat crème : sur fond sombre                               |
+| `pann-logo.svg`, `pann-logo.png`           | Logo complet (symbole + « Pann » vectorisé), encre : sur fond clair       |
+| `pann-logo-dark.svg`, `pann-logo-dark.png` | Logo complet, texte crème : sur fond sombre                               |
+| `pann-icon.svg`, `pann-icon-1024.png`      | Icône d'app, tuile encre (version par défaut)                             |
+| `pann-icon-light.svg`, `-light-1024.png`   | Icône d'app, tuile sable                                                  |
+| `pann-icon-square.svg`                     | Tuile pleine sans arrondi, pour iOS (le système arrondit)                 |
+| `pann-icon-maskable.svg`                   | Tuile pleine, contenu réduit à la zone sûre (Android, `maskable`)         |
+| `pann-favicon.svg`                         | Favicon : pépite agrandie, trois facettes, sans éclat (illisible à 16 px) |
 
-Pistes écartées : la batée en perspective avec une pépite cubique (une poêle avec du beurre), le tamis (un panier), le monogramme P.
+Le mot « Pann » des logos complets est vectorisé depuis Bricolage Grotesque 800, interlettrage -0,035 em : aucun besoin de la police pour les afficher.
 
-- Tuile noir d'encre, or réservé à la pépite.
-- Dans l'app : composant `apps/board/src/components/PannMark.vue` (décoratif, `aria-hidden`), toujours accompagné du nom « Pann » en texte.
+Dans l'app (`apps/board/public/`) : `favicon.svg` et `favicon.ico` (16, 32 et 48 px), `apple-touch-icon.png` (180 px, tuile pleine), `icon-192.png` et `icon-512.png` (tuile arrondie), `icon-maskable-512.png`, déclarées dans `index.html` et `manifest.webmanifest`. Les PNG sont rendus depuis les SVG avec Chromium.
+
+- Composant `apps/board/src/components/PannMark.vue` (décoratif, `aria-hidden`), toujours accompagné du nom « Pann » en texte. L'éclat prend la couleur du texte (`currentColor`) : encre en clair, crème en sombre ou sur la barre latérale.
+- Or réservé à la pépite.
 - Nom : Bricolage Grotesque, graisse 800, interlettrage serré.
+
+Historique : la batée vue de dessus (2026-10-02, `logo-explorations.png`, `pann-brand-sheet.png`) a été remplacée, trop détaillée et pas assez imagée. Pistes écartées en 2026-11 : la pépite dans un écrin, sur un présentoir, en trait d'encre, enfoncée dans un coussin.
 
 ## Couleurs
 
