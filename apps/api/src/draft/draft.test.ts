@@ -37,6 +37,8 @@ function item(id: string, overrides: Partial<PendingDraft> = {}): PendingDraft {
     topic_config: config,
     monthly_budget_usd: 10,
     draft_attempts: 0,
+    draft_scope: 'all',
+    existing_posts: [],
     title: 'Title',
     canonical_url: `https://e.org/${id}`,
     published_at: null,
@@ -170,5 +172,47 @@ describe('draft prompt', () => {
       ['linkedin', 'bluesky', 'mastodon'],
       ['linkedin', 'bluesky', 'mastodon', 'discord'],
     ])
+  })
+
+  it('drafts only the missing posts and leaves the rest untouched', async () => {
+    const withDiscord = parseTopicConfig({
+      ...config,
+      channels: [
+        { channel: 'linkedin', account_id: 'li', langs: ['fr', 'en'] },
+        { channel: 'discord', account_id: 'd1', langs: ['en'] },
+      ],
+    })
+    const existing_posts = (['linkedin', 'bluesky', 'mastodon'] as const).flatMap((channel) =>
+      (['fr', 'en'] as const).map((lang) => ({ channel, lang })),
+    )
+    const { store, saved } = memoryStore([
+      item('a', { topic_config: withDiscord, draft_scope: 'missing', existing_posts }),
+    ])
+    const asked: unknown[] = []
+    const model: DraftModel = async (input) => {
+      asked.push(input.channels)
+      return {
+        ok: true,
+        output: { ...output, posts: { discord: { fr: 'DC fr', en: 'DC en' } } },
+        usage,
+        model: 'claude-sonnet-5-5',
+      }
+    }
+    await draft({ store, model })
+    expect(asked).toEqual([['discord']])
+    expect(saved.a?.posts_only).toBe(true)
+    expect(saved.a?.posts).toEqual([{ channel: 'discord', lang: 'en', body: 'DC en' }])
+  })
+
+  it('calls no model when no post is missing any more', async () => {
+    const { store, saved } = memoryStore([item('a', { draft_scope: 'missing' })])
+    let called = false
+    const model: DraftModel = async () => {
+      called = true
+      return { ok: true, output, usage, model: 'claude-sonnet-5-5' }
+    }
+    expect(await draft({ store, model })).toEqual({ drafted: 1, failed: 0, skipped: 0 })
+    expect(called).toBe(false)
+    expect(saved.a).toMatchObject({ posts_only: true, posts: [] })
   })
 })

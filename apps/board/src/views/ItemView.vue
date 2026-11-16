@@ -3,6 +3,7 @@ import {
   accountFor,
   DRAFT_CHANNELS,
   LANGS,
+  missingPosts,
   POST_LIMITS,
   postSignature,
   SOURCE_TEXT_MAX,
@@ -35,7 +36,7 @@ import { useWorkspace } from '../lib/workspace'
 import { toast } from '../lib/toast'
 
 const props = defineProps<{ topicId: string; itemId: string }>()
-const { t, d } = useI18n()
+const { t, d, locale } = useI18n()
 const queryCache = useQueryCache()
 const key = () => ['item', props.topicId, props.itemId]
 
@@ -273,6 +274,35 @@ const { mutate: unschedule, isLoading: unscheduling } = useMutation({
   onError: diffusionFailed,
 })
 
+/** Posts the topic publishes that this item lacks (networks added after its drafting). */
+const missing = computed(() =>
+  topic.value && detail.value?.draft_status === 'ready' && canDraft.value
+    ? missingPosts(topic.value.config, posts.value)
+    : [],
+)
+const missingList = computed(() =>
+  new Intl.ListFormat(locale.value, { type: 'conjunction' }).format(
+    missing.value.map((m) =>
+      t('missingPosts.entry', {
+        channel: t(`draft.channels.${m.channel}`),
+        lang: t(`draft.langs.${m.lang}`),
+      }),
+    ),
+  ),
+)
+const { mutate: draftMissing, isLoading: draftingMissing } = useMutation({
+  mutation: () => api.requestMissingPosts(props.topicId, props.itemId),
+  async onSuccess() {
+    isError.value = false
+    message.value = t('missingPosts.started')
+    await queryCache.invalidateQueries({ key: key() })
+  },
+  onError(err) {
+    isError.value = true
+    message.value = describeError(err.message, t).text
+  },
+})
+
 /** Text added at the end of the post when published (LinkedIn signature of the topic). */
 const signatureOf = (post: PostDraft) =>
   topic.value && post.lang ? postSignature(topic.value.config, post.channel, post.lang) : ''
@@ -501,6 +531,17 @@ async function savePost(postId: string, text: string) {
           />
         </template>
       </div>
+    </section>
+
+    <section v-if="missing.length" class="missing-posts" aria-labelledby="missing-posts-title">
+      <h2 id="missing-posts-title">{{ t('missingPosts.title') }}</h2>
+      <p>{{ t('missingPosts.text', { list: missingList }) }}</p>
+      <div>
+        <button type="button" class="button" :disabled="draftingMissing" @click="draftMissing()">
+          {{ t('missingPosts.action') }}
+        </button>
+      </div>
+      <p class="hint">{{ t('missingPosts.hint') }}</p>
     </section>
 
     <section v-if="detail.posts.length" class="block" aria-labelledby="posts">
@@ -871,6 +912,27 @@ async function savePost(postId: string, text: string) {
 .post {
   display: grid;
   gap: var(--space-2);
+}
+
+/* Networks of the topic without a post for this item: a notice with its action. */
+.missing-posts {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-inline-start: 6px solid var(--color-accent-fill);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.missing-posts h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.missing-posts p {
+  margin: 0;
 }
 
 .signature {

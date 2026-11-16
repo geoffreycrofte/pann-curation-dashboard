@@ -613,6 +613,21 @@ export const topics = new Hono<AppEnv>()
     return c.json({ draft_status: 'pending' }, 202)
   })
 
+  /** Queue the drafting of the posts the item lacks only (networks added since). */
+  .post('/:topicId/items/:itemId/draft-missing', async (c) => {
+    const { topicId, itemId } = c.req.param()
+    const { data: queued, error } = await c.var.db.rpc('request_missing_posts', {
+      p_topic_id: topicId,
+      p_item_id: itemId,
+    })
+    if (error?.code === '42501') throw new HTTPException(404, { message: 'Topic not found' })
+    if (error) throw error
+    if (!queued)
+      throw new HTTPException(409, { message: 'Only drafted items can get missing posts' })
+    await c.env.JOBS.send({ type: 'draft', topicId, itemId })
+    return c.json({ draft_status: 'pending' }, 202)
+  })
+
   .patch('/:topicId/items/:itemId/summaries/:lang', async (c) => {
     const { itemId, lang } = c.req.param()
     if (!(LANGS as readonly string[]).includes(lang))

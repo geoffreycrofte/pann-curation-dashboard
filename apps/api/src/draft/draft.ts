@@ -1,7 +1,9 @@
 import {
   claudeCostUsd,
+  DRAFT_CHANNELS,
   draftChannels,
   LANGS,
+  missingPosts,
   postLength,
   postSignature,
   SOURCE_TEXT_MIN,
@@ -26,6 +28,10 @@ export interface PendingDraft {
   topic_config: TopicConfig
   monthly_budget_usd: number
   draft_attempts: number
+  /** 'missing': only the posts the item lacks; summaries and other posts stay. */
+  draft_scope: 'all' | 'missing'
+  /** Posts the item already has (read for the 'missing' scope). */
+  existing_posts: { channel: DraftChannel; lang: Lang | null }[]
   title: string
   canonical_url: string
   published_at: string | null
@@ -40,6 +46,8 @@ export interface DraftWrite {
   key_excerpt: string
   source_nature: string
   posts: { channel: DraftChannel; lang: Lang; body: string }[]
+  /** Only add these posts: summaries and existing posts are left as they are. */
+  posts_only?: boolean
 }
 
 export interface DraftStore {
@@ -66,6 +74,15 @@ function longestSignature(config: TopicConfig): string {
     (longest, s) => (postLength(s) > postLength(longest) ? s : longest),
     '',
   )
+}
+
+const EMPTY_WRITE: DraftWrite = {
+  model: '',
+  prompt_version: DRAFT_PROMPT_VERSION,
+  summaries: [],
+  key_excerpt: '',
+  source_nature: '',
+  posts: [],
 }
 
 export interface DraftReport {
@@ -147,8 +164,19 @@ export async function draft(deps: {
     if (content.length < MIN_CONTENT_CHARS)
       content = (await deps.store.fetchContent(item)) ?? content
 
+    // Missing posts only: nothing to write when the item already has them all.
+    const missing =
+      item.draft_scope === 'missing' ? missingPosts(item.topic_config, item.existing_posts) : null
+    if (missing && !missing.length) {
+      await deps.store.saveDraft(item, { ...EMPTY_WRITE, posts_only: true })
+      report.drafted++
+      continue
+    }
+
     const requestedModel = item.topic_config.ai.draft_model
-    const channels = draftChannels(item.topic_config)
+    const channels = missing
+      ? DRAFT_CHANNELS.filter((c) => missing.some((m) => m.channel === c))
+      : draftChannels(item.topic_config)
     const result = await deps.model({
       channels,
       apiKey,
@@ -168,7 +196,19 @@ export async function draft(deps: {
         report.failed++
         continue
       }
-      await deps.store.saveDraft(item, toDraftWrite(result.output, result.model, channels))
+      const write = toDraftWrite(result.output, result.model, channels)
+      await deps.store.saveDraft(
+        item,
+        missing
+          ? {
+              ...write,
+              posts_only: true,
+              posts: write.posts.filter((p) =>
+                missing.some((m) => m.channel === p.channel && m.lang === p.lang),
+              ),
+            }
+          : write,
+      )
       report.drafted++
       continue
     }

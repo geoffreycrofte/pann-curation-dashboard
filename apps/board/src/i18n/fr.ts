@@ -447,6 +447,14 @@ export default {
     saved: 'Commentaire enregistré.',
     empty: 'Écrivez le commentaire, ou choisissez une autre option.',
   },
+  missingPosts: {
+    title: 'Posts manquants',
+    entry: '{channel} en {lang}',
+    text: 'Ce thème publie sur {list}, mais cet élément n’a pas encore de post pour ces réseaux, sans doute ajoutés après sa rédaction.',
+    action: 'Rédiger les posts manquants',
+    hint: 'Seuls les posts manquants sont rédigés : les résumés et les autres posts ne changent pas. Cet appel compte dans le budget mensuel du thème.',
+    started: 'Rédaction des posts manquants lancée.',
+  },
   diffusion: {
     title: 'Diffusion',
     intro:

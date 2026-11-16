@@ -261,6 +261,11 @@ export const api = {
     request<{ draft_status: string }>(`/topics/${topicId}/items/${itemId}/draft`, {
       method: 'POST',
     }),
+  /** Drafts only the posts the item lacks (networks added to the topic since). */
+  requestMissingPosts: (topicId: string, itemId: string) =>
+    request<{ draft_status: string }>(`/topics/${topicId}/items/${itemId}/draft-missing`, {
+      method: 'POST',
+    }),
   /** Pasted source text replaces the unreadable page content, then drafting runs again. */
   submitSourceText: (topicId: string, itemId: string, text: string) =>
     request<{ draft_status: string }>(
