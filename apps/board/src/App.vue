@@ -498,16 +498,20 @@ main.public {
     display: none;
   }
 
-  /* The burger turns into a cross. */
+  /*
+   * The burger turns into a cross: each outer bar first moves to the middle line, then
+   * turns around the centre of the icon (the rightmost transform applies first).
+   */
   .bar {
     transition:
       transform 0.25s,
       opacity 0.2s;
+    transform-box: view-box;
     transform-origin: 12px 12px;
   }
 
   .menu-toggle[aria-expanded='true'] .bar-top {
-    transform: translateY(5px) rotate(45deg);
+    transform: rotate(45deg) translateY(5px);
   }
 
   .menu-toggle[aria-expanded='true'] .bar-middle {
@@ -515,7 +519,7 @@ main.public {
   }
 
   .menu-toggle[aria-expanded='true'] .bar-bottom {
-    transform: translateY(-5px) rotate(-45deg);
+    transform: rotate(-45deg) translateY(-5px);
   }
 }
 
