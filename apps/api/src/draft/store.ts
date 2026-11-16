@@ -1,4 +1,4 @@
-import { parseTopicConfig } from '@pann/shared'
+import { parseTopicConfig, type DraftChannel, type Lang } from '@pann/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { extractArticleText } from '../lib/article-text'
 import { fetchText } from '../lib/fetch-text'
@@ -8,6 +8,7 @@ interface PendingRow {
   item_id: string
   topic_id: string
   draft_attempts: number
+  draft_scope: 'all' | 'missing'
   item: {
     title: string
     canonical_url: string
@@ -25,7 +26,7 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
       let query = db
         .from('item_topics')
         .select(
-          'item_id, topic_id, draft_attempts, ' +
+          'item_id, topic_id, draft_attempts, draft_scope, ' +
             'item:items!inner (title, canonical_url, published_at, source_lang, fetched_content), ' +
             'topic:topics!inner (workspace_id, name_en, config, monthly_budget_usd)',
         )
@@ -38,7 +39,24 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
       if (itemId) query = query.eq('item_id', itemId)
       const { data, error } = await query.returns<PendingRow[]>()
       if (error) throw error
+      // Posts already there, for the items that only need their missing posts.
+      const scoped = data.filter((row) => row.draft_scope === 'missing')
+      const existing = new Map<string, { channel: DraftChannel; lang: Lang | null }[]>()
+      for (const row of scoped) {
+        const { data: posts, error: postsError } = await db
+          .from('posts')
+          .select('channel, lang')
+          .eq('item_id', row.item_id)
+          .eq('topic_id', row.topic_id)
+        if (postsError) throw postsError
+        existing.set(
+          `${row.topic_id}/${row.item_id}`,
+          posts as { channel: DraftChannel; lang: Lang | null }[],
+        )
+      }
       return data.map((row) => ({
+        draft_scope: row.draft_scope,
+        existing_posts: existing.get(`${row.topic_id}/${row.item_id}`) ?? [],
         item_id: row.item_id,
         topic_id: row.topic_id,
         workspace_id: row.topic.workspace_id,
@@ -99,6 +117,28 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
     },
 
     async saveDraft(item, draft) {
+      if (draft.posts_only) {
+        // Missing posts only: add them, leave the rest of the drafting untouched.
+        if (draft.posts.length) {
+          const { error } = await db.from('posts').insert(
+            draft.posts.map((p) => ({
+              item_id: item.item_id,
+              topic_id: item.topic_id,
+              channel: p.channel,
+              lang: p.lang,
+              body: p.body,
+            })),
+          )
+          if (error) throw error
+        }
+        const { error } = await db
+          .from('item_topics')
+          .update({ draft_status: 'ready', draft_error: null, draft_scope: 'all' })
+          .eq('item_id', item.item_id)
+          .eq('topic_id', item.topic_id)
+        if (error) throw error
+        return
+      }
       // Summaries: one per workspace and language; a summary edited by a person is kept.
       const { data: edited, error: readError } = await db
         .from('summaries')
@@ -173,7 +213,12 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
 
       const { error } = await db
         .from('item_topics')
-        .update({ draft_status: 'ready', draft_error: null, drafted_at: new Date().toISOString() })
+        .update({
+          draft_status: 'ready',
+          draft_error: null,
+          draft_scope: 'all',
+          drafted_at: new Date().toISOString(),
+        })
         .eq('item_id', item.item_id)
         .eq('topic_id', item.topic_id)
       if (error) throw error
@@ -185,7 +230,7 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
         .update({
           draft_error: draftError,
           draft_attempts: item.draft_attempts + 1,
-          ...(final ? { draft_status: 'failed' } : {}),
+          ...(final ? { draft_status: 'failed', draft_scope: 'all' } : {}),
         })
         .eq('item_id', item.item_id)
         .eq('topic_id', item.topic_id)

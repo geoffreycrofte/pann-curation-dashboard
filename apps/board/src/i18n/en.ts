@@ -442,6 +442,14 @@ export default {
     saved: 'Comment saved.',
     empty: 'Write the comment, or pick another option.',
   },
+  missingPosts: {
+    title: 'Missing posts',
+    entry: '{channel} in {lang}',
+    text: 'This topic publishes to {list}, but this item has no post for these networks yet, probably added after it was drafted.',
+    action: 'Draft the missing posts',
+    hint: 'Only the missing posts are drafted: the summaries and the other posts do not change. This call counts toward the monthly budget of the topic.',
+    started: 'Drafting of the missing posts started.',
+  },
   diffusion: {
     title: 'Diffusion',
     intro:

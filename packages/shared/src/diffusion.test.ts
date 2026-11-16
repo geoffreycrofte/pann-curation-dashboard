@@ -6,6 +6,7 @@ import {
   dailySlots,
   draftChannels,
   firstCommentFor,
+  missingPosts,
   nextFreeSlot,
   postSignature,
   publishedLength,
@@ -180,5 +181,30 @@ describe('LinkedIn signature and first comment', () => {
     expect(firstCommentFor(config, 'linkedin', 'fr', 'Autre lien')).toBe('Autre lien')
     expect(firstCommentFor(config, 'linkedin', 'en', null)).toBeNull()
     expect(firstCommentFor(config, 'mastodon', 'fr', 'x')).toBeNull()
+  })
+})
+
+describe('missingPosts', () => {
+  const config = parseTopicConfig({
+    output_langs: ['fr', 'en'],
+    channels: [
+      { channel: 'linkedin', account_id: 'li', langs: ['fr', 'en'] },
+      { channel: 'discord', account_id: 'd1', langs: ['en'] },
+    ],
+  })
+
+  it('lists the channels and languages the topic publishes that have no post', () => {
+    const posts = [
+      { channel: 'linkedin' as const, lang: 'fr' as const },
+      { channel: 'linkedin' as const, lang: 'en' as const },
+      { channel: 'bluesky' as const, lang: 'fr' as const },
+    ]
+    expect(missingPosts(config, posts)).toEqual([{ channel: 'discord', lang: 'en' }])
+    expect(missingPosts(config, [...posts, { channel: 'discord', lang: 'en' }])).toEqual([])
+  })
+
+  it('ignores the languages the topic does not write in', () => {
+    const frOnly = parseTopicConfig({ ...config, output_langs: ['fr'] })
+    expect(missingPosts(frOnly, [{ channel: 'linkedin', lang: 'fr' }])).toEqual([])
   })
 })

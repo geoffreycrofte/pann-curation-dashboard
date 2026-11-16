@@ -90,6 +90,22 @@ export function configuredChannels(config: TopicConfig): DraftChannel[] {
   return [...new Set(config.channels.map((c) => c.channel))]
 }
 
+/**
+ * Posts a drafted item lacks: a channel and language the topic publishes (an account and a
+ * language it writes in) with no post yet, typically a network added after the drafting.
+ */
+export function missingPosts(
+  config: TopicConfig,
+  posts: readonly { channel: DraftChannel; lang: Lang | null }[],
+): { channel: DraftChannel; lang: Lang }[] {
+  const have = new Set(posts.map((p) => `${p.channel}/${p.lang}`))
+  return config.channels.flatMap((entry) =>
+    entry.langs
+      .filter((lang) => config.output_langs.includes(lang) && !have.has(`${entry.channel}/${lang}`))
+      .map((lang) => ({ channel: entry.channel, lang })),
+  )
+}
+
 /** Channels drafted for an item of this topic: the default ones and those it publishes to. */
 export function draftChannels(config: TopicConfig): DraftChannel[] {
   const used = new Set<DraftChannel>([...DEFAULT_DRAFT_CHANNELS, ...configuredChannels(config)])
