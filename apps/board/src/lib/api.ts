@@ -4,6 +4,8 @@ import type {
   ItemKind,
   ItemTopicStatus,
   Lang,
+  CredentialStatus,
+  PlatformProvider,
   Provider,
   SearchSourceType,
   EngagementSourceType,
@@ -119,6 +121,32 @@ export type TopicPatch = Partial<Pick<Topic, 'monthly_budget_usd' | 'name_fr' | 
 export interface Me {
   user: { id: string; email?: string }
   workspaces: { role: 'owner' | 'editor'; workspace: { id: string; name: string } }[]
+  /** Platform admin: sees the admin space (Pann's keys and cost centre). */
+  is_platform_admin: boolean
+}
+
+export interface PlatformKey {
+  provider: PlatformProvider
+  hint: string
+  status: CredentialStatus
+  status_detail: string | null
+  checked_at: string | null
+  updated_at: string
+}
+
+export interface PlatformSettings {
+  onboarding_credit_usd: number
+  monthly_cap_usd: number
+  updated_at: string
+}
+
+export interface PlatformUsageRow {
+  workspace_id: string
+  workspace_name: string
+  provider: string
+  operation: string
+  calls: number
+  cost_usd: number
 }
 
 export type ItemDetail = Omit<BoardItem, ItemFields> & {
@@ -184,6 +212,16 @@ export interface TopicUsage {
 
 export const api = {
   me: () => request<Me>('/me'),
+  adminKeys: () => request<PlatformKey[]>('/admin/credentials'),
+  setAdminKey: (provider: PlatformProvider, secret: string) =>
+    request<PlatformKey>(`/admin/credentials/${provider}`, json('PUT', { secret })),
+  deleteAdminKey: (provider: PlatformProvider) =>
+    request<void>(`/admin/credentials/${provider}`, { method: 'DELETE' }),
+  adminSettings: () => request<PlatformSettings>('/admin/settings'),
+  updateAdminSettings: (patch: Partial<Omit<PlatformSettings, 'updated_at'>>) =>
+    request<PlatformSettings>('/admin/settings', json('PATCH', patch)),
+  /** month: YYYY-MM (UTC). */
+  adminUsage: (month: string) => request<PlatformUsageRow[]>(`/admin/usage?month=${month}`),
   renameWorkspace: (workspaceId: string, name: string) =>
     request<{ id: string; name: string }>(`/workspaces/${workspaceId}`, json('PATCH', { name })),
   /** Queues the deletion of the account; the email typed by the person confirms it. */

@@ -15,6 +15,13 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
+// Same query as useWorkspace (shared cache): shows the admin link to platform admins.
+const { data: me } = useQuery({
+  key: ['me'],
+  query: api.me,
+  enabled: () => !!session.value,
+})
+
 const { data: topics } = useQuery({
   key: ['topics'],
   query: api.topics,
@@ -186,6 +193,12 @@ watch(
                 <RouterLink to="/connections" class="nav-link">
                   <span class="nav-dot" aria-hidden="true"></span>
                   {{ t('nav.connections') }}
+                </RouterLink>
+              </li>
+              <li v-if="me?.is_platform_admin">
+                <RouterLink :to="{ name: 'admin' }" class="nav-link">
+                  <span class="nav-dot" aria-hidden="true"></span>
+                  {{ t('nav.admin') }}
                 </RouterLink>
               </li>
             </ul>
