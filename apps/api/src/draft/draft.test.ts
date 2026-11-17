@@ -11,8 +11,7 @@ const config = parseTopicConfig({
 
 const output: DraftOutput = {
   insufficient_content: false,
-  summary_fr: 'Résumé.',
-  summary_en: 'Summary.',
+  summaries: { fr: 'Résumé.', en: 'Summary.' },
   key_excerpt: 'A short quote',
   source_type: 'regulatory',
   posts: {
@@ -152,7 +151,12 @@ describe('draft prompt', () => {
   })
 
   it('maps the model output to storage rows', () => {
-    const write = toDraftWrite(output, 'claude-sonnet-5-5', ['linkedin', 'bluesky', 'mastodon'])
+    const write = toDraftWrite(
+      output,
+      'claude-sonnet-5-5',
+      ['linkedin', 'bluesky', 'mastodon'],
+      ['fr', 'en'],
+    )
     expect(write.posts[0]).toEqual({ channel: 'linkedin', lang: 'fr', body: 'LI fr' })
     expect(write.posts).toHaveLength(6)
   })
@@ -214,5 +218,37 @@ describe('draft prompt', () => {
     expect(await draft({ store, model })).toEqual({ drafted: 1, failed: 0, skipped: 0 })
     expect(called).toBe(false)
     expect(saved.a).toMatchObject({ posts_only: true, posts: [] })
+  })
+
+  it('writes in the languages of the topic, whatever they are', async () => {
+    const german = parseTopicConfig({ output_langs: ['de', 'pt-BR'] })
+    const asked: unknown[] = []
+    const model: DraftModel = async (call) => {
+      asked.push([call.langs, call.system])
+      return {
+        ok: true,
+        output: {
+          ...output,
+          summaries: { de: 'Zusammenfassung.', 'pt-BR': 'Resumo.' },
+          posts: { linkedin: { de: 'LI de', 'pt-BR': 'LI pt' } },
+        },
+        usage,
+        model: 'claude-sonnet-5-5',
+      }
+    }
+    const { store, saved } = memoryStore([item('a', { topic_config: german })])
+    await draft({ store, model })
+    const [langs, system] = asked[0] as [string[], string]
+    expect(langs).toEqual(['de', 'pt-BR'])
+    expect(system).toContain('German (de), Brazilian Portuguese (pt-BR)')
+    expect(saved.a?.summaries).toEqual([
+      { lang: 'de', summary: 'Zusammenfassung.' },
+      { lang: 'pt-BR', summary: 'Resumo.' },
+    ])
+    // Posts the model left out (Bluesky, Mastodon) are not saved empty.
+    expect(saved.a?.posts).toEqual([
+      { channel: 'linkedin', lang: 'de', body: 'LI de' },
+      { channel: 'linkedin', lang: 'pt-BR', body: 'LI pt' },
+    ])
   })
 })

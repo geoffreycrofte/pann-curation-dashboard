@@ -16,7 +16,7 @@ describe('parseTopicConfig', () => {
       categories: [{ key: 'news', label_fr: 'Actu', label_en: 'News' }],
     })
     expect(legacy.kinds).toEqual([
-      { key: 'news', label_fr: 'Actu', label_en: 'News', description: '' },
+      { key: 'news', label_fr: 'Actu', label_en: 'News', labels: {}, description: '' },
     ])
     expect(kindLabel(legacy, 'news', 'fr')).toBe('Actu')
     expect(kindLabel(legacy, 'gone', 'fr')).toBe('gone')
@@ -49,5 +49,44 @@ describe('parseTopicConfig', () => {
 
   it('rejects invalid time slots', () => {
     expect(() => parseTopicConfig({ schedule: { slots: ['25:00'] } })).toThrow()
+  })
+})
+
+describe('languages of the contents', () => {
+  it('accepts any language tag, in canonical form', () => {
+    const config = parseTopicConfig({ output_langs: ['de', 'PT-br', 'zh-hant'] })
+    expect(config.output_langs).toEqual(['de', 'pt-BR', 'zh-Hant'])
+    expect(() => parseTopicConfig({ output_langs: ['german'] })).toThrow()
+    expect(() => parseTopicConfig({ output_langs: ['de', 'de'] })).toThrow()
+  })
+
+  it('moves texts stored per field and language to one text per language', () => {
+    const config = parseTopicConfig({
+      newsletter: { title_fr: 'Veille', title_en: 'Watch', intro_fr: 'Bonjour', footer_en: '' },
+      feed: { description_en: 'Feed' },
+    })
+    expect(config.newsletter.title).toEqual({ fr: 'Veille', en: 'Watch' })
+    expect(config.newsletter.intro).toEqual({ fr: 'Bonjour' })
+    expect(config.newsletter.footer).toEqual({})
+    expect(config.feed.description).toEqual({ en: 'Feed' })
+    expect('title_fr' in config.newsletter).toBe(false)
+  })
+
+  it('keeps the newsletter lists and LinkedIn texts stored per language', () => {
+    const config = parseTopicConfig({
+      newsletter: { lists: { fr: 3, en: null } },
+      linkedin: { signature: { fr: 'Je suis…', en: '' } },
+    })
+    expect(config.newsletter.lists).toEqual({ fr: 3, en: null })
+    expect(config.linkedin.signature).toEqual({ fr: 'Je suis…', en: '' })
+  })
+
+  it('labels a kind in any language, falling back to the interface label', () => {
+    const config = parseTopicConfig({
+      kinds: [{ key: 'news', label_fr: 'Actu', label_en: 'News', labels: { de: 'Neuigkeiten' } }],
+    })
+    expect(kindLabel(config, 'news', 'de')).toBe('Neuigkeiten')
+    expect(kindLabel(config, 'news', 'fr')).toBe('Actu')
+    expect(kindLabel(config, 'news', 'it')).toBe('News')
   })
 })

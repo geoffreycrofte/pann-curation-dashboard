@@ -1,7 +1,8 @@
 import {
   digestLook,
   digestWindowStart,
-  LANGS,
+  langSchema,
+  nameIn,
   nextDigestTime,
   parseTopicConfig,
   renderDigest,
@@ -14,7 +15,7 @@ import type { AppEnv } from '../env'
 import { parseJson } from '../lib/validation'
 import { lastSentIssueStart, loadDigestContent } from '../newsletter/content'
 
-const sendBody = z.object({ lang: z.enum(LANGS).optional() })
+const sendBody = z.object({ lang: langSchema.optional() })
 
 const ISSUE_COLUMNS =
   'id, lang, status, subject, item_count, period_from, period_to, sent_at, last_error, created_at'
@@ -57,8 +58,8 @@ export const newsletter = new Hono<AppEnv>()
         })
         const { subject, html } = renderDigest({
           lang,
-          title: (lang === 'fr' ? settings.title_fr : settings.title_en) || topic[`name_${lang}`],
-          intro: lang === 'fr' ? settings.intro_fr : settings.intro_en,
+          title: settings.title[lang] || nameIn(topic, lang),
+          intro: settings.intro[lang] ?? '',
           items: content.items,
           date: now,
           timezone: schedule.timezone,

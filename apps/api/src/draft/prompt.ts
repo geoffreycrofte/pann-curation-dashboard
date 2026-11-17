@@ -1,42 +1,60 @@
-import { bodyLimit, SOURCE_NATURES_LIST, type DraftChannel, type TopicConfig } from '@pann/shared'
+import {
+  bodyLimit,
+  langName,
+  SOURCE_NATURES_LIST,
+  type DraftChannel,
+  type Lang,
+  type TopicConfig,
+} from '@pann/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes. Stored with each summary (summaries.prompt_version). */
-export const DRAFT_PROMPT_VERSION = 'draft-v3'
+export const DRAFT_PROMPT_VERSION = 'draft-v4'
 
 /** Characters of the source sent for drafting. */
 export const DRAFT_CONTENT_CHARS = 24_000
 
-const postsByLang = z.object({ fr: z.string(), en: z.string() })
-
-export type PostsByLang = z.infer<typeof postsByLang>
+/** A text per language of the topic, each key a BCP 47 tag (`fr`, `de`, `pt-BR`…). */
+const byLang = (langs: readonly Lang[], what: string) =>
+  z.object(
+    Object.fromEntries(
+      langs.map((lang) => [
+        lang,
+        z.string().describe(`${what}, written in ${langName(lang, 'en')}`),
+      ]),
+    ),
+  )
 
 /**
- * Output of a drafting call. Posts are asked only for the channels of the topic
- * (draftChannels): a topic that does not publish to X gets no X post, and pays for none.
+ * Output of a drafting call, in the languages of the topic (any language). Posts are asked
+ * only for the channels of the topic (draftChannels): a topic that does not publish to a
+ * network gets no post for it, and pays for none.
  */
-export function draftOutputSchema(channels: readonly DraftChannel[]) {
+export function draftOutputSchema(channels: readonly DraftChannel[], langs: readonly Lang[]) {
   return z.object({
     insufficient_content: z
       .boolean()
       .describe('true when the content is missing, paywalled or too thin to summarise'),
-    summary_fr: z.string(),
-    summary_en: z.string(),
+    summaries: byLang(langs, 'Summary'),
     key_excerpt: z
       .string()
       .describe('Verbatim quote of at most 25 words, in the language of the source'),
     source_type: z.enum(SOURCE_NATURES_LIST),
-    posts: z.object(Object.fromEntries(channels.map((c) => [c, postsByLang]))),
+    posts: z.object(Object.fromEntries(channels.map((c) => [c, byLang(langs, 'Post')]))),
   })
 }
 
 export interface DraftOutput {
   insufficient_content: boolean
-  summary_fr: string
-  summary_en: string
+  summaries: Record<Lang, string>
   key_excerpt: string
   source_type: (typeof SOURCE_NATURES_LIST)[number]
-  posts: Partial<Record<DraftChannel, PostsByLang>>
+  posts: Partial<Record<DraftChannel, Record<Lang, string>>>
+}
+
+/** "French (fr), German (de)": the languages as the model reads them. */
+export function langList(langs: readonly Lang[]): string {
+  return langs.map((lang) => `${langName(lang, 'en')} (${lang})`).join(', ')
 }
 
 /**
@@ -49,8 +67,9 @@ export function draftSystemPrompt(topic: { name_en: string; config: TopicConfig 
   const { editorial_rules, style_rules, post_rules } = topic.config.ai
   const section = (title: string, rules: string) =>
     rules.trim() ? `\n\n# ${title}\n${rules.trim()}` : ''
-  return `You prepare the editorial material of a bilingual (French and English) content-curation service about: ${topic.name_en}.
-For one source item, you produce a summary in French, a summary in English, a short verbatim excerpt, the nature of the source, and social media post drafts in both languages.
+  const langs = langList(topic.config.output_langs)
+  return `You prepare the editorial material of a content-curation service about: ${topic.name_en}. It publishes in these languages: ${langs}.
+For one source item, you produce a summary in each of these languages, a short verbatim excerpt, the nature of the source, and social media post drafts in each of these languages.
 
 # Grounding
 - Use only the source content provided. Never add facts from memory.
@@ -62,11 +81,11 @@ For one source item, you produce a summary in French, a summary in English, a sh
 
 # Summaries
 - Reworded in your own words, never a close paraphrase of the source (the original is linked separately).
-- French and English are each written natively, not as a word-for-word translation of the other.
+- Each language is written natively, not as a word-for-word translation of another.
 
 # Posts
 - Each post presents the item and why it matters. Do not include the link: it is appended after the text, separated by a blank line.
-- One post per language: the French post is entirely in French, the English post entirely in English.
+- One post per language: each post is entirely in its language.
 - Respect the length limits given with the item for the text of each post, counting every character (they already leave room for the link).${section('Topic rules', editorial_rules)}${section('Style rules', style_rules)}${section('Post rules', post_rules)}`
 }
 

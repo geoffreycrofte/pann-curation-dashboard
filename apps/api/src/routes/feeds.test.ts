@@ -71,9 +71,13 @@ describe('public feeds', () => {
     expect((await feeds.request('https://pann.example/feeds/short/fr.xml', {}, env)).status).toBe(
       404,
     )
-    expect((await feeds.request(`https://pann.example/feeds/${KEY}/de.xml`, {}, env)).status).toBe(
-      404,
-    )
-    expect(calls).toHaveLength(1)
+    // Any language tag is a feed (the database answers whether the topic writes in it).
+    expect(
+      (await feeds.request(`https://pann.example/feeds/${KEY}/pt-BR.xml`, {}, env)).status,
+    ).toBe(404)
+    expect(
+      (await feeds.request(`https://pann.example/feeds/${KEY}/german.xml`, {}, env)).status,
+    ).toBe(404)
+    expect(calls).toHaveLength(2)
   })
 })

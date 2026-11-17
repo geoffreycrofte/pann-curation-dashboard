@@ -17,6 +17,7 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
+import { contentLangName } from '../lib/langs'
 
 const props = defineProps<{ topicId: string; config: TopicConfig; feedKey: string | null }>()
 const { t } = useI18n()
@@ -27,10 +28,19 @@ const FORMAT_NAMES = { xml: 'RSS', json: 'JSON Feed' } as const
 const url = (lang: Lang, format: 'xml' | 'json') =>
   `${window.location.origin}${feedPath(props.feedKey!, lang, format)}`
 
-const form = ref<TopicConfig['feed']>(structuredClone(props.config.feed))
+/** Feed settings, with a text slot for each language of the topic (for v-model). */
+function editable(config: TopicConfig): TopicConfig['feed'] {
+  const feed = structuredClone(config.feed)
+  for (const lang of config.output_langs) {
+    feed.title[lang] ??= ''
+    feed.description[lang] ??= ''
+  }
+  return feed
+}
+const form = ref<TopicConfig['feed']>(editable(props.config))
 watch(
-  () => props.config.feed,
-  (feed) => (form.value = structuredClone(feed)),
+  () => props.config,
+  (config) => (form.value = editable(config)),
 )
 
 const message = ref('')
@@ -110,7 +120,7 @@ async function copy(lang: Lang, format: 'xml' | 'json') {
               {{
                 t('settings.feedUrl', {
                   format: FORMAT_NAMES[format],
-                  lang: t(`draft.langs.${lang}`),
+                  lang: contentLangName(lang),
                 })
               }}
             </span>
@@ -123,7 +133,7 @@ async function copy(lang: Lang, format: 'xml' | 'json') {
               :aria-label="
                 t('settings.feedCopyLabel', {
                   format: FORMAT_NAMES[format],
-                  lang: t(`draft.langs.${lang}`),
+                  lang: contentLangName(lang),
                 })
               "
               @click="copy(lang, format)"
@@ -176,14 +186,14 @@ async function copy(lang: Lang, format: 'xml' | 'json') {
 
     <form class="form" @submit.prevent="save()">
       <fieldset v-for="lang in config.output_langs" :key="lang" class="lang-block">
-        <legend>{{ t(`draft.langs.${lang}`) }}</legend>
+        <legend>{{ contentLangName(lang) }}</legend>
         <div class="form-row">
           <label :for="`${id}-title-${lang}`">
-            {{ t('settings.feedTitle', { lang: t(`draft.langs.${lang}`) }) }}
+            {{ t('settings.feedTitle', { lang: contentLangName(lang) }) }}
           </label>
           <input
             :id="`${id}-title-${lang}`"
-            v-model="form[lang === 'fr' ? 'title_fr' : 'title_en']"
+            v-model="form.title[lang]"
             class="field"
             type="text"
             maxlength="120"
@@ -194,11 +204,11 @@ async function copy(lang: Lang, format: 'xml' | 'json') {
         </div>
         <div class="form-row">
           <label :for="`${id}-description-${lang}`">
-            {{ t('settings.feedDescription', { lang: t(`draft.langs.${lang}`) }) }}
+            {{ t('settings.feedDescription', { lang: contentLangName(lang) }) }}
           </label>
           <textarea
             :id="`${id}-description-${lang}`"
-            v-model="form[lang === 'fr' ? 'description_fr' : 'description_en']"
+            v-model="form.description[lang]"
             class="field"
             rows="2"
             maxlength="500"

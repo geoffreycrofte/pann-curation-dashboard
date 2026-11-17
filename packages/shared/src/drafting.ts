@@ -1,4 +1,4 @@
-import type { Lang } from './domain'
+import type { Lang } from './langs'
 
 /**
  * Channels Pann can write a post for. Bluesky, Mastodon and Discord are published

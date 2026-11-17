@@ -5,6 +5,20 @@ export default {
   toast: { close: 'Close the notification “{text}”' },
   a11y: { skipToContent: 'Skip to content' },
   lang: { label: 'Language', fr: 'Français', en: 'English' },
+  langs: {
+    add: 'Add a language',
+    choose: 'Choose…',
+    other: 'Other language (type its code)',
+    otherCode: 'Language code',
+    otherHint: 'BCP 47 code, for instance “gsw” (Swiss German) or “es-MX” (Mexican Spanish).',
+    addButton: 'Add',
+    remove: 'Remove',
+    invalid: 'This code matches no language.',
+    already: '{lang} is already in the list.',
+    max: '{max} languages at most.',
+    added: 'Language added: {lang}.',
+    removed: 'Language removed: {lang}.',
+  },
   theme: { dark: 'Dark mode' },
   common: {
     save: 'Save',
@@ -400,7 +414,6 @@ export default {
       commercial: 'commercial',
     },
     summaryLabel: 'Summary in {lang}',
-    langs: { fr: 'French', en: 'English' },
     edited: 'Edited by hand: kept if drafting runs again.',
     save: 'Save',
     saved: 'Saved.',
@@ -830,6 +843,7 @@ export default {
     newKind: 'New kind',
     labelFr: 'Name in French',
     labelEn: 'Name in English',
+    labelIn: 'Name in {lang} (optional)',
     description: 'What this kind covers',
     descriptionHint:
       'The AI reads this definition to choose the kind of an item. Example: court decisions and opinions of authorities.',
@@ -907,7 +921,8 @@ export default {
     nameFr: 'Name in French',
     nameEn: 'Name in English',
     langs: 'Publishing languages',
-    langsHint: 'Summaries, posts and the newsletter are written in each of these languages.',
+    langsHint:
+      'Summaries, posts, the newsletter and the feeds are written in each of these languages, whatever they are: the interface stays in French and English.',
     langsRequired: 'Choose at least one publishing language.',
     criteriaHint:
       'Optional, but this is what guides the AI triage: describe what makes an item useful for this topic and what to leave out.',
@@ -1181,6 +1196,15 @@ export default {
     newsletterFooter: 'Footer in {lang}',
     newsletterFooterHint:
       'Below the items: who sends the newsletter, an address, a link. Optional. The unsubscribe link is always added.',
+    newsletterTexts: 'Fixed texts of the email',
+    newsletterTextsHint:
+      'Left empty: Pann’s own, in French or English. Write them for a newsletter in another language.',
+    newsletterText: {
+      mirror: 'Link to the web version, in {lang}',
+      unsubscribe: 'Unsubscribe link, in {lang}',
+      reason: 'Reason for sending, in {lang}',
+      other: '“Other” group, in {lang}',
+    },
     newsletterLook: 'Look',
     newsletterLogo: 'Logo (address of an image)',
     newsletterLogoHint:

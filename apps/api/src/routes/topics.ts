@@ -2,7 +2,9 @@ import {
   canTransition,
   domainSchema,
   isExcludedUrl,
-  LANGS,
+  langSchema,
+  MAX_OUTPUT_LANGS,
+  canonicalLang,
   extractPageTitle,
   newFeedKey,
   ITEM_TOPIC_STATUSES,
@@ -96,7 +98,7 @@ const newTopicBody = z.object({
   workspace_id: z.uuid(),
   name_fr: topicName,
   name_en: topicName,
-  output_langs: z.array(z.enum(LANGS)).min(1),
+  output_langs: z.array(langSchema).min(1).max(MAX_OUTPUT_LANGS),
   relevance_criteria: z.string().trim().max(4000).default(''),
   monthly_budget_usd: z.number().min(0).max(10_000).default(10),
 })
@@ -629,9 +631,9 @@ export const topics = new Hono<AppEnv>()
   })
 
   .patch('/:topicId/items/:itemId/summaries/:lang', async (c) => {
-    const { itemId, lang } = c.req.param()
-    if (!(LANGS as readonly string[]).includes(lang))
-      throw new HTTPException(404, { message: 'Unknown language' })
+    const { itemId } = c.req.param()
+    const lang = canonicalLang(c.req.param('lang'))
+    if (!lang) throw new HTTPException(404, { message: 'Unknown language' })
     const { text } = await parseJson(textBody(2000), c.req.raw)
     const { data, error } = await c.var.db
       .from('summaries')

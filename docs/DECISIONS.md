@@ -377,3 +377,14 @@ select id from auth.users where email = '<adresse de l’administrateur>';
 ```
 
 L'API répond 404 aux autres comptes, et chaque fonction de la base revérifie le rôle. Le **centre de coûts** lit `usage_log`, où une nouvelle colonne `billed_to` (`workspace` ou `platform`) dit qui paie chaque appel, et règle deux plafonds (`platform_settings`) : le crédit d'onboarding par espace et le plafond mensuel de Pann. Rien n'utilise encore les clés de Pann : l'onboarding s'y branchera, en respectant ces plafonds.
+
+## 2026-11-17 : contenus dans toutes les langues
+
+L'interface reste en français et en anglais (`UI_LANGS`), mais un thème écrit ses résumés, posts, newsletters et flux dans **n'importe quelle langue**, six au plus (`output_langs`). Une langue est un code BCP 47 sous forme canonique (`fr`, `de`, `pt-BR`, `zh-Hant`), validé par `langSchema` côté code et par `private.is_lang_tag` en base, où le type `public.lang` (`fr`, `en`) disparaît (migration `20261117000100_any_language`). Le choix se fait dans une liste de langues courantes, nommées dans la langue de l'interface par `Intl.DisplayNames`, ou par code saisi.
+
+- **Rédaction** : la sortie du modèle n'a plus de champs `summary_fr` et `summary_en`, mais un résumé et un post par langue du thème (`draft-v4`) ; le prompt nomme les langues en anglais pour le modèle. Une langue que le modèle omet n'est pas enregistrée vide.
+- **Textes saisis par l'utilisateur** : un texte par langue (`newsletter.title`, `intro`, `footer`, `feed.title`, `description`, `linkedin.signature`, `first_comment`). Les anciens champs `title_fr` et `title_en` sont convertis à la lecture de la configuration, sans migration des données.
+- **Types de contenu** : noms d'interface en français et en anglais, plus un nom facultatif par autre langue du thème ; à défaut, le nom anglais.
+- **Newsletter** : les textes fixes de l'e-mail (version web, désabonnement, raison, « Autres ») se règlent par langue. À défaut, ceux de Pann en français ou en anglais, marqués `lang` pour que les lecteurs d'écran les prononcent correctement.
+- **Flux publics** : `/feeds/<clé>/<langue>.xml` pour toute langue du thème.
+- Le nom d'un thème reste en français et en anglais (noms d'interface) : un contenu dans une autre langue prend le nom anglais quand aucun titre n'est réglé.

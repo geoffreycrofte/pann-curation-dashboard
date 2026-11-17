@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { LANGS, type Lang } from '@pann/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api, type TopicWithConfig } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
+import ContentLangsPicker from './ContentLangsPicker.vue'
 
 const props = defineProps<{ topic: TopicWithConfig }>()
 const { t } = useI18n()
@@ -14,7 +14,7 @@ const queryCache = useQueryCache()
 
 const nameFr = ref(props.topic.name_fr)
 const nameEn = ref(props.topic.name_en)
-const langs = ref<Lang[]>([...props.topic.config.output_langs])
+const langs = ref<string[]>([...props.topic.config.output_langs])
 const curation = ref(props.topic.config.modules.curation)
 const engagement = ref(props.topic.config.modules.engagement)
 const message = ref('')
@@ -81,14 +81,11 @@ function submit() {
         />
       </div>
     </fieldset>
-    <fieldset :aria-describedby="`${id}-langs-hint`">
-      <legend>{{ t('newTopic.langs') }}</legend>
-      <p :id="`${id}-langs-hint`" class="hint">{{ t('newTopic.langsHint') }}</p>
-      <div v-for="lang in LANGS" :key="lang" class="form-check">
-        <input :id="`${id}-lang-${lang}`" v-model="langs" type="checkbox" :value="lang" />
-        <label :for="`${id}-lang-${lang}`">{{ t(`lang.${lang}`) }}</label>
-      </div>
-    </fieldset>
+    <ContentLangsPicker
+      v-model="langs"
+      :legend="t('newTopic.langs')"
+      :hint="t('newTopic.langsHint')"
+    />
     <fieldset :aria-describedby="`${id}-modules-hint`">
       <legend>{{ t('modules.heading') }}</legend>
       <p :id="`${id}-modules-hint`" class="hint">{{ t('modules.hint') }}</p>

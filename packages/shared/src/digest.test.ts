@@ -129,3 +129,24 @@ describe('renderDigest', () => {
     expect(html).not.toContain('Outils')
   })
 })
+
+describe('issues in other languages', () => {
+  const base = {
+    title: 'Neuigkeiten',
+    intro: '',
+    items: [],
+    date: new Date('2026-11-13T08:00:00Z'),
+    timezone: 'Europe/Luxembourg',
+  }
+
+  it('marks Pann’s own fixed texts with their language when the issue is in another one', () => {
+    const { html } = renderDigest({ ...base, lang: 'de' })
+    expect(html).toContain('lang="de"')
+    expect(html).toMatch(/<a href="\{\{ unsubscribe \}\}" lang="en"[^>]*>Unsubscribe<\/a>/)
+  })
+
+  it('uses the fixed texts written by the user for that language', () => {
+    const { html } = renderDigest({ ...base, lang: 'de', texts: { unsubscribe: 'Abmelden' } })
+    expect(html).toMatch(/<a href="\{\{ unsubscribe \}\}" style[^>]*>Abmelden<\/a>/)
+  })
+})

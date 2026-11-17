@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { QueueItem } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { contentLangName } from '../lib/langs'
 
 const props = defineProps<{
   topicId: string
@@ -45,7 +46,7 @@ const failed = computed(() => props.entry.posts.filter((p) => p.status === 'fail
       >
         <span
           >{{ t(`draft.channels.${post.channel}`) }}
-          <abbr v-if="post.lang" :title="t(`draft.langs.${post.lang}`)">{{
+          <abbr v-if="post.lang" :title="contentLangName(post.lang)">{{
             post.lang.toUpperCase()
           }}</abbr
           ><span :class="{ 'visually-hidden': post.status === 'scheduled' }">{{
@@ -60,7 +61,7 @@ const failed = computed(() => props.entry.posts.filter((p) => p.status === 'fail
           :aria-label="
             t('diffusion.viewLabel', {
               channel: t(`draft.channels.${post.channel}`),
-              lang: t(`draft.langs.${post.lang}`),
+              lang: contentLangName(post.lang),
             })
           "
           >{{ t('scheduled.view') }}</a

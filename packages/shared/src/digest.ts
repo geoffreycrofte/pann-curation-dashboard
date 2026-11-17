@@ -1,7 +1,7 @@
 import { addDays, zonedDay, zonedTimeToUtc } from './diffusion'
-import type { Lang } from './domain'
+import { uiLangFor, type Lang, type UiLang } from './langs'
 import type { NewsletterProvider } from './providers'
-import type { TopicConfig } from './topic-config'
+import { kindLabel, type TopicConfig } from './topic-config'
 
 // ---------------------------------------------------------------------------
 // When
@@ -91,17 +91,19 @@ export interface DigestInput {
   /** Text at the bottom, written by the user. */
   footer?: string
   /** When set, items are grouped under these kinds, in this order (label in `lang`). */
-  groups?: { key: string; label: string }[]
+  groups?: { key: string; label: string; lang?: string }[]
+  /** Fixed texts written by the user for `lang`; Pann's own are used for the others. */
+  texts?: Partial<DigestTexts>
 }
+
+export const DIGEST_TEXT_KEYS = ['mirror', 'unsubscribe', 'reason', 'other'] as const
+export type DigestTexts = Record<(typeof DIGEST_TEXT_KEYS)[number], string>
 
 /**
  * Fixed texts of the email: links that the law or the email clients require. Everything
  * the user may want to change (name, introduction) comes from the topic settings.
  */
-export const DIGEST_STRINGS: Record<
-  Lang,
-  { mirror: string; unsubscribe: string; reason: string; other: string }
-> = {
+export const DIGEST_STRINGS: Record<UiLang, DigestTexts> = {
   fr: {
     mirror: 'Voir dans le navigateur',
     unsubscribe: 'Se désabonner',
@@ -157,16 +159,26 @@ export function digestSubject(input: Pick<DigestInput, 'lang' | 'title' | 'date'
 export function digestLook(
   config: Pick<TopicConfig, 'newsletter' | 'kinds'>,
   lang: Lang,
-): Pick<DigestInput, 'provider' | 'logoUrl' | 'accentColor' | 'footer' | 'groups'> {
+): Pick<DigestInput, 'provider' | 'logoUrl' | 'accentColor' | 'footer' | 'groups' | 'texts'> {
   const { newsletter } = config
   return {
     provider: newsletter.provider,
     logoUrl: newsletter.logo_url,
     accentColor: newsletter.accent_color,
-    footer: lang === 'fr' ? newsletter.footer_fr : newsletter.footer_en,
+    footer: newsletter.footer[lang] ?? '',
     groups: newsletter.group_by_kind
-      ? config.kinds.map((k) => ({ key: k.key, label: lang === 'fr' ? k.label_fr : k.label_en }))
+      ? config.kinds.map((k) => {
+          // A kind without a label in this language shows the interface one, marked.
+          const own = k.labels[lang]
+          const fallback = uiLangFor(lang)
+          return {
+            key: k.key,
+            label: own || kindLabel(config, k.key, lang),
+            lang: own || fallback === lang.split('-')[0] ? undefined : fallback,
+          }
+        })
       : undefined,
+    texts: newsletter.texts[lang],
   }
 }
 
@@ -204,9 +216,14 @@ function groupedRows(input: DigestInput, accent: string): string {
   const groups = input.groups ?? []
   const known = new Set(groups.map((g) => g.key))
   const sections = [
-    ...groups.map((g) => ({ label: g.label, items: input.items.filter((i) => i.kind === g.key) })),
+    ...groups.map((g) => ({
+      label: g.label,
+      lang: g.lang,
+      items: input.items.filter((i) => i.kind === g.key),
+    })),
     {
-      label: DIGEST_STRINGS[input.lang].other,
+      label: digestTexts(input).other.text,
+      lang: digestTexts(input).other.lang,
       items: input.items.filter((i) => !i.kind || !known.has(i.kind)),
     },
   ].filter((section) => section.items.length)
@@ -215,12 +232,35 @@ function groupedRows(input: DigestInput, accent: string): string {
       (
         section,
       ) => `<tr><td style="padding:24px 28px 8px;border-top:1px solid ${LINE};${FONT}color:${INK};">
-<h2 style="margin:0;font-size:22px;line-height:1.3;">${escapeHtml(section.label)}</h2>
+<h2${langAttr(section.lang)} style="margin:0;font-size:22px;line-height:1.3;">${escapeHtml(section.label)}</h2>
 </td></tr>
 ${section.items.map((item) => itemRow(item, input.lang, 'h3', accent)).join('\n')}`,
     )
     .join('\n')
 }
+
+/**
+ * Fixed texts of an issue in `lang`: the user's own (newsletter settings), else Pann's in
+ * the closest interface language. `lang` is set on a text whose language differs from the
+ * issue, so that screen readers pronounce it right.
+ */
+function digestTexts(input: Pick<DigestInput, 'lang' | 'texts'>) {
+  const fallback = uiLangFor(input.lang)
+  const differs = fallback !== input.lang.split('-')[0]
+  return Object.fromEntries(
+    DIGEST_TEXT_KEYS.map((key) => {
+      const own = input.texts?.[key]?.trim()
+      return [
+        key,
+        own
+          ? { text: own, lang: undefined }
+          : { text: DIGEST_STRINGS[fallback][key], lang: differs ? fallback : undefined },
+      ]
+    }),
+  ) as Record<keyof DigestTexts, { text: string; lang: string | undefined }>
+}
+
+const langAttr = (lang: string | undefined) => (lang ? ` lang="${lang}"` : '')
 
 /**
  * Accessible HTML email: language declared, content wrapped as recommended by the Email
@@ -229,7 +269,7 @@ ${section.items.map((item) => itemRow(item, input.lang, 'h3', accent)).join('\n'
  * readable sizes, no text in images.
  */
 export function renderDigest(input: DigestInput): { subject: string; html: string } {
-  const s = DIGEST_STRINGS[input.lang]
+  const s = digestTexts(input)
   const subject = digestSubject(input)
   const date = new Intl.DateTimeFormat(input.lang, {
     dateStyle: 'full',
@@ -264,15 +304,15 @@ export function renderDigest(input: DigestInput): { subject: string; html: strin
 <tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border-radius:12px;border-top:6px solid ${accent};">
 <tr><td style="padding:24px 28px 16px;${FONT}color:${INK};">
-${mirror ? `<p style="margin:0 0 20px;font-size:13px;"><a href="${mirror}" style="color:${LINK};text-decoration:underline;">${escapeHtml(s.mirror)}</a></p>\n` : ''}${logo}<h1 style="margin:0;font-size:28px;line-height:1.2;">${escapeHtml(input.title)}</h1>
+${mirror ? `<p style="margin:0 0 20px;font-size:13px;"><a href="${mirror}"${langAttr(s.mirror.lang)} style="color:${LINK};text-decoration:underline;">${escapeHtml(s.mirror.text)}</a></p>\n` : ''}${logo}<h1 style="margin:0;font-size:28px;line-height:1.2;">${escapeHtml(input.title)}</h1>
 <p style="margin:8px 0 0;font-size:14px;color:${MUTED};">${escapeHtml(date)}</p>
 ${paragraphs(input.intro, 'margin:16px 0 0;font-size:16px;line-height:1.55;')}
 </td></tr>
 ${items}
 <tr><td style="padding:20px 28px 24px;border-top:1px solid ${LINE};${FONT}font-size:13px;line-height:1.5;color:${MUTED};">
 ${paragraphs(input.footer ?? '', 'margin:0 0 8px;')}
-<p style="margin:0 0 8px;">${escapeHtml(s.reason)}</p>
-<p style="margin:0;"><a href="${unsubscribe}" style="color:${LINK};text-decoration:underline;">${escapeHtml(s.unsubscribe)}</a></p>
+<p style="margin:0 0 8px;"${langAttr(s.reason.lang)}>${escapeHtml(s.reason.text)}</p>
+<p style="margin:0;"><a href="${unsubscribe}"${langAttr(s.unsubscribe.lang)} style="color:${LINK};text-decoration:underline;">${escapeHtml(s.unsubscribe.text)}</a></p>
 </td></tr>
 </table>
 </td></tr>

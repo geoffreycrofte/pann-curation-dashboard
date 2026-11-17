@@ -3,6 +3,7 @@ import {
   digestWindowStart,
   errorCode,
   lastDigestTime,
+  nameIn,
   renderDigest,
   type Lang,
   type NewsletterProvider,
@@ -139,8 +140,8 @@ async function sendIssue(
 
   const { subject, html } = renderDigest({
     lang,
-    title: (lang === 'fr' ? newsletter.title_fr : newsletter.title_en) || topic[`name_${lang}`],
-    intro: lang === 'fr' ? newsletter.intro_fr : newsletter.intro_en,
+    title: newsletter.title[lang] || nameIn(topic, lang),
+    intro: newsletter.intro[lang] ?? '',
     items: content.items,
     date: periodTo,
     timezone: schedule.timezone,

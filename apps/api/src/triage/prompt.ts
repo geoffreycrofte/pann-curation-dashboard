@@ -1,4 +1,4 @@
-import type { Lang, TopicConfig } from '@pann/shared'
+import { langName, type TopicConfig } from '@pann/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes, to compare and re-run. Stored with each triage. */
@@ -10,7 +10,11 @@ export const TRIAGE_CONTENT_CHARS = 6000
 /** The kind is one of the keys of the topic kinds (at least one, see the topic config). */
 export function triageOutputSchema(kindKeys: readonly string[]) {
   return z.object({
-    language: z.string().describe('ISO 639-1 code of the item content, e.g. "en" or "fr"'),
+    language: z
+      .string()
+      .describe(
+        'Language tag (ISO 639-1 code, region if useful) of the item content, e.g. "en" or "fr"',
+      ),
     kind: z.enum(kindKeys as [string, ...string[]]),
     relevance: z.number().int().describe('0 to 100'),
     commercial: z.boolean(),
@@ -18,8 +22,6 @@ export function triageOutputSchema(kindKeys: readonly string[]) {
   })
 }
 export type TriageOutput = z.infer<ReturnType<typeof triageOutputSchema>>
-
-const LANG_NAMES: Record<Lang, string> = { fr: 'French', en: 'English' }
 
 export interface TriageTopic {
   name_en: string
@@ -40,7 +42,7 @@ Topic: ${topic.name_en}
 Relevance criteria: ${criteria}
 
 For each item, return:
-- language: ISO 639-1 code of the item content.
+- language: Language tag (ISO 639-1 code, region if useful) of the item content.
 - kind: the key of the kind of content that fits best, among:
 ${kinds}
 - relevance from 0 to 100, for someone who follows this topic professionally:
@@ -52,7 +54,7 @@ ${kinds}
 - reason: one short sentence explaining the score.
 
 Judge only from the content provided, never from memory. If the content is missing or too short, judge from the title and URL and lower the relevance. Lower the relevance of commercial items unless they announce a substantial new tool or fact.
-Write the reason in ${LANG_NAMES[lang]}.`
+Write the reason in ${langName(lang, 'en')}.`
 }
 
 export interface TriageItem {

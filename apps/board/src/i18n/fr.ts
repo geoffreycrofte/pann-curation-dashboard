@@ -3,6 +3,21 @@ export default {
   toast: { close: 'Fermer la notification « {text} »' },
   a11y: { skipToContent: 'Aller au contenu' },
   lang: { label: 'Langue', fr: 'Français', en: 'English' },
+  langs: {
+    add: 'Ajouter une langue',
+    choose: 'Choisir…',
+    other: 'Autre langue (saisir son code)',
+    otherCode: 'Code de la langue',
+    otherHint:
+      'Code BCP 47, par exemple « gsw » (suisse allemand) ou « es-MX » (espagnol du Mexique).',
+    addButton: 'Ajouter',
+    remove: 'Retirer',
+    invalid: 'Ce code ne correspond à aucune langue.',
+    already: 'La langue {lang} est déjà dans la liste.',
+    max: '{max} langues au maximum.',
+    added: 'Langue ajoutée : {lang}.',
+    removed: 'Langue retirée : {lang}.',
+  },
   theme: { dark: 'Mode sombre' },
   common: {
     save: 'Enregistrer',
@@ -405,7 +420,6 @@ export default {
       commercial: 'commerciale',
     },
     summaryLabel: 'Résumé en {lang}',
-    langs: { fr: 'français', en: 'anglais' },
     edited: 'Modifié à la main : conservé si la rédaction est relancée.',
     save: 'Enregistrer',
     saved: 'Enregistré.',
@@ -838,6 +852,7 @@ export default {
     newKind: 'Nouveau type',
     labelFr: 'Nom en français',
     labelEn: 'Nom en anglais',
+    labelIn: 'Nom en {lang} (facultatif)',
     description: 'Ce que ce type regroupe',
     descriptionHint:
       'L’IA lit cette définition pour choisir le type d’un élément. Exemple : décisions de justice et avis des autorités.',
@@ -917,7 +932,8 @@ export default {
     nameFr: 'Nom en français',
     nameEn: 'Nom en anglais',
     langs: 'Langues de publication',
-    langsHint: 'Les résumés, les posts et la newsletter sont rédigés dans chacune de ces langues.',
+    langsHint:
+      'Les résumés, les posts, la newsletter et les flux sont rédigés dans chacune de ces langues, quelles qu’elles soient : l’interface reste en français et en anglais.',
     langsRequired: 'Choisissez au moins une langue de publication.',
     criteriaHint:
       'Facultatif, mais c’est ce qui guide le tri par IA : décrivez ce qui rend un élément utile pour ce thème et ce qu’il faut écarter.',
@@ -1201,6 +1217,15 @@ export default {
     newsletterFooter: 'Pied de page en {lang}',
     newsletterFooterHint:
       'Sous les éléments : qui envoie la newsletter, une adresse, un lien. Facultatif. Le lien de désabonnement est toujours ajouté.',
+    newsletterTexts: 'Textes fixes de l’e-mail',
+    newsletterTextsHint:
+      'Laissés vides : ceux de Pann, en français ou en anglais. À écrire pour une newsletter dans une autre langue.',
+    newsletterText: {
+      mirror: 'Lien vers la version web, en {lang}',
+      unsubscribe: 'Lien de désabonnement, en {lang}',
+      reason: 'Raison de l’envoi, en {lang}',
+      other: 'Groupe « Autres », en {lang}',
+    },
     newsletterLook: 'Apparence',
     newsletterLogo: 'Logo (adresse d’une image)',
     newsletterLogoHint:

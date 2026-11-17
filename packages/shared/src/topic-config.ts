@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { DRAFT_MODES, LANGS, type Lang } from './domain'
+import { DRAFT_MODES } from './domain'
+import { langSchema, localizedText, MAX_OUTPUT_LANGS, uiLangFor, type Lang } from './langs'
 import { DRAFT_CHANNELS, FIRST_COMMENT_MAX, LINKEDIN_SIGNATURE_MAX } from './drafting'
 import { NEWSLETTER_PROVIDERS } from './providers'
 import { domainSchema } from './source-config'
@@ -26,8 +27,11 @@ export const KIND_KEY = /^[a-z0-9]+(-[a-z0-9]+)*$/
 /** A kind of content of a topic: shown on the board, chosen by the AI triage. */
 export const kindSchema = z.object({
   key: z.string().regex(KIND_KEY).max(40),
+  /** Labels of the interface (board). */
   label_fr: z.string().trim().min(1).max(60),
   label_en: z.string().trim().min(1).max(60),
+  /** Labels in the other content languages (newsletter groups); else the English one. */
+  labels: localizedText(60),
   /** What belongs to this kind; given to the AI triage to choose it. */
   description: z.string().trim().max(300).default(''),
 })
@@ -39,24 +43,28 @@ export const DEFAULT_KINDS: TopicKind[] = [
     key: 'news',
     label_fr: 'Actualité',
     label_en: 'News',
+    labels: {},
     description: 'Announcements, events, industry news.',
   },
   {
     key: 'legal',
     label_fr: 'Légal',
     label_en: 'Legal',
+    labels: {},
     description: 'Laws, regulations, standards, court or authority decisions, official guidance.',
   },
   {
     key: 'tool',
     label_fr: 'Outil',
     label_en: 'Tool',
+    labels: {},
     description: 'Software, libraries, extensions, services, new releases.',
   },
   {
     key: 'resource',
     label_fr: 'Ressource',
     label_en: 'Resource',
+    labels: {},
     description: 'Guides, tutorials, articles, research, talks.',
   },
 ]
@@ -128,7 +136,15 @@ export const topicConfigSchema = z.object({
       message: 'Kind keys must be unique',
     })
     .default(DEFAULT_KINDS),
-  output_langs: z.array(z.enum(LANGS)).min(1).default(['fr', 'en']),
+  /** Languages the topic writes in (summaries, posts, newsletter, feeds): any language. */
+  output_langs: z
+    .array(langSchema)
+    .min(1)
+    .max(MAX_OUTPUT_LANGS)
+    .refine((langs) => new Set(langs).size === langs.length, {
+      message: 'Languages must be unique',
+    })
+    .default(['fr', 'en']),
   ai: z
     .object({
       triage_model: z.string().default('claude-haiku-4-5'),
@@ -199,18 +215,12 @@ export const topicConfigSchema = z.object({
       provider: z.enum(NEWSLETTER_PROVIDERS).default('brevo'),
       /** Brevo sender id (Brevo checks the sender address). SendFox uses the account's sender. */
       sender_id: z.number().int().positive().nullable().default(null),
-      lists: z
-        .object({
-          fr: z.number().int().positive().nullable().default(null),
-          en: z.number().int().positive().nullable().default(null),
-        })
-        .prefault({}),
-      /** Name of the newsletter, shown at the top and in the subject. */
-      title_fr: z.string().trim().max(120).default(''),
-      title_en: z.string().trim().max(120).default(''),
+      /** List of subscribers of each language (service list id). */
+      lists: z.record(langSchema, z.number().int().positive().nullable()).default({}),
+      /** Name of the newsletter in each language, shown at the top and in the subject. */
+      title: localizedText(120),
       /** Short text at the top of each issue, written by the user. */
-      intro_fr: z.string().trim().max(2000).default(''),
-      intro_en: z.string().trim().max(2000).default(''),
+      intro: localizedText(2000),
       /**
        * Start of the first issue (YYYY-MM-DD): the items scheduled or published since
        * this day. Empty: the last DEFAULT_DIGEST_DAYS days.
@@ -224,8 +234,23 @@ export const topicConfigSchema = z.object({
         .regex(/^#[0-9a-f]{6}$/i)
         .default('#ffc72c'),
       /** Text at the bottom of each issue (who sends it, an address, a link…). */
-      footer_fr: z.string().trim().max(1000).default(''),
-      footer_en: z.string().trim().max(1000).default(''),
+      footer: localizedText(1000),
+      /**
+       * Fixed texts of the email written by the user per language (link to the web
+       * version, unsubscribe, reason, "other" group). Empty: Pann's own, in French or
+       * English (marked as such for screen readers in other languages).
+       */
+      texts: z
+        .record(
+          langSchema,
+          z.object({
+            mirror: z.string().trim().max(120).default(''),
+            unsubscribe: z.string().trim().max(120).default(''),
+            reason: z.string().trim().max(300).default(''),
+            other: z.string().trim().max(60).default(''),
+          }),
+        )
+        .default({}),
       /** Items grouped under the content kinds of the topic, in their order. */
       group_by_kind: z.boolean().default(false),
     })
@@ -236,10 +261,8 @@ export const topicConfigSchema = z.object({
    */
   feed: z
     .object({
-      title_fr: z.string().trim().max(120).default(''),
-      title_en: z.string().trim().max(120).default(''),
-      description_fr: z.string().trim().max(500).default(''),
-      description_en: z.string().trim().max(500).default(''),
+      title: localizedText(120),
+      description: localizedText(500),
       /** Page that presents the feed (e.g. a curation page on a website). */
       site_url: z.union([z.url({ protocol: /^https?$/ }), z.literal('')]).default(''),
     })
@@ -253,18 +276,8 @@ export const topicConfigSchema = z.object({
    */
   linkedin: z
     .object({
-      signature: z
-        .object({
-          fr: z.string().trim().max(LINKEDIN_SIGNATURE_MAX).default(''),
-          en: z.string().trim().max(LINKEDIN_SIGNATURE_MAX).default(''),
-        })
-        .prefault({}),
-      first_comment: z
-        .object({
-          fr: z.string().trim().max(FIRST_COMMENT_MAX).default(''),
-          en: z.string().trim().max(FIRST_COMMENT_MAX).default(''),
-        })
-        .prefault({}),
+      signature: localizedText(LINKEDIN_SIGNATURE_MAX),
+      first_comment: localizedText(FIRST_COMMENT_MAX),
     })
     .prefault({}),
   /**
@@ -290,7 +303,7 @@ export const topicConfigSchema = z.object({
         z.object({
           channel: z.enum(DRAFT_CHANNELS),
           account_id: z.string().min(1).max(200),
-          langs: z.array(z.enum(LANGS)).min(1),
+          langs: z.array(langSchema).min(1),
         }),
       )
       .refine(
@@ -313,14 +326,46 @@ export const topicConfigSchema = z.object({
 export type TopicConfig = z.infer<typeof topicConfigSchema>
 
 /**
- * Configs written before kinds were editable hold `categories` (same shape, unused
- * then) or nothing: they get the default kinds.
+ * Older shapes of a stored config, brought to the current one before parsing:
+ * - `categories` (before kinds were editable) becomes `kinds`;
+ * - texts stored per field and language (`title_fr`, `title_en`) become one text per
+ *   language (`title: { fr, en }`), since contents can be in any language (2026-11-17).
  */
 function withKinds(raw: unknown): unknown {
   if (!raw || typeof raw !== 'object') return {}
   const { categories, ...rest } = raw as Record<string, unknown>
-  if ('kinds' in rest || !Array.isArray(categories) || !categories.length) return rest
-  return { ...rest, kinds: categories }
+  const config: Record<string, unknown> =
+    'kinds' in rest || !Array.isArray(categories) || !categories.length
+      ? rest
+      : { ...rest, kinds: categories }
+  for (const [section, fields] of [
+    ['newsletter', ['title', 'intro', 'footer']],
+    ['feed', ['title', 'description']],
+  ] as const) {
+    const value = config[section]
+    if (value && typeof value === 'object')
+      config[section] = liftLocalized(value as Record<string, unknown>, fields)
+  }
+  return config
+}
+
+function liftLocalized(
+  section: Record<string, unknown>,
+  fields: readonly string[],
+): Record<string, unknown> {
+  const next = { ...section }
+  for (const field of fields) {
+    const fr = next[`${field}_fr`]
+    const en = next[`${field}_en`]
+    delete next[`${field}_fr`]
+    delete next[`${field}_en`]
+    if (field in next) continue
+    const texts: Record<string, string> = {}
+    if (typeof fr === 'string' && fr) texts.fr = fr
+    if (typeof en === 'string' && en) texts.en = en
+    next[field] = texts
+  }
+  return next
 }
 
 export function parseTopicConfig(raw: unknown): TopicConfig {
@@ -334,7 +379,8 @@ export function safeParseTopicConfig(raw: unknown) {
 /** Label of a kind in a language; the key itself for a kind the topic no longer has. */
 export function kindLabel(config: Pick<TopicConfig, 'kinds'>, key: string, lang: Lang): string {
   const kind = config.kinds.find((k) => k.key === key)
-  return kind ? (lang === 'fr' ? kind.label_fr : kind.label_en) : key
+  if (!kind) return key
+  return kind.labels[lang] || (uiLangFor(lang) === 'fr' ? kind.label_fr : kind.label_en)
 }
 
 export function isModuleEnabled(config: Pick<TopicConfig, 'modules'>, module: TopicModule) {

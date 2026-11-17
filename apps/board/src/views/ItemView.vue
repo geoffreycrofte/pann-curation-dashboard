@@ -2,7 +2,6 @@
 import {
   accountFor,
   DRAFT_CHANNELS,
-  LANGS,
   missingPosts,
   POST_LIMITS,
   postSignature,
@@ -34,6 +33,7 @@ import { api, type RewriteInput } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useWorkspace } from '../lib/workspace'
 import { toast } from '../lib/toast'
+import { contentLangName } from '../lib/langs'
 
 const props = defineProps<{ topicId: string; itemId: string }>()
 const { t, d, locale } = useI18n()
@@ -195,7 +195,18 @@ const hasAccount = (post: PostDraft) =>
   !!topic.value && !!post.lang && !!accountFor(topic.value.config, post.channel, post.lang)
 
 const posts = computed(() => detail.value?.posts ?? [])
-/** Posts of a network, always in the order of LANGS: saving one must not move it. */
+/**
+ * Languages shown, in a stable order: those of the topic first, then any other language
+ * the item still has a summary or a post in (a language removed from the topic since).
+ */
+const contentLangs = computed(() => [
+  ...new Set([
+    ...(topic.value?.config.output_langs ?? []),
+    ...(detail.value?.summaries.map((s) => s.lang) ?? []),
+    ...posts.value.flatMap((p) => (p.lang ? [p.lang] : [])),
+  ]),
+])
+/** Posts of a network, always in the order of contentLangs: saving one must not move it. */
 /** Channels with at least one post: X, Facebook and Discord only where the topic uses them. */
 const postChannels = computed(() =>
   DRAFT_CHANNELS.filter((channel) => posts.value.some((p) => p.channel === channel)),
@@ -203,7 +214,10 @@ const postChannels = computed(() =>
 const postsOf = (channel: DraftChannel) =>
   posts.value
     .filter((p) => p.channel === channel)
-    .sort((a, b) => LANGS.indexOf(a.lang as Lang) - LANGS.indexOf(b.lang as Lang))
+    .sort(
+      (a, b) =>
+        contentLangs.value.indexOf(a.lang as Lang) - contentLangs.value.indexOf(b.lang as Lang),
+    )
 const postTone = (post: PostDraft) =>
   post.status === 'sent'
     ? 'success'
@@ -285,7 +299,7 @@ const missingList = computed(() =>
     missing.value.map((m) =>
       t('missingPosts.entry', {
         channel: t(`draft.channels.${m.channel}`),
-        lang: t(`draft.langs.${m.lang}`),
+        lang: contentLangName(m.lang),
       }),
     ),
   ),
@@ -307,7 +321,7 @@ const { mutate: draftMissing, isLoading: draftingMissing } = useMutation({
 const signatureOf = (post: PostDraft) =>
   topic.value && post.lang ? postSignature(topic.value.config, post.channel, post.lang) : ''
 const defaultCommentOf = (post: PostDraft) =>
-  topic.value && post.lang ? topic.value.config.linkedin.first_comment[post.lang] : ''
+  (topic.value && post.lang ? topic.value.config.linkedin.first_comment[post.lang] : '') ?? ''
 
 async function saveFirstComment(postId: string, value: string | null) {
   await api.updateFirstComment(props.topicId, postId, value)
@@ -515,10 +529,10 @@ async function savePost(postId: string, text: string) {
         <blockquote :lang="detail.item.source_lang ?? undefined">{{ excerpt }}</blockquote>
       </figure>
       <div class="pair">
-        <template v-for="lang in LANGS" :key="lang">
+        <template v-for="lang in contentLangs" :key="lang">
           <TextSaver
             v-if="detail.summaries.find((s) => s.lang === lang)"
-            :label="t('draft.summaryLabel', { lang: t(`draft.langs.${lang}`) })"
+            :label="t('draft.summaryLabel', { lang: contentLangName(lang) })"
             :value="detail.summaries.find((s) => s.lang === lang)!.summary"
             :lang="lang"
             :edited="detail.summaries.find((s) => s.lang === lang)!.edited_by_human"
@@ -554,7 +568,7 @@ async function savePost(postId: string, text: string) {
               :label="
                 t('draft.postLabel', {
                   channel: t(`draft.channels.${channel}`),
-                  lang: t(`draft.langs.${post.lang}`),
+                  lang: contentLangName(post.lang),
                 })
               "
               :value="post.body"
@@ -610,7 +624,7 @@ async function savePost(postId: string, text: string) {
                 :aria-label="
                   t('diffusion.viewLabel', {
                     channel: t(`draft.channels.${channel}`),
-                    lang: t(`draft.langs.${post.lang}`),
+                    lang: contentLangName(post.lang),
                   })
                 "
                 >{{ t('diffusion.view') }}</a

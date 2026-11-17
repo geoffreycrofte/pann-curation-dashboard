@@ -18,6 +18,7 @@ import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
+import { contentLangName } from '../lib/langs'
 
 const props = defineProps<{ topicId: string }>()
 const { t, d } = useI18n()
@@ -43,7 +44,7 @@ const formatDate = (value: string, style: 'full' | 'medium' = 'full') =>
     timeStyle: 'short',
     timeZone: topic.value?.config.schedule.timezone,
   })
-const langName = (lang: Lang) => t(`draft.langs.${lang}`)
+const langName = (lang: Lang) => contentLangName(lang)
 
 const message = ref('')
 const isError = ref(false)
