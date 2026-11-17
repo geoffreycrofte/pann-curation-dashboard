@@ -4,22 +4,18 @@ Liste vivante : une ligne passe dans `DECISIONS.md` (et sort d'ici) quand elle e
 
 ## Prochaine mission : découverte, onboarding et création de posts
 
-Décidée le 2026-11-16. Détail, maquettes de parcours et justification : `docs/studies/onboarding-ia.md`.
+Décidée le 2026-11-16, arbitrée le 2026-11-17 : **tout d'un coup**, sans version allégée ni redirections. Détail et réponses de Geoffrey : `docs/studies/onboarding-ia.md`.
 
-1. **Valider (S)** : 5 tests de premier lancement en pensée à voix haute, dont une personne avec lecteur d'écran ; test d'arborescence actuelle contre proposée ; essai de Buffer, Hootsuite et Publer ; case « Créer mes propres posts : bientôt » pour mesurer l'intérêt.
-2. **Correctifs rapides (S à M)** : état vide de l'accueil avec un bouton, slogan à jour, création de thème simplifiée, lien de la barre latérale pour un thème sans curation, Diffusion et Programmés réunis.
-3. **Parcours sans IA (M)** : objectif, puis réseaux (avec « autre réseau »), formulaire guidé, relecture avant enregistrement, page Aperçu avec liste de démarrage, première collecte immédiate.
-4. **Conversation de cadrage (L)** : un échange borné qui remplit la configuration du thème, toujours relu avant enregistrement, avec un formulaire de repli et une interface de discussion accessible.
-5. **Nouvelle architecture (M à L)** : séparer « faire » et « régler », un Calendrier commun (Diffusion, Programmés, Newsletter), Réglages regroupés par sujet, redirections des anciennes adresses.
-6. **Créer mes propres posts, première version (L)** : sujets libres, recherche avant rédaction, posts ancrés dans leurs sources, programmation dans le Calendrier.
-7. **Différenciateurs (M)** : voix de l'auteur en réglages, séries de posts, idées tirées de la veille et des conversations, contrôle d'accessibilité des posts.
-
-À trancher avant de démarrer (liste complète dans l'étude) :
-
-- Qui paie l'IA pendant l'onboarding ? Un crédit fourni par Pann déroge à la règle des clés par espace.
-- Inscription libre ou sur invitation ?
-- Version allégée maintenant et refonte avec l'outil de création, ou tout d'un coup ?
-- Noms des sections : Aperçu, Veille, Conversations, Création, Calendrier, Aujourd'hui.
+1. **Valider (S)** : tests de premier lancement en pensée à voix haute, dont une personne avec lecteur d'écran ; test d'arborescence ; essai de Buffer, Hootsuite et Publer.
+2. **Fondations** :
+   - **Espace d'admin** (compte de Geoffrey seulement) : clés de Pann (IA, Zernio en mode plateforme) et centre de coûts du crédit Pann. _En cours._
+   - **Toutes les langues pour les contenus** : un thème publie dans n'importe quelle langue, l'interface reste en français et en anglais.
+   - **Demande d'accès motivée**, envoyée par e-mail à Geoffrey (l'inscription reste sur invitation).
+3. **Onboarding** : objectif, réseaux (avec « autre réseau », demandes traitées et priorisées), conversation de cadrage payée par le crédit Pann, relecture avant enregistrement, Aperçu avec liste de démarrage, première collecte immédiate.
+4. **Nouvelle architecture** : Aujourd'hui (tous thèmes), puis par thème Aperçu, Veille, Conversations, Création, Calendrier (créneaux distincts par outil), Réglages regroupés par sujet. La métaphore de l'orpaillage sort du board.
+5. **Création, première version (L)** : les 5 réseaux actuels, recherche avant rédaction, posts ancrés dans leurs sources, images dans l'offre intermédiaire.
+6. **Différenciateurs (M)** : voix de l'auteur en réglages, séries de posts, idées tirées de la veille et des conversations, contrôle d'accessibilité des posts.
+7. **Ensuite** : élargir les réseaux de Création.
 
 ## Idées
 
