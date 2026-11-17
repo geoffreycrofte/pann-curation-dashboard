@@ -2,6 +2,25 @@
 
 Liste vivante : une ligne passe dans `DECISIONS.md` (et sort d'ici) quand elle est faite.
 
+## Prochaine mission : découverte, onboarding et création de posts
+
+Décidée le 2026-11-16. Détail, maquettes de parcours et justification : `docs/studies/onboarding-ia.md`.
+
+1. **Valider (S)** : 5 tests de premier lancement en pensée à voix haute, dont une personne avec lecteur d'écran ; test d'arborescence actuelle contre proposée ; essai de Buffer, Hootsuite et Publer ; case « Créer mes propres posts : bientôt » pour mesurer l'intérêt.
+2. **Correctifs rapides (S à M)** : état vide de l'accueil avec un bouton, slogan à jour, création de thème simplifiée, lien de la barre latérale pour un thème sans curation, Diffusion et Programmés réunis.
+3. **Parcours sans IA (M)** : objectif, puis réseaux (avec « autre réseau »), formulaire guidé, relecture avant enregistrement, page Aperçu avec liste de démarrage, première collecte immédiate.
+4. **Conversation de cadrage (L)** : un échange borné qui remplit la configuration du thème, toujours relu avant enregistrement, avec un formulaire de repli et une interface de discussion accessible.
+5. **Nouvelle architecture (M à L)** : séparer « faire » et « régler », un Calendrier commun (Diffusion, Programmés, Newsletter), Réglages regroupés par sujet, redirections des anciennes adresses.
+6. **Créer mes propres posts, première version (L)** : sujets libres, recherche avant rédaction, posts ancrés dans leurs sources, programmation dans le Calendrier.
+7. **Différenciateurs (M)** : voix de l'auteur en réglages, séries de posts, idées tirées de la veille et des conversations, contrôle d'accessibilité des posts.
+
+À trancher avant de démarrer (liste complète dans l'étude) :
+
+- Qui paie l'IA pendant l'onboarding ? Un crédit fourni par Pann déroge à la règle des clés par espace.
+- Inscription libre ou sur invitation ?
+- Version allégée maintenant et refonte avec l'outil de création, ou tout d'un coup ?
+- Noms des sections : Aperçu, Veille, Conversations, Création, Calendrier, Aujourd'hui.
+
 ## Idées
 
 - **Offres et page de tarifs** (idée du 2026-11-12), à présenter clairement dès l'inscription :
