@@ -1,14 +1,14 @@
-import { LANGS, type Lang } from '@pann/shared'
+import { UI_LANGS, type UiLang } from '@pann/shared'
 import { createI18n } from 'vue-i18n'
 import en from './en'
 import fr from './fr'
 
 const STORAGE_KEY = 'pann.lang'
 
-function initialLang(): Lang {
+function initialLang(): UiLang {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored && (LANGS as readonly string[]).includes(stored)) return stored as Lang
+    if (stored && (UI_LANGS as readonly string[]).includes(stored)) return stored as UiLang
   } catch {
     // storage unavailable: fall through
   }
@@ -22,7 +22,7 @@ export const i18n = createI18n({
   messages: { fr, en },
 })
 
-export function setLang(lang: Lang) {
+export function setLang(lang: UiLang) {
   i18n.global.locale.value = lang
   document.documentElement.lang = lang
   try {

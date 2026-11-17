@@ -1,4 +1,11 @@
-import { DRAFT_CHANNELS, LANGS, parseErrorCode, PROVIDERS, type Provider } from '@pann/shared'
+import {
+  canonicalLang,
+  DRAFT_CHANNELS,
+  parseErrorCode,
+  PROVIDERS,
+  type Provider,
+} from '@pann/shared'
+import { contentLangName } from './langs'
 
 type Translate = (key: string, params?: Record<string, unknown>) => string
 
@@ -26,7 +33,9 @@ export function describeError(value: string, t: Translate): DescribedError {
   // Diffusion errors carry "channel" or "channel/lang"; newsletter errors, "lang".
   const parts = (parsed.detail ?? '').split('/')
   const [channel, lang] =
-    parts.length === 1 && (LANGS as readonly string[]).includes(parts[0]!)
+    parts.length === 1 &&
+    !(DRAFT_CHANNELS as readonly string[]).includes(parts[0]!) &&
+    !!canonicalLang(parts[0]!)
       ? [undefined, parts[0]]
       : parts
   const params = {
@@ -35,7 +44,7 @@ export function describeError(value: string, t: Translate): DescribedError {
     channel: (DRAFT_CHANNELS as readonly string[]).includes(channel ?? '')
       ? t(`draft.channels.${channel}`)
       : channel,
-    lang: (LANGS as readonly string[]).includes(lang ?? '') ? t(`draft.langs.${lang}`) : lang,
+    lang: lang && canonicalLang(lang) ? contentLangName(lang) : lang,
   }
   let key = `errors.${parsed.code}`
   if (parsed.code === 'provider_error' && provider) key = 'errors.providerErrorNamed'

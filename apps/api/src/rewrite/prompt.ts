@@ -1,4 +1,10 @@
-import { DRAFT_CHANNELS, LANGS, type DraftChannel, type TopicConfig } from '@pann/shared'
+import {
+  DRAFT_CHANNELS,
+  langName,
+  langSchema,
+  type DraftChannel,
+  type TopicConfig,
+} from '@pann/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes. Stored with the usage of each rewrite. */
@@ -21,8 +27,8 @@ export const rewriteRequestSchema = z
     preset: z.enum(REWRITE_PRESETS),
     instruction: z.string().trim().max(500).optional(),
     target: z.discriminatedUnion('kind', [
-      z.object({ kind: z.literal('summary'), lang: z.enum(LANGS) }),
-      z.object({ kind: z.literal('post'), lang: z.enum(LANGS), channel: z.enum(DRAFT_CHANNELS) }),
+      z.object({ kind: z.literal('summary'), lang: langSchema }),
+      z.object({ kind: z.literal('post'), lang: langSchema, channel: z.enum(DRAFT_CHANNELS) }),
     ]),
   })
   .refine((r) => r.preset !== 'custom' || !!r.instruction, {
@@ -30,7 +36,6 @@ export const rewriteRequestSchema = z
   })
 export type RewriteRequest = z.infer<typeof rewriteRequestSchema>
 
-const LANG_NAMES = { fr: 'French', en: 'English' } as const
 const CHANNEL_NAMES: Record<DraftChannel, string> = {
   linkedin: 'LinkedIn',
   bluesky: 'Bluesky',
@@ -56,7 +61,7 @@ export function rewriteSystemPrompt(
       : `a ${CHANNEL_NAMES[target.channel]} post about a source; the link to the source is appended automatically after the text, so never write a URL`
   return `You rewrite ${what}, for a content-curation service about: ${topic.name_en}.
 
-Follow the instruction of the user. Keep every fact, figure, name and version exactly as in the text, and never add a fact that is not in it. Write in ${LANG_NAMES[target.lang]}, as a native writer would.${maxChars ? ` The text must not exceed ${maxChars} characters.` : ''}
+Follow the instruction of the user. Keep every fact, figure, name and version exactly as in the text, and never add a fact that is not in it. Write in ${langName(target.lang, 'en')}, as a native writer would.${maxChars ? ` The text must not exceed ${maxChars} characters.` : ''}
 Answer with the rewritten text only: no title, no quotation marks, no comment.${rules.trim() ? `\n\n# Rules set by the user\n${rules.trim()}` : ''}`
 }
 

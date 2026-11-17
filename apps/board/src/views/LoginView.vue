@@ -73,6 +73,10 @@ async function submit() {
             t('auth.error', { message: errorMessage })
           }}</template>
         </p>
+        <p class="no-account">
+          {{ t('access.noAccount') }}
+          <RouterLink :to="{ name: 'request-access' }">{{ t('access.link') }}</RouterLink>
+        </p>
       </div>
     </section>
   </div>

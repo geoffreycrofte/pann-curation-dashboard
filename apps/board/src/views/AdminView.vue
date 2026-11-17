@@ -7,7 +7,7 @@ import { PLATFORM_PROVIDERS, type PlatformProvider } from '@pann/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { api, type PlatformKey } from '../lib/api'
+import { api, type AccessRequest, type AccessRequestStatus, type PlatformKey } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
 
@@ -74,12 +74,14 @@ async function removeKey(provider: PlatformProvider) {
 const { data: settings } = useQuery({ key: ['admin', 'settings'], query: api.adminSettings })
 const credit = ref(0)
 const cap = ref(0)
+const emailFrom = ref('')
 watch(
   settings,
   (value) => {
     if (!value) return
     credit.value = Number(value.onboarding_credit_usd)
     cap.value = Number(value.monthly_cap_usd)
+    emailFrom.value = value.email_from
   },
   { immediate: true },
 )
@@ -92,6 +94,7 @@ async function saveSettings() {
     await api.updateAdminSettings({
       onboarding_credit_usd: credit.value,
       monthly_cap_usd: cap.value,
+      email_from: emailFrom.value.trim(),
     })
     toast(t('common.saved'))
     await queryCache.invalidateQueries({ key: ['admin', 'settings'] })
@@ -110,6 +113,31 @@ const { data: usage, isPending: usagePending } = useQuery({
   enabled: () => /^\d{4}-\d{2}$/.test(month.value),
 })
 const total = computed(() => (usage.value ?? []).reduce((sum, r) => sum + Number(r.cost_usd), 0))
+// Access requests: sign-up stays on invitation.
+const { data: requests, error: requestsError } = useQuery({
+  key: ['admin', 'access-requests'],
+  query: api.adminAccessRequests,
+})
+const openRequests = computed(() => (requests.value ?? []).filter((r) => r.status === 'new'))
+const handling = ref<string | null>(null)
+const requestErrors = ref<Record<string, string>>({})
+async function handle(request: AccessRequest, status: AccessRequestStatus) {
+  handling.value = request.id
+  requestErrors.value = { ...requestErrors.value, [request.id]: '' }
+  try {
+    await api.handleAccessRequest(request.id, status)
+    toast(t(`admin.requestMarked.${status}`, { name: request.name }))
+    await queryCache.invalidateQueries({ key: ['admin', 'access-requests'] })
+  } catch (err) {
+    requestErrors.value = {
+      ...requestErrors.value,
+      [request.id]: describeError((err as Error).message, t).text,
+    }
+  } finally {
+    handling.value = null
+  }
+}
+
 const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
 </script>
 
@@ -182,6 +210,69 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
     </ul>
   </section>
 
+  <section class="block" :aria-labelledby="`${id}-requests`">
+    <h2 :id="`${id}-requests`">{{ t('admin.requestsTitle') }}</h2>
+    <p class="hint">{{ t('admin.requestsIntro') }}</p>
+    <p v-if="requestsError" role="alert">
+      {{ t('board.loadError', { message: requestsError.message }) }}
+    </p>
+    <p v-else-if="!requests?.length">{{ t('admin.noRequests') }}</p>
+    <template v-else>
+      <p>{{ t('admin.openRequests', { count: openRequests.length }) }}</p>
+      <ul class="requests">
+        <li v-for="request in requests" :key="request.id" class="request">
+          <h3>
+            {{ request.name }}
+            <span class="badge" :data-tone="request.status === 'new' ? 'accent' : undefined">
+              {{ t(`admin.requestStatus.${request.status}`) }}
+            </span>
+          </h3>
+          <p>
+            <a :href="`mailto:${request.email}`">{{ request.email }}</a
+            >,
+            {{ d(new Date(request.created_at), { dateStyle: 'medium', timeStyle: 'short' }) }}
+          </p>
+          <p class="motivation" :lang="request.lang">{{ request.motivation }}</p>
+          <p v-if="request.notify_error" class="error">
+            {{ t('admin.notifyFailed', { reason: describeError(request.notify_error, t).text }) }}
+          </p>
+          <div class="actions">
+            <button
+              v-if="request.status !== 'accepted'"
+              type="button"
+              class="button"
+              :disabled="handling === request.id"
+              @click="handle(request, 'accepted')"
+            >
+              {{ t('admin.accept') }}<span class="visually-hidden"> {{ request.name }}</span>
+            </button>
+            <button
+              v-if="request.status !== 'declined'"
+              type="button"
+              class="button"
+              :disabled="handling === request.id"
+              @click="handle(request, 'declined')"
+            >
+              {{ t('admin.decline') }}<span class="visually-hidden"> {{ request.name }}</span>
+            </button>
+            <button
+              v-if="request.status !== 'new'"
+              type="button"
+              class="button"
+              :disabled="handling === request.id"
+              @click="handle(request, 'new')"
+            >
+              {{ t('admin.reopen') }}<span class="visually-hidden"> {{ request.name }}</span>
+            </button>
+          </div>
+          <p v-if="requestErrors[request.id]" class="error" role="alert">
+            {{ requestErrors[request.id] }}
+          </p>
+        </li>
+      </ul>
+    </template>
+  </section>
+
   <section class="block" :aria-labelledby="`${id}-costs`">
     <h2 :id="`${id}-costs`">{{ t('admin.costsTitle') }}</h2>
     <p class="hint">{{ t('admin.costsIntro') }}</p>
@@ -216,6 +307,21 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
           :aria-describedby="`${id}-cap-hint`"
         />
         <p :id="`${id}-cap-hint`" class="hint">{{ t('admin.capHint') }}</p>
+      </div>
+      <div class="form-row wide">
+        <label :for="`${id}-from`">{{ t('admin.emailFrom') }}</label>
+        <input
+          :id="`${id}-from`"
+          v-model="emailFrom"
+          class="field"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          maxlength="200"
+          placeholder="Pann <noreply@example.org>"
+          :aria-describedby="`${id}-from-hint`"
+        />
+        <p :id="`${id}-from-hint`" class="hint">{{ t('admin.emailFromHint') }}</p>
       </div>
       <div>
         <button type="submit" class="button" data-variant="primary" :disabled="savingSettings">
@@ -325,6 +431,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
   gap: var(--space-4);
 }
 
+.limits > .wide,
 .limits > div:last-of-type,
 .limits > .error {
   grid-column: 1 / -1;
@@ -332,6 +439,39 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
 
 .small {
   max-width: 10rem;
+}
+
+.requests {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.request {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.request h3,
+.request p {
+  margin: 0;
+}
+
+.request h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.motivation {
+  white-space: pre-line;
 }
 
 .table-wrap {

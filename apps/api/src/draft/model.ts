@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
-import type { DraftChannel } from '@pann/shared'
+import type { DraftChannel, Lang } from '@pann/shared'
 import { draftOutputSchema, type DraftOutput } from './prompt'
 
 export interface DraftCall {
@@ -11,6 +11,8 @@ export interface DraftCall {
   user: string
   /** Channels to write a post for. */
   channels: readonly DraftChannel[]
+  /** Languages of the topic: a summary and a post in each. */
+  langs: readonly Lang[]
 }
 
 export interface TokenUsage {
@@ -51,6 +53,7 @@ export const claudeDraftModel: DraftModel = async ({
   system,
   user,
   channels,
+  langs,
 }) => {
   const client = new Anthropic({ apiKey, maxRetries: 2, timeout: 120_000 })
   try {
@@ -61,7 +64,7 @@ export const claudeDraftModel: DraftModel = async ({
       fallbacks: 'default',
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: user }],
-      output_config: { effort, format: betaZodOutputFormat(draftOutputSchema(channels)) },
+      output_config: { effort, format: betaZodOutputFormat(draftOutputSchema(channels, langs)) },
     })
     const usage = usageOf(response.usage)
     if (response.stop_reason === 'refusal')

@@ -3,6 +3,21 @@ export default {
   toast: { close: 'Fermer la notification « {text} »' },
   a11y: { skipToContent: 'Aller au contenu' },
   lang: { label: 'Langue', fr: 'Français', en: 'English' },
+  langs: {
+    add: 'Ajouter une langue',
+    choose: 'Choisir…',
+    other: 'Autre langue (saisir son code)',
+    otherCode: 'Code de la langue',
+    otherHint:
+      'Code BCP 47, par exemple « gsw » (suisse allemand) ou « es-MX » (espagnol du Mexique).',
+    addButton: 'Ajouter',
+    remove: 'Retirer',
+    invalid: 'Ce code ne correspond à aucune langue.',
+    already: 'La langue {lang} est déjà dans la liste.',
+    max: '{max} langues au maximum.',
+    added: 'Langue ajoutée : {lang}.',
+    removed: 'Langue retirée : {lang}.',
+  },
   theme: { dark: 'Mode sombre' },
   common: {
     save: 'Enregistrer',
@@ -307,6 +322,9 @@ export default {
     },
   },
   errors: {
+    email_sender_missing:
+      'Aucune adresse d’expédition réglée pour les e-mails du service (Administration).',
+    no_platform_admin: 'Aucun administrateur à prévenir.',
     provider_error: 'Le service d’IA n’a pas pu répondre. Nouvel essai automatique.',
     insufficient_content:
       'Contenu de la source insuffisant pour un résumé fiable (page vide, payante ou trop courte). Lisez la source.',
@@ -405,7 +423,6 @@ export default {
       commercial: 'commerciale',
     },
     summaryLabel: 'Résumé en {lang}',
-    langs: { fr: 'français', en: 'anglais' },
     edited: 'Modifié à la main : conservé si la rédaction est relancée.',
     save: 'Enregistrer',
     saved: 'Enregistré.',
@@ -473,6 +490,11 @@ export default {
         purpose:
           'Publication sur LinkedIn et Facebook pour l’offre la plus élevée : Pann connecte les comptes de ses utilisateurs avec sa propre clé.',
       },
+      resend: {
+        name: 'Resend',
+        purpose:
+          'E-mails du service (demandes d’accès). Une clé « envoi seulement » suffit, sur un domaine vérifié dans Resend.',
+      },
     },
     checkedOn: 'Vérifiée le {date}.',
     newKey: 'Clé',
@@ -488,6 +510,24 @@ export default {
     creditHint: 'Ce que Pann dépense au plus pour la conversation d’onboarding d’un espace.',
     cap: 'Plafond mensuel de Pann (en dollars US)',
     capHint: 'Tous espaces confondus, par mois civil. Au-delà, Pann n’utilise plus ses clés.',
+    emailFrom: 'Expéditeur des e-mails du service',
+    emailFromHint:
+      'Nom et adresse sur un domaine vérifié dans Resend, par exemple « Pann <noreply@exemple.org> ».',
+    requestsTitle: 'Demandes d’accès',
+    requestsIntro:
+      'Envoyées depuis la page de connexion, et transmises par e-mail aux administrateurs. L’invitation elle-même se fait dans Supabase (Authentication, Invite user).',
+    noRequests: 'Aucune demande pour l’instant.',
+    openRequests: 'Demandes en attente : {count}',
+    requestStatus: { new: 'En attente', accepted: 'Acceptée', declined: 'Refusée' },
+    requestMarked: {
+      new: 'Demande de {name} remise en attente.',
+      accepted: 'Demande de {name} acceptée.',
+      declined: 'Demande de {name} refusée.',
+    },
+    accept: 'Accepter',
+    decline: 'Refuser',
+    reopen: 'Remettre en attente',
+    notifyFailed: 'E-mail aux administrateurs non envoyé : {reason}',
     month: 'Mois',
     total: 'Dépensé ce mois : {total} sur un plafond de {cap}.',
     noUsage: 'Aucune dépense payée par Pann ce mois-ci.',
@@ -497,6 +537,22 @@ export default {
     colOperation: 'Opération',
     colCalls: 'Appels',
     colCost: 'Coût',
+  },
+  access: {
+    title: 'Demander un accès',
+    intro:
+      'Pann est sur invitation pour l’instant. Dites-nous qui vous êtes et ce que vous voulez faire connaître : nous vous répondons par e-mail.',
+    name: 'Nom',
+    motivation: 'Votre projet',
+    motivationHint:
+      'Quel produit ou quel sujet voulez-vous faire connaître, et sur quels réseaux ? 20 caractères au minimum.',
+    submit: 'Envoyer la demande',
+    sending: 'Envoi…',
+    sent: 'Merci, votre demande est envoyée. Nous vous répondons par e-mail.',
+    error: 'La demande n’a pas pu être envoyée : {message}',
+    backToLogin: 'Retour à la connexion',
+    noAccount: 'Pas encore de compte ?',
+    link: 'Demander un accès',
   },
   diffusion: {
     title: 'Diffusion',
@@ -838,6 +894,7 @@ export default {
     newKind: 'Nouveau type',
     labelFr: 'Nom en français',
     labelEn: 'Nom en anglais',
+    labelIn: 'Nom en {lang} (facultatif)',
     description: 'Ce que ce type regroupe',
     descriptionHint:
       'L’IA lit cette définition pour choisir le type d’un élément. Exemple : décisions de justice et avis des autorités.',
@@ -917,7 +974,8 @@ export default {
     nameFr: 'Nom en français',
     nameEn: 'Nom en anglais',
     langs: 'Langues de publication',
-    langsHint: 'Les résumés, les posts et la newsletter sont rédigés dans chacune de ces langues.',
+    langsHint:
+      'Les résumés, les posts, la newsletter et les flux sont rédigés dans chacune de ces langues, quelles qu’elles soient : l’interface reste en français et en anglais.',
     langsRequired: 'Choisissez au moins une langue de publication.',
     criteriaHint:
       'Facultatif, mais c’est ce qui guide le tri par IA : décrivez ce qui rend un élément utile pour ce thème et ce qu’il faut écarter.',
@@ -1201,6 +1259,15 @@ export default {
     newsletterFooter: 'Pied de page en {lang}',
     newsletterFooterHint:
       'Sous les éléments : qui envoie la newsletter, une adresse, un lien. Facultatif. Le lien de désabonnement est toujours ajouté.',
+    newsletterTexts: 'Textes fixes de l’e-mail',
+    newsletterTextsHint:
+      'Laissés vides : ceux de Pann, en français ou en anglais. À écrire pour une newsletter dans une autre langue.',
+    newsletterText: {
+      mirror: 'Lien vers la version web, en {lang}',
+      unsubscribe: 'Lien de désabonnement, en {lang}',
+      reason: 'Raison de l’envoi, en {lang}',
+      other: 'Groupe « Autres », en {lang}',
+    },
     newsletterLook: 'Apparence',
     newsletterLogo: 'Logo (adresse d’une image)',
     newsletterLogoHint:

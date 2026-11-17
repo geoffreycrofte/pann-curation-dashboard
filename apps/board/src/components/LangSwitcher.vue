@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LANGS } from '@pann/shared'
+import { UI_LANGS } from '@pann/shared'
 import { useI18n } from 'vue-i18n'
 import { setLang } from '../i18n'
 
@@ -9,7 +9,7 @@ const { t, locale } = useI18n()
 <template>
   <div role="group" :aria-label="t('lang.label')" class="lang-switcher">
     <button
-      v-for="lang in LANGS"
+      v-for="lang in UI_LANGS"
       :key="lang"
       type="button"
       class="button"

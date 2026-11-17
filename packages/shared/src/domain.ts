@@ -3,9 +3,6 @@
  * The gold-panning metaphor (nugget, pan…) lives only in UI translations.
  */
 
-export const LANGS = ['fr', 'en'] as const
-export type Lang = (typeof LANGS)[number]
-
 /** Key of a content kind, from the kinds of the topic (topic config `kinds`). */
 export type ItemKind = string
 

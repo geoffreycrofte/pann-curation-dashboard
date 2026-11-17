@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LANGS, type Lang } from '@pann/shared'
+import { UI_LANGS, type UiLang } from '@pann/shared'
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -33,8 +33,8 @@ const name = computed(
 const initial = computed(() => name.value.trim().charAt(0).toUpperCase() || '?')
 
 const lang = computed({
-  get: () => locale.value as Lang,
-  set: (value: Lang) => setLang(value),
+  get: () => locale.value as UiLang,
+  set: (value: UiLang) => setLang(value),
 })
 
 async function signOut() {
@@ -80,7 +80,7 @@ async function signOut() {
         <DropdownMenuLabel class="menu-label">{{ t('lang.label') }}</DropdownMenuLabel>
         <DropdownMenuRadioGroup v-model="lang">
           <DropdownMenuRadioItem
-            v-for="value in LANGS"
+            v-for="value in UI_LANGS"
             :key="value"
             :value="value"
             class="menu-item menu-check"

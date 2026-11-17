@@ -1,5 +1,5 @@
 import { escapeHtml } from './digest'
-import type { Lang } from './domain'
+import type { Lang } from './langs'
 
 export const PUBLIC_FEED_FORMATS = ['xml', 'json'] as const
 export type PublicFeedFormat = (typeof PUBLIC_FEED_FORMATS)[number]

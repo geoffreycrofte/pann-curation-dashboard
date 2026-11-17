@@ -2,7 +2,7 @@ import {
   ENGAGEMENT_DECISIONS,
   ENGAGEMENT_RISKS,
   type ConversationMeta,
-  type Lang,
+  langName,
   type TopicConfig,
 } from '@pann/shared'
 import { z } from 'zod'
@@ -14,7 +14,11 @@ export const ENGAGEMENT_PROMPT_VERSION = 'engagement-triage-v1'
 export const ENGAGEMENT_CONTENT_CHARS = 4000
 
 export const engagementOutputSchema = z.object({
-  language: z.string().describe('ISO 639-1 code of the conversation, e.g. "en" or "fr"'),
+  language: z
+    .string()
+    .describe(
+      'Language tag (ISO 639-1 code, region if useful) of the conversation, e.g. "en" or "fr"',
+    ),
   opportunity: z.number().int().describe('0 to 100'),
   decision: z.enum(ENGAGEMENT_DECISIONS),
   angle: z.string().describe('How a reply could help, in one sentence; empty when skipping'),
@@ -22,8 +26,6 @@ export const engagementOutputSchema = z.object({
   reason: z.string().describe('One short sentence explaining the decision'),
 })
 export type EngagementOutput = z.infer<typeof engagementOutputSchema>
-
-const LANG_NAMES: Record<Lang, string> = { fr: 'French', en: 'English' }
 
 export interface EngagementTopic {
   name_en: string
@@ -54,7 +56,7 @@ export function engagementSystemPrompt(topic: EngagementTopic): string {
 # The product (set by the team)${productBlock}${engagement.criteria.trim() ? `\n\n# Conversations worth joining (set by the team)\n${engagement.criteria.trim()}` : ''}
 
 # For each conversation, return
-- language: ISO 639-1 code of the conversation.
+- language: Language tag (ISO 639-1 code, region if useful) of the conversation.
 - opportunity from 0 to 100:
   80-100: someone describes a concrete problem or asks for a method or a tool in the product's area, and a reply can help right now.
   60-79: the problem is relevant and a useful reply is possible, without needing to mention the product.
@@ -66,7 +68,7 @@ export function engagementSystemPrompt(topic: EngagementTopic): string {
 - reason: one short sentence explaining the decision.
 
 Help comes first: a conversation where a reply would be useful only by mentioning the product is a skip. Do not mistake a technical question for an intent to buy, and do not overrate buying intent. Lower the opportunity of old or inactive threads. Judge only from the conversation provided.
-Write the reason and the angle in ${LANG_NAMES[lang]}.`
+Write the reason and the angle in ${langName(lang, 'en')}.`
 }
 
 export interface EngagementItem {

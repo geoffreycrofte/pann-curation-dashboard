@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   FIRST_COMMENT_MAX,
-  LANGS,
   LINKEDIN_SIGNATURE_MAX,
   ZERNIO_PLATFORMS,
   type DraftChannel,
@@ -15,6 +14,7 @@ import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useWorkspace } from '../lib/workspace'
 import { toast } from '../lib/toast'
+import { contentLangName } from '../lib/langs'
 
 const props = defineProps<{ topicId: string; config: TopicConfig }>()
 const { t } = useI18n()
@@ -121,6 +121,10 @@ const accounts = computed<AccountRow[]>(() => {
 /** LinkedIn extras are shown once the workspace has a LinkedIn account. */
 const hasLinkedin = computed(() => accounts.value.some((row) => row.channel === 'linkedin'))
 const linkedinLangs = computed(() => props.config.output_langs)
+/** Languages an account can publish: those of the topic, plus any still ticked. */
+const accountLangs = computed(() => [
+  ...new Set([...props.config.output_langs, ...props.config.channels.flatMap((c) => c.langs)]),
+])
 
 const slots = computed(() =>
   slotsText.value
@@ -142,7 +146,7 @@ function toggle(key: string, lang: Lang, on: boolean) {
   const current = new Set(langs.value[key] ?? [])
   if (on) current.add(lang)
   else current.delete(lang)
-  langs.value = { ...langs.value, [key]: LANGS.filter((l) => current.has(l)) }
+  langs.value = { ...langs.value, [key]: accountLangs.value.filter((l) => current.has(l)) }
 }
 
 const message = ref('')
@@ -187,7 +191,7 @@ function submit() {
       ? t('settings.slotsInvalid')
       : t('settings.accountConflict', {
           channel: t(`draft.channels.${conflicts.value[0]![0]}`),
-          lang: t(`draft.langs.${conflicts.value[0]![1]}`),
+          lang: contentLangName(conflicts.value[0]![1]),
         })
     return
   }
@@ -264,13 +268,13 @@ function submit() {
               {{ t('settings.accountMissing', { account: row.name }) }}
             </p>
             <div class="langs">
-              <label v-for="lang in LANGS" :key="lang" class="check">
+              <label v-for="lang in accountLangs" :key="lang" class="check">
                 <input
                   type="checkbox"
                   :checked="langs[row.key]?.includes(lang) ?? false"
                   @change="toggle(row.key, lang, ($event.target as HTMLInputElement).checked)"
                 />
-                {{ t(`draft.langs.${lang}`) }}
+                {{ contentLangName(lang) }}
               </label>
             </div>
           </fieldset>
@@ -280,7 +284,7 @@ function submit() {
         {{
           t('settings.accountConflict', {
             channel: t(`draft.channels.${channel}`),
-            lang: t(`draft.langs.${lang}`),
+            lang: contentLangName(lang),
           })
         }}
       </p>
@@ -292,7 +296,7 @@ function submit() {
       <div v-for="lang in linkedinLangs" :key="lang" class="linkedin-lang">
         <div class="form-row">
           <label :for="`${id}-signature-${lang}`">
-            {{ t('settings.linkedin.signature', { lang: t(`draft.langs.${lang}`) }) }}
+            {{ t('settings.linkedin.signature', { lang: contentLangName(lang) }) }}
           </label>
           <textarea
             :id="`${id}-signature-${lang}`"
@@ -305,7 +309,7 @@ function submit() {
         </div>
         <div class="form-row">
           <label :for="`${id}-comment-${lang}`">
-            {{ t('settings.linkedin.firstComment', { lang: t(`draft.langs.${lang}`) }) }}
+            {{ t('settings.linkedin.firstComment', { lang: contentLangName(lang) }) }}
           </label>
           <textarea
             :id="`${id}-comment-${lang}`"

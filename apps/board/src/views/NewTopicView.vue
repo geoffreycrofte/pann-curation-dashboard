@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { LANGS, type Lang } from '@pann/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -7,6 +6,7 @@ import { useRouter } from 'vue-router'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useWorkspace } from '../lib/workspace'
+import ContentLangsPicker from '../components/ContentLangsPicker.vue'
 
 const { t } = useI18n()
 const id = useId()
@@ -16,7 +16,7 @@ const { workspaceId } = useWorkspace()
 
 const nameFr = ref('')
 const nameEn = ref('')
-const langs = ref<Lang[]>([...LANGS])
+const langs = ref<string[]>(['fr', 'en'])
 const criteria = ref('')
 const budget = ref(10)
 const message = ref('')
@@ -84,14 +84,11 @@ function submit() {
       </div>
     </fieldset>
 
-    <fieldset :aria-describedby="`${id}-langs-hint`">
-      <legend>{{ t('newTopic.langs') }}</legend>
-      <p :id="`${id}-langs-hint`" class="hint">{{ t('newTopic.langsHint') }}</p>
-      <div v-for="lang in LANGS" :key="lang" class="form-check">
-        <input :id="`${id}-lang-${lang}`" v-model="langs" type="checkbox" :value="lang" />
-        <label :for="`${id}-lang-${lang}`">{{ t(`lang.${lang}`) }}</label>
-      </div>
-    </fieldset>
+    <ContentLangsPicker
+      v-model="langs"
+      :legend="t('newTopic.langs')"
+      :hint="t('newTopic.langsHint')"
+    />
 
     <div class="form-row">
       <label :for="`${id}-criteria`">{{ t('settings.criteria') }}</label>

@@ -1,4 +1,4 @@
-import { ITEM_TOPIC_STATUSES, KIND_KEY, LANGS } from '@pann/shared'
+import { ITEM_TOPIC_STATUSES, KIND_KEY, langSchema } from '@pann/shared'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 import { CfWorkerJsonSchemaValidator } from '@modelcontextprotocol/sdk/validation/cfworker'
@@ -193,7 +193,7 @@ export function createPannServer(api: ApiCall): McpServer {
       inputSchema: {
         topic_id: topicId,
         item_id: itemId,
-        lang: z.enum(LANGS),
+        lang: langSchema.describe('Language tag of the summary (fr, en, de, pt-BR…)'),
         text: z.string().min(1).max(2000),
       },
       annotations: { idempotentHint: true, openWorldHint: false },

@@ -51,6 +51,13 @@ export const router = createRouter({
       meta: { public: true },
     },
     {
+      // Sign-up stays on invitation: people without an account ask for one here.
+      path: '/request-access',
+      name: 'request-access',
+      component: () => import('./views/RequestAccessView.vue'),
+      meta: { public: true },
+    },
+    {
       path: '/topics/new',
       name: 'new-topic',
       component: () => import('./views/NewTopicView.vue'),

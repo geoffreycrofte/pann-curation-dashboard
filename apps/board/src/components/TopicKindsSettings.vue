@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { slugify, type TopicKind } from '@pann/shared'
+import { isUiLang, slugify, type TopicKind } from '@pann/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api, type TopicWithConfig } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
+import { contentLangName } from '../lib/langs'
 
 /**
  * Kinds of content of the topic: Pann's defaults to start with, then renamed, added or
@@ -30,6 +31,10 @@ const removed = ref<{ kind: TopicKind; replacement: string | null }[]>([])
 const message = ref('')
 const isError = ref(false)
 
+/** Languages of the topic other than the interface ones: their kind names are optional. */
+const otherLangs = computed(() =>
+  props.topic.config.output_langs.filter((lang) => !isUiLang(lang.split('-')[0]!)),
+)
 const name = (k: TopicKind) => (locale.value === 'fr' ? k.label_fr : k.label_en) || k.key
 const savedRows = computed(() => rows.value.filter((r) => !r.isNew))
 
@@ -38,6 +43,7 @@ async function addRow() {
     key: '',
     label_fr: '',
     label_en: '',
+    labels: {},
     description: '',
     isNew: true,
     uid: nextUid++,
@@ -130,6 +136,21 @@ const { mutate, isLoading } = useMutation({
             lang="en"
             required
             maxlength="60"
+          />
+        </div>
+        <!-- Other languages of the topic (newsletter groups); empty: the English name. -->
+        <div v-for="lang in otherLangs" :key="lang" class="form-row">
+          <label :for="`${id}-${row.uid}-${lang}`">
+            {{ t('kinds.labelIn', { lang: contentLangName(lang) }) }}
+          </label>
+          <input
+            :id="`${id}-${row.uid}-${lang}`"
+            v-model="row.labels[lang]"
+            class="field"
+            type="text"
+            :lang="lang"
+            maxlength="60"
+            :placeholder="row.label_en"
           />
         </div>
       </div>

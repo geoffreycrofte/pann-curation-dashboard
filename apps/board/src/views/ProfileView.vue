@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LANGS, type Lang } from '@pann/shared'
+import { UI_LANGS, type UiLang } from '@pann/shared'
 import {
   AlertDialogAction,
   AlertDialogCancel,
@@ -177,14 +177,14 @@ async function signOutEverywhere() {
       <p class="hint">{{ t('profile.preferencesHint') }}</p>
       <fieldset class="choices">
         <legend class="form-label">{{ t('lang.label') }}</legend>
-        <div v-for="lang in LANGS" :key="lang" class="form-check">
+        <div v-for="lang in UI_LANGS" :key="lang" class="form-check">
           <input
             :id="`${id}-lang-${lang}`"
             type="radio"
             :name="`${id}-lang`"
             :value="lang"
             :checked="locale === lang"
-            @change="setLang(lang as Lang)"
+            @change="setLang(lang as UiLang)"
           />
           <label :for="`${id}-lang-${lang}`" :lang="lang">{{ t(`lang.${lang}`) }}</label>
         </div>

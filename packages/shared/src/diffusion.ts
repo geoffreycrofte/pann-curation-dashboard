@@ -1,4 +1,4 @@
-import type { Lang } from './domain'
+import type { Lang } from './langs'
 import {
   DEFAULT_DRAFT_CHANNELS,
   DRAFT_CHANNELS,
@@ -56,7 +56,7 @@ export function bodyLimit(
 
 /** Text added at the end of every post of this channel and language (LinkedIn only). */
 export function postSignature(config: TopicConfig, channel: DraftChannel, lang: Lang): string {
-  return channel === 'linkedin' ? config.linkedin.signature[lang] : ''
+  return channel === 'linkedin' ? (config.linkedin.signature[lang] ?? '') : ''
 }
 
 /**
@@ -70,7 +70,7 @@ export function firstCommentFor(
   own: string | null,
 ): string | null {
   if (channel !== 'linkedin') return null
-  const text = (own ?? config.linkedin.first_comment[lang]).trim()
+  const text = (own ?? config.linkedin.first_comment[lang] ?? '').trim()
   return text || null
 }
 

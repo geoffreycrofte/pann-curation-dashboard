@@ -2,7 +2,6 @@ import {
   claudeCostUsd,
   DRAFT_CHANNELS,
   draftChannels,
-  LANGS,
   missingPosts,
   postLength,
   postSignature,
@@ -70,10 +69,9 @@ const MIN_CONTENT_CHARS = SOURCE_TEXT_MIN
 
 /** Longest LinkedIn signature of the topic, so that every language fits. */
 function longestSignature(config: TopicConfig): string {
-  return LANGS.map((lang) => postSignature(config, 'linkedin', lang)).reduce(
-    (longest, s) => (postLength(s) > postLength(longest) ? s : longest),
-    '',
-  )
+  return config.output_langs
+    .map((lang) => postSignature(config, 'linkedin', lang))
+    .reduce((longest, s) => (postLength(s) > postLength(longest) ? s : longest), '')
 }
 
 const EMPTY_WRITE: DraftWrite = {
@@ -95,20 +93,24 @@ export function toDraftWrite(
   output: DraftOutput,
   model: string,
   channels: readonly DraftChannel[],
+  langs: readonly Lang[],
 ): DraftWrite {
+  // A language the model left out is skipped rather than saved empty.
   return {
     model,
     prompt_version: DRAFT_PROMPT_VERSION,
-    summaries: LANGS.map((lang) => ({
-      lang,
-      summary: (lang === 'fr' ? output.summary_fr : output.summary_en).trim(),
-    })),
+    summaries: langs.flatMap((lang) => {
+      const summary = output.summaries[lang]?.trim()
+      return summary ? [{ lang, summary }] : []
+    }),
     key_excerpt: output.key_excerpt.trim(),
     source_nature: output.source_type,
-    posts: channels.flatMap((channel) => {
-      const posts = output.posts[channel]
-      return posts ? LANGS.map((lang) => ({ channel, lang, body: posts[lang].trim() })) : []
-    }),
+    posts: channels.flatMap((channel) =>
+      langs.flatMap((lang) => {
+        const body = output.posts[channel]?.[lang]?.trim()
+        return body ? [{ channel, lang, body }] : []
+      }),
+    ),
   }
 }
 
@@ -177,8 +179,13 @@ export async function draft(deps: {
     const channels = missing
       ? DRAFT_CHANNELS.filter((c) => missing.some((m) => m.channel === c))
       : draftChannels(item.topic_config)
+    // Missing posts: only their languages are asked for.
+    const langs = missing
+      ? item.topic_config.output_langs.filter((lang) => missing.some((m) => m.lang === lang))
+      : item.topic_config.output_langs
     const result = await deps.model({
       channels,
+      langs,
       apiKey,
       model: requestedModel,
       effort: item.topic_config.ai.draft_effort,
@@ -196,7 +203,7 @@ export async function draft(deps: {
         report.failed++
         continue
       }
-      const write = toDraftWrite(result.output, result.model, channels)
+      const write = toDraftWrite(result.output, result.model, channels, langs)
       await deps.store.saveDraft(
         item,
         missing

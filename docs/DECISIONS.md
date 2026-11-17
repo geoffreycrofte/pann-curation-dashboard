@@ -377,3 +377,20 @@ select id from auth.users where email = '<adresse de l’administrateur>';
 ```
 
 L'API répond 404 aux autres comptes, et chaque fonction de la base revérifie le rôle. Le **centre de coûts** lit `usage_log`, où une nouvelle colonne `billed_to` (`workspace` ou `platform`) dit qui paie chaque appel, et règle deux plafonds (`platform_settings`) : le crédit d'onboarding par espace et le plafond mensuel de Pann. Rien n'utilise encore les clés de Pann : l'onboarding s'y branchera, en respectant ces plafonds.
+
+## 2026-11-17 : contenus dans toutes les langues
+
+L'interface reste en français et en anglais (`UI_LANGS`), mais un thème écrit ses résumés, posts, newsletters et flux dans **n'importe quelle langue**, six au plus (`output_langs`). Une langue est un code BCP 47 sous forme canonique (`fr`, `de`, `pt-BR`, `zh-Hant`), validé par `langSchema` côté code et par `private.is_lang_tag` en base, où le type `public.lang` (`fr`, `en`) disparaît (migration `20261117000100_any_language`). Le choix se fait dans une liste de langues courantes, nommées dans la langue de l'interface par `Intl.DisplayNames`, ou par code saisi.
+
+- **Rédaction** : la sortie du modèle n'a plus de champs `summary_fr` et `summary_en`, mais un résumé et un post par langue du thème (`draft-v4`) ; le prompt nomme les langues en anglais pour le modèle. Une langue que le modèle omet n'est pas enregistrée vide.
+- **Textes saisis par l'utilisateur** : un texte par langue (`newsletter.title`, `intro`, `footer`, `feed.title`, `description`, `linkedin.signature`, `first_comment`). Les anciens champs `title_fr` et `title_en` sont convertis à la lecture de la configuration, sans migration des données.
+- **Types de contenu** : noms d'interface en français et en anglais, plus un nom facultatif par autre langue du thème ; à défaut, le nom anglais.
+- **Newsletter** : les textes fixes de l'e-mail (version web, désabonnement, raison, « Autres ») se règlent par langue. À défaut, ceux de Pann en français ou en anglais, marqués `lang` pour que les lecteurs d'écran les prononcent correctement.
+- **Flux publics** : `/feeds/<clé>/<langue>.xml` pour toute langue du thème.
+- Le nom d'un thème reste en français et en anglais (noms d'interface) : un contenu dans une autre langue prend le nom anglais quand aucun titre n'est réglé.
+
+## 2026-11-17 : demandes d'accès et e-mails du service (Resend)
+
+L'inscription reste sur invitation. Une personne sans compte envoie une **demande motivée** depuis la page de connexion (`/request-access`) : nom, adresse, projet. La demande est enregistrée par `request_access` (clé publique, sans compte), qui limite à trois demandes par jour et par adresse IP (stockée hachée) et à une demande ouverte par e-mail ; la réponse est la même dans tous les cas, pour ne jamais révéler qu'une adresse a déjà demandé. Un champ piège, invisible, écarte les robots.
+
+Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, choisi pour le transactionnel : clé de Pann réglée dans l'espace d'admin (une clé « envoi seulement » suffit, reconnue à sa réponse `restricted_api_key`), expéditeur sur un domaine vérifié (`platform_settings.email_from`), destinataires lus en base (`platform_admin_emails`, clé secrète seulement), réponse directe à la personne (`reply_to`). Sans clé ni expéditeur, la demande reste listée avec la raison. Cet e-mail interne est écrit en français, pour l'administrateur : ce n'est pas un texte du produit. Les demandes se lisent et se marquent (acceptée, refusée) dans l'espace d'admin ; l'invitation elle-même part de Supabase.

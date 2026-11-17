@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { NEWSLETTER_PROVIDERS, type TopicConfig } from '@pann/shared'
+import {
+  DIGEST_STRINGS,
+  DIGEST_TEXT_KEYS,
+  isUiLang,
+  NEWSLETTER_PROVIDERS,
+  uiLangFor,
+  type TopicConfig,
+} from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -7,6 +14,7 @@ import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useWorkspace } from '../lib/workspace'
 import { toast } from '../lib/toast'
+import { contentLangName } from '../lib/langs'
 
 const props = defineProps<{ topicId: string; config: TopicConfig }>()
 const { t, tm, rt } = useI18n()
@@ -21,14 +29,23 @@ const { data: credentials } = useQuery({
 })
 const weekdays = computed(() => (tm('settings.weekdays') as unknown[]).map((d) => rt(d as string)))
 
-const form = ref<TopicConfig['newsletter']>(structuredClone(props.config.newsletter))
+/** Newsletter settings, with a text slot for each language of the topic (for v-model). */
+function editable(config: TopicConfig): TopicConfig['newsletter'] {
+  const newsletter = structuredClone(config.newsletter)
+  for (const lang of config.output_langs) {
+    newsletter.lists[lang] ??= null
+    newsletter.texts[lang] ??= { mirror: '', unsubscribe: '', reason: '', other: '' }
+  }
+  return newsletter
+}
+const form = ref<TopicConfig['newsletter']>(editable(props.config))
 const digest = ref<TopicConfig['schedule']['digest']>(structuredClone(props.config.schedule.digest))
 /** Key of the service chosen for this topic: its lists (and, for Brevo, its senders). */
 const service = computed(() => credentials.value?.find((c) => c.provider === form.value.provider))
 watch(
   () => props.config,
   (config) => {
-    form.value = structuredClone(config.newsletter)
+    form.value = editable(config)
     digest.value = structuredClone(config.schedule.digest)
   },
 )
@@ -137,10 +154,10 @@ const { mutate, isLoading } = useMutation({
     </div>
 
     <fieldset v-for="lang in config.output_langs" :key="lang" class="lang-block">
-      <legend>{{ t(`draft.langs.${lang}`) }}</legend>
+      <legend>{{ contentLangName(lang) }}</legend>
       <div class="form-row">
         <label :for="`${id}-list-${lang}`">
-          {{ t('settings.list', { lang: t(`draft.langs.${lang}`) }) }}
+          {{ t('settings.list', { lang: contentLangName(lang) }) }}
         </label>
         <select :id="`${id}-list-${lang}`" v-model="form.lists[lang]" class="field">
           <option :value="null">{{ t('settings.noList') }}</option>
@@ -151,11 +168,11 @@ const { mutate, isLoading } = useMutation({
       </div>
       <div class="form-row">
         <label :for="`${id}-title-${lang}`">
-          {{ t('settings.newsletterTitle', { lang: t(`draft.langs.${lang}`) }) }}
+          {{ t('settings.newsletterTitle', { lang: contentLangName(lang) }) }}
         </label>
         <input
           :id="`${id}-title-${lang}`"
-          v-model="form[lang === 'fr' ? 'title_fr' : 'title_en']"
+          v-model="form.title[lang]"
           class="field"
           type="text"
           maxlength="120"
@@ -166,11 +183,11 @@ const { mutate, isLoading } = useMutation({
       </div>
       <div class="form-row">
         <label :for="`${id}-intro-${lang}`">
-          {{ t('settings.newsletterIntro', { lang: t(`draft.langs.${lang}`) }) }}
+          {{ t('settings.newsletterIntro', { lang: contentLangName(lang) }) }}
         </label>
         <textarea
           :id="`${id}-intro-${lang}`"
-          v-model="form[lang === 'fr' ? 'intro_fr' : 'intro_en']"
+          v-model="form.intro[lang]"
           class="field"
           rows="3"
           maxlength="2000"
@@ -181,11 +198,11 @@ const { mutate, isLoading } = useMutation({
       </div>
       <div class="form-row">
         <label :for="`${id}-footer-${lang}`">
-          {{ t('settings.newsletterFooter', { lang: t(`draft.langs.${lang}`) }) }}
+          {{ t('settings.newsletterFooter', { lang: contentLangName(lang) }) }}
         </label>
         <textarea
           :id="`${id}-footer-${lang}`"
-          v-model="form[lang === 'fr' ? 'footer_fr' : 'footer_en']"
+          v-model="form.footer[lang]"
           class="field"
           rows="2"
           maxlength="1000"
@@ -196,6 +213,24 @@ const { mutate, isLoading } = useMutation({
           {{ t('settings.newsletterFooterHint') }}
         </p>
       </div>
+      <details class="fixed-texts" :open="!isUiLang(lang.split('-')[0]!)">
+        <summary>{{ t('settings.newsletterTexts') }}</summary>
+        <p class="hint">{{ t('settings.newsletterTextsHint') }}</p>
+        <div v-for="key in DIGEST_TEXT_KEYS" :key="key" class="form-row">
+          <label :for="`${id}-text-${key}-${lang}`">
+            {{ t(`settings.newsletterText.${key}`, { lang: contentLangName(lang) }) }}
+          </label>
+          <input
+            :id="`${id}-text-${key}-${lang}`"
+            v-model="form.texts[lang]![key]"
+            class="field"
+            type="text"
+            :maxlength="key === 'reason' ? 300 : key === 'other' ? 60 : 120"
+            :lang="lang"
+            :placeholder="DIGEST_STRINGS[uiLangFor(lang)][key]"
+          />
+        </div>
+      </details>
     </fieldset>
 
     <fieldset class="lang-block">

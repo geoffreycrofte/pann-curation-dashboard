@@ -1,4 +1,5 @@
 export * from './domain'
+export * from './langs'
 export * from './topic-config'
 export * from './url'
 export * from './status'

@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from './env'
 import { requireUser } from './middleware/auth'
+import { accessRequests } from './routes/access-requests'
 import { account } from './routes/account'
 import { admin } from './routes/admin'
 import { credentials } from './routes/credentials'
@@ -16,7 +17,10 @@ export const app = new Hono<AppEnv>().basePath('/api')
 
 app.get('/health', (c) => c.json({ ok: true }))
 
-app.use('/*', async (c, next) => (c.req.path === '/api/health' ? next() : requireUser(c, next)))
+// Without sign-in: the health check, and access requests (people without an account).
+const PUBLIC_PATHS = new Set(['/api/health', '/api/access-requests'])
+app.use('/*', async (c, next) => (PUBLIC_PATHS.has(c.req.path) ? next() : requireUser(c, next)))
+app.route('/access-requests', accessRequests)
 app.route('/me', me)
 app.route('/account', account)
 app.route('/admin', admin)

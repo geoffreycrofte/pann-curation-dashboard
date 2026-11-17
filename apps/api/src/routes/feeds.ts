@@ -1,10 +1,12 @@
 import {
+  canonicalLang,
   FEED_KEY_PATTERN,
+  nameIn,
+  parseTopicConfig,
   renderJsonFeed,
   renderRss,
   type FeedEntry,
   type FeedInput,
-  type Lang,
 } from '@pann/shared'
 import { createClient } from '@supabase/supabase-js'
 import { Hono } from 'hono'
@@ -14,7 +16,8 @@ interface FeedRow {
   topic: {
     name_fr: string
     name_en: string
-    feed: Partial<Record<`${'title' | 'description'}_${Lang}` | 'site_url', string>>
+    /** Feed settings as stored (read through parseTopicConfig, which upgrades old shapes). */
+    feed: unknown
   }
   items: FeedEntry[]
 }
@@ -31,9 +34,10 @@ const notFound = () =>
  */
 export const feeds = new Hono<{ Bindings: Env }>().get('/feeds/:key/:file', async (c) => {
   const { key, file } = c.req.param()
-  const match = /^(fr|en)\.(xml|json)$/.exec(file)
-  if (!FEED_KEY_PATTERN.test(key) || !match) return notFound()
-  const lang = match[1] as Lang
+  // One feed per language of the topic: /feeds/<key>/fr.xml, /feeds/<key>/pt-BR.json…
+  const match = /^([a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{2,4}){0,2})\.(xml|json)$/.exec(file)
+  const lang = match ? canonicalLang(match[1]!) : null
+  if (!FEED_KEY_PATTERN.test(key) || !match || !lang) return notFound()
   const format = match[2] as 'xml' | 'json'
 
   const cache = typeof caches !== 'undefined' ? caches.default : undefined
@@ -49,11 +53,11 @@ export const feeds = new Hono<{ Bindings: Env }>().get('/feeds/:key/:file', asyn
   const row = data as FeedRow
 
   const origin = new URL(c.req.url).origin
-  const settings = row.topic.feed
+  const settings = parseTopicConfig({ feed: row.topic.feed }).feed
   const input: FeedInput = {
     lang,
-    title: settings[`title_${lang}`] || row.topic[`name_${lang}`],
-    description: settings[`description_${lang}`] ?? '',
+    title: settings.title[lang] || nameIn(row.topic, lang),
+    description: settings.description[lang] ?? '',
     self_url: `${origin}/feeds/${key}/${file}`,
     site_url: settings.site_url || origin,
     entries: row.items,

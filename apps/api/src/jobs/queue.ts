@@ -21,6 +21,7 @@ import { claudeTriageModel } from '../triage/model'
 import { supabaseTriageStore } from '../triage/store'
 import { triage } from '../triage/triage'
 import { jobClient } from './client'
+import { notifyAccessRequest } from '../access/notify'
 
 /**
  * Work sent by user requests (after an RLS access check) and run by the queue
@@ -43,6 +44,8 @@ export type JobMessage =
   | { type: 'delete-account'; userId: string }
   /** AI rewrite of a summary or post, asked from the item page (table rewrites). */
   | { type: 'rewrite'; rewriteId: string }
+  /** Emails the platform admins about an access request (Resend, Pann's key). */
+  | { type: 'notify-access-request'; requestId: string; origin: string }
 
 export const networks = {
   zernio: publishWithZernio,
@@ -119,6 +122,11 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
       const { error: authError } = await db.auth.admin.deleteUser(message.userId)
       if (authError) throw authError
       console.log(JSON.stringify({ job: 'delete-account', result: data }))
+      return
+    }
+    case 'notify-access-request': {
+      const result = await notifyAccessRequest(db, message.requestId, message.origin)
+      console.log(JSON.stringify({ job: 'notify-access-request', result }))
       return
     }
     case 'rewrite': {

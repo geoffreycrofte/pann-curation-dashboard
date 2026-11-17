@@ -7,6 +7,7 @@ import TopicNav from '../components/TopicNav.vue'
 import { api, type QueueItem } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
+import { contentLangName } from '../lib/langs'
 
 const props = defineProps<{ topicId: string }>()
 const { t, d } = useI18n()
@@ -94,7 +95,7 @@ const formatDate = (value: string) =>
               {{
                 t('diffusion.postLine', {
                   channel: t(`draft.channels.${post.channel}`),
-                  lang: t(`draft.langs.${post.lang}`),
+                  lang: contentLangName(post.lang),
                   status: t(`diffusion.postStatus.${post.status}`),
                 })
               }}
@@ -106,7 +107,7 @@ const formatDate = (value: string) =>
                 :aria-label="
                   t('diffusion.viewLabel', {
                     channel: t(`draft.channels.${post.channel}`),
-                    lang: t(`draft.langs.${post.lang}`),
+                    lang: contentLangName(post.lang),
                   })
                 "
                 >{{ t('diffusion.view') }}</a
