@@ -322,6 +322,9 @@ export default {
     },
   },
   errors: {
+    email_sender_missing:
+      'Aucune adresse d’expédition réglée pour les e-mails du service (Administration).',
+    no_platform_admin: 'Aucun administrateur à prévenir.',
     provider_error: 'Le service d’IA n’a pas pu répondre. Nouvel essai automatique.',
     insufficient_content:
       'Contenu de la source insuffisant pour un résumé fiable (page vide, payante ou trop courte). Lisez la source.',
@@ -487,6 +490,11 @@ export default {
         purpose:
           'Publication sur LinkedIn et Facebook pour l’offre la plus élevée : Pann connecte les comptes de ses utilisateurs avec sa propre clé.',
       },
+      resend: {
+        name: 'Resend',
+        purpose:
+          'E-mails du service (demandes d’accès). Une clé « envoi seulement » suffit, sur un domaine vérifié dans Resend.',
+      },
     },
     checkedOn: 'Vérifiée le {date}.',
     newKey: 'Clé',
@@ -502,6 +510,24 @@ export default {
     creditHint: 'Ce que Pann dépense au plus pour la conversation d’onboarding d’un espace.',
     cap: 'Plafond mensuel de Pann (en dollars US)',
     capHint: 'Tous espaces confondus, par mois civil. Au-delà, Pann n’utilise plus ses clés.',
+    emailFrom: 'Expéditeur des e-mails du service',
+    emailFromHint:
+      'Nom et adresse sur un domaine vérifié dans Resend, par exemple « Pann <noreply@exemple.org> ».',
+    requestsTitle: 'Demandes d’accès',
+    requestsIntro:
+      'Envoyées depuis la page de connexion, et transmises par e-mail aux administrateurs. L’invitation elle-même se fait dans Supabase (Authentication, Invite user).',
+    noRequests: 'Aucune demande pour l’instant.',
+    openRequests: 'Demandes en attente : {count}',
+    requestStatus: { new: 'En attente', accepted: 'Acceptée', declined: 'Refusée' },
+    requestMarked: {
+      new: 'Demande de {name} remise en attente.',
+      accepted: 'Demande de {name} acceptée.',
+      declined: 'Demande de {name} refusée.',
+    },
+    accept: 'Accepter',
+    decline: 'Refuser',
+    reopen: 'Remettre en attente',
+    notifyFailed: 'E-mail aux administrateurs non envoyé : {reason}',
     month: 'Mois',
     total: 'Dépensé ce mois : {total} sur un plafond de {cap}.',
     noUsage: 'Aucune dépense payée par Pann ce mois-ci.',
@@ -511,6 +537,22 @@ export default {
     colOperation: 'Opération',
     colCalls: 'Appels',
     colCost: 'Coût',
+  },
+  access: {
+    title: 'Demander un accès',
+    intro:
+      'Pann est sur invitation pour l’instant. Dites-nous qui vous êtes et ce que vous voulez faire connaître : nous vous répondons par e-mail.',
+    name: 'Nom',
+    motivation: 'Votre projet',
+    motivationHint:
+      'Quel produit ou quel sujet voulez-vous faire connaître, et sur quels réseaux ? 20 caractères au minimum.',
+    submit: 'Envoyer la demande',
+    sending: 'Envoi…',
+    sent: 'Merci, votre demande est envoyée. Nous vous répondons par e-mail.',
+    error: 'La demande n’a pas pu être envoyée : {message}',
+    backToLogin: 'Retour à la connexion',
+    noAccount: 'Pas encore de compte ?',
+    link: 'Demander un accès',
   },
   diffusion: {
     title: 'Diffusion',

@@ -8,9 +8,9 @@ Décidée le 2026-11-16, arbitrée le 2026-11-17 : **tout d'un coup**, sans ver
 
 1. **Valider (S)** : tests de premier lancement en pensée à voix haute, dont une personne avec lecteur d'écran ; test d'arborescence ; essai de Buffer, Hootsuite et Publer.
 2. **Fondations** :
-   - **Espace d'admin** (compte de Geoffrey seulement) : clés de Pann (IA, Zernio en mode plateforme) et centre de coûts du crédit Pann. _En cours._
-   - **Toutes les langues pour les contenus** : un thème publie dans n'importe quelle langue, l'interface reste en français et en anglais.
-   - **Demande d'accès motivée**, envoyée par e-mail à Geoffrey (l'inscription reste sur invitation).
+   - **Espace d'admin** (compte de Geoffrey seulement) : clés de Pann (IA, Zernio en mode plateforme, Resend) et centre de coûts du crédit Pann. _Fait._
+   - **Toutes les langues pour les contenus** : un thème publie dans n'importe quelle langue, l'interface reste en français et en anglais. _Fait._
+   - **Demande d'accès motivée**, envoyée par e-mail à Geoffrey avec Resend (l'inscription reste sur invitation). _Fait._
 3. **Onboarding** : objectif, réseaux (avec « autre réseau », demandes traitées et priorisées), conversation de cadrage payée par le crédit Pann, relecture avant enregistrement, Aperçu avec liste de démarrage, première collecte immédiate.
 4. **Nouvelle architecture** : Aujourd'hui (tous thèmes), puis par thème Aperçu, Veille, Conversations, Création, Calendrier (créneaux distincts par outil), Réglages regroupés par sujet. La métaphore de l'orpaillage sort du board.
 5. **Création, première version (L)** : les 5 réseaux actuels, recherche avant rédaction, posts ancrés dans leurs sources, images dans l'offre intermédiaire.

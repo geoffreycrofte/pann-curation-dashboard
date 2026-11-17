@@ -137,7 +137,24 @@ export interface PlatformKey {
 export interface PlatformSettings {
   onboarding_credit_usd: number
   monthly_cap_usd: number
+  /** Sender of the service emails, on a domain verified in Resend. */
+  email_from: string
   updated_at: string
+}
+
+export type AccessRequestStatus = 'new' | 'accepted' | 'declined'
+
+export interface AccessRequest {
+  id: string
+  name: string
+  email: string
+  motivation: string
+  lang: 'fr' | 'en'
+  status: AccessRequestStatus
+  notified_at: string | null
+  notify_error: string | null
+  handled_at: string | null
+  created_at: string
 }
 
 export interface PlatformUsageRow {
@@ -212,6 +229,17 @@ export interface TopicUsage {
 
 export const api = {
   me: () => request<Me>('/me'),
+  /** Without sign-in: a person without an account asks for one. */
+  requestAccess: (input: {
+    name: string
+    email: string
+    motivation: string
+    lang: 'fr' | 'en'
+    website: string
+  }) => request<{ ok: true }>('/access-requests', json('POST', input)),
+  adminAccessRequests: () => request<AccessRequest[]>('/admin/access-requests'),
+  handleAccessRequest: (id: string, status: AccessRequestStatus) =>
+    request<AccessRequest>(`/admin/access-requests/${id}`, json('PATCH', { status })),
   adminKeys: () => request<PlatformKey[]>('/admin/credentials'),
   setAdminKey: (provider: PlatformProvider, secret: string) =>
     request<PlatformKey>(`/admin/credentials/${provider}`, json('PUT', { secret })),

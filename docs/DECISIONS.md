@@ -388,3 +388,9 @@ L'interface reste en français et en anglais (`UI_LANGS`), mais un thème écrit
 - **Newsletter** : les textes fixes de l'e-mail (version web, désabonnement, raison, « Autres ») se règlent par langue. À défaut, ceux de Pann en français ou en anglais, marqués `lang` pour que les lecteurs d'écran les prononcent correctement.
 - **Flux publics** : `/feeds/<clé>/<langue>.xml` pour toute langue du thème.
 - Le nom d'un thème reste en français et en anglais (noms d'interface) : un contenu dans une autre langue prend le nom anglais quand aucun titre n'est réglé.
+
+## 2026-11-17 : demandes d'accès et e-mails du service (Resend)
+
+L'inscription reste sur invitation. Une personne sans compte envoie une **demande motivée** depuis la page de connexion (`/request-access`) : nom, adresse, projet. La demande est enregistrée par `request_access` (clé publique, sans compte), qui limite à trois demandes par jour et par adresse IP (stockée hachée) et à une demande ouverte par e-mail ; la réponse est la même dans tous les cas, pour ne jamais révéler qu'une adresse a déjà demandé. Un champ piège, invisible, écarte les robots.
+
+Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, choisi pour le transactionnel : clé de Pann réglée dans l'espace d'admin (une clé « envoi seulement » suffit, reconnue à sa réponse `restricted_api_key`), expéditeur sur un domaine vérifié (`platform_settings.email_from`), destinataires lus en base (`platform_admin_emails`, clé secrète seulement), réponse directe à la personne (`reply_to`). Sans clé ni expéditeur, la demande reste listée avec la raison. Cet e-mail interne est écrit en français, pour l'administrateur : ce n'est pas un texte du produit. Les demandes se lisent et se marquent (acceptée, refusée) dans l'espace d'admin ; l'invitation elle-même part de Supabase.

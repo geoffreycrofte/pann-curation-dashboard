@@ -79,10 +79,11 @@ export interface CredentialMeta {
 /** Networks published directly, where a workspace can connect several accounts. */
 /**
  * Keys of Pann itself, set in the admin space: the AI of the onboarding and of the offers
- * where Pann provides the AI, and Zernio in platform mode (highest offer). Other AI
- * services join this list when Pann supports them.
+ * where Pann provides the AI, Zernio in platform mode (highest offer), and Resend for the
+ * service emails (access requests). Other AI services join this list when Pann supports
+ * them.
  */
-export const PLATFORM_PROVIDERS = ['anthropic', 'zernio'] as const
+export const PLATFORM_PROVIDERS = ['anthropic', 'zernio', 'resend'] as const
 export type PlatformProvider = (typeof PLATFORM_PROVIDERS)[number]
 
 export const MULTI_ACCOUNT_PROVIDERS = ['mastodon', 'bluesky', 'discord'] as const
@@ -187,6 +188,8 @@ export const ERROR_CODES = [
   'newsletter_not_configured', // :lang (no list or no sender)
   'credits_exhausted', // :provider
   'empty_digest', // nothing validated since the last newsletter
+  'email_sender_missing', // no sender set for the service emails (admin space)
+  'no_platform_admin', // nobody to notify
   'unexpected',
 ] as const
 export type ErrorCode = (typeof ERROR_CODES)[number]

@@ -4,18 +4,31 @@ import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { checkCredential } from '../lib/check-credential'
+import { checkResendKey } from '../lib/resend'
 import { parseJson } from '../lib/validation'
 
 const KEY_COLUMNS = 'provider, hint, status, status_detail, checked_at, updated_at'
-const SETTINGS_COLUMNS = 'onboarding_credit_usd, monthly_cap_usd, updated_at'
+const SETTINGS_COLUMNS = 'onboarding_credit_usd, monthly_cap_usd, email_from, updated_at'
+const REQUEST_COLUMNS =
+  'id, name, email, motivation, lang, status, notified_at, notify_error, handled_at, created_at'
 
 const keyBody = z.object({ secret: z.string().trim().min(8).max(500) })
 const settingsBody = z
   .object({
     onboarding_credit_usd: z.number().min(0).max(100),
     monthly_cap_usd: z.number().min(0).max(100_000),
+    /** Sender of the service emails: "Pann <noreply@example.org>" on a Resend domain. */
+    email_from: z.union([
+      z.literal(''),
+      z
+        .string()
+        .trim()
+        .max(200)
+        .regex(/^[^<>]*<?[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+>?$/),
+    ]),
   })
   .partial()
+const handleBody = z.object({ status: z.enum(['new', 'accepted', 'declined']) })
 const usageQuery = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) })
 
 function platformProvider(value: string): PlatformProvider {
@@ -47,7 +60,8 @@ export const admin = new Hono<AppEnv>()
   .put('/credentials/:provider', async (c) => {
     const provider = platformProvider(c.req.param('provider'))
     const { secret } = await parseJson(keyBody, c.req.raw)
-    const check = await checkCredential(provider, secret)
+    const check =
+      provider === 'resend' ? await checkResendKey(secret) : await checkCredential(provider, secret)
     if (check.status === 'invalid')
       throw new HTTPException(422, { message: `invalid_credential:${provider}` })
     const { error } = await c.var.db.rpc('set_platform_credential', {
@@ -55,7 +69,7 @@ export const admin = new Hono<AppEnv>()
       p_secret: secret,
       p_status: check.status,
       p_status_detail: check.detail,
-      p_meta: check.meta ?? {},
+      p_meta: 'meta' in check ? (check.meta ?? {}) : {},
     })
     if (error) throw error
     const { data, error: readError } = await c.var.db
@@ -108,5 +122,35 @@ export const admin = new Hono<AppEnv>()
       p_to: to.toISOString(),
     })
     if (error) throw error
+    return c.json(data)
+  })
+
+  /** Access requests, newest first (the last 200). */
+  .get('/access-requests', async (c) => {
+    const { data, error } = await c.var.db
+      .from('access_requests')
+      .select(REQUEST_COLUMNS)
+      .order('created_at', { ascending: false })
+      .limit(200)
+    if (error) throw error
+    return c.json(data)
+  })
+
+  /** Marks a request as accepted or declined (the invitation itself is sent from Supabase). */
+  .patch('/access-requests/:id', async (c) => {
+    const { status } = await parseJson(handleBody, c.req.raw)
+    const handled = status !== 'new'
+    const { data, error } = await c.var.db
+      .from('access_requests')
+      .update({
+        status,
+        handled_at: handled ? new Date().toISOString() : null,
+        handled_by: handled ? c.var.user.id : null,
+      })
+      .eq('id', c.req.param('id'))
+      .select(REQUEST_COLUMNS)
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Not found' })
     return c.json(data)
   })
