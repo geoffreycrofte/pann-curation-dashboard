@@ -154,3 +154,30 @@ export const admin = new Hono<AppEnv>()
     if (!data) throw new HTTPException(404, { message: 'Not found' })
     return c.json(data)
   })
+
+  /** Requests made from the product (another network, a coming tool), newest first. */
+  .get('/feature-requests', async (c) => {
+    const { data, error } = await c.var.db
+      .from('feature_requests')
+      .select('id, kind, subject, status, created_at, workspace:workspaces (name)')
+      .order('created_at', { ascending: false })
+      .limit(300)
+    if (error) throw error
+    return c.json(data)
+  })
+
+  .patch('/feature-requests/:id', async (c) => {
+    const { status } = await parseJson(
+      z.object({ status: z.enum(['new', 'planned', 'answered', 'declined']) }),
+      c.req.raw,
+    )
+    const { data, error } = await c.var.db
+      .from('feature_requests')
+      .update({ status })
+      .eq('id', c.req.param('id'))
+      .select('id, status')
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Not found' })
+    return c.json(data)
+  })

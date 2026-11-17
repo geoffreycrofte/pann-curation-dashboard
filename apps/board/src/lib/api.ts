@@ -100,13 +100,17 @@ export interface AddSearchSourceInput {
   interval_hours: number | null
 }
 
+/** A new topic as reviewed at the end of the onboarding. */
 export interface NewTopicInput {
   workspace_id: string
   name_fr: string
-  name_en: string
-  output_langs: Lang[]
-  relevance_criteria: string
+  /** The other name defaults to the first one. */
+  name_en?: string
   monthly_budget_usd: number
+  /** First settings: any part of a topic config. */
+  config: Record<string, unknown>
+  /** What Pann does not do yet: another network, a coming tool. */
+  requests: { kind: 'network' | 'feature'; subject: string }[]
 }
 
 export interface RewriteInput {
@@ -143,6 +147,18 @@ export interface PlatformSettings {
 }
 
 export type AccessRequestStatus = 'new' | 'accepted' | 'declined'
+
+export type FeatureRequestStatus = 'new' | 'planned' | 'answered' | 'declined'
+
+/** Asked from the product: a network Pann does not publish to, a coming tool. */
+export interface FeatureRequest {
+  id: string
+  kind: 'network' | 'feature'
+  subject: string
+  status: FeatureRequestStatus
+  created_at: string
+  workspace: { name: string } | null
+}
 
 export interface AccessRequest {
   id: string
@@ -238,6 +254,12 @@ export const api = {
     website: string
   }) => request<{ ok: true }>('/access-requests', json('POST', input)),
   adminAccessRequests: () => request<AccessRequest[]>('/admin/access-requests'),
+  adminFeatureRequests: () => request<FeatureRequest[]>('/admin/feature-requests'),
+  setFeatureRequestStatus: (id: string, status: FeatureRequestStatus) =>
+    request<{ id: string; status: FeatureRequestStatus }>(
+      `/admin/feature-requests/${id}`,
+      json('PATCH', { status }),
+    ),
   handleAccessRequest: (id: string, status: AccessRequestStatus) =>
     request<AccessRequest>(`/admin/access-requests/${id}`, json('PATCH', { status })),
   adminKeys: () => request<PlatformKey[]>('/admin/credentials'),

@@ -106,9 +106,16 @@ export function missingPosts(
   )
 }
 
-/** Channels drafted for an item of this topic: the default ones and those it publishes to. */
+/**
+ * Channels drafted for an item of this topic: the default ones, those it publishes to, and
+ * those it said it aims at (onboarding) before connecting an account.
+ */
 export function draftChannels(config: TopicConfig): DraftChannel[] {
-  const used = new Set<DraftChannel>([...DEFAULT_DRAFT_CHANNELS, ...configuredChannels(config)])
+  const used = new Set<DraftChannel>([
+    ...DEFAULT_DRAFT_CHANNELS,
+    ...configuredChannels(config),
+    ...config.target_channels,
+  ])
   return DRAFT_CHANNELS.filter((c) => used.has(c))
 }
 

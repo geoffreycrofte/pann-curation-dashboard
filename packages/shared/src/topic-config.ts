@@ -268,6 +268,20 @@ export const topicConfigSchema = z.object({
     })
     .prefault({}),
   /**
+   * Networks the person said they publish on (onboarding), before any account is
+   * connected: their posts are drafted from the start, and the overview asks to connect
+   * them. Once an account is chosen (`channels`), the account rules.
+   */
+  target_channels: z
+    .preprocess(
+      (value) =>
+        Array.isArray(value)
+          ? value.filter((c) => (DRAFT_CHANNELS as readonly unknown[]).includes(c))
+          : value,
+      z.array(z.enum(DRAFT_CHANNELS)),
+    )
+    .default([]),
+  /**
    * LinkedIn extras, per language (empty = none).
    * - `signature`: text added at the end of every LinkedIn post, after the link
    *   ("I am…, find me on…"). Counted in the 3,000 characters of the post.

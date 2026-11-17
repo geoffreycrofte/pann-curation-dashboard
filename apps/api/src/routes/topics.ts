@@ -2,8 +2,6 @@ import {
   canTransition,
   domainSchema,
   isExcludedUrl,
-  langSchema,
-  MAX_OUTPUT_LANGS,
   canonicalLang,
   extractPageTitle,
   newFeedKey,
@@ -93,14 +91,27 @@ const topicPatch = z
   })
   .partial()
 
-/** Initial setup of a new topic; everything else keeps its default and is set later. */
+/**
+ * A new topic, as reviewed at the end of the onboarding: its names, budget and first
+ * settings (any part of a topic config; the rest keeps its default), and what the person
+ * asked for that Pann does not do yet (another network, a coming tool).
+ */
 const newTopicBody = z.object({
   workspace_id: z.uuid(),
   name_fr: topicName,
-  name_en: topicName,
-  output_langs: z.array(langSchema).min(1).max(MAX_OUTPUT_LANGS),
-  relevance_criteria: z.string().trim().max(4000).default(''),
+  /** One name is enough: the other one defaults to it. */
+  name_en: topicName.optional(),
   monthly_budget_usd: z.number().min(0).max(10_000).default(10),
+  config: z.record(z.string(), z.unknown()).default({}),
+  requests: z
+    .array(
+      z.object({
+        kind: z.enum(['network', 'feature']),
+        subject: z.string().trim().min(1).max(60),
+      }),
+    )
+    .max(5)
+    .default([]),
 })
 const textBody = (max: number) => z.object({ text: z.string().trim().min(1).max(max) })
 
@@ -139,11 +150,11 @@ export const topics = new Hono<AppEnv>()
   /** RLS: only a member of the workspace can create a topic in it. */
   .post('/', async (c) => {
     const body = await parseJson(newTopicBody, c.req.raw)
-    const config = parseTopicConfig({
-      output_langs: body.output_langs,
-      ai: { relevance_criteria: body.relevance_criteria },
-    })
-    const base = slugify(body.name_en)
+    const parsed = safeParseTopicConfig(body.config)
+    if (!parsed.success) throw new HTTPException(400, { message: z.prettifyError(parsed.error) })
+    const config = parsed.data
+    const nameEn = body.name_en ?? body.name_fr
+    const base = slugify(nameEn) || slugify(body.name_fr) || 'topic'
     // The slug is unique per workspace: "accessibility", then "accessibility-2"…
     for (let attempt = 1; attempt <= 20; attempt++) {
       const { data, error } = await c.var.db
@@ -152,7 +163,7 @@ export const topics = new Hono<AppEnv>()
           workspace_id: body.workspace_id,
           slug: attempt === 1 ? base : `${base}-${attempt}`,
           name_fr: body.name_fr,
-          name_en: body.name_en,
+          name_en: nameEn,
           monthly_budget_usd: body.monthly_budget_usd,
           config,
         })
@@ -161,6 +172,18 @@ export const topics = new Hono<AppEnv>()
       if (error?.code === '23505') continue
       if (error?.code === '42501') throw new HTTPException(403, { message: 'Not a member' })
       if (error) throw error
+      if (body.requests.length) {
+        const { error: requestError } = await c.var.db.from('feature_requests').insert(
+          body.requests.map((r) => ({
+            workspace_id: body.workspace_id,
+            topic_id: (data as { id: string }).id,
+            kind: r.kind,
+            subject: r.subject,
+          })),
+        )
+        // The topic exists: a request that could not be filed does not undo it.
+        if (requestError) console.warn(JSON.stringify({ feature_requests: requestError.message }))
+      }
       return c.json(data, 201)
     }
     throw new HTTPException(409, { message: 'Topic slug already taken' })
