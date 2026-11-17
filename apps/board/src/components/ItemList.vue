@@ -78,7 +78,13 @@ const { mutate: excludeSite, isLoading: excluding } = useMutation({
   <p v-if="isPending" role="status">{{ t('board.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
   <div v-else ref="listEl" tabindex="-1" class="list-wrapper">
-    <p v-if="!items?.length">{{ t('board.empty') }}</p>
+    <p v-if="!items?.length && status === 'new'">
+      {{ t('board.emptyNew') }}
+      <RouterLink :to="{ name: 'settings', params: { topicId }, query: { tab: 'sources' } }">{{
+        t('board.emptyNewAction')
+      }}</RouterLink>
+    </p>
+    <p v-else-if="!items?.length">{{ t('board.empty') }}</p>
     <ul v-else class="list">
       <li v-for="item in items" :key="item.item_id">
         <ItemCard
