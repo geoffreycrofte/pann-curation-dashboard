@@ -372,6 +372,8 @@ export default {
   errors: {
     email_sender_missing: 'No sender set for the service emails (Administration).',
     no_platform_admin: 'No administrator to notify.',
+    onboarding_unavailable: 'The assistant is not available right now.',
+    onboarding_credit_exhausted: 'The assistant credit is used up for this workspace.',
     provider_error: 'The AI service could not answer. It will retry automatically.',
     insufficient_content:
       'Not enough source content for a reliable summary (empty, paywalled or too short page). Read the source.',
@@ -1010,7 +1012,7 @@ export default {
   onboarding: {
     stepsLabel: 'Steps of the topic creation',
     stepOf: 'Step {index} of {count}:',
-    steps: { goal: 'Goal', networks: 'Networks', review: 'Review' },
+    steps: { goal: 'Goal', networks: 'Networks', chat: 'Questions', review: 'Review' },
     continue: 'Continue',
     back: 'Back',
     skip: 'Skip this step',
@@ -1055,7 +1057,32 @@ export default {
         'Pann looks there for discussions about your subject; you will adjust the searches later.',
       platforms: { hackernews: 'Hacker News', bluesky: 'Bluesky' },
     },
+    chat: {
+      title: 'Let’s get to know your topic',
+      intro:
+        'A few questions to prepare the settings of your topic. You review everything before anything is created.',
+      log: 'Conversation with the assistant',
+      assistant: 'Assistant',
+      you: 'You',
+      separator: ':',
+      writing: 'The assistant is writing…',
+      answer: 'Your answer',
+      answerHint: 'Enter to send, Shift+Enter for a new line.',
+      quick: 'Suggested answers',
+      send: 'Send',
+      finish: 'I’m done, show the result',
+      toForm: 'I’d rather fill in the form',
+      review: 'Show the result',
+      retry: 'Try again',
+      failed: 'The assistant could not answer.',
+      slow: 'The answer is taking long. You can wait a little more, or go on with the form: the answers you gave are kept.',
+    },
     review: {
+      proposed: 'Proposed by the assistant',
+      messages: 'Messages to convey',
+      claimsToAvoid: 'Never say',
+      postRules: 'Rules for the posts',
+      postRulesHint: 'For example: “2 hashtags at most, no emoji”.',
       title: 'Here is your topic',
       intro:
         'Nothing is saved yet. Change what does not suit you, then create the topic. Everything can be set later too.',

@@ -10,6 +10,7 @@ import { me } from './routes/me'
 import { sources } from './routes/sources'
 import { diffusion } from './routes/diffusion'
 import { newsletter } from './routes/newsletter'
+import { onboarding } from './routes/onboarding'
 import { topics } from './routes/topics'
 import { workspaces } from './routes/workspaces'
 
@@ -25,6 +26,7 @@ app.route('/me', me)
 app.route('/account', account)
 app.route('/admin', admin)
 app.route('/workspaces', workspaces)
+app.route('/onboarding', onboarding)
 app.route('/topics', topics)
 app.route('/topics', diffusion)
 app.route('/topics', newsletter)

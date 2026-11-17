@@ -22,6 +22,7 @@ import { supabaseTriageStore } from '../triage/store'
 import { triage } from '../triage/triage'
 import { jobClient } from './client'
 import { notifyAccessRequest } from '../access/notify'
+import { runOnboarding } from '../onboarding/assistant'
 
 /**
  * Work sent by user requests (after an RLS access check) and run by the queue
@@ -46,6 +47,8 @@ export type JobMessage =
   | { type: 'rewrite'; rewriteId: string }
   /** Emails the platform admins about an access request (Resend, Pann's key). */
   | { type: 'notify-access-request'; requestId: string; origin: string }
+  /** Next answer of the onboarding assistant (Pann's key, onboarding credit). */
+  | { type: 'onboarding'; sessionId: string }
 
 export const networks = {
   zernio: publishWithZernio,
@@ -127,6 +130,11 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     case 'notify-access-request': {
       const result = await notifyAccessRequest(db, message.requestId, message.origin)
       console.log(JSON.stringify({ job: 'notify-access-request', result }))
+      return
+    }
+    case 'onboarding': {
+      const result = await runOnboarding(db, message.sessionId)
+      console.log(JSON.stringify({ job: 'onboarding', result }))
       return
     }
     case 'rewrite': {

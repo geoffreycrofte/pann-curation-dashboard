@@ -1,27 +1,31 @@
 <script setup lang="ts">
 /**
  * Creating a topic, in steps: what the person wants to do, where they publish or listen,
- * then a review of every setting before anything is saved. The step lives in the address
+ * a few questions from the assistant (when Pann's assistant is available for this
+ * workspace), then a review of every setting before anything is saved. The step lives in the address
  * (?step=…) so that Back and reload work. Nothing is written before "Create the topic".
  */
-import { useQueryCache } from '@pinia/colada'
+import { useQuery, useQueryCache } from '@pinia/colada'
 import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ContentLangsPicker from '../components/ContentLangsPicker.vue'
-import { api } from '../lib/api'
+import OnboardingChat from '../components/OnboardingChat.vue'
+import { api, type OnboardingContext, type OnboardingSession } from '../lib/api'
 import { describeError } from '../lib/errors'
 import {
+  applyProposal,
   draftConfig,
   LISTEN_PLATFORMS,
   parseSlots,
   PUBLISH_CHANNELS,
   siteUrl,
   useOnboardingDraft,
+  type ProposedField,
 } from '../lib/onboarding'
 import { useWorkspace } from '../lib/workspace'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const id = useId()
 const route = useRoute()
 const router = useRouter()
@@ -29,15 +33,30 @@ const queryCache = useQueryCache()
 const { workspaceId } = useWorkspace()
 const { draft, clear } = useOnboardingDraft()
 
-const STEPS = ['goal', 'networks', 'review'] as const
-type Step = (typeof STEPS)[number]
+const ALL_STEPS = ['goal', 'networks', 'chat', 'review'] as const
+type Step = (typeof ALL_STEPS)[number]
+// The questions step exists only when Pann's assistant can run for this workspace (key
+// set, onboarding credit and monthly cap not reached); otherwise the review comes next.
+const { data: assistant } = useQuery({
+  key: () => ['onboarding-available', workspaceId.value ?? ''],
+  query: () => api.onboardingAvailable(workspaceId.value!),
+  enabled: () => !!workspaceId.value,
+})
+const withChat = computed(() => assistant.value?.available === true || !!draft.sessionId)
+const STEPS = computed<readonly Step[]>(() =>
+  withChat.value ? ALL_STEPS : ALL_STEPS.filter((s) => s !== 'chat'),
+)
 const step = computed<Step>(() => {
   const value = route.query.step
-  const wanted = (STEPS as readonly unknown[]).includes(value) ? (value as Step) : 'goal'
+  const wanted = (STEPS.value as readonly unknown[]).includes(value)
+    ? (value as Step)
+    : value === 'chat'
+      ? 'review'
+      : 'goal'
   // A later step needs the goal: back to it until a name and a tool are chosen.
   return wanted !== 'goal' && !goalComplete.value ? 'goal' : wanted
 })
-const stepIndex = computed(() => STEPS.indexOf(step.value))
+const stepIndex = computed(() => STEPS.value.indexOf(step.value))
 const goalComplete = computed(() => !!draft.name.trim() && (draft.curation || draft.engagement))
 /** Publishing is asked when a tool publishes; listening when conversations are on. */
 const asksPublish = computed(() => draft.curation)
@@ -83,10 +102,32 @@ async function submitNetworks(skip = false) {
     otherInput.value?.focus()
     return
   }
-  await go('review')
+  await go(withChat.value ? 'chat' : 'review')
 }
 
-// Step 3: review and creation -----------------------------------------------------------
+// Step 3: questions ---------------------------------------------------------------------
+const chatContext = computed<OnboardingContext>(() => ({
+  name: draft.name.trim(),
+  url: draft.url.trim() ? siteUrl(draft.url) : undefined,
+  tools: [
+    ...(draft.curation ? (['curation'] as const) : []),
+    ...(draft.engagement ? (['engagement'] as const) : []),
+  ],
+  channels: draft.curation ? draft.channels : [],
+  listen: draft.engagement ? draft.listen : [],
+  newsletter: draft.curation && draft.newsletter,
+  ui_lang: locale.value === 'en' ? 'en' : 'fr',
+}))
+function onProposal(session: OnboardingSession) {
+  applyProposal(draft, session.proposal)
+}
+/** An edited field is no longer the assistant's proposal. */
+function edited(field: ProposedField) {
+  if (draft.proposed.includes(field)) draft.proposed = draft.proposed.filter((f) => f !== field)
+}
+const isProposed = (field: ProposedField) => draft.proposed.includes(field)
+
+// Step 4: review and creation -----------------------------------------------------------
 const errors = ref<{ field: string; message: string }[]>([])
 const errorSummary = ref<HTMLElement>()
 const creating = ref(false)
@@ -322,7 +363,25 @@ function restart() {
       </div>
     </form>
 
-    <!-- 3. Review -->
+    <!-- 3. Questions -->
+    <section v-else-if="step === 'chat'" class="step" :aria-labelledby="`${id}-chat-title`">
+      <h1 :id="`${id}-chat-title`" tabindex="-1">{{ t('onboarding.chat.title') }}</h1>
+      <p class="lead">{{ t('onboarding.chat.intro') }}</p>
+      <OnboardingChat
+        v-model:session-id="draft.sessionId"
+        :workspace-id="workspaceId!"
+        :context="chatContext"
+        @proposal="onProposal"
+        @next="go('review')"
+      />
+      <div class="actions">
+        <button type="button" class="button" @click="go('networks')">
+          {{ t('onboarding.back') }}
+        </button>
+      </div>
+    </section>
+
+    <!-- 4. Review -->
     <form v-else class="form step review" novalidate @submit.prevent="create">
       <h1 tabindex="-1">{{ t('onboarding.review.title') }}</h1>
       <p>{{ t('onboarding.review.intro') }}</p>
@@ -353,10 +412,14 @@ function restart() {
         <div class="form-row">
           <label :for="`${id}-name-en`">
             {{ t('onboarding.review.nameEn') }} ({{ t('common.optional') }})
+            <span v-if="isProposed('nameEn')" class="proposed">{{
+              t('onboarding.review.proposed')
+            }}</span>
           </label>
           <input
             :id="`${id}-name-en`"
             v-model="draft.nameEn"
+            @input="edited('nameEn')"
             class="field"
             type="text"
             maxlength="100"
@@ -381,10 +444,14 @@ function restart() {
         <div class="form-row">
           <label :for="`${id}-description`">
             {{ t('onboarding.review.description') }} ({{ t('common.optional') }})
+            <span v-if="isProposed('description')" class="proposed">{{
+              t('onboarding.review.proposed')
+            }}</span>
           </label>
           <textarea
             :id="`${id}-description`"
             v-model="draft.description"
+            @input="edited('description')"
             class="field"
             rows="3"
             maxlength="2000"
@@ -393,21 +460,63 @@ function restart() {
         <div class="form-row">
           <label :for="`${id}-audience`">
             {{ t('onboarding.review.audience') }} ({{ t('common.optional') }})
+            <span v-if="isProposed('audience')" class="proposed">{{
+              t('onboarding.review.proposed')
+            }}</span>
           </label>
           <textarea
             :id="`${id}-audience`"
             v-model="draft.audience"
+            @input="edited('audience')"
             class="field"
             rows="2"
             maxlength="2000"
           ></textarea>
         </div>
+        <div class="form-row">
+          <label :for="`${id}-messages`">
+            {{ t('onboarding.review.messages') }} ({{ t('common.optional') }})
+            <span v-if="isProposed('messages')" class="proposed">{{
+              t('onboarding.review.proposed')
+            }}</span>
+          </label>
+          <textarea
+            :id="`${id}-messages`"
+            v-model="draft.messages"
+            class="field"
+            rows="3"
+            maxlength="4000"
+            @input="edited('messages')"
+          ></textarea>
+        </div>
+        <div class="form-row">
+          <label :for="`${id}-claims`">
+            {{ t('onboarding.review.claimsToAvoid') }} ({{ t('common.optional') }})
+            <span v-if="isProposed('claimsToAvoid')" class="proposed">{{
+              t('onboarding.review.proposed')
+            }}</span>
+          </label>
+          <textarea
+            :id="`${id}-claims`"
+            v-model="draft.claimsToAvoid"
+            class="field"
+            rows="2"
+            maxlength="4000"
+            @input="edited('claimsToAvoid')"
+          ></textarea>
+        </div>
       </section>
 
       <section :id="`${id}-langs`" tabindex="-1" :aria-labelledby="`${id}-langs-title`">
-        <h2 :id="`${id}-langs-title`">{{ t('onboarding.review.langs') }}</h2>
+        <h2 :id="`${id}-langs-title`">
+          {{ t('onboarding.review.langs') }}
+          <span v-if="isProposed('langs')" class="proposed">{{
+            t('onboarding.review.proposed')
+          }}</span>
+        </h2>
         <ContentLangsPicker
           v-model="draft.langs"
+          @update:model-value="edited('langs')"
           :legend="t('newTopic.langs')"
           :hint="t('newTopic.langsHint')"
         />
@@ -416,10 +525,16 @@ function restart() {
       <section v-if="draft.curation" :aria-labelledby="`${id}-matters`">
         <h2 :id="`${id}-matters`">{{ t('onboarding.review.matters') }}</h2>
         <div class="form-row">
-          <label :for="`${id}-criteria`">{{ t('settings.criteria') }}</label>
+          <label :for="`${id}-criteria`">
+            {{ t('settings.criteria') }}
+            <span v-if="isProposed('criteria')" class="proposed">{{
+              t('onboarding.review.proposed')
+            }}</span>
+          </label>
           <textarea
             :id="`${id}-criteria`"
             v-model="draft.criteria"
+            @input="edited('criteria')"
             class="field"
             rows="4"
             maxlength="4000"
@@ -434,10 +549,14 @@ function restart() {
         <div class="form-row">
           <label :for="`${id}-engagement-criteria`">
             {{ t('engagement.settings.criteria') }}
+            <span v-if="isProposed('engagementCriteria')" class="proposed">{{
+              t('onboarding.review.proposed')
+            }}</span>
           </label>
           <textarea
             :id="`${id}-engagement-criteria`"
             v-model="draft.engagementCriteria"
+            @input="edited('engagementCriteria')"
             class="field"
             rows="3"
             maxlength="4000"
@@ -454,10 +573,14 @@ function restart() {
         <div class="form-row">
           <label :for="`${id}-style`">
             {{ t('onboarding.review.style') }} ({{ t('common.optional') }})
+            <span v-if="isProposed('styleRules')" class="proposed">{{
+              t('onboarding.review.proposed')
+            }}</span>
           </label>
           <textarea
             :id="`${id}-style`"
             v-model="draft.styleRules"
+            @input="edited('styleRules')"
             class="field"
             rows="3"
             maxlength="4000"
@@ -465,16 +588,42 @@ function restart() {
           ></textarea>
           <p :id="`${id}-style-hint`" class="hint">{{ t('onboarding.review.styleHint') }}</p>
         </div>
+        <div v-if="draft.curation" class="form-row">
+          <label :for="`${id}-post-rules`">
+            {{ t('onboarding.review.postRules') }} ({{ t('common.optional') }})
+            <span v-if="isProposed('postRules')" class="proposed">{{
+              t('onboarding.review.proposed')
+            }}</span>
+          </label>
+          <textarea
+            :id="`${id}-post-rules`"
+            v-model="draft.postRules"
+            class="field"
+            rows="2"
+            maxlength="4000"
+            :aria-describedby="`${id}-post-rules-hint`"
+            @input="edited('postRules')"
+          ></textarea>
+          <p :id="`${id}-post-rules-hint`" class="hint">
+            {{ t('onboarding.review.postRulesHint') }}
+          </p>
+        </div>
       </section>
 
       <section v-if="draft.curation" :aria-labelledby="`${id}-rhythm`">
         <h2 :id="`${id}-rhythm`">{{ t('onboarding.review.rhythm') }}</h2>
         <div class="pair">
           <div class="form-row">
-            <label :for="`${id}-per-day`">{{ t('settings.postsPerDay') }}</label>
+            <label :for="`${id}-per-day`">
+              {{ t('settings.postsPerDay') }}
+              <span v-if="isProposed('postsPerDay')" class="proposed">{{
+                t('onboarding.review.proposed')
+              }}</span>
+            </label>
             <input
               :id="`${id}-per-day`"
               v-model.number="draft.postsPerDay"
+              @input="edited('postsPerDay')"
               class="field small"
               type="number"
               min="0"
@@ -483,10 +632,16 @@ function restart() {
             />
           </div>
           <div class="form-row">
-            <label :for="`${id}-slots`">{{ t('settings.slots') }}</label>
+            <label :for="`${id}-slots`">
+              {{ t('settings.slots') }}
+              <span v-if="isProposed('slots')" class="proposed">{{
+                t('onboarding.review.proposed')
+              }}</span>
+            </label>
             <input
               :id="`${id}-slots`"
               v-model="draft.slots"
+              @input="edited('slots')"
               class="field"
               type="text"
               inputmode="numeric"
@@ -521,7 +676,7 @@ function restart() {
         <button type="submit" class="button" data-variant="primary" :disabled="creating">
           {{ creating ? t('onboarding.review.creating') : t('onboarding.review.create') }}
         </button>
-        <button type="button" class="button" @click="go('networks')">
+        <button type="button" class="button" @click="go(withChat ? 'chat' : 'networks')">
           {{ t('onboarding.back') }}
         </button>
         <button type="button" class="button" @click="restart">
@@ -592,6 +747,23 @@ function restart() {
 
 .step h1 {
   margin: 0;
+}
+
+.lead {
+  margin: 0;
+}
+
+/* Where a value comes from: the assistant proposed it, the person has not edited it. */
+.proposed {
+  display: inline-block;
+  margin-inline-start: var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  vertical-align: middle;
 }
 
 .review section {

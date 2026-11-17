@@ -1,4 +1,5 @@
-import type { DraftChannel } from '@pann/shared'
+import { canonicalLang, MAX_OUTPUT_LANGS, type DraftChannel } from '@pann/shared'
+import type { OnboardingProposal } from './api'
 import { reactive, watch } from 'vue'
 
 /** Networks Pann publishes to, in the order shown at onboarding. */
@@ -39,11 +40,35 @@ export interface OnboardingDraft {
   langs: string[]
   criteria: string
   engagementCriteria: string
+  messages: string
+  claimsToAvoid: string
   styleRules: string
+  postRules: string
   postsPerDay: number
   slots: string
   budget: number
+  // Conversation
+  /** Session of the onboarding assistant, resumed on reload. */
+  sessionId: string
+  /** Fields filled by the assistant and not edited since (marked at the review). */
+  proposed: ProposedField[]
 }
+
+export const PROPOSED_FIELDS = [
+  'nameEn',
+  'description',
+  'audience',
+  'messages',
+  'claimsToAvoid',
+  'langs',
+  'criteria',
+  'engagementCriteria',
+  'styleRules',
+  'postRules',
+  'postsPerDay',
+  'slots',
+] as const
+export type ProposedField = (typeof PROPOSED_FIELDS)[number]
 
 const STORAGE_KEY = 'pann.onboarding'
 
@@ -66,10 +91,15 @@ export function emptyDraft(): OnboardingDraft {
     langs: ['fr', 'en'],
     criteria: '',
     engagementCriteria: '',
+    messages: '',
+    claimsToAvoid: '',
     styleRules: '',
+    postRules: '',
     postsPerDay: 2,
     slots: '09:00, 16:00',
     budget: 10,
+    sessionId: '',
+    proposed: [],
   }
 }
 
@@ -107,6 +137,38 @@ export function useOnboardingDraft() {
   return { draft, clear }
 }
 
+/**
+ * Fills the draft with what the assistant proposed (non-empty values only) and marks
+ * those fields, so that the review shows where each value comes from.
+ */
+export function applyProposal(draft: OnboardingDraft, proposal: Partial<OnboardingProposal>) {
+  const text = (value: string | null | undefined) => (value ?? '').trim()
+  const proposed = new Set(draft.proposed)
+  const set = <K extends ProposedField>(field: K, value: OnboardingDraft[K] | null) => {
+    if (value === null || value === '' || (Array.isArray(value) && !value.length)) return
+    ;(draft[field] as OnboardingDraft[K]) = value
+    proposed.add(field)
+  }
+  set('nameEn', text(proposal.name_en))
+  set('description', text(proposal.description))
+  set('audience', text(proposal.audience))
+  set('messages', text(proposal.messages))
+  set('claimsToAvoid', text(proposal.claims_to_avoid))
+  set('criteria', text(proposal.relevance_criteria))
+  set('engagementCriteria', text(proposal.engagement_criteria))
+  set('styleRules', text(proposal.style_rules))
+  set('postRules', text(proposal.post_rules))
+  const langs = [
+    ...new Set((proposal.output_langs ?? []).map(canonicalLang).filter((l) => l !== null)),
+  ].slice(0, MAX_OUTPUT_LANGS)
+  set('langs', langs.length ? langs : null)
+  if (typeof proposal.posts_per_day === 'number')
+    set('postsPerDay', Math.max(0, Math.min(10, Math.round(proposal.posts_per_day))))
+  const slots = (proposal.slots ?? []).join(', ')
+  set('slots', slots && parseSlots(slots) ? slots : null)
+  draft.proposed = PROPOSED_FIELDS.filter((field) => proposed.has(field))
+}
+
 /** "09:00, 16:00" → ['09:00', '16:00']; null when a time is not HH:MM. */
 export function parseSlots(text: string): string[] | null {
   const slots = text
@@ -134,8 +196,14 @@ export function draftConfig(draft: OnboardingDraft) {
       url: siteUrl(draft.url),
       description: draft.description.trim(),
       audience: draft.audience.trim(),
+      messages: draft.messages.trim(),
+      claims_to_avoid: draft.claimsToAvoid.trim(),
     },
-    ai: { relevance_criteria: draft.criteria.trim(), style_rules: draft.styleRules.trim() },
+    ai: {
+      relevance_criteria: draft.criteria.trim(),
+      style_rules: draft.styleRules.trim(),
+      post_rules: draft.postRules.trim(),
+    },
     engagement: { criteria: draft.engagementCriteria.trim() },
     schedule: { posts_per_day: draft.postsPerDay, slots: parseSlots(draft.slots) ?? [] },
   }

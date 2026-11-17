@@ -113,6 +113,49 @@ export interface NewTopicInput {
   requests: { kind: 'network' | 'feature'; subject: string }[]
 }
 
+export interface OnboardingMessage {
+  role: 'user' | 'assistant'
+  text: string
+  quick_replies?: string[]
+}
+
+/** Settings proposed by the onboarding assistant; null while unknown. */
+export interface OnboardingProposal {
+  name_en: string | null
+  description: string | null
+  audience: string | null
+  messages: string | null
+  claims_to_avoid: string | null
+  output_langs: string[] | null
+  relevance_criteria: string | null
+  engagement_criteria: string | null
+  style_rules: string | null
+  post_rules: string | null
+  posts_per_day: number | null
+  slots: string[] | null
+}
+
+export interface OnboardingSession {
+  id: string
+  workspace_id: string
+  messages: OnboardingMessage[]
+  proposal: Partial<OnboardingProposal>
+  status: 'pending' | 'idle' | 'done' | 'failed'
+  /** Error code (errors.*). */
+  error: string | null
+  updated_at: string
+}
+
+export interface OnboardingContext {
+  name: string
+  url?: string
+  tools: ('curation' | 'engagement')[]
+  channels: string[]
+  listen: string[]
+  newsletter?: boolean
+  ui_lang: 'fr' | 'en'
+}
+
 export interface RewriteInput {
   text: string
   preset: 'shorter' | 'longer' | 'formal' | 'casual' | 'custom'
@@ -303,6 +346,24 @@ export const api = {
 
   topics: () => request<Topic[]>('/topics'),
   createTopic: (input: NewTopicInput) => request<Topic>('/topics', json('POST', input)),
+  onboardingAvailable: (workspaceId: string) =>
+    request<{ available: boolean }>(
+      `/onboarding/available?workspace_id=${encodeURIComponent(workspaceId)}`,
+    ),
+  startOnboarding: (workspaceId: string, context: OnboardingContext) =>
+    request<OnboardingSession>(
+      '/onboarding/sessions',
+      json('POST', { workspace_id: workspaceId, context }),
+    ),
+  onboardingSession: (sessionId: string) =>
+    request<OnboardingSession>(`/onboarding/sessions/${sessionId}`),
+  answerOnboarding: (sessionId: string, text: string) =>
+    request<OnboardingSession>(
+      `/onboarding/sessions/${sessionId}/messages`,
+      json('POST', { text }),
+    ),
+  retryOnboarding: (sessionId: string) =>
+    request<OnboardingSession>(`/onboarding/sessions/${sessionId}/retry`, { method: 'POST' }),
   topic: (topicId: string) => request<TopicWithConfig>(`/topics/${topicId}`),
   setFeed: (topicId: string, enabled: boolean, regenerate = false) =>
     request<{ feed_key: string | null }>(

@@ -190,6 +190,8 @@ export const ERROR_CODES = [
   'empty_digest', // nothing validated since the last newsletter
   'email_sender_missing', // no sender set for the service emails (admin space)
   'no_platform_admin', // nobody to notify
+  'onboarding_unavailable', // no Pann key for the onboarding assistant
+  'onboarding_credit_exhausted', // onboarding credit or Pann's monthly cap reached
   'unexpected',
 ] as const
 export type ErrorCode = (typeof ERROR_CODES)[number]

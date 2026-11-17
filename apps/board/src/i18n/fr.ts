@@ -376,6 +376,8 @@ export default {
     email_sender_missing:
       'Aucune adresse d’expédition réglée pour les e-mails du service (Administration).',
     no_platform_admin: 'Aucun administrateur à prévenir.',
+    onboarding_unavailable: 'L’assistant n’est pas disponible pour le moment.',
+    onboarding_credit_exhausted: 'Le crédit de l’assistant est épuisé pour cet espace.',
     provider_error: 'Le service d’IA n’a pas pu répondre. Nouvel essai automatique.',
     insufficient_content:
       'Contenu de la source insuffisant pour un résumé fiable (page vide, payante ou trop courte). Lisez la source.',
@@ -1027,7 +1029,7 @@ export default {
   onboarding: {
     stepsLabel: 'Étapes de la création du thème',
     stepOf: 'Étape {index} sur {count} :',
-    steps: { goal: 'Objectif', networks: 'Réseaux', review: 'Relecture' },
+    steps: { goal: 'Objectif', networks: 'Réseaux', chat: 'Questions', review: 'Relecture' },
     continue: 'Continuer',
     back: 'Retour',
     skip: 'Passer cette étape',
@@ -1073,7 +1075,32 @@ export default {
         'Pann y cherche les discussions qui parlent de votre sujet ; vous ajusterez les recherches ensuite.',
       platforms: { hackernews: 'Hacker News', bluesky: 'Bluesky' },
     },
+    chat: {
+      title: 'Faisons connaissance',
+      intro:
+        'Quelques questions pour préparer les réglages de votre thème. Vous relirez tout avant de créer quoi que ce soit.',
+      log: 'Échange avec l’assistant',
+      assistant: 'Assistant',
+      you: 'Vous',
+      separator: ' :',
+      writing: 'L’assistant écrit…',
+      answer: 'Votre réponse',
+      answerHint: 'Entrée pour envoyer, Maj+Entrée pour aller à la ligne.',
+      quick: 'Réponses suggérées',
+      send: 'Envoyer',
+      finish: 'J’ai fini, voir le résultat',
+      toForm: 'Je préfère remplir le formulaire',
+      review: 'Voir le résultat',
+      retry: 'Réessayer',
+      failed: 'L’assistant n’a pas pu répondre.',
+      slow: 'La réponse tarde. Vous pouvez attendre encore, ou continuer avec le formulaire : vos réponses déjà données sont gardées.',
+    },
     review: {
+      proposed: 'Proposé par l’assistant',
+      messages: 'Messages à faire passer',
+      claimsToAvoid: 'À ne jamais dire',
+      postRules: 'Règles pour les posts',
+      postRulesHint: 'Par exemple : « 2 hashtags au maximum, pas d’emoji ».',
       title: 'Voici votre thème',
       intro:
         'Rien n’est encore enregistré. Modifiez ce qui ne vous convient pas, puis créez le thème. Tout se règle aussi ensuite.',
