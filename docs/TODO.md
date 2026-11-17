@@ -23,13 +23,13 @@ Décidée le 2026-11-16. Détail, maquettes de parcours et justification : `doc
 
 ## Idées
 
-- **Offres et page de tarifs** (idée du 2026-11-12), à présenter clairement dès l'inscription :
-  - **Light**, 5 € par mois et par thème : Pann fournit la curation et l'engagement ; l'utilisateur branche ses clés (Zernio, et une IA parmi celles prises en charge).
-  - **Medium**, 20 € par mois, 2 thèmes inclus : Pann fournit son IA avec un quota de consommation ; l'utilisateur apporte sa clé Zernio.
-  - **Curator**, 60 € par mois, 3 thèmes inclus : Pann s'occupe de tout (Zernio en mode plateforme, voir l'étude).
-  - **Enterprise** : sur mesure, sur contact.
-  - Acquisition : un mois d'essai gratuit, et au lancement seulement Light et Medium ; Curator et Enterprise quand le coût réel et la rentabilité seront connus.
-  - À prévoir : facturation (Stripe), quotas d'IA par espace, plusieurs IA prises en charge (aujourd'hui Anthropic seul), mode « comptes gérés par Pann » pour Zernio.
+- **Offres et page de tarifs** (modèle du 2026-11-17, remplace celui du 2026-11-12 ; résumé aussi dans `docs/CONTEXT.md`, section 12) :
+  1. **Offre « clés personnelles »**, environ 2 € par mois avec engagement d'un an : l'utilisateur apporte ses propres clés (IA, Zernio, Exa…) et règle ses budgets en dollars, comme aujourd'hui.
+  2. **Offre intermédiaire**, au mois ou à l'année : Pann fournit l'IA et les services. On parle de budget en **tokens**, jamais en dollars, pour effacer la comparaison avec le coût d'achat. Nombre de réseaux limité.
+  3. **Offre supérieure** : le même service, plus cher, avec des quotas plus élevés.
+  4. **Enterprise** : sur mesure, négociée directement avec Geoffrey.
+  - **À faire à part de la refonte** : analyse des prix de la concurrence (Buffer, Hootsuite, Publer…), puis prix et quotas de chaque offre (tokens par mois, nombre de réseaux, de thèmes).
+  - À prévoir : facturation (Stripe), compteur de tokens par espace, IA fournie par Pann, mode « comptes gérés par Pann » pour Zernio, choix de l'offre dans l'onboarding.
 - **Streak de publication** : compter les semaines d'affilée avec au moins une publication, l'afficher, et prévenir quand la semaine en cours n'a encore rien de programmé (« vous êtes sur le point de casser votre streak, choisissez des éléments à publier »). Préciser le canal de la notification (dans le board, par e-mail).
 - **Pause de la collecte** : réglage « au-delà de N éléments dans À trier, Pann se met en pause », pour ne pas accumuler plus qu'on ne peut trier (et ne pas payer le tri par IA pour rien). Reprise automatique sous le seuil.
 
