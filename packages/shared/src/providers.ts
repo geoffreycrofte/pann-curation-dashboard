@@ -77,6 +77,14 @@ export interface CredentialMeta {
 }
 
 /** Networks published directly, where a workspace can connect several accounts. */
+/**
+ * Keys of Pann itself, set in the admin space: the AI of the onboarding and of the offers
+ * where Pann provides the AI, and Zernio in platform mode (highest offer). Other AI
+ * services join this list when Pann supports them.
+ */
+export const PLATFORM_PROVIDERS = ['anthropic', 'zernio'] as const
+export type PlatformProvider = (typeof PLATFORM_PROVIDERS)[number]
+
 export const MULTI_ACCOUNT_PROVIDERS = ['mastodon', 'bluesky', 'discord'] as const
 export type MultiAccountProvider = (typeof MULTI_ACCOUNT_PROVIDERS)[number]
 

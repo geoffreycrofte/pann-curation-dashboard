@@ -14,4 +14,9 @@ describe('api', () => {
     const res = await app.request('/api/topics', {}, env)
     expect(res.status).toBe(401)
   })
+
+  it('keeps the admin space behind authentication', async () => {
+    const res = await app.request('/api/admin/credentials', {}, env)
+    expect(res.status).toBe(401)
+  })
 })

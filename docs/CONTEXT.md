@@ -384,3 +384,14 @@ Règles :
   - des tokens de couleur vérifiés en contraste (texte normal 4,5:1, grand texte et composants d'interface 3:1) en thème clair et sombre.
 - Le board doit lui-même être exemplaire en accessibilité : c'est un outil de veille accessibilité.
 
+## 12. Offres envisagées (2026-11-17)
+
+Modèle voulu par Geoffrey, prix et quotas à fixer après une analyse de la concurrence menée à part de la refonte de l'onboarding (`docs/TODO.md`) :
+
+1. **Offre « clés personnelles »**, environ 2 € par mois avec engagement d'un an : l'utilisateur apporte ses propres clés (IA, Zernio, Exa…) et règle ses budgets en dollars, comme aujourd'hui.
+2. **Offre intermédiaire**, au mois ou à l'année : Pann fournit l'IA et les services. On parle de budget en **tokens**, jamais en dollars, pour effacer la comparaison avec le coût d'achat. Nombre de réseaux limité.
+3. **Offre supérieure** : le même service, plus cher, avec des quotas plus élevés.
+4. **Enterprise** : sur mesure, négociée directement avec Geoffrey.
+
+Conséquences sur le produit : la règle « clés de services par espace, jamais en variables d'environnement » vaut pour la première offre ; les offres 2 et 3 supposent une IA et des services fournis par Pann, avec un compteur de tokens par espace. L'interface ne montre des dollars que dans l'offre « clés personnelles ».
+

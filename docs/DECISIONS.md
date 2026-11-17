@@ -360,3 +360,20 @@ Deux réglages par thème et par langue, dans la diffusion : une **signature** 
 ## 2026-11-16 : rédiger seulement les posts manquants
 
 Les posts Discord et Facebook ne sont rédigés que si le thème publie déjà sur ces réseaux. Un élément rédigé avant l'ajout d'un réseau (ou d'une langue à un compte) n'a donc pas de post pour lui, et rien ne part dessus. La page de l'élément le signale, uniquement dans ce cas, avec un bouton « Rédiger les posts manquants ». La demande passe par `request_missing_posts`, qui met `item_topics.draft_scope` à `missing` : la rédaction ne demande au modèle que les réseaux manquants, n'ajoute que les posts absents et laisse résumés et autres posts tels quels. Sans post manquant au moment du passage, aucun appel au modèle. Le job remet `draft_scope` à `all` en finissant, pour que toute autre demande rédige tout.
+
+## 2026-11-17 : arbitrages de la mission onboarding et architecture
+
+Réponses de Geoffrey aux questions de `docs/studies/onboarding-ia.md` (détail dans l'étude) : la refonte se fait **d'un coup**, sans version allégée ni redirections (seul utilisateur pour l'instant) ; l'objectif se demande avant les réseaux ; sections Aujourd'hui (multi-thèmes), Aperçu, Veille, Conversations, Création, Calendrier ; **la métaphore de l'orpaillage quitte le board** et reste sur les pages publiques (règle mise à jour dans `CLAUDE.md`) ; inscription sur invitation, avec une demande motivée envoyée par e-mail ; créneaux distincts par outil ; demandes « autre réseau » traitées et priorisées ; Création avec les 5 réseaux actuels, images dans l'offre intermédiaire ; **toutes les langues pour les contenus**, l'interface restant en français et en anglais.
+
+## 2026-11-17 : espace d'admin, clés et centre de coûts de Pann
+
+L'IA de l'onboarding et des offres où Pann fournit les services est payée par Pann, avec ses propres clés : c'est la seule exception à la règle des clés par espace (`CLAUDE.md` mis à jour). Ces clés (Anthropic, Zernio en mode plateforme pour l'offre la plus élevée ; d'autres IA quand Pann les prendra en charge) se règlent dans un **espace d'admin** (`/admin`), stockées dans Supabase Vault comme les autres, vérifiées auprès du service avant enregistrement et jamais réaffichées. Les jobs les lisent avec la clé secrète (`platform_credentials_for_jobs`).
+
+Le rôle d'administrateur est une table du schéma `private` (`private.platform_admins`), hors de portée de l'API : il ne s'accorde qu'en SQL, une fois, dans l'éditeur de Supabase :
+
+```sql
+insert into private.platform_admins (user_id)
+select id from auth.users where email = '<adresse de l’administrateur>';
+```
+
+L'API répond 404 aux autres comptes, et chaque fonction de la base revérifie le rôle. Le **centre de coûts** lit `usage_log`, où une nouvelle colonne `billed_to` (`workspace` ou `platform`) dit qui paie chaque appel, et règle deux plafonds (`platform_settings`) : le crédit d'onboarding par espace et le plafond mensuel de Pann. Rien n'utilise encore les clés de Pann : l'onboarding s'y branchera, en respectant ces plafonds.

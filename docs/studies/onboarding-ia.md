@@ -71,6 +71,7 @@ Barre latérale
 
 - **Ordre : objectif, puis réseaux, puis contexte.** Je recommande d'inverser les deux premières questions du brief. Le choix des outils change le sens de la question des réseaux : pour la veille et la création, ce sont des réseaux où **publier** ; pour les conversations, des réseaux où **écouter** (Hacker News, Bluesky), et Pann n'y publie jamais. Poser l'objectif d'abord évite une question ambiguë.
 - **Aucune clé, aucun budget pendant le parcours.** Ce qui demande une clé devient une ligne de la liste de démarrage, après coup. Le budget prend sa valeur par défaut (10 $) et s'affiche dans l'écran de relecture.
+  - _Ajout du 2026-11-17, modèle d'offres de Geoffrey (`docs/CONTEXT.md`, section 12)_ : ce principe dépend de l'offre. Avec l'offre « clés personnelles », le budget reste en dollars et les clés arrivent dans la liste de démarrage, comme décrit ici. Avec les offres où Pann fournit l'IA, il n'y a ni clé ni dollar : le parcours montre un budget en tokens tiré du quota de l'offre, et la conversation de cadrage est incluse (la question « qui paie l'IA de l'onboarding » ne se pose plus). Le choix de l'offre devient donc une étape à placer dans le parcours, à définir avec la tarification.
 - **Rien n'est enregistré avant la relecture.** Le parcours garde un brouillon ; l'écran final montre tout ce qui va être écrit dans `topics.config`, modifiable.
 - **Toute réponse se règle ensuite** : chaque écran le dit, et chaque valeur déduite renvoie au réglage qui la porte.
 - **Quand ?** À la première connexion d'un espace sans thème (redirection automatique), et à chaque « Nouveau thème ». Les thèmes existants ne le voient pas, mais peuvent lancer l'assistant depuis leurs réglages (voir 2.6).
@@ -226,12 +227,16 @@ Barre latérale
 
 ### 3.3 Ce qui change pour les personnes qui utilisent déjà Pann
 
+_Sans objet pour l'instant (réponse du 2026-11-17) : Geoffrey est le seul utilisateur, pas de redirections ni d'annonce._
+
 - **Anciennes adresses redirigées**, comme déjà fait pour `settings?tab=` : `/t/:id` (Tri) vers `/t/:id/curation`, `/diffusion` et `?status=scheduled` vers `/calendar`, `/newsletter` vers `/calendar?view=newsletter`, `/sources` vers `/settings/sources`, `/curation/settings?tab=` vers la sous-section correspondante.
 - **Aucune migration de données** : la structure de `topics.config` ne bouge pas (seuls `modules.compose` et `target_channels` s'ajoutent, avec valeurs par défaut).
 - **Changement d'habitude principal** : le Tri n'est plus la page d'arrivée d'un thème. Pour limiter la gêne, l'Aperçu met « N éléments à trier » en premier, avec un lien direct, et le choix de la page d'arrivée peut devenir une préférence.
 - **Annonce** : une note unique dans l'Aperçu (« Ce qui a changé »), avec la correspondance ancien libellé, nouvel endroit. Le serveur MCP n'est pas concerné (il parle en termes techniques).
 
 ### 3.4 Alternative allégée (si la refonte complète n'en vaut pas encore la peine)
+
+_Écartée le 2026-11-17 : la refonte se fait d'un coup._
 
 À faire en une à deux semaines, sans toucher aux routes principales :
 
@@ -328,6 +333,21 @@ Les pages officielles de tarifs de Buffer, Hootsuite et Publer n'étaient pas jo
 8. **Langues** : la conversation détectera des publics dans d'autres langues que le français et l'anglais (`LANGS` est limité aux deux). Hors périmètre pour l'instant ?
 9. **Page « Aujourd'hui » multi-thèmes** : utile pour toi au quotidien, ou l'Aperçu par thème suffit ?
 10. **Refonte** : on part sur l'allégée maintenant et la refonte avec Création, ou tu préfères tout faire d'un coup ?
+
+## Réponses de Geoffrey (2026-11-17)
+
+Ces réponses priment sur les recommandations ci-dessus quand elles divergent.
+
+1. **IA de l'onboarding et des offres où Pann fournit l'IA** : payée par Pann, avec les clés de Geoffrey (Anthropic, puis d'autres IA, et Zernio en mode plateforme pour l'offre la plus élevée), réglées dans un **espace d'admin** réservé à son compte. Le crédit d'onboarding se contrôle dans un **centre de coûts** de cet espace.
+2. **Inscription** : sur invitation pour l'instant. Une personne non invitée envoie une **demande motivée**, transmise par e-mail à Geoffrey.
+3. **Ordre des questions** : l'objectif avant les réseaux, d'accord.
+4. **Noms** : Veille, Conversations, Création, Calendrier, Aperçu, Aujourd'hui, d'accord. **La métaphore de l'orpaillage reste sur les pages publiques** et sort du board, pour garder l'interface simple.
+5. **Création** : les 5 réseaux actuels au lancement, à élargir vite après la refonte. Images comprises dans l'offre intermédiaire (voir `docs/CONTEXT.md`, section 12).
+6. **Calendrier** : créneaux distincts par outil pour commencer.
+7. **« Autre réseau »** : répondre aux demandes, en les priorisant (pas seulement les compter).
+8. **Langues** : dans le périmètre. L'interface reste en français et en anglais, mais un thème doit pouvoir publier dans **n'importe quelle langue** : `LANGS` cesse d'être une liste fermée pour les contenus.
+9. **Aujourd'hui multi-thèmes** : oui.
+10. **Refonte** : **tout d'un coup**, pas d'alternative allégée. Les redirections d'anciennes adresses (3.3) sont inutiles, Geoffrey étant le seul utilisateur pour l'instant.
 
 ## Sources
 
