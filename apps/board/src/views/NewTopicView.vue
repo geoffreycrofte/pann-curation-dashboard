@@ -34,7 +34,11 @@ const { mutate, isLoading } = useMutation({
   async onSuccess(topic) {
     await queryCache.invalidateQueries({ key: ['topics'] })
     // Next step of the setup: the sources of the new topic.
-    await router.push({ name: 'sources', params: { topicId: topic.id }, query: { new: '1' } })
+    await router.push({
+      name: 'settings',
+      params: { topicId: topic.id },
+      query: { tab: 'sources', new: '1' },
+    })
   },
   onError(err) {
     message.value = describeError(err.message, t).text

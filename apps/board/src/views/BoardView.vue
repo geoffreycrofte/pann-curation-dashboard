@@ -7,8 +7,6 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AddItemForm from '../components/AddItemForm.vue'
 import ItemList from '../components/ItemList.vue'
-import ScheduledPanel from '../components/ScheduledPanel.vue'
-import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
 import { useTopicName } from '../lib/topic-name'
 import { useWorkspace } from '../lib/workspace'
@@ -32,19 +30,16 @@ const anthropicMissing = computed(
     !credentials.value.some((c) => c.provider === 'anthropic' && c.status !== 'invalid'),
 )
 
-// "Scheduled" is not a status: validated items waiting for their slot, after "Validated".
-type Tab = ItemTopicStatus | 'scheduled'
-const TABS: readonly Tab[] = ITEM_TOPIC_STATUSES.flatMap((s): Tab[] =>
-  s === 'validated' ? [s, 'scheduled'] : [s],
-)
-const status = computed<Tab>({
+// Scheduled items are in the calendar (what goes out), not here.
+const TABS = ITEM_TOPIC_STATUSES
+const status = computed<ItemTopicStatus>({
   get: () => {
     const q = route.query.status
-    return typeof q === 'string' && (TABS as readonly string[]).includes(q) ? (q as Tab) : 'new'
+    return typeof q === 'string' && (TABS as readonly string[]).includes(q)
+      ? (q as ItemTopicStatus)
+      : 'new'
   },
-  // The views of the scheduled tab (list, week) do not follow to another tab.
-  set: (value) =>
-    router.replace({ query: { ...route.query, status: value, view: undefined, week: undefined } }),
+  set: (value) => void router.replace({ query: { ...route.query, status: value } }),
 })
 
 // Under the 'items' key: every status change or new item refreshes the counters too.
@@ -64,8 +59,7 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ topicName }}</h1>
-  <TopicNav :topic-id="topicId" />
+  <h1 tabindex="-1">{{ t('board.heading', { topic: topicName }) }}</h1>
   <p v-if="curationOff" class="notice" role="note">
     {{ t('modules.curationOff') }}
     <RouterLink :to="{ name: 'settings', params: { topicId } }">
@@ -82,7 +76,7 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
     <TabsRoot v-model="status" activation-mode="manual">
       <TabsList :aria-label="t('board.statusFilter')" v-scroll-active class="tabs tab-row">
         <TabsTrigger v-for="s in TABS" :key="s" :value="s" class="button tab">
-          {{ s === 'scheduled' ? t('scheduled.tab') : t(`status.${s}`) }}
+          {{ t(`status.${s}`) }}
           <span v-if="counts?.[s] !== undefined" class="count">
             <span class="visually-hidden">(</span>{{ counts[s]
             }}<span class="visually-hidden">)</span>
@@ -91,9 +85,6 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
       </TabsList>
       <TabsContent v-for="s in ITEM_TOPIC_STATUSES" :key="s" :value="s" class="panel">
         <ItemList :topic-id="topicId" :status="s" @announce="announcement = $event" />
-      </TabsContent>
-      <TabsContent value="scheduled" class="panel">
-        <ScheduledPanel :topic-id="topicId" />
       </TabsContent>
     </TabsRoot>
   </template>

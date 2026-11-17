@@ -1,7 +1,7 @@
 import type fr from './fr'
 
 export default {
-  app: { name: 'Pann', tagline: 'Content curation tool' },
+  app: { name: 'Pann', tagline: 'Make your subject known' },
   toast: { close: 'Close the notification “{text}”' },
   a11y: { skipToContent: 'Skip to content' },
   lang: { label: 'Language', fr: 'Français', en: 'English' },
@@ -45,8 +45,10 @@ export default {
   },
   nav: {
     accountMenu: 'Account and preferences',
-    curation: 'Curation',
-    engagement: 'Engagement',
+    overview: 'Overview',
+    curation: 'News watch',
+    engagement: 'Conversations',
+    calendar: 'Calendar',
     topicSettings: 'Topic settings',
     topicSections: 'Tools of {topic}',
     signedInAs: 'Signed in as',
@@ -59,6 +61,32 @@ export default {
     label: 'Main navigation',
     topics: 'Topics',
     connections: 'Connections',
+  },
+  today: {
+    heading: 'Today',
+    intro: 'What is waiting in each of your topics.',
+    empty:
+      'No topic yet. A topic is a product or a subject to make known: Pann follows its news, spots conversations and prepares your posts.',
+    createFirst: 'Create your first topic',
+  },
+  summary: {
+    toSort: 'items to sort | item to sort | items to sort',
+    toReview: 'conversations to review | conversation to review | conversations to review',
+    upcoming: 'scheduled posts | scheduled post | scheduled posts',
+    failed: 'failed posts | failed post | failed posts',
+    next: 'Next: {date}',
+  },
+  overview: {
+    next: 'Next posts',
+    nothingScheduled: 'Nothing scheduled yet.',
+    chooseValidated: 'Choose among the validated items',
+    postOn: '{channel} in {lang}',
+    openCalendar: 'Open the calendar',
+  },
+  calendar: {
+    heading: 'Calendar: {topic}',
+    tabsLabel: 'Calendar views',
+    tabs: { scheduled: 'Scheduled', history: 'History', newsletter: 'Newsletter' },
   },
   profile: {
     title: 'Profile',
@@ -575,7 +603,6 @@ export default {
     lengthWithSignature: '{count} of {limit} characters, link and signature included',
     signature: 'Signature added when published',
     queueTitle: 'Diffusion',
-    queueHeading: 'Diffusion: {topic}',
     queueSlots: 'Slots: {slots} ({timezone}).',
     queuePaused: 'Queue paused: no posts per day. Items can still be published right away.',
     queueHint: 'Validated and drafted items are scheduled from their page.',
@@ -587,7 +614,6 @@ export default {
     postLine: '{channel} in {lang}: {status}',
   },
   newsletter: {
-    heading: 'Newsletter: {topic}',
     intro:
       'Each issue holds the items scheduled or published on the social networks that no issue has sent yet, with their summary in the language of the issue. One campaign per language, with Brevo or SendFox.',
     nextAuto: 'Next automatic sending: {date}.',
@@ -686,15 +712,8 @@ export default {
     disclosureHint:
       'Added each time the product is mentioned in a reply, so that your link with it is clear.',
   },
-  topicNav: {
-    label: 'Curation sections',
-    board: 'Sorting',
-    sources: 'Sources',
-    settings: 'Settings',
-    diffusion: 'Diffusion',
-    newsletter: 'Newsletter',
-  },
   board: {
+    heading: 'News watch: {topic}',
     openDetail: 'Details and drafts',
     openDetailLabel: 'Details and drafts of “{title}”',
     reason: 'Analysis: {reason}',
@@ -717,7 +736,6 @@ export default {
     scheduledFor: 'Scheduled for {date}',
   },
   scheduled: {
-    tab: 'Scheduled',
     views: 'Display of scheduled items',
     list: 'List',
     week: 'Week',
@@ -923,7 +941,6 @@ export default {
       'Next step: add its sources (RSS feeds, Exa searches, GitHub repositories) with the form at the bottom of the page. The content kind of each source sets how often it is collected.',
     newTopicSettings: 'Then set up drafting, distribution and the newsletter',
     activeShort: 'Collection on',
-    heading: 'Sources: {topic}',
     title: 'Sources',
     tableCaption: 'Sources collected for this topic',
     name: 'Name',
@@ -991,10 +1008,8 @@ export default {
     removed: '“{site}” is no longer excluded. Its items already rejected stay rejected.',
   },
   engagement: {
-    heading: 'Engagement: {topic}',
+    heading: 'Conversations: {topic}',
     off: 'Engagement is turned off for this topic.',
-    sectionsLabel: 'Engagement sections',
-    sections: { conversations: 'Conversations', sources: 'Sources', settings: 'Triage settings' },
     neverPosted:
       'Pann never posts a reply. Open the discussion, reply yourself if you can really help, and disclose your link with the product whenever you mention it.',
     statusFilter: 'Show conversations',
@@ -1122,16 +1137,18 @@ export default {
     tabsLabel: 'Settings sections',
     tabs: {
       general: 'General',
-      product: 'Product',
-      kinds: 'Kinds of content',
-      collection: 'Collection',
-      triage: 'AI triage',
-      drafting: 'AI drafting',
-      diffusion: 'Diffusion',
+      product: 'Product and audience',
+      sources: 'Sources',
+      triage: 'Triage and kinds of content',
+      voice: 'Voice and drafting',
+      publishing: 'Publishing',
       newsletter: 'Newsletter',
       feed: 'Public feeds',
+      conversations: 'Conversations',
       budget: 'Budget',
     },
+    curationSources: 'News watch sources',
+    engagementSources: 'Conversation sources',
     criteria: 'Relevance criteria',
     criteriaHint:
       'Describe what makes an item useful for this topic: subjects, standards, audiences, what to leave out. The AI uses it to score each item.',
@@ -1179,7 +1196,6 @@ export default {
     thresholdHint:
       'Items scored below this threshold are archived automatically: they stay available in the “Archived” tab.',
     heading: 'Topic settings: {topic}',
-    curationHeading: 'Curation settings: {topic}',
     title: 'Settings',
     collection: 'Collection frequency by content type',
     collectionHint:

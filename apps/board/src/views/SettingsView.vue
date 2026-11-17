@@ -13,37 +13,52 @@ import ProductSettings from '../components/ProductSettings.vue'
 import TopicGeneralSettings from '../components/TopicGeneralSettings.vue'
 import TopicKindsSettings from '../components/TopicKindsSettings.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
-import TopicNav from '../components/TopicNav.vue'
+import EngagementSettings from '../components/EngagementSettings.vue'
+import EngagementSources from '../components/EngagementSources.vue'
+import SourcesPanel from '../components/SourcesPanel.vue'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
 import { toast } from '../lib/toast'
 
 /**
- * Settings of a topic. scope "topic": what its tools share (general, product, budget);
- * scope "curation": what only the curation tool uses.
+ * Every setting of a topic, grouped by subject whatever the tool: a tab per subject,
+ * shown when a tool that uses it is on.
  */
-const props = defineProps<{ topicId: string; scope: 'topic' | 'curation' }>()
+const props = defineProps<{ topicId: string }>()
 const { t, locale } = useI18n()
 const id = useId()
 const queryCache = useQueryCache()
 const topicName = useTopicName(() => props.topicId)
 
-// Sub-tabs, kept in the address (?tab=…) so a section can be linked and survives a reload.
-const TOPIC_TABS = ['general', 'product', 'budget'] as const
-const CURATION_TABS = [
-  'kinds',
-  'collection',
+// Tabs, kept in the address (?tab=…) so a section can be linked and survives a reload.
+const ALL_TABS = [
+  'general',
+  'product',
+  'sources',
   'triage',
-  'drafting',
-  'diffusion',
+  'voice',
+  'publishing',
   'newsletter',
   'feed',
+  'conversations',
+  'budget',
 ] as const
-type Tab = (typeof TOPIC_TABS)[number] | (typeof CURATION_TABS)[number]
+type Tab = (typeof ALL_TABS)[number]
+/** Tabs used by one tool only: hidden while that tool is off. */
+const CURATION_ONLY: readonly Tab[] = ['triage', 'voice', 'publishing', 'newsletter', 'feed']
+const ENGAGEMENT_ONLY: readonly Tab[] = ['conversations']
+
 const route = useRoute()
 const router = useRouter()
-const tabs = computed<readonly Tab[]>(() => (props.scope === 'topic' ? TOPIC_TABS : CURATION_TABS))
+const tabs = computed<readonly Tab[]>(() => {
+  const modules = topic.value?.config.modules ?? { curation: true, engagement: false }
+  return ALL_TABS.filter(
+    (name) =>
+      (modules.curation || !CURATION_ONLY.includes(name)) &&
+      (modules.engagement || !ENGAGEMENT_ONLY.includes(name)),
+  )
+})
 const tab = computed<Tab>({
   get: () => {
     const value = route.query.tab
@@ -106,22 +121,7 @@ const { mutate, isLoading } = useMutation({
 </script>
 
 <template>
-  <h1 tabindex="-1">
-    {{
-      t(scope === 'topic' ? 'settings.heading' : 'settings.curationHeading', { topic: topicName })
-    }}
-  </h1>
-  <TopicNav v-if="scope === 'curation'" :topic-id="topicId" />
-  <p
-    v-if="scope === 'curation' && topic?.config.modules.curation === false"
-    class="notice"
-    role="note"
-  >
-    {{ t('modules.curationOff') }}
-    <RouterLink :to="{ name: 'settings', params: { topicId } }">{{
-      t('modules.turnOn')
-    }}</RouterLink>
-  </p>
+  <h1 tabindex="-1">{{ t('settings.heading', { topic: topicName }) }}</h1>
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
@@ -140,11 +140,20 @@ const { mutate, isLoading } = useMutation({
       <ProductSettings :key="topic.id" :topic="topic" />
     </TabsContent>
 
-    <TabsContent value="kinds" class="subpanel">
-      <TopicKindsSettings :key="topic.id" :topic="topic" />
+    <TabsContent value="sources" class="subpanel">
+      <section v-if="topic.config.modules.curation" :aria-labelledby="`${id}-curation-sources`">
+        <h2 :id="`${id}-curation-sources`">{{ t('settings.curationSources') }}</h2>
+        <SourcesPanel :topic-id="topicId" />
+      </section>
+      <section v-if="topic.config.modules.engagement" :aria-labelledby="`${id}-engagement-sources`">
+        <h2 :id="`${id}-engagement-sources`">{{ t('settings.engagementSources') }}</h2>
+        <EngagementSources :topic-id="topicId" />
+      </section>
     </TabsContent>
 
-    <TabsContent value="collection" class="subpanel">
+    <!-- Triage: what the topic keeps, its kinds of content and how often each is collected. -->
+    <TabsContent value="triage" class="subpanel stack">
+      <TopicKindsSettings :key="topic.id" :topic="topic" />
       <form class="form settings" @submit.prevent="mutate()">
         <fieldset :aria-describedby="`${id}-hint`">
           <legend>{{ t('settings.collection') }}</legend>
@@ -179,9 +188,6 @@ const { mutate, isLoading } = useMutation({
         </div>
         <p role="status" :class="{ error: isError }">{{ message }}</p>
       </form>
-    </TabsContent>
-
-    <TabsContent value="triage" class="subpanel">
       <form class="form settings" @submit.prevent="mutate()">
         <fieldset>
           <legend>{{ t('settings.triage') }}</legend>
@@ -223,7 +229,7 @@ const { mutate, isLoading } = useMutation({
       </form>
     </TabsContent>
 
-    <TabsContent value="drafting" class="subpanel">
+    <TabsContent value="voice" class="subpanel">
       <form class="form settings" @submit.prevent="mutate()">
         <fieldset :aria-describedby="`${id}-drafting-hint`">
           <legend>{{ t('settings.drafting') }}</legend>
@@ -267,7 +273,7 @@ const { mutate, isLoading } = useMutation({
       </form>
     </TabsContent>
 
-    <TabsContent value="diffusion" class="subpanel">
+    <TabsContent value="publishing" class="subpanel">
       <DiffusionSettings :topic-id="topicId" :config="topic.config" />
     </TabsContent>
     <TabsContent value="newsletter" class="subpanel">
@@ -276,6 +282,9 @@ const { mutate, isLoading } = useMutation({
     <TabsContent value="feed" class="subpanel">
       <FeedSettings :topic-id="topicId" :config="topic.config" :feed-key="topic.feed_key" />
     </TabsContent>
+    <TabsContent value="conversations" class="subpanel">
+      <EngagementSettings :key="topic.id" :topic="topic" />
+    </TabsContent>
     <TabsContent value="budget" class="subpanel">
       <BudgetSection :topic-id="topicId" />
     </TabsContent>
@@ -283,6 +292,12 @@ const { mutate, isLoading } = useMutation({
 </template>
 
 <style scoped>
+/* Several forms in one tab (triage: kinds, collection, criteria). */
+.stack {
+  display: grid;
+  gap: var(--space-8);
+}
+
 /* Each panel is one section: no card, the legend reads as the panel title. */
 .settings {
   max-width: 40rem;

@@ -6,8 +6,6 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ConversationList from '../components/ConversationList.vue'
-import EngagementSettings from '../components/EngagementSettings.vue'
-import EngagementSources from '../components/EngagementSources.vue'
 import { api } from '../lib/api'
 import { useTopicName } from '../lib/topic-name'
 
@@ -31,16 +29,6 @@ const STATUSES = [
   'rejected',
   'archived',
 ] as const satisfies readonly ItemTopicStatus[]
-const SECTIONS = ['conversations', 'sources', 'settings'] as const
-type Section = (typeof SECTIONS)[number]
-
-const section = computed<Section>({
-  get: () => {
-    const value = route.query.tab
-    return (SECTIONS as readonly unknown[]).includes(value) ? (value as Section) : 'conversations'
-  },
-  set: (value) => void router.replace({ query: { ...route.query, tab: value } }),
-})
 const status = computed<ItemTopicStatus>({
   get: () => {
     const value = route.query.status
@@ -68,14 +56,9 @@ const announcement = ref('')
     }}</RouterLink>
   </p>
 
-  <TabsRoot v-else-if="topic" v-model="section" activation-mode="manual">
-    <TabsList :aria-label="t('engagement.sectionsLabel')" v-scroll-active class="subtabs tab-row">
-      <TabsTrigger v-for="name in SECTIONS" :key="name" :value="name" class="subtab">
-        {{ t(`engagement.sections.${name}`) }}
-      </TabsTrigger>
-    </TabsList>
-
-    <TabsContent value="conversations" class="subpanel">
+  <template v-else-if="topic">
+    <!-- Its sources and settings are in the topic settings (Sources, Conversations). -->
+    <div>
       <!-- The rule of the tool, always in view: Pann never posts a reply. -->
       <p class="notice" role="note">{{ t('engagement.neverPosted') }}</p>
       <TabsRoot v-model="status" activation-mode="manual">
@@ -92,16 +75,8 @@ const announcement = ref('')
           <ConversationList :topic-id="topicId" :status="s" @announce="announcement = $event" />
         </TabsContent>
       </TabsRoot>
-    </TabsContent>
-
-    <TabsContent value="sources" class="subpanel">
-      <EngagementSources :topic-id="topicId" />
-    </TabsContent>
-
-    <TabsContent value="settings" class="subpanel">
-      <EngagementSettings :key="topic.id" :topic="topic" />
-    </TabsContent>
-  </TabsRoot>
+    </div>
+  </template>
 
   <div role="status" class="visually-hidden">{{ announcement }}</div>
 </template>

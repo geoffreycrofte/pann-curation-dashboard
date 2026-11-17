@@ -1,5 +1,5 @@
 export default {
-  app: { name: 'Pann', tagline: 'Outil de curation de veille' },
+  app: { name: 'Pann', tagline: 'Faites connaître votre sujet' },
   toast: { close: 'Fermer la notification « {text} »' },
   a11y: { skipToContent: 'Aller au contenu' },
   lang: { label: 'Langue', fr: 'Français', en: 'English' },
@@ -44,13 +44,15 @@ export default {
   },
   nav: {
     accountMenu: 'Compte et préférences',
-    curation: 'Curation',
-    engagement: 'Engagement',
+    overview: 'Aperçu',
+    curation: 'Veille',
+    engagement: 'Conversations',
+    calendar: 'Calendrier',
     topicSettings: 'Réglages du thème',
     topicSections: 'Outils de {topic}',
     signedInAs: 'Connecté en tant que',
     close: 'Fermer',
-    settings: 'Réglages',
+    settings: 'Espace de travail',
     profile: 'Profil',
     admin: 'Administration',
     newTopic: 'Nouveau thème',
@@ -58,6 +60,32 @@ export default {
     label: 'Navigation principale',
     topics: 'Thèmes',
     connections: 'Connexions',
+  },
+  today: {
+    heading: 'Aujourd’hui',
+    intro: 'Ce qui attend dans chacun de vos thèmes.',
+    empty:
+      'Aucun thème pour l’instant. Un thème, c’est un produit ou un sujet à faire connaître : Pann en suit l’actualité, repère les conversations et prépare vos publications.',
+    createFirst: 'Créer votre premier thème',
+  },
+  summary: {
+    toSort: 'élément à trier | élément à trier | éléments à trier',
+    toReview: 'conversation à examiner | conversation à examiner | conversations à examiner',
+    upcoming: 'publication programmée | publication programmée | publications programmées',
+    failed: 'publication en échec | publication en échec | publications en échec',
+    next: 'Prochaine : {date}',
+  },
+  overview: {
+    next: 'Prochaines publications',
+    nothingScheduled: 'Rien de programmé pour l’instant.',
+    chooseValidated: 'Choisir parmi les éléments validés',
+    postOn: '{channel} en {lang}',
+    openCalendar: 'Ouvrir le calendrier',
+  },
+  calendar: {
+    heading: 'Calendrier : {topic}',
+    tabsLabel: 'Vues du calendrier',
+    tabs: { scheduled: 'Programmés', history: 'Historique', newsletter: 'Newsletter' },
   },
   profile: {
     title: 'Profil',
@@ -582,7 +610,6 @@ export default {
     lengthWithSignature: '{count} caractères sur {limit}, lien et signature compris',
     signature: 'Signature ajoutée à la publication',
     queueTitle: 'Diffusion',
-    queueHeading: 'Diffusion : {topic}',
     queueSlots: 'Créneaux : {slots} ({timezone}).',
     queuePaused:
       'File en pause : aucun post par jour. Les éléments peuvent toujours être publiés tout de suite.',
@@ -595,7 +622,6 @@ export default {
     postLine: '{channel} en {lang} : {status}',
   },
   newsletter: {
-    heading: 'Newsletter : {topic}',
     intro:
       'Chaque newsletter reprend les éléments programmés ou publiés sur les réseaux qu’aucune newsletter n’a encore envoyés, avec leur résumé dans sa langue. Une campagne par langue, avec Brevo ou SendFox.',
     nextAuto: 'Prochain envoi automatique : {date}.',
@@ -695,15 +721,8 @@ export default {
     disclosureHint:
       'Ajoutée chaque fois que le produit est cité dans une réponse, pour que votre lien avec lui soit clair.',
   },
-  topicNav: {
-    label: 'Sections de la curation',
-    board: 'Tri',
-    sources: 'Sources',
-    settings: 'Réglages',
-    diffusion: 'Diffusion',
-    newsletter: 'Newsletter',
-  },
   board: {
+    heading: 'Veille : {topic}',
     openDetail: 'Fiche et rédaction',
     openDetailLabel: 'Fiche et rédaction de « {title} »',
     reason: 'Analyse : {reason}',
@@ -726,7 +745,6 @@ export default {
     scheduledFor: 'Programmé le {date}',
   },
   scheduled: {
-    tab: 'Programmés',
     views: 'Affichage des éléments programmés',
     list: 'Liste',
     week: 'Semaine',
@@ -934,7 +952,6 @@ export default {
       'Étape suivante : ajoutez ses sources (flux RSS, recherches Exa, dépôts GitHub) avec le formulaire en bas de page. Le type de contenu de chaque source règle sa fréquence de collecte.',
     newTopicSettings: 'Régler ensuite la rédaction, la diffusion et la newsletter',
     activeShort: 'Collecte active',
-    heading: 'Sources : {topic}',
     title: 'Sources',
     tableCaption: 'Sources collectées pour ce thème',
     name: 'Nom',
@@ -1003,10 +1020,8 @@ export default {
     removed: '« {site} » n’est plus exclu. Ses éléments déjà rejetés le restent.',
   },
   engagement: {
-    heading: 'Engagement : {topic}',
+    heading: 'Conversations : {topic}',
     off: 'L’engagement est désactivé pour ce thème.',
-    sectionsLabel: 'Sections de l’engagement',
-    sections: { conversations: 'Conversations', sources: 'Sources', settings: 'Réglages du tri' },
     neverPosted:
       'Pann ne publie jamais de réponse. Ouvrez la discussion, répondez vous-même si vous pouvez vraiment aider, et mentionnez votre lien avec le produit dès que vous le citez.',
     statusFilter: 'Afficher les conversations',
@@ -1141,16 +1156,18 @@ export default {
     tabsLabel: 'Sections des réglages',
     tabs: {
       general: 'Général',
-      product: 'Produit',
-      kinds: 'Types de contenu',
-      collection: 'Collecte',
-      triage: 'Tri par IA',
-      drafting: 'Rédaction par IA',
-      diffusion: 'Diffusion',
+      product: 'Produit et public',
+      sources: 'Sources',
+      triage: 'Tri et types de contenu',
+      voice: 'Voix et rédaction',
+      publishing: 'Publication',
       newsletter: 'Newsletter',
       feed: 'Flux publics',
+      conversations: 'Conversations',
       budget: 'Budget',
     },
+    curationSources: 'Sources de la veille',
+    engagementSources: 'Sources des conversations',
     criteria: 'Critères de pertinence',
     criteriaHint:
       'Décrivez ce qui rend un élément utile pour ce thème : sujets, normes, publics, ce qu’il faut écarter. L’IA s’en sert pour noter chaque élément.',
@@ -1199,7 +1216,6 @@ export default {
     thresholdHint:
       'Les éléments notés sous ce seuil sont archivés automatiquement : ils restent consultables dans l’onglet « Archivés ».',
     heading: 'Réglages du thème : {topic}',
-    curationHeading: 'Réglages de la curation : {topic}',
     title: 'Réglages',
     collection: 'Fréquence de collecte par type de contenu',
     collectionHint:

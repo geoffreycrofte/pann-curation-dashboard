@@ -31,17 +31,14 @@ import AddSourceSection from '../components/AddSourceSection.vue'
 import ExcludedSites from '../components/ExcludedSites.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import SourceEditor from '../components/SourceEditor.vue'
-import TopicNav from '../components/TopicNav.vue'
 import { api, type SourcePatch } from '../lib/api'
 import { describeError } from '../lib/errors'
-import { useTopicName } from '../lib/topic-name'
 import { useTopicKinds } from '../lib/kinds'
 import { useWorkspace } from '../lib/workspace'
 
 const props = defineProps<{ topicId: string }>()
 const { t, d } = useI18n()
 const queryCache = useQueryCache()
-const topicName = useTopicName(() => props.topicId)
 const { label: kindLabel } = useTopicKinds(() => props.topicId)
 
 const { data: topic } = useQuery({
@@ -60,9 +57,13 @@ const {
 const route = useRoute()
 const router = useRouter()
 // Sub-tabs, kept in the address (?tab=exclusions) like the settings.
+// Inside the settings page (whose own tab is ?tab=…): this sub-tab is ?sub=….
 const tab = computed<'sources' | 'exclusions'>({
-  get: () => (route.query.tab === 'exclusions' ? 'exclusions' : 'sources'),
-  set: (value) => void router.replace({ query: { ...route.query, tab: value } }),
+  get: () => (route.query.sub === 'exclusions' ? 'exclusions' : 'sources'),
+  set: (value) =>
+    void router.replace({
+      query: { ...route.query, sub: value === 'sources' ? undefined : value },
+    }),
 })
 /** Just created from "New topic": the sources are the next step of the setup. */
 const isNewTopic = computed(() => route.query.new === '1')
@@ -216,9 +217,6 @@ function feedUrl(source: Source): string | undefined {
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ t('sources.heading', { topic: topicName }) }}</h1>
-  <TopicNav :topic-id="topicId" />
-
   <TabsRoot v-model="tab" activation-mode="manual">
     <TabsList :aria-label="t('sources.tabsLabel')" v-scroll-active class="subtabs tab-row">
       <TabsTrigger value="sources" class="subtab">{{ t('sources.tabs.sources') }}</TabsTrigger>
@@ -237,7 +235,7 @@ function feedUrl(source: Source): string | undefined {
         </p>
         <p>{{ t('sources.newTopicText') }}</p>
         <p>
-          <RouterLink :to="{ name: 'curation-settings', params: { topicId } }">
+          <RouterLink :to="{ name: 'settings', params: { topicId }, query: { tab: 'triage' } }">
             {{ t('sources.newTopicSettings') }}
           </RouterLink>
         </p>

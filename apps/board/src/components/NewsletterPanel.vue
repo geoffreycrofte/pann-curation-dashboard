@@ -14,16 +14,13 @@ import {
 } from 'reka-ui'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import TopicNav from '../components/TopicNav.vue'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
-import { useTopicName } from '../lib/topic-name'
 import { contentLangName } from '../lib/langs'
 
 const props = defineProps<{ topicId: string }>()
 const { t, d } = useI18n()
 const queryCache = useQueryCache()
-const topicName = useTopicName(() => props.topicId)
 
 const { data: topic } = useQuery({
   key: () => ['topic', props.topicId],
@@ -65,8 +62,6 @@ const { mutate: send, isLoading: sending } = useMutation({
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ t('newsletter.heading', { topic: topicName }) }}</h1>
-  <TopicNav :topic-id="topicId" />
   <p>{{ t('newsletter.intro') }}</p>
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
@@ -78,10 +73,9 @@ const { mutate: send, isLoading: sending } = useMutation({
           ? t('newsletter.nextAuto', { date: formatDate(state.next_at) })
           : t('newsletter.manual')
       }}
-      <RouterLink
-        :to="{ name: 'curation-settings', params: { topicId }, query: { tab: 'newsletter' } }"
-        >{{ t('newsletter.settingsLink') }}</RouterLink
-      >
+      <RouterLink :to="{ name: 'settings', params: { topicId }, query: { tab: 'newsletter' } }">{{
+        t('newsletter.settingsLink')
+      }}</RouterLink>
     </p>
     <p role="status" :class="{ error: isError }">{{ message }}</p>
 
