@@ -31,7 +31,7 @@ const COMPOSITION_COLUMNS =
 const MEDIA_COLUMNS =
   'id, composition_id, storage_path, mime, bytes, width, height, position, alt, alt_proposed, alt_status, alt_error'
 const POST_COLUMNS =
-  'id, channel, lang, body, status, scheduled_at, sent_at, published_url, last_error, edited_by_human, first_comment'
+  'id, channel, lang, body, status, scheduled_at, sent_at, published_url, last_error, edited_by_human, first_comment, claimed_at'
 
 const httpUrl = z.url({ protocol: /^https?$/ }).max(2000)
 const sourceSchema = z.object({

@@ -10,7 +10,7 @@ const SESSION_COLUMNS = 'id, workspace_id, context, messages, proposal, status, 
 const contextSchema = z.object({
   name: z.string().trim().min(1).max(120),
   url: z.url().max(500).optional(),
-  tools: z.array(z.enum(['curation', 'engagement'])).max(2),
+  tools: z.array(z.enum(['curation', 'engagement', 'compose'])).max(3),
   channels: z.array(z.string().max(30)).max(10),
   listen: z.array(z.string().max(30)).max(10),
   newsletter: z.boolean().optional(),

@@ -15,6 +15,7 @@ import TopicKindsSettings from '../components/TopicKindsSettings.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import EngagementSettings from '../components/EngagementSettings.vue'
 import EngagementSources from '../components/EngagementSources.vue'
+import ComposeSettings from '../components/compose/ComposeSettings.vue'
 import SourcesPanel from '../components/SourcesPanel.vue'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
@@ -42,21 +43,28 @@ const ALL_TABS = [
   'newsletter',
   'feed',
   'conversations',
+  'compose',
   'budget',
 ] as const
 type Tab = (typeof ALL_TABS)[number]
 /** Tabs used by one tool only: hidden while that tool is off. */
 const CURATION_ONLY: readonly Tab[] = ['triage', 'voice', 'publishing', 'newsletter', 'feed']
 const ENGAGEMENT_ONLY: readonly Tab[] = ['conversations']
+const COMPOSE_ONLY: readonly Tab[] = ['compose']
 
 const route = useRoute()
 const router = useRouter()
 const tabs = computed<readonly Tab[]>(() => {
-  const modules = topic.value?.config.modules ?? { curation: true, engagement: false }
+  const modules = topic.value?.config.modules ?? {
+    curation: true,
+    engagement: false,
+    compose: false,
+  }
   return ALL_TABS.filter(
     (name) =>
       (modules.curation || !CURATION_ONLY.includes(name)) &&
-      (modules.engagement || !ENGAGEMENT_ONLY.includes(name)),
+      (modules.engagement || !ENGAGEMENT_ONLY.includes(name)) &&
+      (modules.compose || !COMPOSE_ONLY.includes(name)),
   )
 })
 // Wide screens: the sections as a vertical list beside the panel. Narrower: a select
@@ -322,6 +330,9 @@ const { mutate, isLoading } = useMutation({
     </TabsContent>
     <TabsContent value="conversations" class="subpanel">
       <EngagementSettings :key="topic.id" :topic="topic" />
+    </TabsContent>
+    <TabsContent value="compose" class="subpanel">
+      <ComposeSettings :key="topic.id" :topic="topic" />
     </TabsContent>
     <TabsContent value="budget" class="subpanel">
       <BudgetSection :topic-id="topicId" />

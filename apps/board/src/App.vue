@@ -41,7 +41,11 @@ const { data: currentTopic } = useQuery({
 /** Sections of the open topic: its overview, its tools that are on, what goes out, settings. */
 const topicSections = computed(() => {
   // Before the topic is loaded: its defaults (curation on, engagement off).
-  const modules = currentTopic.value?.config.modules ?? { curation: true, engagement: false }
+  const modules = currentTopic.value?.config.modules ?? {
+    curation: true,
+    engagement: false,
+    compose: false,
+  }
   const name = String(route.name ?? '')
   return [
     { key: 'overview', to: 'overview', active: name === 'overview' },
@@ -50,6 +54,9 @@ const topicSections = computed(() => {
       : []),
     ...(modules.engagement
       ? [{ key: 'engagement', to: 'engagement', active: name === 'engagement' }]
+      : []),
+    ...(modules.compose
+      ? [{ key: 'compose', to: 'compose', active: name === 'compose' || name === 'composition' }]
       : []),
     { key: 'calendar', to: 'calendar', active: name === 'calendar' },
     { key: 'topicSettings', to: 'settings', active: name === 'settings' },

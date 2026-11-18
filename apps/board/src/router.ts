@@ -82,6 +82,19 @@ export const router = createRouter({
       props: true,
     },
     {
+      // Création: the posts written by the person, then one composition.
+      path: '/t/:topicId/compose',
+      name: 'compose',
+      component: () => import('./views/ComposeView.vue'),
+      props: true,
+    },
+    {
+      path: '/t/:topicId/compose/:compositionId',
+      name: 'composition',
+      component: () => import('./views/CompositionView.vue'),
+      props: true,
+    },
+    {
       // What goes out, for every tool: scheduled posts, history, newsletter.
       path: '/t/:topicId/calendar',
       name: 'calendar',

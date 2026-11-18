@@ -58,6 +58,8 @@ const publishOptions = computed(() =>
 const listenOptions = computed(() =>
   LISTEN_PLATFORMS.map((value) => ({ value, label: t(`onboarding.networks.platforms.${value}`) })),
 )
+/** Posts are written for the networks when the news watch or Création is on. */
+const publishes = computed(() => draft.curation || draft.composeInterest)
 const tools = computed({ get: () => toolChoices(draft), set: (v) => setToolChoices(draft, v) })
 const publish = computed({
   get: () => publishChoices(draft),
@@ -78,9 +80,9 @@ const createError = ref('')
 function validate() {
   const list: { field: string; message: string }[] = []
   if (!draft.name.trim()) list.push({ field: `${id}-name`, message: t('onboarding.errors.name') })
-  if (!draft.curation && !draft.engagement)
+  if (!draft.curation && !draft.engagement && !draft.composeInterest)
     list.push({ field: `${id}-tools-list`, message: t('onboarding.errors.tools') })
-  if (draft.curation && draft.otherNetwork && !draft.otherNetworkName.trim())
+  if (publishes.value && draft.otherNetwork && !draft.otherNetworkName.trim())
     list.push({ field: `${id}-other`, message: t('onboarding.errors.otherNetwork') })
   if (!draft.langs.length) list.push({ field: `${id}-langs`, message: t('newTopic.langsRequired') })
   if (draft.curation && !parseSlots(draft.slots))
@@ -126,10 +128,9 @@ async function create() {
   createError.value = ''
   try {
     const requests = [
-      ...(draft.curation && draft.otherNetwork && draft.otherNetworkName.trim()
+      ...(publishes.value && draft.otherNetwork && draft.otherNetworkName.trim()
         ? [{ kind: 'network' as const, subject: draft.otherNetworkName.trim().slice(0, 60) }]
         : []),
-      ...(draft.composeInterest ? [{ kind: 'feature' as const, subject: 'compose' }] : []),
     ]
     const topic = await api.createTopic({
       workspace_id: workspaceId.value!,
@@ -301,10 +302,13 @@ async function create() {
       </div>
     </section>
 
-    <section v-if="draft.curation || draft.engagement" :aria-labelledby="`${id}-networks`">
+    <section
+      v-if="draft.curation || draft.engagement || draft.composeInterest"
+      :aria-labelledby="`${id}-networks`"
+    >
       <h2 :id="`${id}-networks`">{{ t('onboarding.review.networks') }}</h2>
       <ChoiceList
-        v-if="draft.curation"
+        v-if="publishes"
         v-model="publish"
         :legend="t('onboarding.networks.publish')"
         :options="publishOptions"
@@ -410,7 +414,7 @@ async function create() {
         ></textarea>
         <p :id="`${id}-style-hint`" class="hint">{{ t('onboarding.review.styleHint') }}</p>
       </div>
-      <div v-if="draft.curation" class="form-row">
+      <div v-if="publishes" class="form-row">
         <label :for="`${id}-post-rules`">
           {{ t('onboarding.review.postRules') }} ({{ t('common.optional') }})
           <span v-if="isProposed('postRules')" class="proposed">{{

@@ -10,6 +10,7 @@ import { useRoute, useRouter } from 'vue-router'
 import NewsletterPanel from '../components/NewsletterPanel.vue'
 import QueueHistory from '../components/QueueHistory.vue'
 import ScheduledPanel from '../components/ScheduledPanel.vue'
+import ComposeQueue from '../components/compose/ComposeQueue.vue'
 import { useTopicName } from '../lib/topic-name'
 
 const props = defineProps<{ topicId: string }>()
@@ -41,9 +42,11 @@ const tab = computed<Tab>({
       </TabsTrigger>
     </TabsList>
     <TabsContent value="scheduled" class="subpanel">
+      <ComposeQueue :topic-id="topicId" status="scheduled" />
       <ScheduledPanel :topic-id="topicId" />
     </TabsContent>
     <TabsContent value="history" class="subpanel">
+      <ComposeQueue :topic-id="topicId" status="published" />
       <QueueHistory :topic-id="topicId" only="recent" />
     </TabsContent>
     <TabsContent value="newsletter" class="subpanel">

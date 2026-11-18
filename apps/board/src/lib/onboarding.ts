@@ -24,7 +24,7 @@ export interface OnboardingDraft {
   url: string
   curation: boolean
   engagement: boolean
-  /** "Create my own posts" is not there yet: ticking it asks to be told when it is. */
+  /** Création tool: the person's own posts (modules.compose). */
   composeInterest: boolean
   // Networks
   channels: DraftChannel[]
@@ -82,11 +82,15 @@ export function threadSteps(draft: OnboardingDraft, withAssistant: boolean): Thr
     'name',
     'url',
     'tools',
-    ...(draft.curation ? (['publish'] as const) : []),
+    ...(draft.curation || draft.composeInterest ? (['publish'] as const) : []),
     ...(draft.engagement ? (['listen'] as const) : []),
     ...(withAssistant
       ? (['assistant'] as const)
-      : (['description', 'audience', ...(draft.curation ? (['voice'] as const) : [])] as const)),
+      : ([
+          'description',
+          'audience',
+          ...(draft.curation || draft.composeInterest ? (['voice'] as const) : []),
+        ] as const)),
     'langs',
     ...(draft.curation ? (['rhythm'] as const) : []),
     'budget',
@@ -113,7 +117,7 @@ export function setPublishChoices(draft: OnboardingDraft, values: PublishChoice[
   draft.otherNetwork = values.includes('other')
 }
 
-/** The tools, and the coming one ("create my own posts", asks to be told). */
+/** The tools a topic can use, as chosen at its creation. */
 export const TOOLS = ['curation', 'engagement', 'compose'] as const
 export type Tool = (typeof TOOLS)[number]
 export function toolChoices(draft: OnboardingDraft): Tool[] {
@@ -276,7 +280,11 @@ export function siteUrl(text: string): string {
 /** The first settings of the topic, as the API takes them (any part of a topic config). */
 export function draftConfig(draft: OnboardingDraft) {
   return {
-    modules: { curation: draft.curation, engagement: draft.engagement },
+    modules: {
+      curation: draft.curation,
+      engagement: draft.engagement,
+      compose: draft.composeInterest,
+    },
     output_langs: draft.langs,
     target_channels: draft.channels,
     target_newsletter: draft.curation && draft.newsletter,

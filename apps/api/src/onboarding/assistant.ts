@@ -8,7 +8,7 @@ import { fetchText } from '../lib/fetch-text'
 
 /** Pann pays for this conversation: the current Opus, at low effort (a short exchange). */
 export const ONBOARDING_MODEL = 'claude-opus-5-5'
-export const ONBOARDING_PROMPT_VERSION = 'onboarding-v2'
+export const ONBOARDING_PROMPT_VERSION = 'onboarding-v3'
 /** The exchange stops after this many questions, whatever is left. */
 export const MAX_QUESTIONS = 6
 /** Characters of the site's home page given to the assistant. */
@@ -17,7 +17,7 @@ const SITE_CHARS = 6_000
 export interface OnboardingContext {
   name: string
   url?: string
-  /** Tools chosen: curation (news watch), engagement (conversations). */
+  /** Tools chosen: curation (news watch), engagement (conversations), compose (own posts). */
   tools: string[]
   /** Networks the person publishes on, and where they listen. */
   channels: string[]
@@ -90,14 +90,15 @@ export function onboardingSystemPrompt(context: OnboardingContext): string {
   if (context.current) return adjustSystemPrompt(context)
   const curation = context.tools.includes('curation')
   const engagement = context.tools.includes('engagement')
+  const compose = context.tools.includes('compose')
   const fields = [
     'description and audience',
     'key messages, and claims to avoid',
     ...(curation ? ['what makes a news item worth keeping, and what to leave out'] : []),
     ...(engagement ? ['when a reply helps in a conversation'] : []),
-    ...(curation ? ['tone and style of the posts, and rules for the posts'] : []),
+    ...(curation || compose ? ['tone and style of the posts, and rules for the posts'] : []),
   ]
-  return `You help a person set up a topic in Pann, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${engagement ? ', and finds online conversations where the person can help' : ''}.
+  return `You help a person set up a topic in Pann, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${compose ? ", writes the person's own posts from their notes" : ''}${engagement ? ', and finds online conversations where the person can help' : ''}.
 
 Your job is to fill these settings through a short conversation: ${fields.join('; ')}.
 
@@ -116,7 +117,8 @@ Your job is to fill these settings through a short conversation: ${fields.join('
 function adjustSystemPrompt(context: OnboardingContext): string {
   const curation = context.tools.includes('curation')
   const engagement = context.tools.includes('engagement')
-  return `You help a person adjust the settings of an existing topic in Pann, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${engagement ? ', and finds online conversations where the person can help' : ''}. The current settings are given below.
+  const compose = context.tools.includes('compose')
+  return `You help a person adjust the settings of an existing topic in Pann, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${compose ? ", writes the person's own posts from their notes" : ''}${engagement ? ', and finds online conversations where the person can help' : ''}. The current settings are given below.
 
 # How to ask
 - Write in ${langName(context.ui_lang, 'en')}, the language of the person.

@@ -85,9 +85,10 @@ const context = computed<OnboardingContext>(() => ({
   url: draft.url.trim() ? siteUrl(draft.url) : undefined,
   tools: [
     ...(draft.curation ? (['curation'] as const) : []),
+    ...(draft.composeInterest ? (['compose'] as const) : []),
     ...(draft.engagement ? (['engagement'] as const) : []),
   ],
-  channels: draft.curation ? draft.channels : [],
+  channels: draft.curation || draft.composeInterest ? draft.channels : [],
   listen: draft.engagement ? draft.listen : [],
   newsletter: draft.curation && draft.newsletter,
   ui_lang: locale.value === 'en' ? 'en' : 'fr',
@@ -152,7 +153,9 @@ function validate(step: ThreadStep): string {
         return t('onboarding.errors.url')
       }
     case 'tools':
-      return draft.curation || draft.engagement ? '' : t('onboarding.errors.tools')
+      return draft.curation || draft.engagement || draft.composeInterest
+        ? ''
+        : t('onboarding.errors.tools')
     case 'publish':
       return draft.otherNetwork && !draft.otherNetworkName.trim()
         ? t('onboarding.errors.otherNetwork')

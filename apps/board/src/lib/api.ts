@@ -149,7 +149,7 @@ export interface OnboardingSession {
 export interface OnboardingContext {
   name: string
   url?: string
-  tools: ('curation' | 'engagement')[]
+  tools: ('curation' | 'engagement' | 'compose')[]
   channels: string[]
   listen: string[]
   newsletter?: boolean
@@ -157,6 +157,64 @@ export interface OnboardingContext {
   /** Adjusting an existing topic: its current settings, as text. */
   current?: Record<string, string>
 }
+
+/** Création: a source of a composition (a given link, or a search result to choose). */
+export interface ComposeSource {
+  url: string
+  title: string
+  excerpt?: string
+  text?: string
+  selected: boolean
+}
+
+export type ComposeModeName = 'notes' | 'links' | 'search'
+export type JobStatus = 'idle' | 'pending' | 'failed'
+
+export interface CompositionSummary {
+  id: string
+  subject: string
+  mode: ComposeModeName
+  status: 'draft' | 'scheduled' | 'published'
+  publish_at: string | null
+  draft_status: JobStatus
+  created_at: string
+  updated_at: string
+}
+
+export interface CompositionMedia {
+  id: string
+  composition_id: string
+  storage_path: string
+  mime: string
+  bytes: number
+  width: number
+  height: number
+  position: number
+  alt: Record<string, string>
+  /** Languages whose text the AI proposed and the person has not edited yet. */
+  alt_proposed: string[]
+  alt_status: JobStatus
+  alt_error: string | null
+  /** Signed address to show it, valid for an hour. */
+  preview_url: string | null
+}
+
+export interface Composition extends CompositionSummary {
+  topic_id: string
+  notes: string
+  link: string
+  sources: ComposeSource[]
+  channels: DraftChannel[]
+  draft_error: string | null
+  research_status: JobStatus
+  research_error: string | null
+  media: CompositionMedia[]
+  posts: PostDraft[]
+}
+
+export type CompositionPatch = Partial<
+  Pick<Composition, 'subject' | 'mode' | 'notes' | 'link' | 'sources' | 'channels'>
+>
 
 export interface RewriteInput {
   text: string
@@ -348,6 +406,63 @@ export const api = {
 
   topics: () => request<Topic[]>('/topics'),
   createTopic: (input: NewTopicInput) => request<Topic>('/topics', json('POST', input)),
+  compositions: (topicId: string) =>
+    request<CompositionSummary[]>(`/topics/${topicId}/compositions`),
+  createComposition: (topicId: string, input: { subject?: string; mode?: ComposeModeName } = {}) =>
+    request<Composition>(`/topics/${topicId}/compositions`, json('POST', input)),
+  composition: (topicId: string, id: string) =>
+    request<Composition>(`/topics/${topicId}/compositions/${id}`),
+  updateComposition: (topicId: string, id: string, patch: CompositionPatch) =>
+    request<Composition>(`/topics/${topicId}/compositions/${id}`, json('PATCH', patch)),
+  deleteComposition: (topicId: string, id: string) =>
+    request<void>(`/topics/${topicId}/compositions/${id}`, { method: 'DELETE' }),
+  researchComposition: (topicId: string, id: string) =>
+    request<{ queued: boolean }>(`/topics/${topicId}/compositions/${id}/research`, {
+      method: 'POST',
+    }),
+  draftComposition: (topicId: string, id: string) =>
+    request<{ queued: boolean }>(`/topics/${topicId}/compositions/${id}/draft`, {
+      method: 'POST',
+    }),
+  addCompositionMedia: (
+    topicId: string,
+    id: string,
+    media: { storage_path: string; mime: string; bytes: number; width: number; height: number },
+  ) =>
+    request<CompositionMedia>(`/topics/${topicId}/compositions/${id}/media`, json('POST', media)),
+  updateCompositionMedia: (
+    topicId: string,
+    id: string,
+    mediaId: string,
+    patch: Partial<Pick<CompositionMedia, 'alt' | 'alt_proposed' | 'position'>>,
+  ) =>
+    request<CompositionMedia>(
+      `/topics/${topicId}/compositions/${id}/media/${mediaId}`,
+      json('PATCH', patch),
+    ),
+  describeCompositionMedia: (topicId: string, id: string, mediaId: string) =>
+    request<{ queued: boolean }>(
+      `/topics/${topicId}/compositions/${id}/media/${mediaId}/describe`,
+      { method: 'POST' },
+    ),
+  deleteCompositionMedia: (topicId: string, id: string, mediaId: string) =>
+    request<void>(`/topics/${topicId}/compositions/${id}/media/${mediaId}`, {
+      method: 'DELETE',
+    }),
+  scheduleComposition: (topicId: string, id: string, when: 'next_slot' | 'now') =>
+    request<{ publish_at: string }>(
+      `/topics/${topicId}/compositions/${id}/schedule`,
+      json('POST', { when }),
+    ),
+  unscheduleComposition: (topicId: string, id: string) =>
+    request<void>(`/topics/${topicId}/compositions/${id}/schedule`, { method: 'DELETE' }),
+  /** Uploads an image of a composition to the storage (RLS: members of the topic). */
+  uploadCompositionImage: async (path: string, blob: Blob, contentType: string) => {
+    const { error } = await supabase.storage
+      .from('composition-media')
+      .upload(path, blob, { contentType, upsert: false })
+    if (error) throw new ApiError(400, error.message)
+  },
   onboardingAvailable: (workspaceId: string) =>
     request<{ available: boolean }>(
       `/onboarding/available?workspace_id=${encodeURIComponent(workspaceId)}`,

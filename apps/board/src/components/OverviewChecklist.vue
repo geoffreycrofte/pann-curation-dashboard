@@ -39,6 +39,11 @@ const { data: engagementCounts } = useQuery({
   query: () => api.counts(props.topicId, 'engagement'),
   enabled: () => !!modules.value?.engagement,
 })
+const { data: compositions } = useQuery({
+  key: () => ['compositions', props.topicId],
+  query: () => api.compositions(props.topicId),
+  enabled: () => !!modules.value?.compose,
+})
 const { data: queue } = useQuery({
   key: () => ['queue', props.topicId],
   query: () => api.queue(props.topicId),
@@ -120,6 +125,14 @@ const lines = computed<Line[]>(() => {
       },
     )
   }
+  if (config.modules.compose)
+    list.push({
+      key: 'compose',
+      label: t('checklist.compose'),
+      done: !!compositions.value?.length,
+      to: { name: 'compose', params: { topicId: props.topicId } },
+      action: t('checklist.openCompose'),
+    })
   if (config.modules.engagement)
     list.push({
       key: 'conversations',

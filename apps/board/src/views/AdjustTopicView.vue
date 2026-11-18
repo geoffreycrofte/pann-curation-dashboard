@@ -106,7 +106,7 @@ const fields = computed<Field[]>(() => {
     'output_langs',
     ...(modules?.curation ? (['relevance_criteria'] as const) : []),
     ...(modules?.engagement ? (['engagement_criteria'] as const) : []),
-    ...(modules?.curation ? (['style_rules', 'post_rules'] as const) : []),
+    ...(modules?.curation || modules?.compose ? (['style_rules', 'post_rules'] as const) : []),
   ]
 })
 
@@ -120,6 +120,7 @@ const context = computed<OnboardingContext | null>(() => {
     tools: [
       ...(config.modules.curation ? (['curation'] as const) : []),
       ...(config.modules.engagement ? (['engagement'] as const) : []),
+      ...(config.modules.compose ? (['compose'] as const) : []),
     ],
     channels: [...new Set([...config.channels.map((c) => c.channel), ...config.target_channels])],
     listen: [],
