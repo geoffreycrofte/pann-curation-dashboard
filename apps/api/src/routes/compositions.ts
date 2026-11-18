@@ -80,7 +80,11 @@ const mediaPatch = z
   })
   .partial()
 
-const scheduleBody = z.object({ when: z.enum(['next_slot', 'now']).default('next_slot') })
+const scheduleBody = z.object({
+  when: z.enum(['next_slot', 'now']).default('next_slot'),
+  /** Series: the first free slot from this moment on, to spread the posts over a span. */
+  not_before: z.iso.datetime({ offset: true }).optional(),
+})
 
 /** Signed addresses to show the images (one hour), read with the user's rights. */
 async function withPreviews<T extends { storage_path: string }>(
@@ -307,7 +311,7 @@ export const compositions = new Hono<AppEnv>()
    * text alternative of every image in the language of each post.
    */
   .post('/:topicId/compositions/:id/schedule', async (c) => {
-    const { when } = await parseJson(scheduleBody, c.req.raw)
+    const { when, not_before } = await parseJson(scheduleBody, c.req.raw)
     const { topicId, id } = c.req.param()
     const db = c.var.db
     const [topicRes, compRes, postsRes, mediaRes] = await Promise.all([
@@ -367,6 +371,7 @@ export const compositions = new Hono<AppEnv>()
 
     const schedule = composeSchedule(config)
     const now = new Date()
+    const from = not_before && Date.parse(not_before) > now.getTime() ? new Date(not_before) : now
     let publishAt: Date | null
     const taken: string[] = []
     if (when === 'now') {
@@ -381,7 +386,7 @@ export const compositions = new Hono<AppEnv>()
         .gte('publish_at', now.toISOString())
       if (error) throw error
       taken.push(...data.map((r) => r.publish_at as string))
-      publishAt = nextFreeSlot(schedule, taken, now)
+      publishAt = nextFreeSlot(schedule, taken, from)
     }
 
     for (let attempt = 0; publishAt && attempt < 3; attempt++) {
@@ -399,7 +404,7 @@ export const compositions = new Hono<AppEnv>()
       if (error.code === 'P0002') throw new HTTPException(409, { message: 'nothing_to_schedule' })
       if (error.code !== '23505' || when === 'now') throw error
       taken.push(publishAt.toISOString())
-      publishAt = nextFreeSlot(schedule, taken, now)
+      publishAt = nextFreeSlot(schedule, taken, from)
     }
     throw new HTTPException(409, { message: publishAt ? 'slot_taken' : 'no_slot' })
   })

@@ -104,15 +104,20 @@ async function create() {
 <template>
   <div class="head">
     <h1 tabindex="-1">{{ t('compose.heading', { topic: topicName }) }}</h1>
-    <button
-      type="button"
-      class="button"
-      data-variant="primary"
-      :disabled="creating"
-      @click="create"
-    >
-      {{ t('compose.new') }}
-    </button>
+    <div class="head-actions">
+      <RouterLink class="button" :to="{ name: 'series', params: { topicId, seriesId: 'new' } }">
+        {{ t('series.open') }}
+      </RouterLink>
+      <button
+        type="button"
+        class="button"
+        data-variant="primary"
+        :disabled="creating"
+        @click="create"
+      >
+        {{ t('compose.new') }}
+      </button>
+    </div>
   </div>
   <p class="hint">{{ t('compose.intro') }}</p>
   <p v-if="createError" class="error" role="alert">{{ createError }}</p>
@@ -184,6 +189,12 @@ async function create() {
 
 .head h1 {
   margin: 0;
+}
+
+.head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .group {

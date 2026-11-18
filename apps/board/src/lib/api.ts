@@ -216,6 +216,28 @@ export type CompositionPatch = Partial<
   Pick<Composition, 'subject' | 'mode' | 'notes' | 'link' | 'sources' | 'channels'>
 >
 
+export interface SeriesPost {
+  subject: string
+  angle: string
+}
+
+export interface Series {
+  id: string
+  topic_id: string
+  subject: string
+  notes: string
+  post_count: number
+  span_days: number
+  plan: SeriesPost[]
+  status: 'pending' | 'ready' | 'failed'
+  error: string | null
+  created_at: string
+  compositions?: (Pick<
+    CompositionSummary,
+    'id' | 'subject' | 'status' | 'draft_status' | 'publish_at'
+  > & { draft_error: string | null; series_position: number })[]
+}
+
 export interface RewriteInput {
   text: string
   preset: 'shorter' | 'longer' | 'formal' | 'casual' | 'custom'
@@ -469,11 +491,33 @@ export const api = {
     request<void>(`/topics/${topicId}/compositions/${id}/media/${mediaId}`, {
       method: 'DELETE',
     }),
-  scheduleComposition: (topicId: string, id: string, when: 'next_slot' | 'now') =>
+  scheduleComposition: (
+    topicId: string,
+    id: string,
+    when: 'next_slot' | 'now',
+    notBefore?: string,
+  ) =>
     request<{ publish_at: string }>(
       `/topics/${topicId}/compositions/${id}/schedule`,
-      json('POST', { when }),
+      json('POST', { when, ...(notBefore ? { not_before: notBefore } : {}) }),
     ),
+  createSeries: (
+    topicId: string,
+    input: {
+      subject: string
+      notes: string
+      post_count: number
+      span_days: number
+      ui_lang: 'fr' | 'en'
+    },
+  ) => request<Series>(`/topics/${topicId}/series`, json('POST', input)),
+  series: (topicId: string, id: string) => request<Series>(`/topics/${topicId}/series/${id}`),
+  updateSeriesPlan: (topicId: string, id: string, plan: SeriesPost[]) =>
+    request<Series>(`/topics/${topicId}/series/${id}`, json('PATCH', { plan })),
+  createSeriesCompositions: (topicId: string, id: string) =>
+    request<{ created: number }>(`/topics/${topicId}/series/${id}/compositions`, {
+      method: 'POST',
+    }),
   unscheduleComposition: (topicId: string, id: string) =>
     request<void>(`/topics/${topicId}/compositions/${id}/schedule`, { method: 'DELETE' }),
   /** Uploads an image of a composition to the storage (RLS: members of the topic). */

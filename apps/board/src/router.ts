@@ -89,6 +89,13 @@ export const router = createRouter({
       props: true,
     },
     {
+      // A series of posts: 'new' for the form, else its plan and its posts.
+      path: '/t/:topicId/series/:seriesId',
+      name: 'series',
+      component: () => import('./views/SeriesView.vue'),
+      props: true,
+    },
+    {
       path: '/t/:topicId/compose/:compositionId',
       name: 'composition',
       component: () => import('./views/CompositionView.vue'),

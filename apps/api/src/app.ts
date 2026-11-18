@@ -13,6 +13,7 @@ import { newsletter } from './routes/newsletter'
 import { onboarding } from './routes/onboarding'
 import { compositions } from './routes/compositions'
 import { voice } from './routes/voice'
+import { series } from './routes/series'
 import { topics } from './routes/topics'
 import { workspaces } from './routes/workspaces'
 
@@ -34,6 +35,7 @@ app.route('/topics', diffusion)
 app.route('/topics', newsletter)
 app.route('/topics', compositions)
 app.route('/topics', voice)
+app.route('/topics', series)
 app.route('/topics/:topicId/sources', sources)
 app.route('/workspaces/:workspaceId/credentials', credentials)
 

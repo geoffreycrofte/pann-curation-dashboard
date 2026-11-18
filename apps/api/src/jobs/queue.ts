@@ -24,6 +24,7 @@ import { jobClient } from './client'
 import { notifyAccessRequest } from '../access/notify'
 import { runOnboarding } from '../onboarding/assistant'
 import { runVoiceAnalysis } from '../voice/analyze'
+import { runSeriesPlan } from '../series/plan'
 import { claudeComposeModel } from '../compose/model'
 import {
   runComposeDraft,
@@ -64,6 +65,8 @@ export type JobMessage =
   | { type: 'describe-media'; mediaId: string }
   /** Voice rules proposed from past posts (Settings, voice). */
   | { type: 'analyze-voice'; analysisId: string }
+  /** Plan of a series of posts (Création). */
+  | { type: 'plan-series'; seriesId: string }
 
 export const networks = {
   zernio: publishWithZernio,
@@ -163,6 +166,11 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
             ? await runComposeDraft(deps, message.compositionId)
             : await runDescribeMedia(deps, message.mediaId)
       console.log(JSON.stringify({ job: message.type, result }))
+      return
+    }
+    case 'plan-series': {
+      const result = await runSeriesPlan(db, message.seriesId, claudeComposeModel)
+      console.log(JSON.stringify({ job: 'plan-series', result }))
       return
     }
     case 'analyze-voice': {
