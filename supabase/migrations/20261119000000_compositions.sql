@@ -69,7 +69,7 @@ create table public.composition_media (
   -- <topic_id>/<composition_id>/<file> in the bucket.
   storage_path   text not null unique,
   mime           text not null check (mime in ('image/jpeg', 'image/png', 'image/webp')),
-  bytes          integer not null check (bytes > 0 and bytes <= 1000000),
+  bytes          integer not null check (bytes > 0 and bytes <= 2000000),
   width          integer not null check (width > 0),
   height         integer not null check (height > 0),
   position       smallint not null default 0,
@@ -120,7 +120,7 @@ create trigger composition_media_count
 -- upload, read and delete; the jobs read with the secret key (signed URLs, bytes).
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('composition-media', 'composition-media', false, 1000000,
+values ('composition-media', 'composition-media', false, 2000000,
         array['image/jpeg', 'image/png', 'image/webp'])
 on conflict (id) do nothing;
 

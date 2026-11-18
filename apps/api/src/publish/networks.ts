@@ -103,10 +103,16 @@ export async function publishWithZernio(
       content: request.content,
       platforms: [entry],
       publishNow: true,
-      // Images by public address (docs.zernio.com/guides/media-uploads, 2026-11-19).
-      // Text alternatives are not sent: no altText field is documented by Zernio itself.
+      // Images by public address, with their text alternative: mediaItems[].altText,
+      // applied on LinkedIn and Facebook (docs.zernio.com/posts/create-post, 2026-11-19).
       ...(request.images?.length
-        ? { mediaItems: request.images.map((image) => ({ type: 'image', url: image.url })) }
+        ? {
+            mediaItems: request.images.map((image) => ({
+              type: 'image',
+              url: image.url,
+              ...(image.alt.trim() ? { altText: image.alt.trim() } : {}),
+            })),
+          }
         : {}),
     }),
   })

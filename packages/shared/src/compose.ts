@@ -3,11 +3,11 @@ import type { TopicConfig } from './topic-config'
 /** At most this many images per composed post: the most Bluesky takes in one post. */
 export const MAX_COMPOSE_IMAGES = 4
 /**
- * Largest image stored, in bytes. Bluesky's limit per image is 1 MB or 2 MB depending
- * on the source (unconfirmed, 2026-11-19): the lower one holds on every network. The
- * board resizes and compresses images to fit before uploading them.
+ * Largest image stored, in bytes: Bluesky's limit per image (maxSize of
+ * app.bsky.embed.images in @atproto/api 0.32.2, checked 2026-11-19), the lowest of the
+ * networks. The board resizes and compresses images to fit before uploading them.
  */
-export const MAX_IMAGE_BYTES = 1_000_000
+export const MAX_IMAGE_BYTES = 2_000_000
 /** Longest side of a stored image, in pixels. */
 export const MAX_IMAGE_SIDE = 2048
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const

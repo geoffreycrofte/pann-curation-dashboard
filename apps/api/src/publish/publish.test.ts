@@ -455,7 +455,7 @@ describe('images of composed posts', () => {
     expect(log.some((l) => l.startsWith('finish t1/'))).toBe(false)
   })
 
-  it('gives Zernio the images by address', async () => {
+  it('gives Zernio the images by address, with their text alternative', async () => {
     const requests: { url: string; init: RequestInit }[] = []
     vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
       requests.push({ url, init })
@@ -463,7 +463,7 @@ describe('images of composed posts', () => {
     })
     await publishWithZernio('sk_x', 'acc', request)
     expect(JSON.parse(requests[0]!.init.body as string).mediaItems).toEqual([
-      { type: 'image', url: image.url },
+      { type: 'image', url: image.url, altText: 'Capture de la nouvelle version' },
     ])
   })
 
