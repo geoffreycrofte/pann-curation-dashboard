@@ -1315,6 +1315,7 @@ export default {
     untitled: 'Untitled',
   },
   settings: {
+    section: 'Section',
     tabsLabel: 'Settings sections',
     tabs: {
       general: 'General',

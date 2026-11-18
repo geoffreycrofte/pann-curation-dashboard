@@ -2,7 +2,7 @@
 import { DRAFT_MODES, kindLabel, type Lang, type TopicConfig } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
-import { computed, ref, useId, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import BudgetSection from '../components/BudgetSection.vue'
@@ -59,6 +59,14 @@ const tabs = computed<readonly Tab[]>(() => {
       (modules.engagement || !ENGAGEMENT_ONLY.includes(name)),
   )
 })
+// Wide screens: the sections as a vertical list beside the panel. Narrower: a select
+// above it (ten tabs do not fit on one line, and a scrolling row hides most of them).
+const wideQuery = window.matchMedia('(min-width: 72rem)')
+const wide = ref(wideQuery.matches)
+const onWideChange = (event: MediaQueryListEvent) => (wide.value = event.matches)
+wideQuery.addEventListener('change', onWideChange)
+onBeforeUnmount(() => wideQuery.removeEventListener('change', onWideChange))
+
 const tab = computed<Tab>({
   get: () => {
     const value = route.query.tab
@@ -125,12 +133,26 @@ const { mutate, isLoading } = useMutation({
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
-  <TabsRoot v-else-if="topic && collection && ai" v-model="tab" activation-mode="manual">
-    <TabsList :aria-label="t('settings.tabsLabel')" v-scroll-active class="subtabs tab-row">
-      <TabsTrigger v-for="name in tabs" :key="name" :value="name" class="subtab">
+  <TabsRoot
+    v-else-if="topic && collection && ai"
+    v-model="tab"
+    activation-mode="manual"
+    :orientation="wide ? 'vertical' : 'horizontal'"
+    class="layout"
+  >
+    <TabsList v-if="wide" :aria-label="t('settings.tabsLabel')" class="side">
+      <TabsTrigger v-for="name in tabs" :key="name" :value="name" class="side-tab">
         {{ t(`settings.tabs.${name}`) }}
       </TabsTrigger>
     </TabsList>
+    <div v-else class="form-row picker">
+      <label :for="`${id}-section`">{{ t('settings.section') }}</label>
+      <select :id="`${id}-section`" v-model="tab" class="field">
+        <option v-for="name in tabs" :key="name" :value="name">
+          {{ t(`settings.tabs.${name}`) }}
+        </option>
+      </select>
+    </div>
 
     <TabsContent value="general" class="subpanel">
       <TopicGeneralSettings :key="topic.id" :topic="topic" />
@@ -292,6 +314,71 @@ const { mutate, isLoading } = useMutation({
 </template>
 
 <style scoped>
+.layout {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@media (min-width: 72rem) {
+  .layout {
+    grid-template-columns: 13rem minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-8);
+  }
+
+  /* Explicit cells: the hidden panels must not push the open one under the list. */
+  .side {
+    grid-area: 1 / 1;
+  }
+
+  .layout > .subpanel {
+    grid-area: 1 / 2;
+  }
+}
+
+/* Sections as a vertical list: a gold bar beside the current one, and bold text. */
+.side {
+  position: sticky;
+  top: var(--space-4);
+  display: grid;
+  border-inline-start: 1px solid var(--color-border);
+}
+
+.side-tab {
+  min-height: 2.75rem;
+  margin-inline-start: -1px;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-inline-start: 4px solid transparent;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.side-tab:hover {
+  border-inline-start-color: var(--color-border-subtle);
+  color: var(--color-text);
+}
+
+.side-tab[data-state='active'] {
+  border-inline-start-color: var(--color-accent-fill);
+  color: var(--color-text);
+  font-weight: 750;
+}
+
+@media (forced-colors: active) {
+  .side-tab[data-state='active'] {
+    border-inline-start-color: Highlight;
+  }
+}
+
+.picker {
+  max-width: 24rem;
+}
+
 /* Several forms in one tab (triage: kinds, collection, criteria). */
 .stack {
   display: grid;

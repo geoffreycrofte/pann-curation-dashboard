@@ -1341,6 +1341,7 @@ export default {
     untitled: 'Sans titre',
   },
   settings: {
+    section: 'Section',
     tabsLabel: 'Sections des réglages',
     tabs: {
       general: 'Général',
