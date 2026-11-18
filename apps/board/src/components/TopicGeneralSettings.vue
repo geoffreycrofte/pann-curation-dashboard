@@ -17,6 +17,7 @@ const nameEn = ref(props.topic.name_en)
 const langs = ref<string[]>([...props.topic.config.output_langs])
 const curation = ref(props.topic.config.modules.curation)
 const engagement = ref(props.topic.config.modules.engagement)
+const compose = ref(props.topic.config.modules.compose)
 const message = ref('')
 const isError = ref(false)
 
@@ -25,7 +26,11 @@ const { mutate, isLoading } = useMutation({
     await api.updateTopic(props.topic.id, { name_fr: nameFr.value, name_en: nameEn.value })
     await api.updateConfig(props.topic.id, {
       output_langs: langs.value,
-      modules: { curation: curation.value, engagement: engagement.value },
+      modules: {
+        curation: curation.value,
+        engagement: engagement.value,
+        compose: compose.value,
+      },
     })
   },
   async onSuccess() {
@@ -109,6 +114,16 @@ function submit() {
         <label :for="`${id}-engagement`">{{ t('modules.engagement') }}</label>
       </div>
       <p :id="`${id}-engagement-hint`" class="hint">{{ t('modules.engagementHint') }}</p>
+      <div class="form-check">
+        <input
+          :id="`${id}-compose`"
+          v-model="compose"
+          type="checkbox"
+          :aria-describedby="`${id}-compose-hint`"
+        />
+        <label :for="`${id}-compose`">{{ t('modules.compose') }}</label>
+      </div>
+      <p :id="`${id}-compose-hint`" class="hint">{{ t('modules.composeHint') }}</p>
     </fieldset>
     <div>
       <button type="submit" class="button" data-variant="primary" :disabled="isLoading">

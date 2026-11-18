@@ -756,6 +756,9 @@ export default {
     engagement: 'Engagement',
     engagementHint:
       'Repérer des conversations (Hacker News, Bluesky) où votre équipe peut aider, et les trier. Pann ne publie jamais de réponse : vous répondez vous-même.',
+    compose: 'Création',
+    composeHint:
+      'Écrire vos propres posts, à partir de vos notes, de liens ou d’une recherche, avec vos images. Ils partent sur leurs propres créneaux.',
     curationOff: 'La curation est désactivée pour ce thème.',
     turnOn: 'L’activer dans les réglages',
   },

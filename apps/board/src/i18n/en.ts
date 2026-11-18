@@ -742,6 +742,9 @@ export default {
     engagement: 'Engagement',
     engagementHint:
       'Find conversations (Hacker News, Bluesky) where your team can help, and sort them. Pann never posts a reply: you reply yourself.',
+    compose: 'Create',
+    composeHint:
+      'Write your own posts, from your notes, links or a search, with your images. They go out on their own slots.',
     curationOff: 'Curation is turned off for this topic.',
     turnOn: 'Turn it on in the settings',
   },

@@ -29,7 +29,7 @@ describe('parseTopicConfig', () => {
 
   it('keeps existing topics as curation boards, with an empty product', () => {
     const config = parseTopicConfig({})
-    expect(config.modules).toEqual({ curation: true, engagement: false })
+    expect(config.modules).toEqual({ curation: true, engagement: false, compose: false })
     expect(isModuleEnabled(config, 'curation')).toBe(true)
     expect(isModuleEnabled(config, 'engagement')).toBe(false)
     expect(config.product.name).toBe('')
