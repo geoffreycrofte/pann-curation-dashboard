@@ -48,7 +48,9 @@ const ALL_TABS = [
 ] as const
 type Tab = (typeof ALL_TABS)[number]
 /** Tabs used by one tool only: hidden while that tool is off. */
-const CURATION_ONLY: readonly Tab[] = ['triage', 'voice', 'publishing', 'newsletter', 'feed']
+const CURATION_ONLY: readonly Tab[] = ['triage', 'newsletter', 'feed']
+/** Writing and publishing posts: the news watch and Création both do. */
+const POSTS_ONLY: readonly Tab[] = ['voice', 'publishing']
 const ENGAGEMENT_ONLY: readonly Tab[] = ['conversations']
 const COMPOSE_ONLY: readonly Tab[] = ['compose']
 
@@ -64,7 +66,8 @@ const tabs = computed<readonly Tab[]>(() => {
     (name) =>
       (modules.curation || !CURATION_ONLY.includes(name)) &&
       (modules.engagement || !ENGAGEMENT_ONLY.includes(name)) &&
-      (modules.compose || !COMPOSE_ONLY.includes(name)),
+      (modules.compose || !COMPOSE_ONLY.includes(name)) &&
+      (modules.curation || modules.compose || !POSTS_ONLY.includes(name)),
   )
 })
 // Wide screens: the sections as a vertical list beside the panel. Narrower: a select
@@ -102,12 +105,14 @@ const { data: assistant } = useQuery({
 /** Local copy edited by the form. */
 const collection = ref<TopicConfig['collection']>()
 const ai = ref<TopicConfig['ai']>()
+const accessibilityCheck = ref(true)
 watch(
   topic,
   (value) => {
     if (!value) return
     collection.value = structuredClone(value.config.collection)
     ai.value = structuredClone(value.config.ai)
+    accessibilityCheck.value = value.config.accessibility_check
   },
   { immediate: true },
 )
@@ -128,7 +133,12 @@ const RULES = [
 const message = ref('')
 const isError = ref(false)
 const { mutate, isLoading } = useMutation({
-  mutation: () => api.updateConfig(props.topicId, { collection: collection.value, ai: ai.value }),
+  mutation: () =>
+    api.updateConfig(props.topicId, {
+      collection: collection.value,
+      ai: ai.value,
+      accessibility_check: accessibilityCheck.value,
+    }),
   async onSuccess() {
     isError.value = false
     message.value = ''
@@ -309,6 +319,16 @@ const { mutate, isLoading } = useMutation({
               {{ t(`settings.${rule.label}Hint`) }}
             </p>
           </div>
+          <div class="form-check">
+            <input
+              :id="`${id}-a11y-check`"
+              v-model="accessibilityCheck"
+              type="checkbox"
+              :aria-describedby="`${id}-a11y-check-hint`"
+            />
+            <label :for="`${id}-a11y-check`">{{ t('postChecks.setting') }}</label>
+          </div>
+          <p :id="`${id}-a11y-check-hint`" class="hint">{{ t('postChecks.settingHint') }}</p>
         </fieldset>
         <div>
           <button type="submit" class="button" data-variant="primary" :disabled="isLoading">

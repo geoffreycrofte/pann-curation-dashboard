@@ -211,6 +211,22 @@ export default {
       mode: 'Point de départ d’un nouveau post',
     },
   },
+  postChecks: {
+    title: 'Accessibilité de ce post',
+    setting: 'Vérifier l’accessibilité des posts',
+    settingHint:
+      'Des conseils pendant la rédaction : hashtags, emoji, lettres stylisées, capitales. Ils n’empêchent jamais de publier.',
+    hashtag_case:
+      '{detail} : si ce hashtag réunit plusieurs mots, mettez une majuscule à chacun (#AccessibilitéNumérique), pour qu’un lecteur d’écran les lise séparément.',
+    emoji_line_start:
+      'Un emoji en début de ligne est lu avant chaque ligne : préférez un tiret ou un numéro.',
+    emoji_many:
+      '{detail} emoji : chacun est lu par son nom complet. Gardez ceux qui apportent quelque chose.',
+    emoji_run: 'Des emoji à la suite ({detail}) font une longue liste de noms lus à voix haute.',
+    styled_text:
+      'Des lettres « stylisées » ({detail}) sont ignorées ou épelées par les lecteurs d’écran : écrivez en texte normal.',
+    all_caps: 'Plusieurs mots en capitales : plus difficiles à lire, parfois épelés.',
+  },
   checklist: {
     compose: 'Écrire un premier post à vous',
     openCompose: 'Ouvrir la Création',

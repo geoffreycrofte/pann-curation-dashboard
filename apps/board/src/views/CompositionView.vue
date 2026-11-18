@@ -23,6 +23,7 @@ import TextSaver from '../components/TextSaver.vue'
 import CompositionImages from '../components/compose/CompositionImages.vue'
 import { api, type ComposeModeName, type ComposeSource, type Composition } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { postWarnings } from '../lib/post-checks'
 import { contentLangName } from '../lib/langs'
 import { toast } from '../lib/toast'
 import { useWorkspace } from '../lib/workspace'
@@ -181,6 +182,7 @@ const mastodonLimit = computed(
 )
 const limitOf = (channel: DraftChannel) =>
   channel === 'mastodon' ? mastodonLimit.value : POST_LIMITS[channel]
+const postChecks = computed(() => postWarnings(topic.value?.config, t))
 const signatureOf = (post: PostDraft) =>
   topic.value && post.lang ? postSignature(topic.value.config, post.channel, post.lang) : ''
 const defaultCommentOf = (post: PostDraft) =>
@@ -474,6 +476,7 @@ async function remove() {
               :length-key="link ? 'diffusion.lengthWithLink' : undefined"
               :readonly="post.status === 'sent' || !!post.claimed_at"
               :edited="post.edited_by_human"
+              :checks="postChecks"
               :save="(text) => savePost(post.id, text)"
             />
             <FirstCommentEditor

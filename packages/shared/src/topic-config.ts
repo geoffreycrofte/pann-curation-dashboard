@@ -302,6 +302,11 @@ export const topicConfigSchema = z.object({
       z.array(z.enum(DRAFT_CHANNELS)),
     )
     .default([]),
+  /**
+   * Accessibility check of the posts (hashtag case, emoji, styled letters, capitals):
+   * warnings shown while editing, never a block. On by default.
+   */
+  accessibility_check: z.boolean().default(true),
   /** The person wants a newsletter (onboarding): the overview asks to set it up. */
   target_newsletter: z.boolean().default(false),
   /**

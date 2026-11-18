@@ -212,6 +212,22 @@ export default {
       mode: 'Starting point of a new post',
     },
   },
+  postChecks: {
+    title: 'Accessibility of this post',
+    setting: 'Check the accessibility of posts',
+    settingHint:
+      'Advice while writing: hashtags, emoji, styled letters, capitals. It never stops a publication.',
+    hashtag_case:
+      '{detail}: if this hashtag joins several words, capitalise each one (#DigitalAccessibility) so that a screen reader reads them separately.',
+    emoji_line_start:
+      'An emoji at the start of a line is read before every line: prefer a dash or a number.',
+    emoji_many:
+      '{detail} emoji: each one is read out by its full name. Keep those that add something.',
+    emoji_run: 'Emoji in a row ({detail}) make a long list of names read out.',
+    styled_text:
+      '“Styled” letters ({detail}) are skipped or spelled out by screen readers: write in plain text.',
+    all_caps: 'Several words in capitals: harder to read, sometimes spelled out.',
+  },
   checklist: {
     compose: 'Write a first post of your own',
     openCompose: 'Open Create',

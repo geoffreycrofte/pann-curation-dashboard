@@ -31,6 +31,7 @@ import KindSelect from '../components/KindSelect.vue'
 import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
 import { api, type RewriteInput } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { postWarnings } from '../lib/post-checks'
 import { useWorkspace } from '../lib/workspace'
 import { toast } from '../lib/toast'
 import { contentLangName } from '../lib/langs'
@@ -318,6 +319,7 @@ const { mutate: draftMissing, isLoading: draftingMissing } = useMutation({
 })
 
 /** Text added at the end of the post when published (LinkedIn signature of the topic). */
+const postChecks = computed(() => postWarnings(topic.value?.config, t))
 const signatureOf = (post: PostDraft) =>
   topic.value && post.lang ? postSignature(topic.value.config, post.channel, post.lang) : ''
 const defaultCommentOf = (post: PostDraft) =>
@@ -581,6 +583,7 @@ async function savePost(postId: string, text: string) {
               "
               :readonly="post.status === 'sent' || !!post.claimed_at"
               :edited="post.edited_by_human"
+              :checks="postChecks"
               :save="(text) => savePost(post.id, text)"
               :rewrite="
                 post.lang
