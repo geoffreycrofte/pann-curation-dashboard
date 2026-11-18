@@ -406,6 +406,18 @@ export const api = {
 
   topics: () => request<Topic[]>('/topics'),
   createTopic: (input: NewTopicInput) => request<Topic>('/topics', json('POST', input)),
+  analyzeVoice: (topicId: string, samples: string, uiLang: 'fr' | 'en') =>
+    request<{ id: string; status: string }>(
+      `/topics/${topicId}/voice-analyses`,
+      json('POST', { samples, ui_lang: uiLang }),
+    ),
+  voiceAnalysis: (topicId: string, id: string) =>
+    request<{
+      id: string
+      status: 'pending' | 'done' | 'failed'
+      result: { style_rules: string; post_rules: string } | null
+      error: string | null
+    }>(`/topics/${topicId}/voice-analyses/${id}`),
   compositions: (topicId: string) =>
     request<CompositionSummary[]>(`/topics/${topicId}/compositions`),
   createComposition: (topicId: string, input: { subject?: string; mode?: ComposeModeName } = {}) =>

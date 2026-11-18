@@ -23,6 +23,7 @@ import { triage } from '../triage/triage'
 import { jobClient } from './client'
 import { notifyAccessRequest } from '../access/notify'
 import { runOnboarding } from '../onboarding/assistant'
+import { runVoiceAnalysis } from '../voice/analyze'
 import { claudeComposeModel } from '../compose/model'
 import {
   runComposeDraft,
@@ -61,6 +62,8 @@ export type JobMessage =
   | { type: 'compose-research'; compositionId: string }
   | { type: 'compose-draft'; compositionId: string }
   | { type: 'describe-media'; mediaId: string }
+  /** Voice rules proposed from past posts (Settings, voice). */
+  | { type: 'analyze-voice'; analysisId: string }
 
 export const networks = {
   zernio: publishWithZernio,
@@ -160,6 +163,11 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
             ? await runComposeDraft(deps, message.compositionId)
             : await runDescribeMedia(deps, message.mediaId)
       console.log(JSON.stringify({ job: message.type, result }))
+      return
+    }
+    case 'analyze-voice': {
+      const result = await runVoiceAnalysis(db, message.analysisId, claudeComposeModel)
+      console.log(JSON.stringify({ job: 'analyze-voice', result }))
       return
     }
     case 'onboarding': {

@@ -2,7 +2,7 @@
 import { DRAFT_MODES, kindLabel, type Lang, type TopicConfig } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
-import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import BudgetSection from '../components/BudgetSection.vue'
@@ -16,6 +16,7 @@ import IntervalSelect from '../components/IntervalSelect.vue'
 import EngagementSettings from '../components/EngagementSettings.vue'
 import EngagementSources from '../components/EngagementSources.vue'
 import ComposeSettings from '../components/compose/ComposeSettings.vue'
+import VoiceFromPosts from '../components/voice/VoiceFromPosts.vue'
 import SourcesPanel from '../components/SourcesPanel.vue'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
@@ -121,6 +122,16 @@ function setKindInterval(key: string, hours: number | null) {
   if (!collection.value) return
   if (hours) collection.value.intervals_hours[key] = hours
   else delete collection.value.intervals_hours[key]
+}
+
+/** A rule proposed from the person's posts fills its field; saving stays theirs. */
+async function applyVoice(field: 'style_rules' | 'post_rules', value: string) {
+  if (!ai.value) return
+  ai.value[field] = value
+  message.value = t('voice.applied')
+  isError.value = false
+  await nextTick()
+  document.getElementById(`${id}-${field}`)?.focus()
 }
 
 /** Free-text rules of the drafting tab (field of topic.config.ai, translation key). */
@@ -286,6 +297,7 @@ const { mutate, isLoading } = useMutation({
     </TabsContent>
 
     <TabsContent value="voice" class="subpanel">
+      <VoiceFromPosts :topic-id="topicId" :current="ai" @apply="applyVoice" />
       <form class="form settings" @submit.prevent="mutate()">
         <fieldset :aria-describedby="`${id}-drafting-hint`">
           <legend>{{ t('settings.drafting') }}</legend>
