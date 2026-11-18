@@ -12,8 +12,8 @@ Décidée le 2026-11-16, arbitrée le 2026-11-17 : **tout d'un coup**, sans ver
    - **Toutes les langues pour les contenus** : un thème publie dans n'importe quelle langue, l'interface reste en français et en anglais. _Fait._
    - **Demande d'accès motivée**, envoyée par e-mail à Geoffrey avec Resend (l'inscription reste sur invitation). _Fait._
 3. **Onboarding** : objectif, réseaux (avec « autre réseau », demandes traitées et priorisées), conversation de cadrage payée par le crédit Pann, relecture avant enregistrement, Aperçu avec liste de démarrage, première collecte immédiate. _Fait_, y compris « Ajuster avec l'assistant » et le souhait de newsletter.
-4. **Nouvelle architecture** : Aujourd'hui (tous thèmes), puis par thème Aperçu, Veille, Conversations, Création, Calendrier (créneaux distincts par outil), Réglages regroupés par sujet. La métaphore de l'orpaillage sort du board. _Fait_, sauf Création (point 5).
-5. **Création, première version (L)** : les 5 réseaux actuels, recherche avant rédaction, posts ancrés dans leurs sources, images dans l'offre intermédiaire.
+4. **Nouvelle architecture** : Aujourd'hui (tous thèmes), puis par thème Aperçu, Veille, Conversations, Création, Calendrier (créneaux distincts par outil), Réglages regroupés par sujet. La métaphore de l'orpaillage sort du board. _Fait._
+5. **Création, première version (L)** : les 5 réseaux actuels, recherche avant rédaction, posts ancrés dans leurs sources, images dans l'offre intermédiaire. _Fait_ (trois modes : mes idées, liens, recherche ; vos propres images avec texte alternatif obligatoire). Reste : vérifier le texte alternatif des images via Zernio (LinkedIn, Facebook) et la limite de taille des images de Bluesky ; génération d'images par IA avec l'offre intermédiaire.
 6. **Différenciateurs (M)** : voix de l'auteur en réglages, séries de posts, idées tirées de la veille et des conversations, contrôle d'accessibilité des posts.
 7. **Ensuite** : élargir les réseaux de Création.
 
