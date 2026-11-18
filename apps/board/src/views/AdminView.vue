@@ -14,6 +14,7 @@ import {
   type FeatureRequest,
   type FeatureRequestStatus,
   type PlatformKey,
+  type AdminWorkspace,
 } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
@@ -156,6 +157,22 @@ async function setFeatureStatus(request: FeatureRequest, status: FeatureRequestS
     await api.setFeatureRequestStatus(request.id, status)
     toast(t('admin.featureMarked', { subject: request.subject }))
     await queryCache.invalidateQueries({ key: ['admin', 'feature-requests'] })
+  } catch (err) {
+    toast(describeError((err as Error).message, t).text)
+  }
+}
+
+// Workspaces whose LinkedIn and Facebook go through Pann's Zernio (platform mode).
+const { data: workspaces } = useQuery({ key: ['admin', 'workspaces'], query: api.adminWorkspaces })
+async function setPlatform(workspace: AdminWorkspace, enabled: boolean) {
+  try {
+    await api.setZernioPlatform(workspace.id, enabled)
+    toast(
+      enabled
+        ? t('admin.platformOn', { name: workspace.name })
+        : t('admin.platformOff', { name: workspace.name }),
+    )
+    await queryCache.invalidateQueries({ key: ['admin', 'workspaces'] })
   } catch (err) {
     toast(describeError((err as Error).message, t).text)
   }
@@ -345,6 +362,46 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
                   {{ t(`admin.featureStatus.${status}`) }}
                 </option>
               </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block" :aria-labelledby="`${id}-workspaces`">
+    <h2 :id="`${id}-workspaces`">{{ t('admin.workspacesTitle') }}</h2>
+    <p class="hint">{{ t('admin.workspacesIntro') }}</p>
+    <div v-if="workspaces?.length" class="table-wrap">
+      <table>
+        <caption class="visually-hidden">
+          {{
+            t('admin.workspacesTitle')
+          }}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">{{ t('admin.colWorkspace') }}</th>
+            <th scope="col">{{ t('admin.colDate') }}</th>
+            <th scope="col">{{ t('admin.colPlatform') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="workspace in workspaces" :key="workspace.id">
+            <th scope="row">{{ workspace.name }}</th>
+            <td>{{ d(new Date(workspace.created_at), { dateStyle: 'medium' }) }}</td>
+            <td>
+              <div class="form-check">
+                <input
+                  :id="`${id}-platform-${workspace.id}`"
+                  type="checkbox"
+                  :checked="workspace.zernio_platform"
+                  @change="setPlatform(workspace, ($event.target as HTMLInputElement).checked)"
+                />
+                <label :for="`${id}-platform-${workspace.id}`">
+                  {{ t('admin.platformLabel', { n: workspace.accounts }) }}
+                </label>
+              </div>
             </td>
           </tr>
         </tbody>

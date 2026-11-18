@@ -446,3 +446,11 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Idées tirées du thème.** Un élément de veille gardé, une conversation à laquelle répondre (son angle devient les notes) et une liste « Idées » en tête de la Création démarrent une composition en mode « Des liens », la source déjà cochée. Le regroupement automatique de questions récurrentes (« 3 personnes ont demandé… ») n'est pas fait : à reprendre si l'usage le demande.
 
 **Séries.** Sujet, nombre de posts (2 à 8), période (1 à 60 jours) : une tâche propose un plan (un angle par post, ancré dans les notes et la fiche produit), la personne le modifie, puis chaque post devient une composition rédigée à partir de son angle seul (mode « Mes idées »). « Programmer la série » place chaque post sur le premier créneau libre de la Création à partir de sa part de la période (`not_before`). Supprimer une série garde ses posts.
+
+## 2026-11-19 : Zernio en mode plateforme
+
+**Pour qui.** Un administrateur de la plateforme coche, dans l'espace d'admin, les espaces dont LinkedIn et Facebook passent par la clé Zernio de Pann (plus tard : les offres où Pann fournit les services). Un espace qui a sa propre clé Zernio la garde ; la clé de Pann ne sert qu'à défaut.
+
+**Comment.** Un profil Zernio par espace (`externalId` = id de l'espace, nom « Pann <id> » car les noms sont uniques), créé à la première connexion. La clé de Pann ne sert qu'aux tâches : la personne demande une connexion (fonction `request_zernio_platform`, membres seulement, espace activé), une tâche prépare le lien de Zernio (`GET /v1/connect/{platform}`, mode standard : Zernio héberge le choix de la Page ou de l'organisation, écran d'accueil au nom de Pann, droits `posting,comments` pour les premiers commentaires), le board y envoie la personne, qui revient sur Connexions. L'adresse de retour est construite par l'API, jamais reçue du navigateur. Au retour, une tâche liste les comptes du profil (`GET /v1/accounts?profileId=`). Vérifié sur docs.zernio.com le 2026-11-19.
+
+**Isolement.** La clé de Pann atteint tous les profils : la tâche de publication n'accepte qu'un compte de la liste du profil de l'espace ; un compte d'un autre espace mis dans les réglages d'un thème est refusé (`channel_not_configured`). Table `zernio_platform_links` (lecture : membres ; écriture : fonctions et tâches).

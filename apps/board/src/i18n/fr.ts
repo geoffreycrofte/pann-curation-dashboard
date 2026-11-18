@@ -285,6 +285,21 @@ export default {
     scheduledFor: 'programmé le {date}',
     errors: { subject: 'Indiquez le sujet de la série.' },
   },
+  zernioPlatform: {
+    title: 'LinkedIn et Facebook, via Pann',
+    intro:
+      'Pas de clé à saisir : connectez vos comptes sur l’écran de Zernio, le service qui publie pour Pann, puis revenez ici. Pann ne voit jamais vos mots de passe.',
+    none: 'Aucun compte connecté pour l’instant.',
+    inactive: 'À reconnecter',
+    listedOn: 'Liste mise à jour le {date}.',
+    connectLinkedin: 'Connecter LinkedIn',
+    connectFacebook: 'Connecter une Page Facebook',
+    refresh: 'Actualiser la liste',
+    preparing: 'Préparation de la connexion…',
+    listing: 'Mise à jour de la liste…',
+    refreshed: 'Liste des comptes à jour',
+    connectFailed: 'La connexion n’a pas abouti. Vous pouvez réessayer.',
+  },
   checklist: {
     compose: 'Écrire un premier post à vous',
     openCompose: 'Ouvrir la Création',
@@ -744,6 +759,13 @@ export default {
     started: 'Rédaction des posts manquants lancée.',
   },
   admin: {
+    workspacesTitle: 'Espaces de travail',
+    workspacesIntro:
+      'Cochez un espace pour que LinkedIn et Facebook y passent par la clé Zernio de Pann (mode plateforme) : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde.',
+    colPlatform: 'Zernio de Pann',
+    platformLabel: 'Activé (comptes : {n})',
+    platformOn: 'Zernio de Pann activé pour {name}',
+    platformOff: 'Zernio de Pann désactivé pour {name}',
     title: 'Administration de Pann',
     intro:
       'Réservé aux administrateurs de Pann : les clés que Pann paie lui-même et le centre de coûts de ces dépenses.',

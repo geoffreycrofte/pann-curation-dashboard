@@ -71,9 +71,25 @@ watch(
   { immediate: true },
 )
 
+const { data: platform } = useQuery({
+  key: () => ['zernio-platform', workspaceId.value ?? ''],
+  query: () => api.zernioPlatform(workspaceId.value!),
+  enabled: () => !!workspaceId.value,
+})
+
 const accounts = computed<AccountRow[]>(() => {
   const rows: AccountRow[] = []
   const zernio = credentials.value?.find((c) => c.provider === 'zernio')
+  // Without a Zernio key of its own, the workspace may publish through Pann's (platform).
+  if (!zernio && platform.value?.enabled)
+    for (const a of platform.value.accounts)
+      rows.push({
+        key: `${a.platform}/${a.id}`,
+        channel: a.platform,
+        account_id: a.id,
+        name: a.username,
+        missing: false,
+      })
   // Accounts listed before Bluesky and Discord went direct (or X was left out) are skipped.
   for (const a of zernio?.meta.accounts ?? []) {
     if (!(a.platform in ZERNIO_PLATFORMS)) continue

@@ -238,6 +238,27 @@ export interface Series {
   > & { draft_error: string | null; series_position: number })[]
 }
 
+/** Zernio in platform mode: Pann's key, the workspace's own Zernio profile. */
+export interface ZernioPlatformLink {
+  enabled: boolean
+  profile_id?: string | null
+  accounts: { id: string; platform: 'linkedin' | 'facebook'; username: string; active: boolean }[]
+  refreshed_at?: string | null
+  status: 'idle' | 'pending' | 'failed'
+  connect_platform?: 'linkedin' | 'facebook' | null
+  /** Zernio's address to open, once the job prepared it. */
+  connect_url?: string | null
+  error?: string | null
+}
+
+export interface AdminWorkspace {
+  id: string
+  name: string
+  created_at: string
+  zernio_platform: boolean
+  accounts: number
+}
+
 export interface RewriteInput {
   text: string
   preset: 'shorter' | 'longer' | 'formal' | 'casual' | 'custom'
@@ -440,6 +461,23 @@ export const api = {
       result: { style_rules: string; post_rules: string } | null
       error: string | null
     }>(`/topics/${topicId}/voice-analyses/${id}`),
+  zernioPlatform: (workspaceId: string) =>
+    request<ZernioPlatformLink>(`/workspaces/${workspaceId}/zernio-platform`),
+  connectZernioPlatform: (workspaceId: string, platform: 'linkedin' | 'facebook') =>
+    request<{ queued: boolean }>(
+      `/workspaces/${workspaceId}/zernio-platform/connect`,
+      json('POST', { platform }),
+    ),
+  refreshZernioPlatform: (workspaceId: string) =>
+    request<{ queued: boolean }>(`/workspaces/${workspaceId}/zernio-platform/refresh`, {
+      method: 'POST',
+    }),
+  adminWorkspaces: () => request<AdminWorkspace[]>('/admin/workspaces'),
+  setZernioPlatform: (workspaceId: string, enabled: boolean) =>
+    request<{ enabled: boolean }>(
+      `/admin/workspaces/${workspaceId}/zernio-platform`,
+      json('PUT', { enabled }),
+    ),
   compositions: (topicId: string) =>
     request<CompositionSummary[]>(`/topics/${topicId}/compositions`),
   createComposition: (

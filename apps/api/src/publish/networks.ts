@@ -235,8 +235,13 @@ export type AccountsResult =
   { ok: true; accounts: ZernioAccount[] } | { ok: false; invalid: boolean }
 
 /** Social accounts connected in Zernio, limited to the networks Pann publishes to. */
-export async function listZernioAccounts(apiKey: string): Promise<AccountsResult> {
-  const res = await send(`${ZERNIO_API}/accounts`, {
+/** Accounts of the key; with `profileId`, only those of that profile (platform mode). */
+export async function listZernioAccounts(
+  apiKey: string,
+  profileId?: string,
+): Promise<AccountsResult> {
+  const query = profileId ? `?profileId=${encodeURIComponent(profileId)}` : ''
+  const res = await send(`${ZERNIO_API}/accounts${query}`, {
     headers: zernioHeaders(apiKey),
   })
   if (!res) return { ok: false, invalid: false }

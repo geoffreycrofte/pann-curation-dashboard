@@ -25,6 +25,7 @@ import { notifyAccessRequest } from '../access/notify'
 import { runOnboarding } from '../onboarding/assistant'
 import { runVoiceAnalysis } from '../voice/analyze'
 import { runSeriesPlan } from '../series/plan'
+import { runZernioPlatform } from '../publish/platform'
 import { claudeComposeModel } from '../compose/model'
 import {
   runComposeDraft,
@@ -67,6 +68,8 @@ export type JobMessage =
   | { type: 'analyze-voice'; analysisId: string }
   /** Plan of a series of posts (Création). */
   | { type: 'plan-series'; seriesId: string }
+  /** Zernio in platform mode: a connection link, or the accounts listed again. */
+  | { type: 'zernio-platform'; workspaceId: string }
 
 export const networks = {
   zernio: publishWithZernio,
@@ -166,6 +169,11 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
             ? await runComposeDraft(deps, message.compositionId)
             : await runDescribeMedia(deps, message.mediaId)
       console.log(JSON.stringify({ job: message.type, result }))
+      return
+    }
+    case 'zernio-platform': {
+      const result = await runZernioPlatform(db, message.workspaceId)
+      console.log(JSON.stringify({ job: 'zernio-platform', result }))
       return
     }
     case 'plan-series': {

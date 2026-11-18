@@ -47,6 +47,11 @@ export interface DuePost {
  */
 export interface PublishCredentials {
   zernio?: string
+  /**
+   * Platform mode: `zernio` is Pann's key, which reaches every workspace's profile; only
+   * the accounts of this workspace's own profile may be published to.
+   */
+  zernioAccounts?: string[]
   mastodon: Record<string, MastodonAccount>
   bluesky: Record<string, BlueskyAccount>
   discord: Record<string, DiscordWebhook>
@@ -199,6 +204,19 @@ export async function publish(deps: {
           : service === 'bluesky'
             ? bluesky
             : discord
+    if (
+      service === 'zernio' &&
+      keys.zernioAccounts &&
+      !keys.zernioAccounts.includes(account.account_id)
+    ) {
+      await deps.store.markFailed(
+        post,
+        errorCode('channel_not_configured', `${post.channel}/${post.lang}`),
+        true,
+      )
+      report.failed++
+      continue
+    }
     if (!found) {
       await deps.store.markFailed(post, errorCode('missing_credential', service), true)
       report.failed++

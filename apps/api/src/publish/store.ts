@@ -121,6 +121,25 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         bluesky: {},
         discord: {},
       }
+      // No Zernio key of its own: Pann's, in platform mode, limited to its own profile.
+      if (!result.zernio) {
+        const { data: link, error: linkError } = await db
+          .from('zernio_platform_links')
+          .select('enabled, accounts')
+          .eq('workspace_id', workspaceId)
+          .maybeSingle<{ enabled: boolean; accounts: { id: string }[] }>()
+        if (linkError) throw linkError
+        if (link?.enabled) {
+          const { data: platform, error: platformError } = await db.rpc(
+            'platform_credentials_for_jobs',
+          )
+          if (platformError) throw platformError
+          result.zernio = ((platform ?? []) as { provider: string; secret: string }[]).find(
+            (k) => k.provider === 'zernio',
+          )?.secret
+          result.zernioAccounts = link.accounts.map((a) => a.id)
+        }
+      }
       for (const row of rows.data as {
         provider: string
         account: string

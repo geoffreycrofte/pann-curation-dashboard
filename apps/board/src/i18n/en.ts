@@ -286,6 +286,21 @@ export default {
     scheduledFor: 'scheduled on {date}',
     errors: { subject: 'Enter the subject of the series.' },
   },
+  zernioPlatform: {
+    title: 'LinkedIn and Facebook, through Pann',
+    intro:
+      'No key to enter: connect your accounts on the screen of Zernio, the service that publishes for Pann, then come back here. Pann never sees your passwords.',
+    none: 'No account connected yet.',
+    inactive: 'To reconnect',
+    listedOn: 'List updated on {date}.',
+    connectLinkedin: 'Connect LinkedIn',
+    connectFacebook: 'Connect a Facebook Page',
+    refresh: 'Refresh the list',
+    preparing: 'Preparing the connection…',
+    listing: 'Updating the list…',
+    refreshed: 'Account list up to date',
+    connectFailed: 'The connection did not complete. You can try again.',
+  },
   checklist: {
     compose: 'Write a first post of your own',
     openCompose: 'Open Create',
@@ -737,6 +752,13 @@ export default {
     started: 'Drafting of the missing posts started.',
   },
   admin: {
+    workspacesTitle: 'Workspaces',
+    workspacesIntro:
+      "Tick a workspace for its LinkedIn and Facebook to go through Pann's Zernio key (platform mode): its members connect their accounts without a key. A workspace with its own Zernio key keeps it.",
+    colPlatform: "Pann's Zernio",
+    platformLabel: 'On (accounts: {n})',
+    platformOn: "Pann's Zernio on for {name}",
+    platformOff: "Pann's Zernio off for {name}",
     title: 'Pann administration',
     intro:
       'For Pann administrators only: the keys Pann pays for itself and the cost centre of that spending.',

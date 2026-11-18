@@ -156,6 +156,23 @@ export const admin = new Hono<AppEnv>()
   })
 
   /** Requests made from the product (another network, a coming tool), newest first. */
+  /** Workspaces, and whether their LinkedIn and Facebook go through Pann's Zernio. */
+  .get('/workspaces', async (c) => {
+    const { data, error } = await c.var.db.rpc('admin_workspaces')
+    if (error) throw error
+    return c.json(data)
+  })
+
+  .put('/workspaces/:id/zernio-platform', async (c) => {
+    const { enabled } = await parseJson(z.object({ enabled: z.boolean() }), c.req.raw)
+    const { error } = await c.var.db.rpc('set_zernio_platform', {
+      p_workspace_id: c.req.param('id'),
+      p_enabled: enabled,
+    })
+    if (error) throw error
+    return c.json({ enabled })
+  })
+
   .get('/feature-requests', async (c) => {
     const { data, error } = await c.var.db
       .from('feature_requests')

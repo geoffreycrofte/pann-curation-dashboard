@@ -530,3 +530,33 @@ describe('images of composed posts', () => {
     expect(form.get('files[0]')).toBeInstanceOf(Blob)
   })
 })
+
+describe('Zernio in platform mode', () => {
+  it('publishes only to the accounts of the workspace’s own profile', async () => {
+    const sent: string[] = []
+    const networks: Networks = {
+      zernio: async (_key, account) => (sent.push(account), ok),
+      mastodon: async () => ok,
+      bluesky: async () => ok,
+      discord: async () => ok,
+    }
+    const { store, log } = fakeStore([post(), post({ id: 'p2', lang: 'en' })])
+    const credentials = store.credentials
+    store.credentials = async (w) => ({
+      ...(await credentials(w)),
+      zernio: 'pann_key',
+      zernioAccounts: ['someone-else'],
+    })
+    expect(await publish({ store, networks })).toEqual({ sent: 0, failed: 2, retried: 0 })
+    expect(sent).toEqual([])
+    expect(log[0]).toContain('channel_not_configured:linkedin/fr final')
+
+    store.credentials = async (w) => ({
+      ...(await credentials(w)),
+      zernio: 'pann_key',
+      zernioAccounts: ['li-1'],
+    })
+    expect((await publish({ store, networks })).sent).toBe(2)
+    expect(sent).toEqual(['li-1', 'li-1'])
+  })
+})

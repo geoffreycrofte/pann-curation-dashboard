@@ -14,6 +14,7 @@ import { onboarding } from './routes/onboarding'
 import { compositions } from './routes/compositions'
 import { voice } from './routes/voice'
 import { series } from './routes/series'
+import { zernioPlatform } from './routes/zernio-platform'
 import { topics } from './routes/topics'
 import { workspaces } from './routes/workspaces'
 
@@ -29,6 +30,7 @@ app.route('/me', me)
 app.route('/account', account)
 app.route('/admin', admin)
 app.route('/workspaces', workspaces)
+app.route('/workspaces', zernioPlatform)
 app.route('/onboarding', onboarding)
 app.route('/topics', topics)
 app.route('/topics', diffusion)
