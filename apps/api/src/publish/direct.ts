@@ -1,6 +1,6 @@
 import { errorCode } from '@pann/shared'
 import { PRIVATE_HOST, USER_AGENT } from '../lib/fetch-text'
-import type { PublishRequest, PublishResult } from './networks'
+import type { PublishImage, PublishRequest, PublishResult } from './networks'
 
 /**
  * Networks published without a go-between, because their API is open and free:
@@ -143,13 +143,48 @@ function byteRange(text: string, part: string): { byteStart: number; byteEnd: nu
  * with the language of the post and the link as a facet (a link in the text is not
  * clickable without one).
  */
+/**
+ * Uploads an image (com.atproto.repo.uploadBlob): the blob it returns goes into the
+ * post, with the text alternative and the size (app.bsky.embed.images, 4 at most).
+ */
+async function uploadBlueskyImage(
+  account: BlueskyAccount,
+  accessJwt: string,
+  image: PublishImage,
+): Promise<{ blob: unknown } | PublishResult> {
+  const res = await send(`${account.pds}/xrpc/com.atproto.repo.uploadBlob`, {
+    method: 'POST',
+    headers: { 'Content-Type': image.mime, Authorization: `Bearer ${accessJwt}` },
+    body: await image.load(),
+  })
+  if (!res) return failure(errorCode('provider_error', 'bluesky'), true)
+  if (res.status === 401) return failure(errorCode('invalid_credential', 'bluesky'), false, true)
+  if (res.status === 429) return failure(errorCode('rate_limited', 'bluesky'), true)
+  if (res.status === 400 || res.status === 413)
+    return failure(errorCode('post_rejected', 'bluesky'), false)
+  if (!res.ok) return failure(errorCode('provider_error', 'bluesky'), true)
+  const body = (await res.json().catch(() => ({}))) as { blob?: unknown }
+  return body.blob ? { blob: body.blob } : failure(errorCode('provider_response', 'bluesky'), true)
+}
+
 export async function publishToBluesky(
   account: BlueskyAccount,
   request: PublishRequest & { url: string },
 ): Promise<PublishResult> {
   const session = await createSession(account)
   if (!session.ok) return session.result
-  const range = byteRange(request.content, request.url)
+  const images: { image: unknown; alt: string; aspectRatio: { width: number; height: number } }[] =
+    []
+  for (const image of (request.images ?? []).slice(0, 4)) {
+    const uploaded = await uploadBlueskyImage(account, session.accessJwt, image)
+    if ('ok' in uploaded) return uploaded
+    images.push({
+      image: uploaded.blob,
+      alt: image.alt,
+      aspectRatio: { width: image.width, height: image.height },
+    })
+  }
+  const range = request.url ? byteRange(request.content, request.url) : null
   const record = {
     $type: 'app.bsky.feed.post',
     text: request.content,
@@ -165,6 +200,7 @@ export async function publishToBluesky(
           ],
         }
       : {}),
+    ...(images.length ? { embed: { $type: 'app.bsky.embed.images', images } } : {}),
   }
   const res = await send(`${account.pds}/xrpc/com.atproto.repo.createRecord`, {
     ...json({ repo: account.did, collection: 'app.bsky.feed.post', record }),
@@ -235,10 +271,34 @@ export async function publishToDiscord(
   webhook: DiscordWebhook,
   request: PublishRequest,
 ): Promise<PublishResult> {
-  const res = await send(
-    `${webhook.url}?wait=true`,
-    json({ content: request.content, allowed_mentions: { parse: [] } }),
-  )
+  const payload = { content: request.content, allowed_mentions: { parse: [] } }
+  const images = request.images ?? []
+  let init: RequestInit = json(payload)
+  if (images.length) {
+    // Files with their description (text alternative): multipart, the message in
+    // payload_json, each file in files[n] matching attachments[n].
+    const form = new FormData()
+    const extension = (mime: string) => mime.split('/')[1] ?? 'jpg'
+    form.append(
+      'payload_json',
+      JSON.stringify({
+        ...payload,
+        attachments: images.map((image, index) => ({
+          id: index,
+          description: image.alt,
+          filename: `image-${index + 1}.${extension(image.mime)}`,
+        })),
+      }),
+    )
+    for (const [index, image] of images.entries())
+      form.append(
+        `files[${index}]`,
+        new Blob([await image.load()], { type: image.mime }),
+        `image-${index + 1}.${extension(image.mime)}`,
+      )
+    init = { method: 'POST', body: form }
+  }
+  const res = await send(`${webhook.url}?wait=true`, init)
   if (!res) return failure(errorCode('provider_error', 'discord'), true)
   if (res.status === 401 || res.status === 404)
     return failure(errorCode('invalid_credential', 'discord'), false, true)

@@ -337,7 +337,7 @@ export default {
         steps: [
           'On your Mastodon instance, open Preferences, then Development.',
           'Click “New application” and give it a name, for example “Pann”.',
-          'In the scopes, only tick read:accounts and write:statuses, then save.',
+          'In the scopes, only tick read:accounts, write:statuses and write:media (for images), then save.',
           'Open the new application and copy “Your access token”.',
           'Paste the token and the address of your instance here.',
         ],

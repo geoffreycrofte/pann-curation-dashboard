@@ -16,6 +16,19 @@ export type PublishResult =
   /** retry: a later attempt may work (network down, rate limit, provider error). */
   | { ok: false; error: string; retry: boolean; invalidCredential?: boolean }
 
+/** An image of a composed post (Création), as each network needs it. */
+export interface PublishImage {
+  /** Signed address, valid for an hour: Zernio fetches the image from it. */
+  url: string
+  mime: string
+  width: number
+  height: number
+  /** Text alternative, in the language of the post. */
+  alt: string
+  /** Bytes, for the networks the image is uploaded to (Bluesky, Mastodon, Discord). */
+  load(): Promise<Uint8Array>
+}
+
 export interface PublishRequest {
   channel: DraftChannel
   lang: Lang
@@ -25,6 +38,8 @@ export interface PublishRequest {
   idempotencyKey: string
   /** LinkedIn: comment Zernio publishes right after the post. */
   firstComment?: string | null
+  /** Images of a composed post, in order (at most 4). */
+  images?: PublishImage[]
 }
 
 const failure = (error: string, retry: boolean, invalidCredential = false): PublishResult => ({
@@ -88,6 +103,11 @@ export async function publishWithZernio(
       content: request.content,
       platforms: [entry],
       publishNow: true,
+      // Images by public address (docs.zernio.com/guides/media-uploads, 2026-11-19).
+      // Text alternatives are not sent: no altText field is documented by Zernio itself.
+      ...(request.images?.length
+        ? { mediaItems: request.images.map((image) => ({ type: 'image', url: image.url })) }
+        : {}),
     }),
   })
   if (!res) return failure(errorCode('provider_error', 'zernio'), true)
@@ -126,11 +146,56 @@ export interface MastodonAccount {
   token: string
 }
 
-/** Mastodon REST API (POST /api/v1/statuses, scope write:statuses). */
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Uploads an image with its text alternative (POST /api/v2/media, `description`). The
+ * instance may still be processing it (202): it is ready once GET /api/v1/media/:id
+ * answers 200.
+ */
+async function uploadMastodonImage(
+  account: MastodonAccount,
+  image: PublishImage,
+): Promise<{ id: string } | PublishResult> {
+  const form = new FormData()
+  form.append('file', new Blob([await image.load()], { type: image.mime }), 'image')
+  form.append('description', image.alt)
+  const auth = { Authorization: `Bearer ${account.token}`, 'User-Agent': USER_AGENT }
+  const res = await send(`${account.instance}/api/v2/media`, {
+    method: 'POST',
+    headers: auth,
+    body: form,
+  })
+  if (!res) return failure(errorCode('provider_error', 'mastodon'), true)
+  if (res.status === 401 || res.status === 403)
+    return failure(errorCode('invalid_credential', 'mastodon'), false, true)
+  if (res.status === 429) return failure(errorCode('rate_limited', 'mastodon'), true)
+  if (res.status === 422) return failure(errorCode('post_rejected', 'mastodon'), false)
+  if (!res.ok) return failure(errorCode('provider_error', 'mastodon'), true)
+  const media = (await res.json().catch(() => ({}))) as { id?: string }
+  if (!media.id) return failure(errorCode('provider_response', 'mastodon'), true)
+  if (res.status === 202) {
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await sleep(1000)
+      const check = await send(`${account.instance}/api/v1/media/${media.id}`, { headers: auth })
+      if (check?.status === 200) return { id: media.id }
+    }
+    return failure(errorCode('provider_error', 'mastodon'), true)
+  }
+  return { id: media.id }
+}
+
+/** Mastodon REST API (POST /api/v1/statuses, scope write:statuses; images: write:media). */
 export async function publishToMastodon(
   account: MastodonAccount,
   request: PublishRequest,
 ): Promise<PublishResult> {
+  const mediaIds: string[] = []
+  for (const image of request.images ?? []) {
+    const uploaded = await uploadMastodonImage(account, image)
+    if ('ok' in uploaded) return uploaded
+    mediaIds.push(uploaded.id)
+  }
   const res = await send(`${account.instance}/api/v1/statuses`, {
     method: 'POST',
     headers: {
@@ -139,7 +204,12 @@ export async function publishToMastodon(
       'Idempotency-Key': request.idempotencyKey,
       'User-Agent': USER_AGENT,
     },
-    body: JSON.stringify({ status: request.content, language: request.lang, visibility: 'public' }),
+    body: JSON.stringify({
+      status: request.content,
+      language: request.lang,
+      visibility: 'public',
+      ...(mediaIds.length ? { media_ids: mediaIds } : {}),
+    }),
   })
   if (!res) return failure(errorCode('provider_error', 'mastodon'), true)
   if (res.status === 401 || res.status === 403)

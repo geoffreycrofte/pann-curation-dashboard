@@ -340,7 +340,7 @@ export default {
         steps: [
           'Sur votre instance Mastodon, ouvrez Préférences, puis Développement.',
           'Cliquez sur « Nouvelle application » et donnez-lui un nom, par exemple « Pann ».',
-          'Dans les autorisations, ne cochez que read:accounts et write:statuses, puis enregistrez.',
+          'Dans les autorisations, ne cochez que read:accounts, write:statuses et write:media (pour les images), puis enregistrez.',
           'Ouvrez l’application créée et copiez « Votre jeton d’accès ».',
           'Collez ici le jeton et l’adresse de votre instance.',
         ],

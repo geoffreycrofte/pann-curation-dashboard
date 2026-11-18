@@ -9,11 +9,24 @@ import {
   type TopicConfig,
 } from '@pann/shared'
 import type { BlueskyAccount, DiscordWebhook } from './direct'
-import type { MastodonAccount, PublishRequest, PublishResult } from './networks'
+import type { MastodonAccount, PublishImage, PublishRequest, PublishResult } from './networks'
+
+/** An image of a composed post, its text alternative in every language. */
+export interface DueImage {
+  path: string
+  /** Signed address, valid for an hour. */
+  url: string
+  mime: string
+  width: number
+  height: number
+  alt: Record<string, string>
+}
 
 export interface DuePost {
   id: string
-  item_id: string
+  /** The post comes from an item of the news watch, or from a composition (Création). */
+  item_id: string | null
+  composition_id: string | null
   topic_id: string
   workspace_id: string
   channel: DraftChannel
@@ -22,7 +35,9 @@ export interface DuePost {
   /** null: default of the topic; '': none (LinkedIn only). */
   first_comment: string | null
   publish_attempts: number
-  canonical_url: string
+  /** Link appended after the text: the item's page, the composition's link, or none. */
+  link: string
+  images: DueImage[]
   topic_config: TopicConfig
 }
 
@@ -74,6 +89,10 @@ export interface PublishStore {
   ): Promise<void>
   /** An item whose posts have all left the queue, with at least one sent, is published. */
   finishItem(topicId: string, itemId: string): Promise<void>
+  /** Same for a composition. */
+  finishComposition(compositionId: string): Promise<void>
+  /** Bytes of an image, for the networks it is uploaded to. */
+  imageBytes(path: string): Promise<Uint8Array>
 }
 
 export interface Networks {
@@ -116,11 +135,13 @@ export async function publish(deps: {
   /** workspace/provider pairs to leave alone for this run (bad key, rate limit). */
   const blocked = new Set<string>()
   const items = new Set<string>()
+  const compositions = new Set<string>()
   const later = (attempt: number) =>
     new Date(now().getTime() + RETRY_DELAY_MINUTES * attempt * 60_000)
 
   for (const post of posts) {
-    items.add(`${post.topic_id}/${post.item_id}`)
+    if (post.item_id) items.add(`${post.topic_id}/${post.item_id}`)
+    if (post.composition_id) compositions.add(post.composition_id)
     const service = provider(post.channel)
     const account = post.lang ? accountFor(post.topic_config, post.channel, post.lang) : undefined
     if (!post.lang || !account) {
@@ -149,11 +170,23 @@ export async function publish(deps: {
       lang: post.lang,
       content: composePost(
         post.body,
-        post.canonical_url,
+        post.link,
         postSignature(post.topic_config, post.channel, post.lang),
       ),
       firstComment: firstCommentFor(post.topic_config, post.channel, post.lang, post.first_comment),
       idempotencyKey: `pann-${post.id}-${post.publish_attempts}`,
+      ...(post.images.length
+        ? {
+            images: post.images.map((image): PublishImage => ({
+              url: image.url,
+              mime: image.mime,
+              width: image.width,
+              height: image.height,
+              alt: image.alt[post.lang!] ?? '',
+              load: () => deps.store.imageBytes(image.path),
+            })),
+          }
+        : {}),
     }
     const mastodon = pickAccount(keys.mastodon, account.account_id)
     const bluesky = pickAccount(keys.bluesky, account.account_id)
@@ -177,7 +210,7 @@ export async function publish(deps: {
         : service === 'mastodon'
           ? await deps.networks.mastodon(mastodon!, request)
           : service === 'bluesky'
-            ? await deps.networks.bluesky(bluesky!, { ...request, url: post.canonical_url })
+            ? await deps.networks.bluesky(bluesky!, { ...request, url: post.link })
             : await deps.networks.discord(discord!, request)
 
     if (result.ok) {
@@ -210,5 +243,6 @@ export async function publish(deps: {
     const [topicId, itemId] = key.split('/') as [string, string]
     await deps.store.finishItem(topicId, itemId)
   }
+  for (const id of compositions) await deps.store.finishComposition(id)
   return report
 }
