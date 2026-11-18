@@ -154,6 +154,8 @@ export interface OnboardingContext {
   listen: string[]
   newsletter?: boolean
   ui_lang: 'fr' | 'en'
+  /** Adjusting an existing topic: its current settings, as text. */
+  current?: Record<string, string>
 }
 
 export interface RewriteInput {

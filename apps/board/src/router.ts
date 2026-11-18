@@ -61,6 +61,14 @@ export const router = createRouter({
       props: true,
     },
     {
+      // Adjust an existing topic with the assistant: full screen, like the creation.
+      path: '/t/:topicId/adjust',
+      name: 'adjust',
+      component: () => import('./views/AdjustTopicView.vue'),
+      props: true,
+      meta: { chromeless: true },
+    },
+    {
       // News watch (curation): items by status.
       path: '/t/:topicId/curation',
       name: 'board',

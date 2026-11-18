@@ -84,6 +84,13 @@ const {
   query: () => api.topic(props.topicId),
 })
 
+// "Adjust with the assistant": offered while Pann's assistant can run for this workspace.
+const { data: assistant } = useQuery({
+  key: () => ['onboarding-available', topic.value?.workspace_id ?? ''],
+  query: () => api.onboardingAvailable(topic.value!.workspace_id),
+  enabled: () => !!topic.value,
+})
+
 /** Local copy edited by the form. */
 const collection = ref<TopicConfig['collection']>()
 const ai = ref<TopicConfig['ai']>()
@@ -129,7 +136,16 @@ const { mutate, isLoading } = useMutation({
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ t('settings.heading', { topic: topicName }) }}</h1>
+  <div class="head">
+    <h1 tabindex="-1">{{ t('settings.heading', { topic: topicName }) }}</h1>
+    <RouterLink
+      v-if="assistant?.available"
+      class="button"
+      :to="{ name: 'adjust', params: { topicId } }"
+    >
+      {{ t('adjust.open') }}
+    </RouterLink>
+  </div>
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
@@ -314,6 +330,19 @@ const { mutate, isLoading } = useMutation({
 </template>
 
 <style scoped>
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.head h1 {
+  margin: 0;
+}
+
 .layout {
   display: grid;
   gap: var(--space-6);

@@ -76,6 +76,33 @@ export default {
     failed: 'failed posts | failed post | failed posts',
     next: 'Next: {date}',
   },
+  adjust: {
+    title: 'Adjust “{topic}” with the assistant',
+    intro:
+      'Say what you want to improve. The assistant knows the current settings; nothing changes before you apply its proposals.',
+    open: 'Adjust with the assistant',
+    statusChat: 'Conversation with the assistant',
+    statusCompare: 'Proposed changes',
+    navLabel: 'Topic adjustment',
+    quit: 'Back to settings',
+    unavailable:
+      'The assistant is not available right now (assistant credit used up or service paused). You can change everything in the settings.',
+    toSettings: 'Open the settings',
+    compareTitle: 'Proposed changes',
+    compareIntro:
+      'Each proposal sits next to the current setting. Edit it if needed, untick the ones you do not want, then apply.',
+    before: 'Current',
+    after: 'Proposed',
+    empty: 'Empty',
+    keep: 'Apply this change',
+    apply: 'No change to apply | Apply the change | Apply the {n} changes',
+    applying: 'Applying…',
+    applied: 'No change | Change applied | {n} changes applied',
+    backToChat: 'Back to the conversation',
+    restart: 'Start the conversation again',
+    noChange:
+      'The assistant proposed no change. Go back to the conversation to say what you want to improve.',
+  },
   checklist: {
     newsletter: 'Set up the newsletter (service, lists, sender)',
     setUp: 'Set up',

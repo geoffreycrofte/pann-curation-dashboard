@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { parseJson } from '../lib/validation'
+import { ADJUSTABLE_FIELDS } from '../onboarding/assistant'
 
 const SESSION_COLUMNS = 'id, workspace_id, context, messages, proposal, status, error, updated_at'
 
@@ -14,6 +15,8 @@ const contextSchema = z.object({
   listen: z.array(z.string().max(30)).max(10),
   newsletter: z.boolean().optional(),
   ui_lang: z.enum(['fr', 'en']),
+  /** Adjusting an existing topic: its current settings, as text. */
+  current: z.partialRecord(z.enum(ADJUSTABLE_FIELDS), z.string().max(4000)).optional(),
 })
 
 const newSession = z.object({ workspace_id: z.uuid(), context: contextSchema })

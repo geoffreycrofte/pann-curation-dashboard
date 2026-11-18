@@ -117,6 +117,29 @@ describe('onboarding prompt', () => {
     expect(onboardingSystemPrompt({ ...context, ui_lang: 'en' })).toContain('Write in English')
   })
 
+  it('adjusts an existing topic: its settings in the context, changes only', () => {
+    const adjust = { ...context, current: { description: 'A tool', style_rules: '' } }
+    const prompt = onboardingSystemPrompt(adjust)
+    expect(prompt).toContain('adjust the settings of an existing topic')
+    expect(prompt).toContain('Never copy an unchanged value')
+    const [first] = onboardingMessages(adjust, [], null)
+    expect(first!.content).toContain('- description: A tool')
+    expect(first!.content).toContain('- style_rules: (empty)')
+  })
+
+  it('does not read the website when adjusting', async () => {
+    const s = state({
+      context: { ...context, url: 'https://example.org', current: { description: 'A tool' } },
+    })
+    let intro = ''
+    const model: AssistantModel = async (call) => {
+      intro = String(call.messages[0]!.content)
+      return answering()(call)
+    }
+    await runOnboarding(fakeDb(s), 's1', model)
+    expect(intro).not.toContain('Website text')
+  })
+
   it('gives the context first, then the exchange', () => {
     const messages = onboardingMessages(
       { ...context, url: 'https://example.org' },

@@ -25,7 +25,26 @@ export interface OnboardingContext {
   newsletter?: boolean
   /** Interface language of the person: the assistant writes in it. */
   ui_lang: 'fr' | 'en'
+  /**
+   * Settings of an existing topic, when the person adjusts it ("Adjust with the
+   * assistant"): the assistant proposes changes to them instead of filling them.
+   */
+  current?: Partial<Record<AdjustableField, string>>
 }
+
+/** Settings the assistant can propose for an existing topic, as text. */
+export const ADJUSTABLE_FIELDS = [
+  'description',
+  'audience',
+  'messages',
+  'claims_to_avoid',
+  'output_langs',
+  'relevance_criteria',
+  'engagement_criteria',
+  'style_rules',
+  'post_rules',
+] as const
+export type AdjustableField = (typeof ADJUSTABLE_FIELDS)[number]
 
 export interface OnboardingMessage {
   role: 'user' | 'assistant'
@@ -68,6 +87,7 @@ export type AssistantOutput = z.infer<typeof outputSchema>
  * ask, when to stop. No tone, style or topic rule: those are what the person tells it.
  */
 export function onboardingSystemPrompt(context: OnboardingContext): string {
+  if (context.current) return adjustSystemPrompt(context)
   const curation = context.tools.includes('curation')
   const engagement = context.tools.includes('engagement')
   const fields = [
@@ -92,6 +112,23 @@ Your job is to fill these settings through a short conversation: ${fields.join('
 - Stop when the settings above are filled or the person skipped them, or after ${MAX_QUESTIONS} questions: set done to true and say in one sentence that a few quick choices come next.`
 }
 
+/** Adjusting an existing topic: changes to its settings, only those the person wants. */
+function adjustSystemPrompt(context: OnboardingContext): string {
+  const curation = context.tools.includes('curation')
+  const engagement = context.tools.includes('engagement')
+  return `You help a person adjust the settings of an existing topic in Pann, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${engagement ? ', and finds online conversations where the person can help' : ''}. The current settings are given below.
+
+# How to ask
+- Write in ${langName(context.ui_lang, 'en')}, the language of the person.
+- Start by asking, in one sentence, what they want to improve; offer two to four quick replies naming settings.
+- One question at a time, short. Offer quick replies when the answer is a choice; otherwise none.
+- Never ask about publication rhythm or budget: they are set elsewhere.
+- Never invent a fact about the product, a source address or a figure. Propose only from what the person said and the current settings.
+- In the proposal, give the full new text of each setting the person wants to change (output_langs as BCP 47 tags); null for every setting that stays as it is. Never copy an unchanged value.
+- Return the full proposal at every turn: keep earlier changes unless the person corrects them.
+- Stop when the person is satisfied, or after ${MAX_QUESTIONS} questions: set done to true and say in one sentence that the changes are shown next to the current settings, to apply or not.`
+}
+
 /** The person's context, then the exchange so far, as API messages. */
 export function onboardingMessages(
   context: OnboardingContext,
@@ -106,6 +143,11 @@ export function onboardingMessages(
     context.listen.length ? `Listens on: ${context.listen.join(', ')}` : null,
     context.newsletter ? 'Wants a newsletter.' : null,
     siteText ? `\nWebsite text:\n${siteText}` : null,
+    context.current
+      ? `\nCurrent settings:\n${ADJUSTABLE_FIELDS.map(
+          (field) => `- ${field}: ${context.current?.[field]?.trim() || '(empty)'}`,
+        ).join('\n')}`
+      : null,
     '\nStart the conversation.',
   ]
     .filter((line) => line !== null)
@@ -222,7 +264,11 @@ export async function runOnboarding(
 
   // The site is read once, for the first answer only.
   let siteText: string | null = null
-  if (session.context.url && !session.messages.some((m) => m.role === 'assistant')) {
+  if (
+    session.context.url &&
+    !session.context.current &&
+    !session.messages.some((m) => m.role === 'assistant')
+  ) {
     try {
       const page = await fetchText(session.context.url, {
         timeoutMs: 10_000,

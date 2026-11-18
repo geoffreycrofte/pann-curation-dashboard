@@ -418,3 +418,11 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Recomposition à la création.** Le board se reconstruit autour du nouveau thème avec l'API View Transitions (fondu, barre latérale qui glisse), sauf si les animations sont réduites. Le titre de l'Aperçu prend le focus.
 
 **Illustration : la batée qui se remplit.** La page publique montre un prospecteur devant une batée vide ; ici, la même batée, en aplat, reçoit une paillette à chaque réponse, et les paillettes fusionnent en la pépite du logo au récapitulatif. Décorative (masquée aux technologies d'assistance, l'avancement est aussi donné en texte), affichée seulement à partir de 1200 px, dans la marge droite, jamais sous la colonne. C'est la seule exception à la métaphore de l'orpaillage hors des pages publiques : ce moment est un seuil, pas un outil du board.
+
+## 2026-11-18 : ajuster un thème avec l'assistant, menu des réglages, souhait de newsletter
+
+**« Ajuster avec l'assistant ».** Le même assistant qu'à la création, sur un thème existant (bouton en tête des Réglages, plein écran comme la création). Il reçoit les réglages actuels sous forme de texte et ne propose que les changements voulus (null pour le reste, jamais de copie) ; il ne relit pas le site. La personne voit ensuite chaque changement à côté de la valeur actuelle, le modifie si besoin, décoche ceux qu'elle ne veut pas, puis applique : rien ne change avant. Même crédit que la création (crédit de l'assistant de l'espace et plafond mensuel de Pann) ; s'il est épuisé, le bouton disparaît. Le cadre plein écran est partagé (`components/onboarding/FullScreen.vue`).
+
+**Menu des réglages.** Dix sections ne tiennent plus sur une ligne : liste verticale à côté du panneau à partir de 1152 px (flèches haut et bas), liste déroulante native au-dessus en dessous.
+
+**Souhait de newsletter.** Le choix « une newsletter » de la création est gardé (`topics.config.target_newsletter`) : la liste de démarrage de l'Aperçu demande de la configurer tant que chaque langue n'a pas sa liste (et Brevo son expéditeur), même règle que la tâche d'envoi (`newsletterReady`).

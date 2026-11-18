@@ -75,6 +75,33 @@ export default {
     failed: 'publication en échec | publication en échec | publications en échec',
     next: 'Prochaine : {date}',
   },
+  adjust: {
+    title: 'Ajuster « {topic} » avec l’assistant',
+    intro:
+      'Dites ce que vous voulez améliorer. L’assistant connaît les réglages actuels ; rien ne change avant que vous appliquiez ses propositions.',
+    open: 'Ajuster avec l’assistant',
+    statusChat: 'Échange avec l’assistant',
+    statusCompare: 'Changements proposés',
+    navLabel: 'Ajustement du thème',
+    quit: 'Retour aux réglages',
+    unavailable:
+      'L’assistant n’est pas disponible pour le moment (crédit de l’assistant épuisé ou service en pause). Vous pouvez tout modifier dans les réglages.',
+    toSettings: 'Ouvrir les réglages',
+    compareTitle: 'Changements proposés',
+    compareIntro:
+      'Chaque proposition est à côté du réglage actuel. Modifiez-la si besoin, décochez celles que vous ne voulez pas, puis appliquez.',
+    before: 'Actuel',
+    after: 'Proposé',
+    empty: 'Vide',
+    keep: 'Appliquer ce changement',
+    apply: 'Aucun changement à appliquer | Appliquer le changement | Appliquer les {n} changements',
+    applying: 'Application…',
+    applied: 'Aucun changement | Changement appliqué | {n} changements appliqués',
+    backToChat: 'Revenir à l’échange',
+    restart: 'Recommencer l’échange',
+    noChange:
+      'L’assistant n’a proposé aucun changement. Revenez à l’échange pour préciser ce que vous voulez améliorer.',
+  },
   checklist: {
     newsletter: 'Préparer la newsletter (service, listes, expéditeur)',
     setUp: 'Configurer',
