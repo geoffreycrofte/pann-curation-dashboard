@@ -4,6 +4,7 @@
  * (keys, sources, accounts, items sorted…), never ticked by hand, so it cannot lie. It
  * can be folded (per topic, in this browser); folded, a one-line summary stays.
  */
+import { newsletterReady } from '@pann/shared'
 import { useQuery } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -89,6 +90,14 @@ const lines = computed<Line[]>(() => {
         done: config.channels.some((c) => c.channel === channel),
         to: settings('publishing'),
         action: t('checklist.choose'),
+      })
+    if (config.target_newsletter)
+      list.push({
+        key: 'newsletter',
+        label: t('checklist.newsletter'),
+        done: newsletterReady(config),
+        to: settings('newsletter'),
+        action: t('checklist.setUp'),
       })
     list.push(
       {

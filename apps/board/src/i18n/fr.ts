@@ -76,6 +76,8 @@ export default {
     next: 'Prochaine : {date}',
   },
   checklist: {
+    newsletter: 'Préparer la newsletter (service, listes, expéditeur)',
+    setUp: 'Configurer',
     title: 'Pour bien démarrer',
     progress: 'Avancement : {done} sur {total}',
     show: 'Afficher la liste',

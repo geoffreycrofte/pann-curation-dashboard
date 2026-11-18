@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { digestWindowStart, lastDigestTime, nextDigestTime, renderDigest } from './digest'
+import {
+  digestWindowStart,
+  lastDigestTime,
+  newsletterReady,
+  nextDigestTime,
+  renderDigest,
+} from './digest'
 import { parseTopicConfig } from './topic-config'
 
 const schedule = parseTopicConfig({}).schedule // Friday 08:00, Europe/Luxembourg
@@ -148,5 +154,30 @@ describe('issues in other languages', () => {
   it('uses the fixed texts written by the user for that language', () => {
     const { html } = renderDigest({ ...base, lang: 'de', texts: { unsubscribe: 'Abmelden' } })
     expect(html).toMatch(/<a href="\{\{ unsubscribe \}\}" style[^>]*>Abmelden<\/a>/)
+  })
+})
+
+describe('newsletterReady', () => {
+  const base = { output_langs: ['fr', 'en'] }
+  it('needs a list for every language, and a sender with Brevo', () => {
+    expect(newsletterReady(parseTopicConfig(base))).toBe(false)
+    const lists = { fr: 1, en: 2 }
+    expect(newsletterReady(parseTopicConfig({ ...base, newsletter: { lists } }))).toBe(false)
+    expect(
+      newsletterReady(parseTopicConfig({ ...base, newsletter: { lists, sender_id: 3 } })),
+    ).toBe(true)
+    expect(
+      newsletterReady(
+        parseTopicConfig({ ...base, newsletter: { provider: 'sendfox', lists: { fr: 1 } } }),
+      ),
+    ).toBe(false)
+    expect(
+      newsletterReady(parseTopicConfig({ ...base, newsletter: { provider: 'sendfox', lists } })),
+    ).toBe(true)
+  })
+
+  it('keeps the wish from the onboarding', () => {
+    expect(parseTopicConfig({}).target_newsletter).toBe(false)
+    expect(parseTopicConfig({ target_newsletter: true }).target_newsletter).toBe(true)
   })
 })

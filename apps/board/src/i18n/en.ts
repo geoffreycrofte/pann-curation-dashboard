@@ -77,6 +77,8 @@ export default {
     next: 'Next: {date}',
   },
   checklist: {
+    newsletter: 'Set up the newsletter (service, lists, sender)',
+    setUp: 'Set up',
     title: 'Getting started',
     progress: '{done} of {total} done',
     show: 'Show the list',

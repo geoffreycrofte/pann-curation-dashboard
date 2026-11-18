@@ -38,6 +38,16 @@ export function nextDigestTime(schedule: TopicConfig['schedule'], now = new Date
 }
 
 /** Without a previous issue nor a first-issue day, a newsletter covers the last 7 days. */
+/**
+ * The newsletter can go out: every output language has its list, and Brevo its sender
+ * (SendFox uses the account's sender). Same rule as the sending job.
+ */
+export function newsletterReady(config: TopicConfig): boolean {
+  const { newsletter } = config
+  if (newsletter.provider === 'brevo' && !newsletter.sender_id) return false
+  return config.output_langs.length > 0 && config.output_langs.every((l) => !!newsletter.lists[l])
+}
+
 export const DEFAULT_DIGEST_DAYS = 7
 
 /**

@@ -281,6 +281,8 @@ export const topicConfigSchema = z.object({
       z.array(z.enum(DRAFT_CHANNELS)),
     )
     .default([]),
+  /** The person wants a newsletter (onboarding): the overview asks to set it up. */
+  target_newsletter: z.boolean().default(false),
   /**
    * LinkedIn extras, per language (empty = none).
    * - `signature`: text added at the end of every LinkedIn post, after the link

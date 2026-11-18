@@ -279,6 +279,7 @@ export function draftConfig(draft: OnboardingDraft) {
     modules: { curation: draft.curation, engagement: draft.engagement },
     output_langs: draft.langs,
     target_channels: draft.channels,
+    target_newsletter: draft.curation && draft.newsletter,
     product: {
       name: draft.name.trim(),
       url: siteUrl(draft.url),
