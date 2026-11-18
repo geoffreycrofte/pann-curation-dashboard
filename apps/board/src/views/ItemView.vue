@@ -27,10 +27,12 @@ import {
 import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FirstCommentEditor from '../components/FirstCommentEditor.vue'
+import ComposeFromIdea from '../components/compose/ComposeFromIdea.vue'
 import KindSelect from '../components/KindSelect.vue'
 import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
 import { api, type RewriteInput } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { postWarnings } from '../lib/post-checks'
 import { useWorkspace } from '../lib/workspace'
 import { toast } from '../lib/toast'
 import { contentLangName } from '../lib/langs'
@@ -318,6 +320,7 @@ const { mutate: draftMissing, isLoading: draftingMissing } = useMutation({
 })
 
 /** Text added at the end of the post when published (LinkedIn signature of the topic). */
+const postChecks = computed(() => postWarnings(topic.value?.config, t))
 const signatureOf = (post: PostDraft) =>
   topic.value && post.lang ? postSignature(topic.value.config, post.channel, post.lang) : ''
 const defaultCommentOf = (post: PostDraft) =>
@@ -383,10 +386,17 @@ async function savePost(postId: string, text: string) {
         }}
       </li>
     </ul>
-    <p>
+    <p class="source-line">
       <a :href="detail.item.canonical_url" target="_blank" rel="noopener noreferrer">{{
         t('draft.source')
       }}</a>
+      <!-- Your own take on it, in Création (when the topic uses it). -->
+      <ComposeFromIdea
+        v-if="detail.status === 'validated' || detail.status === 'published'"
+        :topic-id="topicId"
+        :title="detail.item.title"
+        :url="detail.item.canonical_url"
+      />
     </p>
     <p v-if="detail.triage_reason">{{ t('board.reason', { reason: detail.triage_reason }) }}</p>
 
@@ -581,6 +591,7 @@ async function savePost(postId: string, text: string) {
               "
               :readonly="post.status === 'sent' || !!post.claimed_at"
               :edited="post.edited_by_human"
+              :checks="postChecks"
               :save="(text) => savePost(post.id, text)"
               :rewrite="
                 post.lang
@@ -650,10 +661,9 @@ async function savePost(postId: string, text: string) {
       <p v-if="!canDiffuse">{{ t('diffusion.notReady') }}</p>
       <p v-else-if="topic && !hasChannels">
         {{ t('diffusion.noAccount') }}
-        <RouterLink
-          :to="{ name: 'curation-settings', params: { topicId }, query: { tab: 'diffusion' } }"
-          >{{ t('diffusion.configure') }}</RouterLink
-        >
+        <RouterLink :to="{ name: 'settings', params: { topicId }, query: { tab: 'publishing' } }">{{
+          t('diffusion.configure')
+        }}</RouterLink>
       </p>
       <div v-else class="row">
         <button
@@ -707,6 +717,13 @@ async function savePost(postId: string, text: string) {
 </template>
 
 <style scoped>
+.source-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
 /* Drafting status: tone and icon follow the state (text first, color reinforces). */
 .draft-state {
   display: grid;

@@ -9,6 +9,11 @@ export const CLAUDE_PRICING: Record<string, { input: number; output: number }> =
   'claude-sonnet-5-5': { input: 2, output: 10 },
   // Server-side refusal fallback for Sonnet 5.5 (same prices).
   'claude-sonnet-5': { input: 2, output: 10 },
+  // Onboarding conversation, paid by Pann (checked 2026-11-18, Claude API models table),
+  // and the models a refused request may fall back to.
+  'claude-opus-5-5': { input: 4, output: 20 },
+  'claude-opus-5': { input: 5, output: 25 },
+  'claude-opus-4-8': { input: 5, output: 25 },
 }
 
 export function claudeCostUsd(

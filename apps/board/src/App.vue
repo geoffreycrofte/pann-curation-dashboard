@@ -38,18 +38,27 @@ const { data: currentTopic } = useQuery({
   query: () => api.topic(currentTopicId.value!),
   enabled: () => !!session.value && !!currentTopicId.value,
 })
-const CURATION_ROUTES = ['board', 'item', 'diffusion', 'newsletter', 'sources', 'curation-settings']
+/** Sections of the open topic: its overview, its tools that are on, what goes out, settings. */
 const topicSections = computed(() => {
   // Before the topic is loaded: its defaults (curation on, engagement off).
-  const modules = currentTopic.value?.config.modules ?? { curation: true, engagement: false }
+  const modules = currentTopic.value?.config.modules ?? {
+    curation: true,
+    engagement: false,
+    compose: false,
+  }
   const name = String(route.name ?? '')
   return [
+    { key: 'overview', to: 'overview', active: name === 'overview' },
     ...(modules.curation
-      ? [{ key: 'curation', to: 'board', active: CURATION_ROUTES.includes(name) }]
+      ? [{ key: 'curation', to: 'board', active: name === 'board' || name === 'item' }]
       : []),
     ...(modules.engagement
       ? [{ key: 'engagement', to: 'engagement', active: name === 'engagement' }]
       : []),
+    ...(modules.compose
+      ? [{ key: 'compose', to: 'compose', active: name === 'compose' || name === 'composition' }]
+      : []),
+    { key: 'calendar', to: 'calendar', active: name === 'calendar' },
     { key: 'topicSettings', to: 'settings', active: name === 'settings' },
   ]
 })
@@ -101,7 +110,10 @@ watch(
 <template>
   <a class="visually-hidden skip-link" href="#main">{{ t('a11y.skipToContent') }}</a>
 
-  <div v-if="session" class="shell">
+  <!-- Topic creation: full screen, its own header and main; the board rebuilds after. -->
+  <RouterView v-if="session && route.meta.chromeless" />
+
+  <div v-else-if="session" class="shell">
     <header class="sidebar">
       <div class="sidebar-inner">
         <div ref="topBar" class="sidebar-top">
@@ -144,10 +156,7 @@ watch(
               <li v-for="topic in topics" :key="topic.id">
                 <!-- The topic opens its first section; "true": a page of it is open. -->
                 <RouterLink
-                  :to="{
-                    name: topic.id === currentTopicId ? topicSections[0]!.to : 'board',
-                    params: { topicId: topic.id },
-                  }"
+                  :to="{ name: 'overview', params: { topicId: topic.id } }"
                   class="nav-link"
                   :aria-current="topic.id === currentTopicId ? 'true' : undefined"
                 >
@@ -247,6 +256,8 @@ watch(
  * Sidebar: ink panel with gold accents
  * ----------------------------------------------------------------------- */
 .sidebar {
+  /* Slides in when the board rebuilds around a new topic (styles/conversation.css). */
+  view-transition-name: sidebar;
   background: var(--color-ink);
   color: var(--color-on-ink);
 }

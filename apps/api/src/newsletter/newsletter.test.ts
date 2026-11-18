@@ -82,7 +82,10 @@ describe('sendDigests', () => {
     expect(await sendDigests({ store: manual.store, send, mode: 'scheduled', now })).toEqual([])
     const noCuration = fakeStore({
       topics: async () => [
-        { ...topic, config: { ...config, modules: { curation: false, engagement: true } } },
+        {
+          ...topic,
+          config: { ...config, modules: { ...config.modules, curation: false, engagement: true } },
+        },
       ],
     })
     expect(await sendDigests({ store: noCuration.store, send, mode: 'scheduled', now })).toEqual([])

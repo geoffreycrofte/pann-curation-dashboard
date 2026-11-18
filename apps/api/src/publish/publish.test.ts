@@ -27,6 +27,7 @@ function post(overrides: Partial<DuePost> = {}): DuePost {
   return {
     id: 'p1',
     item_id: 'i1',
+    composition_id: null,
     topic_id: 't1',
     workspace_id: 'w1',
     channel: 'linkedin',
@@ -34,7 +35,8 @@ function post(overrides: Partial<DuePost> = {}): DuePost {
     body: 'Un texte.',
     first_comment: null,
     publish_attempts: 0,
-    canonical_url: 'https://example.org/a',
+    link: 'https://example.org/a',
+    images: [],
     topic_config: config,
     ...overrides,
   }
@@ -60,6 +62,8 @@ function fakeStore(posts: DuePost[], keys = { zernio: 'sk_x', mastodon: true }) 
     release: async (p) => void log.push(`release ${p.id}`),
     markCredentialInvalid: async (w, provider) => void log.push(`invalid ${w} ${provider}`),
     finishItem: async (t, i) => void log.push(`finish ${t}/${i}`),
+    finishComposition: async (id) => void log.push(`finish composition ${id}`),
+    imageBytes: async () => new Uint8Array([1, 2, 3]),
   }
   return { store, log }
 }
@@ -396,5 +400,163 @@ describe('networks', () => {
         { ...request, channel: 'mastodon' },
       ),
     ).toMatchObject({ ok: false, error: 'invalid_credential:mastodon', invalidCredential: true })
+  })
+})
+
+describe('images of composed posts', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  const image = {
+    url: 'https://storage.example/signed/a.jpg',
+    mime: 'image/jpeg',
+    width: 1200,
+    height: 800,
+    alt: 'Capture de la nouvelle version',
+    load: async () => new Uint8Array([1, 2, 3]),
+  }
+  const request = {
+    channel: 'linkedin' as const,
+    lang: 'fr' as const,
+    content: 'Notre version 2 est là.',
+    idempotencyKey: 'pann-p1-0',
+    images: [image],
+  }
+
+  it('sends a composed post without a link, with its images in the language of the post', async () => {
+    const calls: PublishRequest[] = []
+    const networks: Networks = {
+      zernio: async (_k, _a, r) => (calls.push(r), ok),
+      mastodon: async () => ok,
+      bluesky: async () => ok,
+      discord: async () => ok,
+    }
+    const { store, log } = fakeStore([
+      post({
+        item_id: null,
+        composition_id: 'c1',
+        link: '',
+        images: [
+          {
+            path: 't1/c1/a.jpg',
+            url: image.url,
+            mime: 'image/jpeg',
+            width: 1200,
+            height: 800,
+            alt: { fr: 'Capture', en: 'Screenshot' },
+          },
+        ],
+      }),
+    ])
+    expect(await publish({ store, networks })).toEqual({ sent: 1, failed: 0, retried: 0 })
+    expect(calls[0]!.content).toBe('Un texte.')
+    expect(calls[0]!.images![0]).toMatchObject({ url: image.url, alt: 'Capture' })
+    expect(await calls[0]!.images![0]!.load()).toEqual(new Uint8Array([1, 2, 3]))
+    expect(log).toContain('finish composition c1')
+    expect(log.some((l) => l.startsWith('finish t1/'))).toBe(false)
+  })
+
+  it('gives Zernio the images by address, with their text alternative', async () => {
+    const requests: { url: string; init: RequestInit }[] = []
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      requests.push({ url, init })
+      return Response.json({ post: { _id: 'z1', platforms: [{ platform: 'linkedin' }] } })
+    })
+    await publishWithZernio('sk_x', 'acc', request)
+    expect(JSON.parse(requests[0]!.init.body as string).mediaItems).toEqual([
+      { type: 'image', url: image.url, altText: 'Capture de la nouvelle version' },
+    ])
+  })
+
+  it('uploads to Bluesky and embeds the images with their text and size', async () => {
+    const calls: { url: string; init: RequestInit }[] = []
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      calls.push({ url, init })
+      if (url.endsWith('createSession')) return Response.json({ accessJwt: 'jwt' })
+      if (url.endsWith('uploadBlob')) return Response.json({ blob: { ref: 'b1' } })
+      return Response.json({ uri: 'at://did:plc:abc/app.bsky.feed.post/3k', cid: 'c' })
+    })
+    const result = await publishToBluesky(
+      { did: 'did:plc:abc', pds: 'https://pds.example', password: 'p', handle: 'me.bsky.social' },
+      { ...request, channel: 'bluesky', url: '' },
+    )
+    expect(result.ok).toBe(true)
+    expect(calls[1]!.url).toBe('https://pds.example/xrpc/com.atproto.repo.uploadBlob')
+    expect((calls[1]!.init.headers as Record<string, string>)['Content-Type']).toBe('image/jpeg')
+    const record = JSON.parse(calls[2]!.init.body as string).record
+    expect(record.facets).toBeUndefined()
+    expect(record.embed).toEqual({
+      $type: 'app.bsky.embed.images',
+      images: [
+        {
+          image: { ref: 'b1' },
+          alt: 'Capture de la nouvelle version',
+          aspectRatio: { width: 1200, height: 800 },
+        },
+      ],
+    })
+  })
+
+  it('uploads to Mastodon with the description, then attaches the media', async () => {
+    const calls: { url: string; init: RequestInit }[] = []
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      calls.push({ url, init })
+      if (url.endsWith('/api/v2/media')) return Response.json({ id: 'm9' })
+      return Response.json({ id: '42', url: 'https://mastodon.social/@me/42' })
+    })
+    const result = await publishToMastodon(
+      { instance: 'https://mastodon.social', token: 't' },
+      { ...request, channel: 'mastodon' },
+    )
+    expect(result.ok).toBe(true)
+    const form = calls[0]!.init.body as FormData
+    expect(form.get('description')).toBe('Capture de la nouvelle version')
+    expect(JSON.parse(calls[1]!.init.body as string).media_ids).toEqual(['m9'])
+  })
+
+  it('posts the images to Discord with their description', async () => {
+    const calls: { url: string; init: RequestInit }[] = []
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      calls.push({ url, init })
+      return Response.json({ id: 'm1', channel_id: 'c1' })
+    })
+    await publishToDiscord(
+      { url: 'https://discord.com/api/webhooks/1/tok', guild_id: 'g1' },
+      { ...request, channel: 'discord' },
+    )
+    const form = calls[0]!.init.body as FormData
+    expect(JSON.parse(form.get('payload_json') as string).attachments).toEqual([
+      { id: 0, description: 'Capture de la nouvelle version', filename: 'image-1.jpeg' },
+    ])
+    expect(form.get('files[0]')).toBeInstanceOf(Blob)
+  })
+})
+
+describe('Zernio in platform mode', () => {
+  it('publishes only to the accounts of the workspace’s own profile', async () => {
+    const sent: string[] = []
+    const networks: Networks = {
+      zernio: async (_key, account) => (sent.push(account), ok),
+      mastodon: async () => ok,
+      bluesky: async () => ok,
+      discord: async () => ok,
+    }
+    const { store, log } = fakeStore([post(), post({ id: 'p2', lang: 'en' })])
+    const credentials = store.credentials
+    store.credentials = async (w) => ({
+      ...(await credentials(w)),
+      zernio: 'pann_key',
+      zernioAccounts: ['someone-else'],
+    })
+    expect(await publish({ store, networks })).toEqual({ sent: 0, failed: 2, retried: 0 })
+    expect(sent).toEqual([])
+    expect(log[0]).toContain('channel_not_configured:linkedin/fr final')
+
+    store.credentials = async (w) => ({
+      ...(await credentials(w)),
+      zernio: 'pann_key',
+      zernioAccounts: ['li-1'],
+    })
+    expect((await publish({ store, networks })).sent).toBe(2)
+    expect(sent).toEqual(['li-1', 'li-1'])
   })
 })

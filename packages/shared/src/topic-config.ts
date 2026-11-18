@@ -77,6 +77,13 @@ export const DEFAULT_KINDS: TopicKind[] = [
 export const TOPIC_MODULES = ['curation', 'engagement'] as const
 export type TopicModule = (typeof TOPIC_MODULES)[number]
 
+/**
+ * Where the content of a composed post comes from (Création tool): the person's notes
+ * only, links they give, or sources Pann searches. Chosen per composition.
+ */
+export const COMPOSE_MODES = ['notes', 'links', 'search'] as const
+export type ComposeMode = (typeof COMPOSE_MODES)[number]
+
 const optionalUrl = z.union([z.url({ protocol: /^https?$/ }), z.literal('')]).default('')
 const productText = (max: number) => z.string().trim().max(max).default('')
 
@@ -114,6 +121,8 @@ export const topicConfigSchema = z.object({
     .object({
       curation: z.boolean().default(true),
       engagement: z.boolean().default(false),
+      /** Création: posts written by the person, with their images. */
+      compose: z.boolean().default(false),
     })
     .prefault({}),
   product: productSchema,
@@ -203,6 +212,18 @@ export const topicConfigSchema = z.object({
     })
     .prefault({}),
   /**
+   * Création tool: its own publication slots (distinct from the news watch's, same
+   * time zone) and the mode a new composition starts in.
+   */
+  compose: z
+    .object({
+      mode: z.enum(COMPOSE_MODES).default('notes'),
+      /** 0 pauses its queue (a composition can still be published "now"). */
+      posts_per_day: z.number().int().min(0).max(10).default(1),
+      slots: z.array(timeSlot).max(10).default(['12:00']),
+    })
+    .prefault({}),
+  /**
    * Weekly newsletter (Brevo or SendFox): one campaign per output language, sent to the
    * list of that language. Content: the items scheduled or published on the social networks
    * that no earlier issue of this language held.
@@ -267,6 +288,27 @@ export const topicConfigSchema = z.object({
       site_url: z.union([z.url({ protocol: /^https?$/ }), z.literal('')]).default(''),
     })
     .prefault({}),
+  /**
+   * Networks the person said they publish on (onboarding), before any account is
+   * connected: their posts are drafted from the start, and the overview asks to connect
+   * them. Once an account is chosen (`channels`), the account rules.
+   */
+  target_channels: z
+    .preprocess(
+      (value) =>
+        Array.isArray(value)
+          ? value.filter((c) => (DRAFT_CHANNELS as readonly unknown[]).includes(c))
+          : value,
+      z.array(z.enum(DRAFT_CHANNELS)),
+    )
+    .default([]),
+  /**
+   * Accessibility check of the posts (hashtag case, emoji, styled letters, capitals):
+   * warnings shown while editing, never a block. On by default.
+   */
+  accessibility_check: z.boolean().default(true),
+  /** The person wants a newsletter (onboarding): the overview asks to set it up. */
+  target_newsletter: z.boolean().default(false),
   /**
    * LinkedIn extras, per language (empty = none).
    * - `signature`: text added at the end of every LinkedIn post, after the link

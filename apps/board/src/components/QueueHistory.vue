@@ -3,15 +3,13 @@ import { dailySlots } from '@pann/shared'
 import { useQuery } from '@pinia/colada'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import TopicNav from '../components/TopicNav.vue'
 import { api, type QueueItem } from '../lib/api'
 import { describeError } from '../lib/errors'
-import { useTopicName } from '../lib/topic-name'
 import { contentLangName } from '../lib/langs'
 
-const props = defineProps<{ topicId: string }>()
+/** Embedded in the calendar; `only: 'recent'` shows what already went out (or failed). */
+const props = defineProps<{ topicId: string; only?: 'recent' }>()
 const { t, d } = useI18n()
-const topicName = useTopicName(() => props.topicId)
 
 const { data: topic } = useQuery({
   key: () => ['topic', props.topicId],
@@ -44,9 +42,6 @@ const formatDate = (value: string) =>
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ t('diffusion.queueHeading', { topic: topicName }) }}</h1>
-  <TopicNav :topic-id="topicId" />
-
   <template v-if="topic">
     <p v-if="slots.length">
       {{
@@ -72,7 +67,7 @@ const formatDate = (value: string) =>
           items: upcoming,
         },
         { id: 'recent', title: 'diffusion.recent', empty: 'diffusion.emptyRecent', items: recent },
-      ]"
+      ].filter((group) => !only || group.id === only)"
       :key="group.id"
       :aria-labelledby="`queue-${group.id}`"
       class="group"

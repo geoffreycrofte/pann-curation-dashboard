@@ -1,175 +1,97 @@
 <script setup lang="ts">
-import { useMutation, useQueryCache } from '@pinia/colada'
-import { ref, useId } from 'vue'
+/**
+ * Creating a topic, full screen and without the board around it: a conversation (fixed
+ * choices as closed questions, what defines the topic with the AI assistant when it is
+ * available), then a summary of every setting. "See everything on one page" opens the
+ * summary at any moment. Nothing is saved before "Create the topic"; the board then
+ * rebuilds around the new topic. The draft lives in the session (survives a reload).
+ */
+import { useQuery } from '@pinia/colada'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import FullScreen from '../components/onboarding/FullScreen.vue'
+import OnboardingRecap from '../components/onboarding/OnboardingRecap.vue'
+import OnboardingThread from '../components/onboarding/OnboardingThread.vue'
+import PanArt from '../components/onboarding/PanArt.vue'
 import { api } from '../lib/api'
-import { describeError } from '../lib/errors'
+import { provideOnboardingDraft, threadSteps, useOnboardingDraft } from '../lib/onboarding'
 import { useWorkspace } from '../lib/workspace'
-import ContentLangsPicker from '../components/ContentLangsPicker.vue'
 
 const { t } = useI18n()
-const id = useId()
+const route = useRoute()
 const router = useRouter()
-const queryCache = useQueryCache()
 const { workspaceId } = useWorkspace()
+const { draft, clear } = useOnboardingDraft()
+provideOnboardingDraft(draft)
 
-const nameFr = ref('')
-const nameEn = ref('')
-const langs = ref<string[]>(['fr', 'en'])
-const criteria = ref('')
-const budget = ref(10)
-const message = ref('')
-
-const { mutate, isLoading } = useMutation({
-  mutation: () =>
-    api.createTopic({
-      workspace_id: workspaceId.value!,
-      name_fr: nameFr.value,
-      name_en: nameEn.value,
-      output_langs: langs.value,
-      relevance_criteria: criteria.value,
-      monthly_budget_usd: budget.value,
-    }),
-  async onSuccess(topic) {
-    await queryCache.invalidateQueries({ key: ['topics'] })
-    // Next step of the setup: the sources of the new topic.
-    await router.push({ name: 'sources', params: { topicId: topic.id }, query: { new: '1' } })
-  },
-  onError(err) {
-    message.value = describeError(err.message, t).text
-  },
+// The assistant's part exists only when Pann's assistant can run for this workspace (key
+// set, onboarding credit and monthly cap not reached); otherwise its questions are text.
+const { data: assistant } = useQuery({
+  key: () => ['onboarding-available', workspaceId.value ?? ''],
+  query: () => api.onboardingAvailable(workspaceId.value!),
+  enabled: () => !!workspaceId.value,
 })
+const withAssistant = computed(
+  () => (assistant.value?.available === true || !!draft.sessionId) && !draft.assistantOff,
+)
 
-function submit() {
-  if (!langs.value.length) {
-    message.value = t('newTopic.langsRequired')
-    return
-  }
-  mutate()
+const mode = computed(() => (route.query.step === 'review' ? 'review' : 'thread'))
+const steps = computed(() => threadSteps(draft, withAssistant.value))
+const done = computed(() => steps.value.filter((s) => draft.answered.includes(s)).length)
+
+function toReview() {
+  void router.push({ query: { step: 'review' } })
+}
+function toThread() {
+  void router.push({ query: {} })
+}
+function restart() {
+  clear()
+  void router.push({ query: {} })
+}
+/** Back where the person came from; the draft is kept for later. */
+function quit() {
+  if (window.history.state?.back) router.back()
+  else void router.push({ name: 'home' })
 }
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ t('newTopic.title') }}</h1>
-  <p class="intro">{{ t('newTopic.intro') }}</p>
-
-  <form class="form new-topic" @submit.prevent="submit">
-    <fieldset class="names" :aria-describedby="`${id}-names-hint`">
-      <legend>{{ t('newTopic.names') }}</legend>
-      <p :id="`${id}-names-hint`" class="hint">{{ t('newTopic.namesHint') }}</p>
-      <div class="form-row">
-        <label :for="`${id}-fr`">{{ t('newTopic.nameFr') }}</label>
-        <input
-          :id="`${id}-fr`"
-          v-model="nameFr"
-          class="field"
-          type="text"
-          lang="fr"
-          required
-          maxlength="100"
-        />
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-en`">{{ t('newTopic.nameEn') }}</label>
-        <input
-          :id="`${id}-en`"
-          v-model="nameEn"
-          class="field"
-          type="text"
-          lang="en"
-          required
-          maxlength="100"
-        />
-      </div>
-    </fieldset>
-
-    <ContentLangsPicker
-      v-model="langs"
-      :legend="t('newTopic.langs')"
-      :hint="t('newTopic.langsHint')"
-    />
-
-    <div class="form-row">
-      <label :for="`${id}-criteria`">{{ t('settings.criteria') }}</label>
-      <textarea
-        :id="`${id}-criteria`"
-        v-model="criteria"
-        class="field"
-        rows="4"
-        maxlength="4000"
-        :placeholder="t('settings.criteriaPlaceholder')"
-        :aria-describedby="`${id}-criteria-hint`"
-      ></textarea>
-      <p :id="`${id}-criteria-hint`" class="hint">{{ t('newTopic.criteriaHint') }}</p>
-    </div>
-
-    <div class="form-row">
-      <label :for="`${id}-budget`">{{ t('settings.budgetLabel') }}</label>
-      <input
-        :id="`${id}-budget`"
-        v-model.number="budget"
-        class="field budget"
-        type="number"
-        min="0"
-        max="10000"
-        step="1"
-        required
-        :aria-describedby="`${id}-budget-hint`"
-      />
-      <p :id="`${id}-budget-hint`" class="hint">{{ t('settings.budgetHint') }}</p>
-    </div>
-
-    <div>
-      <button
-        type="submit"
-        class="button"
-        data-variant="primary"
-        :disabled="isLoading || !workspaceId"
-      >
-        {{ isLoading ? t('newTopic.creating') : t('newTopic.create') }}
+  <FullScreen
+    :status="
+      mode === 'review'
+        ? t('onboarding.thread.progressReview')
+        : t('onboarding.thread.progress', { done: done, total: steps.length })
+    "
+    :nav-label="t('onboarding.thread.navLabel')"
+  >
+    <template #links>
+      <button v-if="mode === 'thread'" type="button" class="button" @click="toReview">
+        {{ t('onboarding.thread.onePage') }}
       </button>
-    </div>
-    <p role="status" class="error">{{ message }}</p>
-  </form>
+      <button v-else type="button" class="button" @click="toThread">
+        {{ t('onboarding.review.backToThread') }}
+      </button>
+      <button type="button" class="button" @click="quit">
+        {{ t('onboarding.thread.quit') }}
+      </button>
+    </template>
+
+    <template v-if="mode === 'thread'">
+      <h1 tabindex="-1">{{ t('onboarding.thread.title') }}</h1>
+      <OnboardingThread
+        v-if="workspaceId"
+        :workspace-id="workspaceId"
+        :with-assistant="withAssistant"
+        @review="toReview"
+      />
+    </template>
+    <OnboardingRecap v-else @back="toThread" @restart="restart" @created="clear" />
+
+    <!-- Each answer drops a flake in the pan; the summary turns them into the nugget. -->
+    <template #art>
+      <PanArt :progress="steps.length ? done / steps.length : 0" :complete="mode === 'review'" />
+    </template>
+  </FullScreen>
 </template>
-
-<style scoped>
-.intro {
-  max-width: 40rem;
-}
-
-.new-topic {
-  max-width: 40rem;
-}
-
-.new-topic fieldset {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.new-topic legend {
-  margin-bottom: var(--space-1);
-}
-
-.names {
-  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
-}
-
-.names .hint {
-  grid-column: 1 / -1;
-}
-
-textarea.field {
-  width: 100%;
-  resize: vertical;
-}
-
-.budget {
-  max-width: 8rem;
-}
-
-.error:empty {
-  margin: 0;
-}
-</style>

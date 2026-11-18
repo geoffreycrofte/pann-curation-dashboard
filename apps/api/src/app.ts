@@ -10,6 +10,11 @@ import { me } from './routes/me'
 import { sources } from './routes/sources'
 import { diffusion } from './routes/diffusion'
 import { newsletter } from './routes/newsletter'
+import { onboarding } from './routes/onboarding'
+import { compositions } from './routes/compositions'
+import { voice } from './routes/voice'
+import { series } from './routes/series'
+import { zernioPlatform } from './routes/zernio-platform'
 import { topics } from './routes/topics'
 import { workspaces } from './routes/workspaces'
 
@@ -25,9 +30,14 @@ app.route('/me', me)
 app.route('/account', account)
 app.route('/admin', admin)
 app.route('/workspaces', workspaces)
+app.route('/workspaces', zernioPlatform)
+app.route('/onboarding', onboarding)
 app.route('/topics', topics)
 app.route('/topics', diffusion)
 app.route('/topics', newsletter)
+app.route('/topics', compositions)
+app.route('/topics', voice)
+app.route('/topics', series)
 app.route('/topics/:topicId/sources', sources)
 app.route('/workspaces/:workspaceId/credentials', credentials)
 

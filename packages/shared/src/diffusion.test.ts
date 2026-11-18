@@ -208,3 +208,17 @@ describe('missingPosts', () => {
     expect(missingPosts(frOnly, [{ channel: 'linkedin', lang: 'fr' }])).toEqual([])
   })
 })
+
+describe('target channels', () => {
+  it('drafts the networks aimed at during onboarding, before any account', () => {
+    const config = parseTopicConfig({ target_channels: ['discord', 'x', 'facebook'] })
+    expect(config.target_channels).toEqual(['discord', 'facebook'])
+    expect(draftChannels(config)).toEqual([
+      'linkedin',
+      'bluesky',
+      'mastodon',
+      'facebook',
+      'discord',
+    ])
+  })
+})

@@ -360,6 +360,15 @@ Restantes :
 
 Catégorie de produit : « outil de curation de veille » (FR), « content curation tool » (EN).
 
+### Changement de nom en cours (2026-11-17)
+
+**Pann semble déjà déposé** par un tiers : le nom doit changer avant l'ouverture au public. Piste retenue pour l'instant : **Glimr** (de *glimmer*, la lueur de l'or dans la batée), à condition de trouver un nom de domaine qui convienne.
+
+- **Homonymes connus** : un framework de développement, une app photo et une app de rencontre portent déjà ce nom. Ce sont des logiciels, la même catégorie de marque (classes 9 et 42) : vérifier le risque d'opposition à l'INPI et à l'EUIPO avant de déposer.
+- **Domaines (vérifiés le 2026-11-17 par RDAP)** : `glimr.com`, `glimr.app`, `glimr.fr`, `glimr.studio` et `getglimr.com` sont pris ; `useglimr.com`, `glimrhq.com` et `glimro.app` paraissaient libres. Les .io, .eu et .co n'ont pas pu être vérifiés.
+- **Pistes écartées par Geoffrey** : les mots de l'orpaillage (Filon, Placer, Riffle, Bateia, Paillette, Orpa), les noms inventés autour de la lueur (Glisora, Glimpan, Panglint, Shimeva), les pierres (Geode, Citrine, Spinel). À éviter de toute façon : Klondike, Eldorado, Bonanza, Nugget, Eureka, Carat, Jasper (outil d'IA de rédaction marketing), Obsidian, Opal, Onyx, Quartz.
+- **Coût du renommage** : faible. Le code, la base et l'API sont en vocabulaire neutre ; le nom ne vit que dans les libellés (`app.name`), la page d'accueil, les documents de marque et le mot du logo (`docs/brand/logo/`, à revectoriser). La pépite reste valable. D'ici là, le code et les documents continuent de dire « Pann ».
+
 ### Vocabulaire produit
 
 La métaphore de l'orpaillage peut structurer l'interface et les communications. Proposition à valider avec Geoffrey avant d'en faire des libellés définitifs :

@@ -1,17 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { initSession, session } from './lib/session'
 
-/** Tabs of the curation settings page (see SettingsView). */
-const CURATION_SETTINGS_TABS: readonly string[] = [
-  'kinds',
-  'collection',
-  'triage',
-  'drafting',
-  'diffusion',
-  'newsletter',
-  'feed',
-]
-
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -58,12 +47,30 @@ export const router = createRouter({
       meta: { public: true },
     },
     {
+      // Full screen, without the sidebar: the view brings its own header and main.
       path: '/topics/new',
       name: 'new-topic',
       component: () => import('./views/NewTopicView.vue'),
+      meta: { chromeless: true },
     },
     {
+      // A topic opens on its overview: what to do next, figures, coming publications.
       path: '/t/:topicId',
+      name: 'overview',
+      component: () => import('./views/OverviewView.vue'),
+      props: true,
+    },
+    {
+      // Adjust an existing topic with the assistant: full screen, like the creation.
+      path: '/t/:topicId/adjust',
+      name: 'adjust',
+      component: () => import('./views/AdjustTopicView.vue'),
+      props: true,
+      meta: { chromeless: true },
+    },
+    {
+      // News watch (curation): items by status.
+      path: '/t/:topicId/curation',
       name: 'board',
       component: () => import('./views/BoardView.vue'),
       props: true,
@@ -75,21 +82,30 @@ export const router = createRouter({
       props: true,
     },
     {
-      path: '/t/:topicId/sources',
-      name: 'sources',
-      component: () => import('./views/SourcesView.vue'),
+      // Création: the posts written by the person, then one composition.
+      path: '/t/:topicId/compose',
+      name: 'compose',
+      component: () => import('./views/ComposeView.vue'),
       props: true,
     },
     {
-      path: '/t/:topicId/diffusion',
-      name: 'diffusion',
-      component: () => import('./views/QueueView.vue'),
+      // A series of posts: 'new' for the form, else its plan and its posts.
+      path: '/t/:topicId/series/:seriesId',
+      name: 'series',
+      component: () => import('./views/SeriesView.vue'),
       props: true,
     },
     {
-      path: '/t/:topicId/newsletter',
-      name: 'newsletter',
-      component: () => import('./views/NewsletterView.vue'),
+      path: '/t/:topicId/compose/:compositionId',
+      name: 'composition',
+      component: () => import('./views/CompositionView.vue'),
+      props: true,
+    },
+    {
+      // What goes out, for every tool: scheduled posts, history, newsletter.
+      path: '/t/:topicId/calendar',
+      name: 'calendar',
+      component: () => import('./views/CalendarView.vue'),
       props: true,
     },
     {
@@ -99,22 +115,11 @@ export const router = createRouter({
       props: true,
     },
     {
-      // Settings of the topic itself, shared by its tools: general, product, budget.
+      // Every setting of the topic, grouped by subject (?tab=…), whatever the tool.
       path: '/t/:topicId/settings',
       name: 'settings',
       component: () => import('./views/SettingsView.vue'),
-      props: (route) => ({ topicId: route.params.topicId, scope: 'topic' }),
-      // Older links to a curation tab (settings?tab=collection…) land on its new page.
-      beforeEnter: (to) =>
-        typeof to.query.tab === 'string' && CURATION_SETTINGS_TABS.includes(to.query.tab)
-          ? { name: 'curation-settings', params: to.params, query: to.query }
-          : true,
-    },
-    {
-      path: '/t/:topicId/curation/settings',
-      name: 'curation-settings',
-      component: () => import('./views/SettingsView.vue'),
-      props: (route) => ({ topicId: route.params.topicId, scope: 'curation' }),
+      props: true,
     },
     {
       path: '/:pathMatch(.*)*',

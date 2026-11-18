@@ -1,11 +1,13 @@
 import { parseTopicConfig, type CredentialMeta, type DraftChannel, type Lang } from '@pann/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { listZernioAccounts } from './networks'
-import type { DuePost, PublishCredentials, PublishStore } from './publish'
+import { MEDIA_BUCKET } from '../compose/store'
+import type { DueImage, DuePost, PublishCredentials, PublishStore } from './publish'
 
 interface ClaimedRow {
   id: string
-  item_id: string
+  item_id: string | null
+  composition_id: string | null
   topic_id: string
   channel: DraftChannel
   lang: Lang | null
@@ -23,26 +25,78 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
       const rows = (data ?? []) as ClaimedRow[]
       if (!rows.length) return []
 
-      const topicIds = [...new Set(rows.map((r) => r.topic_id))]
-      const itemIds = [...new Set(rows.map((r) => r.item_id))]
-      const [topics, items] = await Promise.all([
+      const unique = (values: (string | null)[]) => [
+        ...new Set(values.filter((v): v is string => !!v)),
+      ]
+      const topicIds = unique(rows.map((r) => r.topic_id))
+      const itemIds = unique(rows.map((r) => r.item_id))
+      const compositionIds = unique(rows.map((r) => r.composition_id))
+      const [topics, items, comps, media] = await Promise.all([
         db.from('topics').select('id, workspace_id, config').in('id', topicIds),
-        db.from('items').select('id, canonical_url').in('id', itemIds),
+        itemIds.length
+          ? db.from('items').select('id, canonical_url').in('id', itemIds)
+          : { data: [], error: null },
+        compositionIds.length
+          ? db.from('compositions').select('id, link').in('id', compositionIds)
+          : { data: [], error: null },
+        compositionIds.length
+          ? db
+              .from('composition_media')
+              .select('composition_id, storage_path, mime, width, height, alt, position')
+              .in('composition_id', compositionIds)
+              .order('position')
+          : { data: [], error: null },
       ])
-      if (topics.error) throw topics.error
-      if (items.error) throw items.error
-      const topicById = new Map(topics.data.map((t) => [t.id as string, t]))
-      const urlById = new Map(items.data.map((i) => [i.id as string, i.canonical_url as string]))
+      for (const res of [topics, items, comps, media]) if (res.error) throw res.error
+      const topicById = new Map((topics.data ?? []).map((t) => [t.id as string, t]))
+      const urlById = new Map(
+        (items.data ?? []).map((i) => [i.id as string, i.canonical_url as string]),
+      )
+      const linkById = new Map((comps.data ?? []).map((c) => [c.id as string, c.link as string]))
+
+      // Signed addresses for an hour: Zernio fetches the images from them.
+      const mediaRows = (media.data ?? []) as {
+        composition_id: string
+        storage_path: string
+        mime: string
+        width: number
+        height: number
+        alt: Record<string, string>
+      }[]
+      const signed = new Map<string, string>()
+      if (mediaRows.length) {
+        const { data: urls, error: signError } = await db.storage
+          .from(MEDIA_BUCKET)
+          .createSignedUrls(
+            mediaRows.map((m) => m.storage_path),
+            3600,
+          )
+        if (signError) throw signError
+        for (const u of urls ?? []) if (u.path && u.signedUrl) signed.set(u.path, u.signedUrl)
+      }
+      const imagesOf = (compositionId: string): DueImage[] =>
+        mediaRows
+          .filter((m) => m.composition_id === compositionId)
+          .map((m) => ({
+            path: m.storage_path,
+            url: signed.get(m.storage_path) ?? '',
+            mime: m.mime,
+            width: m.width,
+            height: m.height,
+            alt: m.alt,
+          }))
 
       return rows.flatMap((row): DuePost[] => {
         const topic = topicById.get(row.topic_id)
-        const url = urlById.get(row.item_id)
-        if (!topic || !url) return []
+        if (!topic) return []
+        const link = row.item_id ? urlById.get(row.item_id) : linkById.get(row.composition_id ?? '')
+        if (link === undefined) return []
         return [
           {
             ...row,
             workspace_id: topic.workspace_id as string,
-            canonical_url: url,
+            link,
+            images: row.composition_id ? imagesOf(row.composition_id) : [],
             topic_config: parseTopicConfig(topic.config),
           },
         ]
@@ -66,6 +120,25 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         mastodon: {},
         bluesky: {},
         discord: {},
+      }
+      // No Zernio key of its own: Pann's, in platform mode, limited to its own profile.
+      if (!result.zernio) {
+        const { data: link, error: linkError } = await db
+          .from('zernio_platform_links')
+          .select('enabled, accounts')
+          .eq('workspace_id', workspaceId)
+          .maybeSingle<{ enabled: boolean; accounts: { id: string }[] }>()
+        if (linkError) throw linkError
+        if (link?.enabled) {
+          const { data: platform, error: platformError } = await db.rpc(
+            'platform_credentials_for_jobs',
+          )
+          if (platformError) throw platformError
+          result.zernio = ((platform ?? []) as { provider: string; secret: string }[]).find(
+            (k) => k.provider === 'zernio',
+          )?.secret
+          result.zernioAccounts = link.accounts.map((a) => a.id)
+        }
       }
       for (const row of rows.data as {
         provider: string
@@ -142,6 +215,28 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         .eq('provider', provider)
         .eq('account', account)
       if (error) throw error
+    },
+
+    async finishComposition(compositionId) {
+      const { data, error } = await db
+        .from('posts')
+        .select('status')
+        .eq('composition_id', compositionId)
+      if (error) throw error
+      const statuses = data.map((p) => p.status as string)
+      if (statuses.includes('scheduled') || !statuses.includes('sent')) return
+      const { error: updateError } = await db
+        .from('compositions')
+        .update({ status: 'published' })
+        .eq('id', compositionId)
+        .eq('status', 'scheduled')
+      if (updateError) throw updateError
+    },
+
+    async imageBytes(path) {
+      const { data, error } = await db.storage.from(MEDIA_BUCKET).download(path)
+      if (error) throw error
+      return new Uint8Array(await data.arrayBuffer())
     },
 
     async finishItem(topicId, itemId) {

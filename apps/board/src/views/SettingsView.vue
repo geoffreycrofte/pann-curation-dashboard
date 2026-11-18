@@ -2,7 +2,7 @@
 import { DRAFT_MODES, kindLabel, type Lang, type TopicConfig } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
-import { computed, ref, useId, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import BudgetSection from '../components/BudgetSection.vue'
@@ -13,37 +13,72 @@ import ProductSettings from '../components/ProductSettings.vue'
 import TopicGeneralSettings from '../components/TopicGeneralSettings.vue'
 import TopicKindsSettings from '../components/TopicKindsSettings.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
-import TopicNav from '../components/TopicNav.vue'
+import EngagementSettings from '../components/EngagementSettings.vue'
+import EngagementSources from '../components/EngagementSources.vue'
+import ComposeSettings from '../components/compose/ComposeSettings.vue'
+import VoiceFromPosts from '../components/voice/VoiceFromPosts.vue'
+import SourcesPanel from '../components/SourcesPanel.vue'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
 import { toast } from '../lib/toast'
 
 /**
- * Settings of a topic. scope "topic": what its tools share (general, product, budget);
- * scope "curation": what only the curation tool uses.
+ * Every setting of a topic, grouped by subject whatever the tool: a tab per subject,
+ * shown when a tool that uses it is on.
  */
-const props = defineProps<{ topicId: string; scope: 'topic' | 'curation' }>()
+const props = defineProps<{ topicId: string }>()
 const { t, locale } = useI18n()
 const id = useId()
 const queryCache = useQueryCache()
 const topicName = useTopicName(() => props.topicId)
 
-// Sub-tabs, kept in the address (?tab=…) so a section can be linked and survives a reload.
-const TOPIC_TABS = ['general', 'product', 'budget'] as const
-const CURATION_TABS = [
-  'kinds',
-  'collection',
+// Tabs, kept in the address (?tab=…) so a section can be linked and survives a reload.
+const ALL_TABS = [
+  'general',
+  'product',
+  'sources',
   'triage',
-  'drafting',
-  'diffusion',
+  'voice',
+  'publishing',
   'newsletter',
   'feed',
+  'conversations',
+  'compose',
+  'budget',
 ] as const
-type Tab = (typeof TOPIC_TABS)[number] | (typeof CURATION_TABS)[number]
+type Tab = (typeof ALL_TABS)[number]
+/** Tabs used by one tool only: hidden while that tool is off. */
+const CURATION_ONLY: readonly Tab[] = ['triage', 'newsletter', 'feed']
+/** Writing and publishing posts: the news watch and Création both do. */
+const POSTS_ONLY: readonly Tab[] = ['voice', 'publishing']
+const ENGAGEMENT_ONLY: readonly Tab[] = ['conversations']
+const COMPOSE_ONLY: readonly Tab[] = ['compose']
+
 const route = useRoute()
 const router = useRouter()
-const tabs = computed<readonly Tab[]>(() => (props.scope === 'topic' ? TOPIC_TABS : CURATION_TABS))
+const tabs = computed<readonly Tab[]>(() => {
+  const modules = topic.value?.config.modules ?? {
+    curation: true,
+    engagement: false,
+    compose: false,
+  }
+  return ALL_TABS.filter(
+    (name) =>
+      (modules.curation || !CURATION_ONLY.includes(name)) &&
+      (modules.engagement || !ENGAGEMENT_ONLY.includes(name)) &&
+      (modules.compose || !COMPOSE_ONLY.includes(name)) &&
+      (modules.curation || modules.compose || !POSTS_ONLY.includes(name)),
+  )
+})
+// Wide screens: the sections as a vertical list beside the panel. Narrower: a select
+// above it (ten tabs do not fit on one line, and a scrolling row hides most of them).
+const wideQuery = window.matchMedia('(min-width: 72rem)')
+const wide = ref(wideQuery.matches)
+const onWideChange = (event: MediaQueryListEvent) => (wide.value = event.matches)
+wideQuery.addEventListener('change', onWideChange)
+onBeforeUnmount(() => wideQuery.removeEventListener('change', onWideChange))
+
 const tab = computed<Tab>({
   get: () => {
     const value = route.query.tab
@@ -61,15 +96,24 @@ const {
   query: () => api.topic(props.topicId),
 })
 
+// "Adjust with the assistant": offered while Pann's assistant can run for this workspace.
+const { data: assistant } = useQuery({
+  key: () => ['onboarding-available', topic.value?.workspace_id ?? ''],
+  query: () => api.onboardingAvailable(topic.value!.workspace_id),
+  enabled: () => !!topic.value,
+})
+
 /** Local copy edited by the form. */
 const collection = ref<TopicConfig['collection']>()
 const ai = ref<TopicConfig['ai']>()
+const accessibilityCheck = ref(true)
 watch(
   topic,
   (value) => {
     if (!value) return
     collection.value = structuredClone(value.config.collection)
     ai.value = structuredClone(value.config.ai)
+    accessibilityCheck.value = value.config.accessibility_check
   },
   { immediate: true },
 )
@@ -78,6 +122,16 @@ function setKindInterval(key: string, hours: number | null) {
   if (!collection.value) return
   if (hours) collection.value.intervals_hours[key] = hours
   else delete collection.value.intervals_hours[key]
+}
+
+/** A rule proposed from the person's posts fills its field; saving stays theirs. */
+async function applyVoice(field: 'style_rules' | 'post_rules', value: string) {
+  if (!ai.value) return
+  ai.value[field] = value
+  message.value = t('voice.applied')
+  isError.value = false
+  await nextTick()
+  document.getElementById(`${id}-${field}`)?.focus()
 }
 
 /** Free-text rules of the drafting tab (field of topic.config.ai, translation key). */
@@ -90,7 +144,12 @@ const RULES = [
 const message = ref('')
 const isError = ref(false)
 const { mutate, isLoading } = useMutation({
-  mutation: () => api.updateConfig(props.topicId, { collection: collection.value, ai: ai.value }),
+  mutation: () =>
+    api.updateConfig(props.topicId, {
+      collection: collection.value,
+      ai: ai.value,
+      accessibility_check: accessibilityCheck.value,
+    }),
   async onSuccess() {
     isError.value = false
     message.value = ''
@@ -106,31 +165,39 @@ const { mutate, isLoading } = useMutation({
 </script>
 
 <template>
-  <h1 tabindex="-1">
-    {{
-      t(scope === 'topic' ? 'settings.heading' : 'settings.curationHeading', { topic: topicName })
-    }}
-  </h1>
-  <TopicNav v-if="scope === 'curation'" :topic-id="topicId" />
-  <p
-    v-if="scope === 'curation' && topic?.config.modules.curation === false"
-    class="notice"
-    role="note"
-  >
-    {{ t('modules.curationOff') }}
-    <RouterLink :to="{ name: 'settings', params: { topicId } }">{{
-      t('modules.turnOn')
-    }}</RouterLink>
-  </p>
+  <div class="head">
+    <h1 tabindex="-1">{{ t('settings.heading', { topic: topicName }) }}</h1>
+    <RouterLink
+      v-if="assistant?.available"
+      class="button"
+      :to="{ name: 'adjust', params: { topicId } }"
+    >
+      {{ t('adjust.open') }}
+    </RouterLink>
+  </div>
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
-  <TabsRoot v-else-if="topic && collection && ai" v-model="tab" activation-mode="manual">
-    <TabsList :aria-label="t('settings.tabsLabel')" v-scroll-active class="subtabs tab-row">
-      <TabsTrigger v-for="name in tabs" :key="name" :value="name" class="subtab">
+  <TabsRoot
+    v-else-if="topic && collection && ai"
+    v-model="tab"
+    activation-mode="manual"
+    :orientation="wide ? 'vertical' : 'horizontal'"
+    class="layout"
+  >
+    <TabsList v-if="wide" :aria-label="t('settings.tabsLabel')" class="side">
+      <TabsTrigger v-for="name in tabs" :key="name" :value="name" class="side-tab">
         {{ t(`settings.tabs.${name}`) }}
       </TabsTrigger>
     </TabsList>
+    <div v-else class="form-row picker">
+      <label :for="`${id}-section`">{{ t('settings.section') }}</label>
+      <select :id="`${id}-section`" v-model="tab" class="field">
+        <option v-for="name in tabs" :key="name" :value="name">
+          {{ t(`settings.tabs.${name}`) }}
+        </option>
+      </select>
+    </div>
 
     <TabsContent value="general" class="subpanel">
       <TopicGeneralSettings :key="topic.id" :topic="topic" />
@@ -140,11 +207,20 @@ const { mutate, isLoading } = useMutation({
       <ProductSettings :key="topic.id" :topic="topic" />
     </TabsContent>
 
-    <TabsContent value="kinds" class="subpanel">
-      <TopicKindsSettings :key="topic.id" :topic="topic" />
+    <TabsContent value="sources" class="subpanel">
+      <section v-if="topic.config.modules.curation" :aria-labelledby="`${id}-curation-sources`">
+        <h2 :id="`${id}-curation-sources`">{{ t('settings.curationSources') }}</h2>
+        <SourcesPanel :topic-id="topicId" />
+      </section>
+      <section v-if="topic.config.modules.engagement" :aria-labelledby="`${id}-engagement-sources`">
+        <h2 :id="`${id}-engagement-sources`">{{ t('settings.engagementSources') }}</h2>
+        <EngagementSources :topic-id="topicId" />
+      </section>
     </TabsContent>
 
-    <TabsContent value="collection" class="subpanel">
+    <!-- Triage: what the topic keeps, its kinds of content and how often each is collected. -->
+    <TabsContent value="triage" class="subpanel stack">
+      <TopicKindsSettings :key="topic.id" :topic="topic" />
       <form class="form settings" @submit.prevent="mutate()">
         <fieldset :aria-describedby="`${id}-hint`">
           <legend>{{ t('settings.collection') }}</legend>
@@ -179,9 +255,6 @@ const { mutate, isLoading } = useMutation({
         </div>
         <p role="status" :class="{ error: isError }">{{ message }}</p>
       </form>
-    </TabsContent>
-
-    <TabsContent value="triage" class="subpanel">
       <form class="form settings" @submit.prevent="mutate()">
         <fieldset>
           <legend>{{ t('settings.triage') }}</legend>
@@ -223,7 +296,8 @@ const { mutate, isLoading } = useMutation({
       </form>
     </TabsContent>
 
-    <TabsContent value="drafting" class="subpanel">
+    <TabsContent value="voice" class="subpanel">
+      <VoiceFromPosts :topic-id="topicId" :current="ai" @apply="applyVoice" />
       <form class="form settings" @submit.prevent="mutate()">
         <fieldset :aria-describedby="`${id}-drafting-hint`">
           <legend>{{ t('settings.drafting') }}</legend>
@@ -257,6 +331,16 @@ const { mutate, isLoading } = useMutation({
               {{ t(`settings.${rule.label}Hint`) }}
             </p>
           </div>
+          <div class="form-check">
+            <input
+              :id="`${id}-a11y-check`"
+              v-model="accessibilityCheck"
+              type="checkbox"
+              :aria-describedby="`${id}-a11y-check-hint`"
+            />
+            <label :for="`${id}-a11y-check`">{{ t('postChecks.setting') }}</label>
+          </div>
+          <p :id="`${id}-a11y-check-hint`" class="hint">{{ t('postChecks.settingHint') }}</p>
         </fieldset>
         <div>
           <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
@@ -267,7 +351,7 @@ const { mutate, isLoading } = useMutation({
       </form>
     </TabsContent>
 
-    <TabsContent value="diffusion" class="subpanel">
+    <TabsContent value="publishing" class="subpanel">
       <DiffusionSettings :topic-id="topicId" :config="topic.config" />
     </TabsContent>
     <TabsContent value="newsletter" class="subpanel">
@@ -276,6 +360,12 @@ const { mutate, isLoading } = useMutation({
     <TabsContent value="feed" class="subpanel">
       <FeedSettings :topic-id="topicId" :config="topic.config" :feed-key="topic.feed_key" />
     </TabsContent>
+    <TabsContent value="conversations" class="subpanel">
+      <EngagementSettings :key="topic.id" :topic="topic" />
+    </TabsContent>
+    <TabsContent value="compose" class="subpanel">
+      <ComposeSettings :key="topic.id" :topic="topic" />
+    </TabsContent>
     <TabsContent value="budget" class="subpanel">
       <BudgetSection :topic-id="topicId" />
     </TabsContent>
@@ -283,6 +373,90 @@ const { mutate, isLoading } = useMutation({
 </template>
 
 <style scoped>
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.head h1 {
+  margin: 0;
+}
+
+.layout {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@media (min-width: 72rem) {
+  .layout {
+    grid-template-columns: 13rem minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-8);
+  }
+
+  /* Explicit cells: the hidden panels must not push the open one under the list. */
+  .side {
+    grid-area: 1 / 1;
+  }
+
+  .layout > .subpanel {
+    grid-area: 1 / 2;
+  }
+}
+
+/* Sections as a vertical list: a gold bar beside the current one, and bold text. */
+.side {
+  position: sticky;
+  top: var(--space-4);
+  display: grid;
+  border-inline-start: 1px solid var(--color-border);
+}
+
+.side-tab {
+  min-height: 2.75rem;
+  margin-inline-start: -1px;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-inline-start: 4px solid transparent;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.side-tab:hover {
+  border-inline-start-color: var(--color-border-subtle);
+  color: var(--color-text);
+}
+
+.side-tab[data-state='active'] {
+  border-inline-start-color: var(--color-accent-fill);
+  color: var(--color-text);
+  font-weight: 750;
+}
+
+@media (forced-colors: active) {
+  .side-tab[data-state='active'] {
+    border-inline-start-color: Highlight;
+  }
+}
+
+.picker {
+  max-width: 24rem;
+}
+
+/* Several forms in one tab (triage: kinds, collection, criteria). */
+.stack {
+  display: grid;
+  gap: var(--space-8);
+}
+
 /* Each panel is one section: no card, the legend reads as the panel title. */
 .settings {
   max-width: 40rem;

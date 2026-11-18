@@ -100,13 +100,163 @@ export interface AddSearchSourceInput {
   interval_hours: number | null
 }
 
+/** A new topic as reviewed at the end of the onboarding. */
 export interface NewTopicInput {
   workspace_id: string
   name_fr: string
-  name_en: string
-  output_langs: Lang[]
-  relevance_criteria: string
+  /** The other name defaults to the first one. */
+  name_en?: string
   monthly_budget_usd: number
+  /** First settings: any part of a topic config. */
+  config: Record<string, unknown>
+  /** What Pann does not do yet: another network, a coming tool. */
+  requests: { kind: 'network' | 'feature'; subject: string }[]
+}
+
+export interface OnboardingMessage {
+  role: 'user' | 'assistant'
+  text: string
+  quick_replies?: string[]
+}
+
+/** Settings proposed by the onboarding assistant; null while unknown. */
+export interface OnboardingProposal {
+  name_en: string | null
+  description: string | null
+  audience: string | null
+  messages: string | null
+  claims_to_avoid: string | null
+  output_langs: string[] | null
+  relevance_criteria: string | null
+  engagement_criteria: string | null
+  style_rules: string | null
+  post_rules: string | null
+  posts_per_day: number | null
+  slots: string[] | null
+}
+
+export interface OnboardingSession {
+  id: string
+  workspace_id: string
+  messages: OnboardingMessage[]
+  proposal: Partial<OnboardingProposal>
+  status: 'pending' | 'idle' | 'done' | 'failed'
+  /** Error code (errors.*). */
+  error: string | null
+  updated_at: string
+}
+
+export interface OnboardingContext {
+  name: string
+  url?: string
+  tools: ('curation' | 'engagement' | 'compose')[]
+  channels: string[]
+  listen: string[]
+  newsletter?: boolean
+  ui_lang: 'fr' | 'en'
+  /** Adjusting an existing topic: its current settings, as text. */
+  current?: Record<string, string>
+}
+
+/** Création: a source of a composition (a given link, or a search result to choose). */
+export interface ComposeSource {
+  url: string
+  title: string
+  excerpt?: string
+  text?: string
+  selected: boolean
+}
+
+export type ComposeModeName = 'notes' | 'links' | 'search'
+export type JobStatus = 'idle' | 'pending' | 'failed'
+
+export interface CompositionSummary {
+  id: string
+  subject: string
+  mode: ComposeModeName
+  status: 'draft' | 'scheduled' | 'published'
+  publish_at: string | null
+  draft_status: JobStatus
+  created_at: string
+  updated_at: string
+}
+
+export interface CompositionMedia {
+  id: string
+  composition_id: string
+  storage_path: string
+  mime: string
+  bytes: number
+  width: number
+  height: number
+  position: number
+  alt: Record<string, string>
+  /** Languages whose text the AI proposed and the person has not edited yet. */
+  alt_proposed: string[]
+  alt_status: JobStatus
+  alt_error: string | null
+  /** Signed address to show it, valid for an hour. */
+  preview_url: string | null
+}
+
+export interface Composition extends CompositionSummary {
+  topic_id: string
+  notes: string
+  link: string
+  sources: ComposeSource[]
+  channels: DraftChannel[]
+  draft_error: string | null
+  research_status: JobStatus
+  research_error: string | null
+  media: CompositionMedia[]
+  posts: PostDraft[]
+}
+
+export type CompositionPatch = Partial<
+  Pick<Composition, 'subject' | 'mode' | 'notes' | 'link' | 'sources' | 'channels'>
+>
+
+export interface SeriesPost {
+  subject: string
+  angle: string
+}
+
+export interface Series {
+  id: string
+  topic_id: string
+  subject: string
+  notes: string
+  post_count: number
+  span_days: number
+  plan: SeriesPost[]
+  status: 'pending' | 'ready' | 'failed'
+  error: string | null
+  created_at: string
+  compositions?: (Pick<
+    CompositionSummary,
+    'id' | 'subject' | 'status' | 'draft_status' | 'publish_at'
+  > & { draft_error: string | null; series_position: number })[]
+}
+
+/** Zernio in platform mode: Pann's key, the workspace's own Zernio profile. */
+export interface ZernioPlatformLink {
+  enabled: boolean
+  profile_id?: string | null
+  accounts: { id: string; platform: 'linkedin' | 'facebook'; username: string; active: boolean }[]
+  refreshed_at?: string | null
+  status: 'idle' | 'pending' | 'failed'
+  connect_platform?: 'linkedin' | 'facebook' | null
+  /** Zernio's address to open, once the job prepared it. */
+  connect_url?: string | null
+  error?: string | null
+}
+
+export interface AdminWorkspace {
+  id: string
+  name: string
+  created_at: string
+  zernio_platform: boolean
+  accounts: number
 }
 
 export interface RewriteInput {
@@ -143,6 +293,18 @@ export interface PlatformSettings {
 }
 
 export type AccessRequestStatus = 'new' | 'accepted' | 'declined'
+
+export type FeatureRequestStatus = 'new' | 'planned' | 'answered' | 'declined'
+
+/** Asked from the product: a network Pann does not publish to, a coming tool. */
+export interface FeatureRequest {
+  id: string
+  kind: 'network' | 'feature'
+  subject: string
+  status: FeatureRequestStatus
+  created_at: string
+  workspace: { name: string } | null
+}
 
 export interface AccessRequest {
   id: string
@@ -238,6 +400,12 @@ export const api = {
     website: string
   }) => request<{ ok: true }>('/access-requests', json('POST', input)),
   adminAccessRequests: () => request<AccessRequest[]>('/admin/access-requests'),
+  adminFeatureRequests: () => request<FeatureRequest[]>('/admin/feature-requests'),
+  setFeatureRequestStatus: (id: string, status: FeatureRequestStatus) =>
+    request<{ id: string; status: FeatureRequestStatus }>(
+      `/admin/feature-requests/${id}`,
+      json('PATCH', { status }),
+    ),
   handleAccessRequest: (id: string, status: AccessRequestStatus) =>
     request<AccessRequest>(`/admin/access-requests/${id}`, json('PATCH', { status })),
   adminKeys: () => request<PlatformKey[]>('/admin/credentials'),
@@ -281,6 +449,140 @@ export const api = {
 
   topics: () => request<Topic[]>('/topics'),
   createTopic: (input: NewTopicInput) => request<Topic>('/topics', json('POST', input)),
+  analyzeVoice: (topicId: string, samples: string, uiLang: 'fr' | 'en') =>
+    request<{ id: string; status: string }>(
+      `/topics/${topicId}/voice-analyses`,
+      json('POST', { samples, ui_lang: uiLang }),
+    ),
+  voiceAnalysis: (topicId: string, id: string) =>
+    request<{
+      id: string
+      status: 'pending' | 'done' | 'failed'
+      result: { style_rules: string; post_rules: string } | null
+      error: string | null
+    }>(`/topics/${topicId}/voice-analyses/${id}`),
+  zernioPlatform: (workspaceId: string) =>
+    request<ZernioPlatformLink>(`/workspaces/${workspaceId}/zernio-platform`),
+  connectZernioPlatform: (workspaceId: string, platform: 'linkedin' | 'facebook') =>
+    request<{ queued: boolean }>(
+      `/workspaces/${workspaceId}/zernio-platform/connect`,
+      json('POST', { platform }),
+    ),
+  refreshZernioPlatform: (workspaceId: string) =>
+    request<{ queued: boolean }>(`/workspaces/${workspaceId}/zernio-platform/refresh`, {
+      method: 'POST',
+    }),
+  adminWorkspaces: () => request<AdminWorkspace[]>('/admin/workspaces'),
+  setZernioPlatform: (workspaceId: string, enabled: boolean) =>
+    request<{ enabled: boolean }>(
+      `/admin/workspaces/${workspaceId}/zernio-platform`,
+      json('PUT', { enabled }),
+    ),
+  compositions: (topicId: string) =>
+    request<CompositionSummary[]>(`/topics/${topicId}/compositions`),
+  createComposition: (
+    topicId: string,
+    input: {
+      subject?: string
+      mode?: ComposeModeName
+      notes?: string
+      link?: string
+      sources?: ComposeSource[]
+    } = {},
+  ) => request<Composition>(`/topics/${topicId}/compositions`, json('POST', input)),
+  composition: (topicId: string, id: string) =>
+    request<Composition>(`/topics/${topicId}/compositions/${id}`),
+  updateComposition: (topicId: string, id: string, patch: CompositionPatch) =>
+    request<Composition>(`/topics/${topicId}/compositions/${id}`, json('PATCH', patch)),
+  deleteComposition: (topicId: string, id: string) =>
+    request<void>(`/topics/${topicId}/compositions/${id}`, { method: 'DELETE' }),
+  researchComposition: (topicId: string, id: string) =>
+    request<{ queued: boolean }>(`/topics/${topicId}/compositions/${id}/research`, {
+      method: 'POST',
+    }),
+  draftComposition: (topicId: string, id: string) =>
+    request<{ queued: boolean }>(`/topics/${topicId}/compositions/${id}/draft`, {
+      method: 'POST',
+    }),
+  addCompositionMedia: (
+    topicId: string,
+    id: string,
+    media: { storage_path: string; mime: string; bytes: number; width: number; height: number },
+  ) =>
+    request<CompositionMedia>(`/topics/${topicId}/compositions/${id}/media`, json('POST', media)),
+  updateCompositionMedia: (
+    topicId: string,
+    id: string,
+    mediaId: string,
+    patch: Partial<Pick<CompositionMedia, 'alt' | 'alt_proposed' | 'position'>>,
+  ) =>
+    request<CompositionMedia>(
+      `/topics/${topicId}/compositions/${id}/media/${mediaId}`,
+      json('PATCH', patch),
+    ),
+  describeCompositionMedia: (topicId: string, id: string, mediaId: string) =>
+    request<{ queued: boolean }>(
+      `/topics/${topicId}/compositions/${id}/media/${mediaId}/describe`,
+      { method: 'POST' },
+    ),
+  deleteCompositionMedia: (topicId: string, id: string, mediaId: string) =>
+    request<void>(`/topics/${topicId}/compositions/${id}/media/${mediaId}`, {
+      method: 'DELETE',
+    }),
+  scheduleComposition: (
+    topicId: string,
+    id: string,
+    when: 'next_slot' | 'now',
+    notBefore?: string,
+  ) =>
+    request<{ publish_at: string }>(
+      `/topics/${topicId}/compositions/${id}/schedule`,
+      json('POST', { when, ...(notBefore ? { not_before: notBefore } : {}) }),
+    ),
+  createSeries: (
+    topicId: string,
+    input: {
+      subject: string
+      notes: string
+      post_count: number
+      span_days: number
+      ui_lang: 'fr' | 'en'
+    },
+  ) => request<Series>(`/topics/${topicId}/series`, json('POST', input)),
+  series: (topicId: string, id: string) => request<Series>(`/topics/${topicId}/series/${id}`),
+  updateSeriesPlan: (topicId: string, id: string, plan: SeriesPost[]) =>
+    request<Series>(`/topics/${topicId}/series/${id}`, json('PATCH', { plan })),
+  createSeriesCompositions: (topicId: string, id: string) =>
+    request<{ created: number }>(`/topics/${topicId}/series/${id}/compositions`, {
+      method: 'POST',
+    }),
+  unscheduleComposition: (topicId: string, id: string) =>
+    request<void>(`/topics/${topicId}/compositions/${id}/schedule`, { method: 'DELETE' }),
+  /** Uploads an image of a composition to the storage (RLS: members of the topic). */
+  uploadCompositionImage: async (path: string, blob: Blob, contentType: string) => {
+    const { error } = await supabase.storage
+      .from('composition-media')
+      .upload(path, blob, { contentType, upsert: false })
+    if (error) throw new ApiError(400, error.message)
+  },
+  onboardingAvailable: (workspaceId: string) =>
+    request<{ available: boolean }>(
+      `/onboarding/available?workspace_id=${encodeURIComponent(workspaceId)}`,
+    ),
+  startOnboarding: (workspaceId: string, context: OnboardingContext) =>
+    request<OnboardingSession>(
+      '/onboarding/sessions',
+      json('POST', { workspace_id: workspaceId, context }),
+    ),
+  onboardingSession: (sessionId: string) =>
+    request<OnboardingSession>(`/onboarding/sessions/${sessionId}`),
+  answerOnboarding: (sessionId: string, text: string) =>
+    request<OnboardingSession>(
+      `/onboarding/sessions/${sessionId}/messages`,
+      json('POST', { text }),
+    ),
+  retryOnboarding: (sessionId: string) =>
+    request<OnboardingSession>(`/onboarding/sessions/${sessionId}/retry`, { method: 'POST' }),
   topic: (topicId: string) => request<TopicWithConfig>(`/topics/${topicId}`),
   setFeed: (topicId: string, enabled: boolean, regenerate = false) =>
     request<{ feed_key: string | null }>(

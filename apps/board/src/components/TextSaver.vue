@@ -40,6 +40,8 @@ const props = defineProps<{
   description?: string
   readonly?: boolean
   save: (text: string) => Promise<unknown>
+  /** Warnings about the text as it is typed (accessibility check of posts). */
+  checks?: (text: string) => string[]
   /** Returns a rewritten version of the text; nothing is saved until "Save". */
   rewrite?: (text: string, preset: RewritePreset, instruction?: string) => Promise<string>
 }>()
@@ -56,6 +58,7 @@ watch(
 const dirty = computed(() => text.value !== props.value)
 const length = computed(() => (props.measure ?? postLength)(text.value))
 const over = computed(() => (props.limit ? length.value - props.limit : 0))
+const warnings = computed(() => props.checks?.(text.value) ?? [])
 
 const saving = ref(false)
 const message = ref('')
@@ -188,7 +191,7 @@ async function undoRewrite() {
         :lang="lang"
         rows="5"
         :readonly="readonly || rewriting"
-        :aria-describedby="`${description ? `${id}-desc ` : ''}${id}-meta`"
+        :aria-describedby="`${description ? `${id}-desc ` : ''}${id}-meta${warnings.length ? ` ${id}-checks` : ''}`"
         :aria-invalid="over > 0 || undefined"
         :aria-busy="rewriting || undefined"
       ></textarea>
@@ -200,6 +203,12 @@ async function undoRewrite() {
       >
       <span v-if="edited">{{ t('draft.edited') }}</span>
     </p>
+    <div v-if="warnings.length" :id="`${id}-checks`" class="checks">
+      <p class="checks-title">{{ t('postChecks.title') }}</p>
+      <ul>
+        <li v-for="warning in warnings" :key="warning">{{ warning }}</li>
+      </ul>
+    </div>
     <div v-if="!readonly" class="row">
       <button type="submit" class="button" :disabled="saving || rewriting || !dirty">
         {{ t('draft.save') }}
@@ -249,6 +258,24 @@ async function undoRewrite() {
 </template>
 
 <style scoped>
+/* Accessibility warnings: advice, not an error (the post can still be saved). */
+.checks {
+  padding: var(--space-2) var(--space-3);
+  border-inline-start: 4px solid var(--color-accent-fill);
+  background: var(--color-surface);
+  font-size: 0.875rem;
+}
+
+.checks-title {
+  margin: 0;
+  font-weight: 650;
+}
+
+.checks ul {
+  margin: var(--space-1) 0 0;
+  padding-inline-start: var(--space-5);
+}
+
 .text-saver {
   display: grid;
   gap: var(--space-1);

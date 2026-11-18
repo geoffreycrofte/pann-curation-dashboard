@@ -7,6 +7,7 @@ import { i18n } from './i18n'
 import './lib/theme'
 import { router } from './router'
 import './styles/base.css'
+import './styles/conversation.css'
 
 createApp(App)
   .directive('scroll-active', vScrollActive)

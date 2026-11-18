@@ -4,6 +4,7 @@ import { useQuery } from '@pinia/colada'
 import { useI18n } from 'vue-i18n'
 import McpSection from '../components/McpSection.vue'
 import ProviderCard from '../components/ProviderCard.vue'
+import ZernioPlatformCard from '../components/ZernioPlatformCard.vue'
 import { api } from '../lib/api'
 import { useWorkspace } from '../lib/workspace'
 
@@ -38,6 +39,17 @@ const {
   query: () => api.credentials(workspaceId.value!),
   enabled: () => !!workspaceId.value,
 })
+
+// LinkedIn and Facebook through Pann's Zernio, for the workspaces a platform admin chose.
+const { data: platform } = useQuery({
+  key: () => ['zernio-platform', workspaceId.value ?? ''],
+  query: () => api.zernioPlatform(workspaceId.value!),
+  enabled: () => !!workspaceId.value,
+})
+const viaPann = (provider: Provider) =>
+  provider === 'zernio' &&
+  !!platform.value?.enabled &&
+  !credentials.value?.some((c) => c.provider === 'zernio')
 
 const accountsOf = (provider: Provider) =>
   (credentials.value ?? []).filter((c) => c.provider === provider)
@@ -77,6 +89,11 @@ const accountsOf = (provider: Provider) =>
               :adding="accountsOf(provider).length > 0"
             />
           </template>
+          <ZernioPlatformCard
+            v-else-if="viaPann(provider) && platform"
+            :workspace-id="workspaceId"
+            :link="platform"
+          />
           <ProviderCard
             v-else
             :provider="provider"

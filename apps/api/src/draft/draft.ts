@@ -68,7 +68,7 @@ export const MAX_DRAFTS_PER_RUN = 5
 const MIN_CONTENT_CHARS = SOURCE_TEXT_MIN
 
 /** Longest LinkedIn signature of the topic, so that every language fits. */
-function longestSignature(config: TopicConfig): string {
+export function longestSignature(config: TopicConfig): string {
   return config.output_langs
     .map((lang) => postSignature(config, 'linkedin', lang))
     .reduce((longest, s) => (postLength(s) > postLength(longest) ? s : longest), '')

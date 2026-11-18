@@ -2,6 +2,7 @@
 import { canTransition, type Conversation, type ItemTopicStatus } from '@pann/shared'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ComposeFromIdea from './compose/ComposeFromIdea.vue'
 
 /** A conversation to join (or not). Pann never posts: the link opens it to reply. */
 const props = defineProps<{ conversation: Conversation; busy: boolean }>()
@@ -96,7 +97,7 @@ const actions = computed(() =>
       </ul>
 
       <div
-        v-if="actions.length"
+        v-if="actions.length || c.status === 'validated'"
         class="actions"
         role="group"
         :aria-label="t('board.actions', { title: c.title })"
@@ -112,6 +113,14 @@ const actions = computed(() =>
         >
           {{ t(action.label) }}
         </button>
+        <!-- A question worth answering is often worth a post of its own. -->
+        <ComposeFromIdea
+          v-if="c.status === 'validated'"
+          :topic-id="c.topic_id"
+          :title="c.title"
+          :url="c.canonical_url"
+          :notes="c.engagement_angle ?? ''"
+        />
       </div>
     </div>
   </article>
