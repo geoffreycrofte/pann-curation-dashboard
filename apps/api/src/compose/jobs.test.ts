@@ -60,7 +60,12 @@ function fakeStore(row: CompositionRow, media?: MediaRow) {
   return { state, store }
 }
 
-const usage = { input_tokens: 1000, output_tokens: 500 }
+const usage = {
+  input_tokens: 1000,
+  output_tokens: 500,
+  cache_read_input_tokens: 0,
+  cache_creation_input_tokens: 0,
+}
 
 function deps(store: ComposeDeps['store'], output: unknown, overrides: Partial<ComposeDeps> = {}) {
   const calls: StructuredCall[] = []
