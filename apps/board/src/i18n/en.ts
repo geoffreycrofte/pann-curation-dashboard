@@ -339,7 +339,6 @@ export default {
     heading: 'Calendar: {topic}',
     tabsLabel: 'Calendar views',
     tabs: { scheduled: 'Scheduled', history: 'History', newsletter: 'Newsletter' },
-    compose: 'Create',
   },
   profile: {
     title: 'Profile',
@@ -797,7 +796,7 @@ export default {
     capHint: 'All workspaces together, per calendar month. Beyond it, Pann stops using its keys.',
     emailFrom: 'Sender of the service emails',
     emailFromHint:
-      'Name and address on a domain verified in Resend, for instance “Pann <noreply@example.org>”.',
+      "Name and address on a domain verified in Resend, for instance “Pann <noreply{'@'}example.org>”.",
     requestsTitle: 'Access requests',
     requestsIntro:
       'Sent from the sign-in page, and forwarded by email to the administrators. The invitation itself is sent from Supabase (Authentication, Invite user).',
@@ -986,7 +985,7 @@ export default {
       },
     },
     disclosure: 'Disclosure of your link with the product',
-    disclosurePlaceholder: 'Example: I am the maker of CheckFox.',
+    disclosurePlaceholder: 'Example: I made this tool.',
     disclosureHint:
       'Added each time the product is mentioned in a reply, so that your link with it is clear.',
   },
@@ -1569,10 +1568,10 @@ export default {
       newsletter: 'Newsletter',
       feed: 'Public feeds',
       conversations: 'Conversations',
+      compose: 'Create',
       budget: 'Budget',
     },
     curationSources: 'News watch sources',
-    engagementSources: 'Conversation sources',
     criteria: 'Relevance criteria',
     criteriaHint:
       'Describe what makes an item useful for this topic: subjects, standards, audiences, what to leave out. The AI uses it to score each item.',
@@ -1702,7 +1701,7 @@ export default {
       'The key of the service is set in Connections. SendFox sends with the default sender of your account.',
     feed: 'Public feed',
     feedHint:
-      'RSS and JSON feeds of the validated items, with their summary, one per language. For a feed reader or a curation page (CheckFox, for example).',
+      'RSS and JSON feeds of the validated items, with their summary, one per language. For a feed reader or a curation page on your website.',
     feedOff: 'Feeds are off: no public address.',
     feedEnable: 'Turn the public feeds on',
     feedDisable: 'Turn the feeds off',
@@ -1724,6 +1723,6 @@ export default {
     feedTitleHint: 'Left empty, the topic name is used.',
     feedDescription: 'Feed description in {lang}',
     feedSiteUrl: 'Page that presents the curation',
-    feedSiteUrlHint: 'Optional. Full address, for example https://checkfox.eu/curation.',
+    feedSiteUrlHint: 'Optional. Full address, for example https://example.org/curation.',
   },
 } satisfies typeof fr

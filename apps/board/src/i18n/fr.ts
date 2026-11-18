@@ -338,7 +338,6 @@ export default {
     heading: 'Calendrier : {topic}',
     tabsLabel: 'Vues du calendrier',
     tabs: { scheduled: 'Programmés', history: 'Historique', newsletter: 'Newsletter' },
-    compose: 'Création',
   },
   profile: {
     title: 'Profil',
@@ -804,7 +803,7 @@ export default {
     capHint: 'Tous espaces confondus, par mois civil. Au-delà, Pann n’utilise plus ses clés.',
     emailFrom: 'Expéditeur des e-mails du service',
     emailFromHint:
-      'Nom et adresse sur un domaine vérifié dans Resend, par exemple « Pann <noreply@exemple.org> ».',
+      "Nom et adresse sur un domaine vérifié dans Resend, par exemple « Pann <noreply{'@'}exemple.org> ».",
     requestsTitle: 'Demandes d’accès',
     requestsIntro:
       'Envoyées depuis la page de connexion, et transmises par e-mail aux administrateurs. L’invitation elle-même se fait dans Supabase (Authentication, Invite user).',
@@ -1000,7 +999,7 @@ export default {
       },
     },
     disclosure: 'Mention de votre lien avec le produit',
-    disclosurePlaceholder: 'Exemple : Je suis le créateur de CheckFox.',
+    disclosurePlaceholder: 'Exemple : J’ai créé cet outil.',
     disclosureHint:
       'Ajoutée chaque fois que le produit est cité dans une réponse, pour que votre lien avec lui soit clair.',
   },
@@ -1595,10 +1594,10 @@ export default {
       newsletter: 'Newsletter',
       feed: 'Flux publics',
       conversations: 'Conversations',
+      compose: 'Création',
       budget: 'Budget',
     },
     curationSources: 'Sources de la veille',
-    engagementSources: 'Sources des conversations',
     criteria: 'Critères de pertinence',
     criteriaHint:
       'Décrivez ce qui rend un élément utile pour ce thème : sujets, normes, publics, ce qu’il faut écarter. L’IA s’en sert pour noter chaque élément.',
@@ -1733,7 +1732,7 @@ export default {
       'La clé du service se règle dans Connexions. SendFox envoie avec l’expéditeur par défaut de votre compte.',
     feed: 'Flux public',
     feedHint:
-      'Flux RSS et JSON des éléments validés, avec leur résumé, un par langue. À brancher sur un lecteur de flux ou sur une page de veille (CheckFox, par exemple).',
+      'Flux RSS et JSON des éléments validés, avec leur résumé, un par langue. À brancher sur un lecteur de flux ou sur une page de veille de votre site.',
     feedOff: 'Les flux sont désactivés : aucune adresse publique.',
     feedEnable: 'Activer les flux publics',
     feedDisable: 'Désactiver les flux',
@@ -1755,6 +1754,6 @@ export default {
     feedTitleHint: 'Laissé vide, le nom du thème est utilisé.',
     feedDescription: 'Description du flux en {lang}',
     feedSiteUrl: 'Page qui présente la veille',
-    feedSiteUrlHint: 'Facultatif. Adresse complète, par exemple https://checkfox.eu/veille.',
+    feedSiteUrlHint: 'Facultatif. Adresse complète, par exemple https://exemple.org/veille.',
   },
 }

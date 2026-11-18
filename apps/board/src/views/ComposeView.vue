@@ -63,9 +63,10 @@ const ideas = computed(() => [
     })),
 ])
 
-const GROUPS = ['draft', 'scheduled', 'published'] as const
-const groups = computed(() =>
-  GROUPS.map((status) => ({
+const drafts = computed(() => (compositions.value ?? []).filter((c) => c.status === 'draft'))
+/** Below the columns: what is on its way, then what went out. */
+const later = computed(() =>
+  (['scheduled', 'published'] as const).map((status) => ({
     status,
     list: (compositions.value ?? []).filter((c) => c.status === status),
   })),
@@ -122,33 +123,61 @@ async function create() {
   <p class="hint">{{ t('compose.intro') }}</p>
   <p v-if="createError" class="error" role="alert">{{ createError }}</p>
 
-  <section v-if="ideas.length" class="group" aria-labelledby="compose-ideas">
-    <h2 id="compose-ideas">{{ t('compose.ideas.title') }}</h2>
-    <p class="hint">{{ t('compose.ideas.hint') }}</p>
-    <ul class="list">
-      <li v-for="idea in ideas" :key="idea.key" class="idea">
-        <span class="meta">{{ t(`compose.ideas.from.${idea.from}`) }}</span>
-        <a :href="idea.url" target="_blank" rel="noopener noreferrer" class="title">{{
-          idea.title
-        }}</a>
-        <div>
-          <ComposeFromIdea
-            :topic-id="topicId"
-            :title="idea.title"
-            :url="idea.url"
-            :notes="idea.notes"
-          />
-        </div>
-      </li>
-    </ul>
-  </section>
-
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
-  <p v-else-if="!compositions?.length" class="empty">{{ t('compose.list.empty') }}</p>
   <template v-else>
+    <!-- Ideas and drafts side by side: what to write, next to what is being written. -->
+    <div class="columns" :data-split="ideas.length && drafts.length ? '' : undefined">
+      <section v-if="ideas.length" class="group" aria-labelledby="compose-ideas">
+        <h2 id="compose-ideas">
+          {{ t('compose.ideas.title') }}
+          <span class="count">({{ ideas.length }})</span>
+        </h2>
+        <p class="hint">{{ t('compose.ideas.hint') }}</p>
+        <ul class="list">
+          <li v-for="idea in ideas" :key="idea.key" class="idea">
+            <span class="meta">{{ t(`compose.ideas.from.${idea.from}`) }}</span>
+            <a :href="idea.url" target="_blank" rel="noopener noreferrer" class="title">{{
+              idea.title
+            }}</a>
+            <div>
+              <ComposeFromIdea
+                :topic-id="topicId"
+                :title="idea.title"
+                :url="idea.url"
+                :notes="idea.notes"
+              />
+            </div>
+          </li>
+        </ul>
+      </section>
+      <section v-if="drafts.length" class="group" aria-labelledby="compose-draft">
+        <h2 id="compose-draft">
+          {{ t('compose.list.groups.draft') }}
+          <span class="count">({{ drafts.length }})</span>
+        </h2>
+        <ul class="list">
+          <li v-for="c in drafts" :key="c.id">
+            <RouterLink
+              :to="{ name: 'composition', params: { topicId, compositionId: c.id } }"
+              class="title"
+            >
+              {{ c.subject || t('compose.untitled') }}
+            </RouterLink>
+            <span class="meta">
+              {{ t(`compose.modes.${c.mode}`) }}, {{ when(c) }}
+              <template v-if="c.draft_status === 'pending'">
+                , {{ t('compose.posts.drafting') }}</template
+              >
+            </span>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <p v-if="!compositions?.length" class="empty">{{ t('compose.list.empty') }}</p>
     <section
-      v-for="group in groups"
+      v-for="group in later"
       v-show="group.list.length"
       :key="group.status"
       class="group"
@@ -166,12 +195,7 @@ async function create() {
           >
             {{ c.subject || t('compose.untitled') }}
           </RouterLink>
-          <span class="meta">
-            {{ t(`compose.modes.${c.mode}`) }}, {{ when(c) }}
-            <template v-if="c.draft_status === 'pending'">
-              , {{ t('compose.posts.drafting') }}</template
-            >
-          </span>
+          <span class="meta">{{ t(`compose.modes.${c.mode}`) }}, {{ when(c) }}</span>
         </li>
       </ul>
     </section>
@@ -201,8 +225,24 @@ async function create() {
   margin-top: var(--space-6);
 }
 
+.columns {
+  display: grid;
+  gap: 0 var(--space-6);
+}
+
+@media (min-width: 64rem) {
+  .columns[data-split] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
 .group h2 {
   font-size: 1.25rem;
+}
+
+.group .hint {
+  margin: 0 0 var(--space-3);
 }
 
 .count {

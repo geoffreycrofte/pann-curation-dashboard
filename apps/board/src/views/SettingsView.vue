@@ -212,10 +212,8 @@ const { mutate, isLoading } = useMutation({
         <h2 :id="`${id}-curation-sources`">{{ t('settings.curationSources') }}</h2>
         <SourcesPanel :topic-id="topicId" />
       </section>
-      <section v-if="topic.config.modules.engagement" :aria-labelledby="`${id}-engagement-sources`">
-        <h2 :id="`${id}-engagement-sources`">{{ t('settings.engagementSources') }}</h2>
-        <EngagementSources :topic-id="topicId" />
-      </section>
+      <!-- It has its own heading ("Conversation sources") and introduction. -->
+      <EngagementSources v-if="topic.config.modules.engagement" :topic-id="topicId" />
     </TabsContent>
 
     <!-- Triage: what the topic keeps, its kinds of content and how often each is collected. -->
