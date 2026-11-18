@@ -1,12 +1,33 @@
 <script setup lang="ts">
 /** Today: what each topic needs now, across topics. A first visit starts with a topic. */
 import { useQuery } from '@pinia/colada'
+import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import TopicSummary from '../components/TopicSummary.vue'
 import { api } from '../lib/api'
 
 const { t, locale } = useI18n()
 const { data: topics, isPending, error } = useQuery({ key: ['topics'], query: api.topics })
+
+// No topic yet: the first visit of the session opens the creation conversation. Leaving
+// it comes back here, to the empty state (no loop).
+const router = useRouter()
+const FIRST_KEY = 'pann.firstTopicOffered'
+watch(
+  topics,
+  (list) => {
+    if (!list || list.length) return
+    try {
+      if (sessionStorage.getItem(FIRST_KEY)) return
+      sessionStorage.setItem(FIRST_KEY, '1')
+    } catch {
+      return
+    }
+    void router.replace({ name: 'new-topic' })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>

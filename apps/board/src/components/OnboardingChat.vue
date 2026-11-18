@@ -1,23 +1,29 @@
 <script setup lang="ts">
 /**
- * Onboarding conversation: a short exchange with the assistant that proposes the
- * settings of the topic. Accessible by design: the exchange is a list with who speaks
- * spelled out, only the latest answer is announced (not the whole log), the field keeps
- * the focus, quick replies fill the field rather than sending behind the person's back,
- * and the form stays one button away at every moment.
+ * The assistant's part of the creation conversation: a short exchange that proposes
+ * what defines the topic (what it is, for whom, messages, voice). Accessible by design:
+ * every message says who speaks, only the latest answer is announced (not the whole
+ * log), the field keeps the focus, quick replies fill the field rather than sending
+ * behind the person's back, and going on without the assistant is one button away.
+ * Once the person moved on (`active` false), only the exchange stays, read-only.
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { api, type OnboardingContext, type OnboardingSession } from '../lib/api'
+import { ApiError, api, type OnboardingContext, type OnboardingSession } from '../lib/api'
 import { describeError } from '../lib/errors'
 
-const props = defineProps<{ workspaceId: string; context: OnboardingContext }>()
+const props = withDefaults(
+  defineProps<{ workspaceId: string; context: OnboardingContext; active?: boolean }>(),
+  { active: true },
+)
 const sessionId = defineModel<string>('sessionId', { required: true })
 const emit = defineEmits<{
   /** A new answer came with its proposal. */
   proposal: [session: OnboardingSession]
-  /** The person goes on to the review (finished, or prefers the form). */
+  /** The exchange is over (finished, or the person goes on). */
   next: []
+  /** The assistant cannot run here: its questions are asked as text instead. */
+  unavailable: []
 }>()
 
 const { t } = useI18n()
@@ -26,14 +32,14 @@ const session = ref<OnboardingSession | null>(null)
 const startError = ref('')
 const answer = ref('')
 const field = ref<HTMLTextAreaElement>()
-const log = ref<HTMLOListElement>()
 /** Text announced to screen readers: the latest answer only. */
 const announced = ref('')
-/** The answer takes long: the person is offered the form. */
+/** The answer takes long: going on without it is offered. */
 const slow = ref(false)
 
 const POLL_MS = 1500
 const SLOW_MS = 30_000
+const UNAVAILABLE = ['onboarding_unavailable', 'onboarding_credit_exhausted']
 let pollTimer: ReturnType<typeof setTimeout> | undefined
 let slowTimer: ReturnType<typeof setTimeout> | undefined
 let lastSeen = ''
@@ -60,20 +66,27 @@ function stopTimers() {
 
 function receive(next: OnboardingSession) {
   session.value = next
+  if (!props.active) return
   if (next.status === 'pending') {
     pollTimer = setTimeout(poll, POLL_MS)
     return
   }
   stopTimers()
   slow.value = false
+  // Out of credit or without key before a single answer: the questions go on as text.
+  const spoke = next.messages.some((m) => m.role === 'assistant')
+  if (!spoke && next.error && UNAVAILABLE.includes(next.error)) {
+    emit('unavailable')
+    return
+  }
   if (next.updated_at === lastSeen) return
   lastSeen = next.updated_at
   const last = next.messages.at(-1)
   if (last?.role === 'assistant') announced.value = last.text
   emit('proposal', next)
   void nextTick(() => {
-    log.value?.lastElementChild?.scrollIntoView({ block: 'nearest' })
     if (next.status === 'idle') field.value?.focus()
+    else if (next.status === 'done') document.getElementById(`${id}-next`)?.focus()
   })
 }
 
@@ -93,7 +106,7 @@ function waitForAnswer() {
 
 async function start() {
   startError.value = ''
-  waitForAnswer()
+  if (props.active) waitForAnswer()
   try {
     if (sessionId.value) {
       const existing = await api.onboardingSession(sessionId.value).catch(() => null)
@@ -102,11 +115,13 @@ async function start() {
         return receive(existing)
       }
     }
+    if (!props.active) return
     const created = await api.startOnboarding(props.workspaceId, props.context)
     sessionId.value = created.id
     receive(created)
   } catch (err) {
     stopTimers()
+    if (err instanceof ApiError && err.status === 409) return emit('unavailable')
     startError.value = describeError((err as Error).message, t).text
   }
 }
@@ -147,157 +162,141 @@ function useReply(text: string) {
   field.value?.focus()
 }
 
-watch(finished, (done) => {
-  if (done) void nextTick(() => document.getElementById(`${id}-next`)?.focus())
-})
+watch(
+  () => props.active,
+  (active) => {
+    if (!active) stopTimers()
+  },
+)
 
 onMounted(start)
 onBeforeUnmount(stopTimers)
 </script>
 
 <template>
-  <div class="chat">
-    <ol ref="log" class="log" :aria-label="t('onboarding.chat.log')">
-      <li v-for="(message, index) in messages" :key="index" :data-role="message.role">
-        <span class="who">
-          {{
-            message.role === 'assistant'
-              ? t('onboarding.chat.assistant')
-              : t('onboarding.chat.you')
-          }}<span class="visually-hidden">{{ t('onboarding.chat.separator') }}</span>
-        </span>
-        <p class="text">{{ message.text }}</p>
+  <div class="assistant">
+    <ol class="log" :aria-label="t('onboarding.chat.log')">
+      <li v-for="(message, index) in messages" :key="index">
+        <p class="bubble" :data-from="message.role === 'assistant' ? 'assistant' : 'you'">
+          <span class="who">
+            {{
+              message.role === 'assistant'
+                ? t('onboarding.chat.assistant')
+                : t('onboarding.chat.you')
+            }}<span class="visually-hidden">{{ t('onboarding.chat.separator') }}</span>
+          </span>
+          <span class="text">{{ message.text }}</span>
+        </p>
       </li>
     </ol>
 
-    <!-- Only the latest answer is spoken, once; the status says when the assistant writes. -->
-    <p class="visually-hidden" aria-live="polite">{{ announced }}</p>
-    <p class="status" :class="{ 'visually-hidden': !pending || startError }" role="status">
-      <template v-if="pending && !startError">{{ t('onboarding.chat.writing') }}</template>
-    </p>
-
-    <div v-if="startError || failed" class="problem" role="alert">
-      <p>{{ startError || errorText || t('onboarding.chat.failed') }}</p>
-      <div class="actions">
-        <button v-if="failed" type="button" class="button" @click="retry">
-          {{ t('onboarding.chat.retry') }}
-        </button>
-        <button type="button" class="button" @click="emit('next')">
-          {{ t('onboarding.chat.toForm') }}
-        </button>
-      </div>
-    </div>
-    <div v-else-if="slow && pending" class="problem" role="alert">
-      <p>{{ t('onboarding.chat.slow') }}</p>
-      <div class="actions">
-        <button type="button" class="button" @click="emit('next')">
-          {{ t('onboarding.chat.toForm') }}
-        </button>
-      </div>
-    </div>
-
-    <form v-if="!finished" class="reply" novalidate @submit.prevent="send">
-      <div
-        v-if="quickReplies.length"
-        class="quick"
-        role="group"
-        :aria-label="t('onboarding.chat.quick')"
+    <template v-if="active">
+      <!-- Only the latest answer is spoken, once; the status says when the assistant writes. -->
+      <p class="visually-hidden" aria-live="polite">{{ announced }}</p>
+      <p
+        class="status bubble"
+        data-from="assistant"
+        :class="{ 'visually-hidden': !pending || startError }"
+        role="status"
       >
+        <template v-if="pending && !startError">{{ t('onboarding.chat.writing') }}</template>
+      </p>
+
+      <div v-if="startError || failed" class="problem" role="alert">
+        <p>{{ startError || errorText || t('onboarding.chat.failed') }}</p>
+        <div class="actions">
+          <button v-if="failed" type="button" class="button" @click="retry">
+            {{ t('onboarding.chat.retry') }}
+          </button>
+          <button type="button" class="button" @click="emit('unavailable')">
+            {{ t('onboarding.chat.withoutAssistant') }}
+          </button>
+        </div>
+      </div>
+      <div v-else-if="slow && pending" class="problem" role="alert">
+        <p>{{ t('onboarding.chat.slow') }}</p>
+        <div class="actions">
+          <button type="button" class="button" @click="emit('unavailable')">
+            {{ t('onboarding.chat.withoutAssistant') }}
+          </button>
+        </div>
+      </div>
+
+      <form v-if="!finished" class="compose" novalidate @submit.prevent="send">
+        <div
+          v-if="quickReplies.length"
+          class="quick"
+          role="group"
+          :aria-label="t('onboarding.chat.quick')"
+        >
+          <button
+            v-for="reply in quickReplies"
+            :key="reply"
+            type="button"
+            class="button"
+            @click="useReply(reply)"
+          >
+            {{ reply }}
+          </button>
+        </div>
+        <div class="form-row">
+          <label :for="`${id}-answer`">{{ t('onboarding.chat.answer') }}</label>
+          <textarea
+            :id="`${id}-answer`"
+            ref="field"
+            v-model="answer"
+            class="field"
+            rows="2"
+            maxlength="2000"
+            :aria-describedby="`${id}-answer-hint`"
+            @keydown="onKeydown"
+          ></textarea>
+          <p :id="`${id}-answer-hint`" class="hint">{{ t('onboarding.chat.answerHint') }}</p>
+        </div>
+        <div class="actions">
+          <button
+            type="submit"
+            class="button"
+            data-variant="primary"
+            :aria-disabled="pending || !answer.trim() || undefined"
+          >
+            {{ t('onboarding.chat.send') }}
+          </button>
+          <button
+            type="button"
+            class="button"
+            @click="answered ? emit('next') : emit('unavailable')"
+          >
+            {{ answered ? t('onboarding.chat.finish') : t('onboarding.chat.withoutAssistant') }}
+          </button>
+        </div>
+      </form>
+      <div v-else class="actions">
         <button
-          v-for="reply in quickReplies"
-          :key="reply"
+          :id="`${id}-next`"
           type="button"
           class="button"
-          @click="useReply(reply)"
-        >
-          {{ reply }}
-        </button>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-answer`">{{ t('onboarding.chat.answer') }}</label>
-        <textarea
-          :id="`${id}-answer`"
-          ref="field"
-          v-model="answer"
-          class="field"
-          rows="2"
-          maxlength="2000"
-          :aria-describedby="`${id}-answer-hint`"
-          @keydown="onKeydown"
-        ></textarea>
-        <p :id="`${id}-answer-hint`" class="hint">{{ t('onboarding.chat.answerHint') }}</p>
-      </div>
-      <div class="actions">
-        <button
-          type="submit"
-          class="button"
           data-variant="primary"
-          :aria-disabled="pending || !answer.trim() || undefined"
+          @click="emit('next')"
         >
-          {{ t('onboarding.chat.send') }}
-        </button>
-        <button type="button" class="button" @click="emit('next')">
-          {{ answered ? t('onboarding.chat.finish') : t('onboarding.chat.toForm') }}
+          {{ t('onboarding.chat.continue') }}
         </button>
       </div>
-    </form>
-    <div v-else class="actions">
-      <button
-        :id="`${id}-next`"
-        type="button"
-        class="button"
-        data-variant="primary"
-        @click="emit('next')"
-      >
-        {{ t('onboarding.chat.review') }}
-      </button>
-    </div>
+    </template>
   </div>
 </template>
 
 <style scoped>
-.chat {
-  display: grid;
-  gap: var(--space-4);
-}
-
+.assistant,
 .log {
   display: grid;
   gap: var(--space-3);
+}
+
+.log {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.log li {
-  display: grid;
-  gap: var(--space-1);
-  max-width: 36rem;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-}
-
-.log li[data-role='user'] {
-  justify-self: end;
-  border-color: var(--color-accent-fill);
-}
-
-.who {
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-  font-weight: 650;
-}
-
-.text {
-  margin: 0;
-  white-space: pre-line;
-}
-
-.status {
-  margin: 0;
-  color: var(--color-text-muted);
 }
 
 .problem {
@@ -311,11 +310,6 @@ onBeforeUnmount(stopTimers)
 
 .problem p {
   margin: 0;
-}
-
-.reply {
-  display: grid;
-  gap: var(--space-3);
 }
 
 .quick,

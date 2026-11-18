@@ -20,7 +20,7 @@ const newSession = z.object({ workspace_id: z.uuid(), context: contextSchema })
 const newMessage = z.object({ text: z.string().trim().min(1).max(2000) })
 
 /** Questions after which the person can only go on to the review. */
-const MAX_USER_MESSAGES = 10
+const MAX_USER_MESSAGES = 6
 
 /**
  * Onboarding conversation. Every request goes through the RLS (own sessions, in a

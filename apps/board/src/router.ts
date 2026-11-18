@@ -47,9 +47,11 @@ export const router = createRouter({
       meta: { public: true },
     },
     {
+      // Full screen, without the sidebar: the view brings its own header and main.
       path: '/topics/new',
       name: 'new-topic',
       component: () => import('./views/NewTopicView.vue'),
+      meta: { chromeless: true },
     },
     {
       // A topic opens on its overview: what to do next, figures, coming publications.

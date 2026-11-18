@@ -1,6 +1,6 @@
 import { canonicalLang, MAX_OUTPUT_LANGS, type DraftChannel } from '@pann/shared'
 import type { OnboardingProposal } from './api'
-import { reactive, watch } from 'vue'
+import { inject, provide, reactive, watch, type InjectionKey } from 'vue'
 
 /** Networks Pann publishes to, in the order shown at onboarding. */
 export const PUBLISH_CHANNELS: readonly DraftChannel[] = [
@@ -50,8 +50,83 @@ export interface OnboardingDraft {
   // Conversation
   /** Session of the onboarding assistant, resumed on reload. */
   sessionId: string
+  /** The assistant cannot run (no key, credit used): its questions are asked as text. */
+  assistantOff: boolean
   /** Fields filled by the assistant and not edited since (marked at the review). */
   proposed: ProposedField[]
+  /** Questions of the conversation already answered (or skipped). */
+  answered: ThreadStep[]
+}
+
+/**
+ * Questions of the creation conversation, in order. Fixed choices are closed questions;
+ * what defines the topic (what it is, for whom, messages, voice) is the assistant's
+ * part, or open questions when the assistant is not available.
+ */
+export type ThreadStep =
+  | 'name'
+  | 'url'
+  | 'tools'
+  | 'publish'
+  | 'listen'
+  | 'assistant'
+  | 'description'
+  | 'audience'
+  | 'voice'
+  | 'langs'
+  | 'rhythm'
+  | 'budget'
+
+export function threadSteps(draft: OnboardingDraft, withAssistant: boolean): ThreadStep[] {
+  return [
+    'name',
+    'url',
+    'tools',
+    ...(draft.curation ? (['publish'] as const) : []),
+    ...(draft.engagement ? (['listen'] as const) : []),
+    ...(withAssistant
+      ? (['assistant'] as const)
+      : (['description', 'audience', ...(draft.curation ? (['voice'] as const) : [])] as const)),
+    'langs',
+    ...(draft.curation ? (['rhythm'] as const) : []),
+    'budget',
+  ]
+}
+
+/** Extra choices of the publishing question, next to the networks. */
+export const PUBLISH_EXTRAS = ['newsletter', 'feed', 'other'] as const
+export type PublishChoice = DraftChannel | (typeof PUBLISH_EXTRAS)[number]
+
+export function publishChoices(draft: OnboardingDraft): PublishChoice[] {
+  return [
+    ...draft.channels,
+    ...(draft.newsletter ? (['newsletter'] as const) : []),
+    ...(draft.feed ? (['feed'] as const) : []),
+    ...(draft.otherNetwork ? (['other'] as const) : []),
+  ]
+}
+
+export function setPublishChoices(draft: OnboardingDraft, values: PublishChoice[]) {
+  draft.channels = PUBLISH_CHANNELS.filter((c) => values.includes(c))
+  draft.newsletter = values.includes('newsletter')
+  draft.feed = values.includes('feed')
+  draft.otherNetwork = values.includes('other')
+}
+
+/** The tools, and the coming one ("create my own posts", asks to be told). */
+export const TOOLS = ['curation', 'engagement', 'compose'] as const
+export type Tool = (typeof TOOLS)[number]
+export function toolChoices(draft: OnboardingDraft): Tool[] {
+  return [
+    ...(draft.curation ? (['curation'] as const) : []),
+    ...(draft.engagement ? (['engagement'] as const) : []),
+    ...(draft.composeInterest ? (['compose'] as const) : []),
+  ]
+}
+export function setToolChoices(draft: OnboardingDraft, values: string[]) {
+  draft.curation = values.includes('curation')
+  draft.engagement = values.includes('engagement')
+  draft.composeInterest = values.includes('compose')
 }
 
 export const PROPOSED_FIELDS = [
@@ -99,7 +174,9 @@ export function emptyDraft(): OnboardingDraft {
     slots: '09:00, 16:00',
     budget: 10,
     sessionId: '',
+    assistantOff: false,
     proposed: [],
+    answered: [],
   }
 }
 
@@ -167,6 +244,17 @@ export function applyProposal(draft: OnboardingDraft, proposal: Partial<Onboardi
   const slots = (proposal.slots ?? []).join(', ')
   set('slots', slots && parseSlots(slots) ? slots : null)
   draft.proposed = PROPOSED_FIELDS.filter((field) => proposed.has(field))
+}
+
+const DRAFT_KEY: InjectionKey<OnboardingDraft> = Symbol('onboarding-draft')
+/** The creation page owns the draft; its conversation and summary share it. */
+export function provideOnboardingDraft(draft: OnboardingDraft) {
+  provide(DRAFT_KEY, draft)
+}
+export function injectOnboardingDraft(): OnboardingDraft {
+  const draft = inject(DRAFT_KEY)
+  if (!draft) throw new Error('No onboarding draft provided')
+  return draft
 }
 
 /** "09:00, 16:00" → ['09:00', '16:00']; null when a time is not HH:MM. */

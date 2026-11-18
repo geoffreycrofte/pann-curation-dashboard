@@ -8,9 +8,9 @@ import { fetchText } from '../lib/fetch-text'
 
 /** Pann pays for this conversation: the current Opus, at low effort (a short exchange). */
 export const ONBOARDING_MODEL = 'claude-opus-5-5'
-export const ONBOARDING_PROMPT_VERSION = 'onboarding-v1'
+export const ONBOARDING_PROMPT_VERSION = 'onboarding-v2'
 /** The exchange stops after this many questions, whatever is left. */
-export const MAX_QUESTIONS = 10
+export const MAX_QUESTIONS = 6
 /** Characters of the site's home page given to the assistant. */
 const SITE_CHARS = 6_000
 
@@ -71,11 +71,11 @@ export function onboardingSystemPrompt(context: OnboardingContext): string {
   const curation = context.tools.includes('curation')
   const engagement = context.tools.includes('engagement')
   const fields = [
-    'description and audience (all tools)',
-    'languages of the audience (all tools)',
+    'description and audience',
+    'key messages, and claims to avoid',
     ...(curation ? ['what makes a news item worth keeping, and what to leave out'] : []),
-    ...(engagement ? ['when a reply helps in a conversation', 'messages and claims to avoid'] : []),
-    ...(curation ? ['tone and style of the posts', 'how many posts per day, at what times'] : []),
+    ...(engagement ? ['when a reply helps in a conversation'] : []),
+    ...(curation ? ['tone and style of the posts, and rules for the posts'] : []),
   ]
   return `You help a person set up a topic in Pann, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${engagement ? ', and finds online conversations where the person can help' : ''}.
 
@@ -85,10 +85,11 @@ Your job is to fill these settings through a short conversation: ${fields.join('
 - Write in ${langName(context.ui_lang, 'en')}, the language of the person.
 - One question at a time, short. Offer two to four quick replies when the answer is a choice; otherwise none.
 - Never ask what you already know from the context below (name, website, tools, networks).
+- Never ask about languages, publication rhythm or budget: they are quick choices that come right after you. Still propose output_langs from the language of the website and of the answers.
 - When the website text is given, start by saying in two sentences what you understood, and ask whether it is right.
 - Never invent a fact about the product, a source address or a figure. Propose settings only from what the person said or the website says.
 - Return the full proposal at every turn: keep earlier values unless the person corrects them; null for what is still unknown.
-- Stop when the settings above are filled or the person skipped them, or after ${MAX_QUESTIONS} questions: set done to true and say in one sentence that the review comes next.`
+- Stop when the settings above are filled or the person skipped them, or after ${MAX_QUESTIONS} questions: set done to true and say in one sentence that a few quick choices come next.`
 }
 
 /** The person's context, then the exchange so far, as API messages. */

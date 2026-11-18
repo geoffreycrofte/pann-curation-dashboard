@@ -1,0 +1,78 @@
+/*
+ * Creation conversation (new topic): bubbles of the assistant and of the person, and
+ * the card where the person composes an answer. Shared by the scripted questions and
+ * the assistant's exchange, which are rendered by different components.
+ */
+.bubble {
+  display: grid;
+  gap: var(--space-1);
+  justify-self: start;
+  max-width: min(36rem, 90%);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--space-1);
+  background: var(--color-surface);
+  font-weight: 400;
+}
+
+.bubble .text {
+  white-space: pre-line;
+}
+
+.bubble[data-from='you'] {
+  justify-self: end;
+  border-color: var(--color-accent-fill);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--space-1) var(--radius-lg);
+  background: var(--color-accent-soft);
+}
+
+.bubble .who {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+/* A question as a fieldset: its legend is the bubble, its answers the card below. */
+.ask fieldset {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+legend.bubble {
+  font-family: inherit;
+  font-size: inherit;
+  margin-bottom: var(--space-3);
+}
+
+/* The answer being written: on the person's side, plainly a form. */
+.compose {
+  display: grid;
+  gap: var(--space-4);
+  margin-inline-start: clamp(0rem, 8%, 4rem);
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+/*
+ * After a topic is created, the board rebuilds around it: the creation page fades out,
+ * the board fades in and its sidebar slides in from the side. Only with motion allowed
+ * (the view transition is not started otherwise).
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 450ms;
+}
+
+::view-transition-new(sidebar) {
+  animation: sidebar-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes sidebar-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
