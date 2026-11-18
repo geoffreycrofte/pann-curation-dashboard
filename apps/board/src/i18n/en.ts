@@ -206,6 +206,13 @@ export default {
       updated: 'edited on {date}',
     },
     calendar: { scheduled: 'Create, scheduled', published: 'Create, published' },
+    ideas: {
+      title: 'Ideas',
+      hint: 'What you kept in the news watch and the conversations: material for a post of your own.',
+      from: { curation: 'Kept in the news watch', engagement: 'Conversation to answer' },
+      start: 'Write a post from this',
+      startLabel: 'Write a post from “{title}”',
+    },
     settings: {
       heading: 'Create slots',
       hint: 'Distinct from the news watch slots, in the same time zone ({timezone}).',

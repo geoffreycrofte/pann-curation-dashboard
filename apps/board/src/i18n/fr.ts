@@ -205,6 +205,13 @@ export default {
       updated: 'modifié le {date}',
     },
     calendar: { scheduled: 'Création, programmés', published: 'Création, publiés' },
+    ideas: {
+      title: 'Idées',
+      hint: 'Ce que vous avez gardé dans la veille et les conversations : de quoi écrire votre propre post.',
+      from: { curation: 'Gardé dans la veille', engagement: 'Conversation à laquelle répondre' },
+      start: 'Écrire un post à partir de ceci',
+      startLabel: 'Écrire un post à partir de « {title} »',
+    },
     settings: {
       heading: 'Créneaux de la Création',
       hint: 'Distincts de ceux de la veille, dans le même fuseau horaire ({timezone}).',

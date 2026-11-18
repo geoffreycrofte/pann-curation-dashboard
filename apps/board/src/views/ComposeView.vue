@@ -4,6 +4,7 @@ import { useQuery } from '@pinia/colada'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import ComposeFromIdea from '../components/compose/ComposeFromIdea.vue'
 import { api, type CompositionSummary } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
@@ -25,6 +26,42 @@ const {
   key: () => ['compositions', props.topicId],
   query: () => api.compositions(props.topicId),
 })
+
+// Ideas from the other tools: what was kept in the news watch and the conversations.
+const { data: kept } = useQuery({
+  key: () => ['items', props.topicId, 'validated'],
+  query: () => api.items(props.topicId, 'validated'),
+  enabled: () => !!topic.value?.config.modules.curation,
+})
+const { data: answered } = useQuery({
+  key: () => ['conversations', props.topicId, 'validated'],
+  query: () => api.conversations(props.topicId, 'validated'),
+  enabled: () => !!topic.value?.config.modules.engagement,
+})
+/** Not already the source of a composition. */
+const used = computed(() => new Set((compositions.value ?? []).map((c) => c.subject)))
+const ideas = computed(() => [
+  ...(kept.value ?? [])
+    .filter((i) => !used.value.has(i.title))
+    .slice(0, 5)
+    .map((i) => ({
+      key: i.item_id,
+      from: 'curation' as const,
+      title: i.title,
+      url: i.canonical_url,
+      notes: '',
+    })),
+  ...(answered.value ?? [])
+    .filter((c) => !used.value.has(c.title))
+    .slice(0, 5)
+    .map((c) => ({
+      key: c.item_id,
+      from: 'engagement' as const,
+      title: c.title,
+      url: c.canonical_url,
+      notes: c.engagement_angle ?? '',
+    })),
+])
 
 const GROUPS = ['draft', 'scheduled', 'published'] as const
 const groups = computed(() =>
@@ -79,6 +116,27 @@ async function create() {
   </div>
   <p class="hint">{{ t('compose.intro') }}</p>
   <p v-if="createError" class="error" role="alert">{{ createError }}</p>
+
+  <section v-if="ideas.length" class="group" aria-labelledby="compose-ideas">
+    <h2 id="compose-ideas">{{ t('compose.ideas.title') }}</h2>
+    <p class="hint">{{ t('compose.ideas.hint') }}</p>
+    <ul class="list">
+      <li v-for="idea in ideas" :key="idea.key" class="idea">
+        <span class="meta">{{ t(`compose.ideas.from.${idea.from}`) }}</span>
+        <a :href="idea.url" target="_blank" rel="noopener noreferrer" class="title">{{
+          idea.title
+        }}</a>
+        <div>
+          <ComposeFromIdea
+            :topic-id="topicId"
+            :title="idea.title"
+            :url="idea.url"
+            :notes="idea.notes"
+          />
+        </div>
+      </li>
+    </ul>
+  </section>
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>

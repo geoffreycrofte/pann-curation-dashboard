@@ -420,8 +420,16 @@ export const api = {
     }>(`/topics/${topicId}/voice-analyses/${id}`),
   compositions: (topicId: string) =>
     request<CompositionSummary[]>(`/topics/${topicId}/compositions`),
-  createComposition: (topicId: string, input: { subject?: string; mode?: ComposeModeName } = {}) =>
-    request<Composition>(`/topics/${topicId}/compositions`, json('POST', input)),
+  createComposition: (
+    topicId: string,
+    input: {
+      subject?: string
+      mode?: ComposeModeName
+      notes?: string
+      link?: string
+      sources?: ComposeSource[]
+    } = {},
+  ) => request<Composition>(`/topics/${topicId}/compositions`, json('POST', input)),
   composition: (topicId: string, id: string) =>
     request<Composition>(`/topics/${topicId}/compositions/${id}`),
   updateComposition: (topicId: string, id: string, patch: CompositionPatch) =>

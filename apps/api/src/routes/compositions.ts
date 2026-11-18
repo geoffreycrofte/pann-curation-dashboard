@@ -42,9 +42,13 @@ const sourceSchema = z.object({
   selected: z.boolean(),
 })
 
+/** A new composition, empty or started from an idea (a news item, a conversation). */
 const newComposition = z.object({
   subject: z.string().trim().max(300).default(''),
   mode: z.enum(COMPOSE_MODES).optional(),
+  notes: z.string().max(10_000).optional(),
+  link: z.union([httpUrl, z.literal('')]).optional(),
+  sources: z.array(sourceSchema).max(20).optional(),
 })
 const compositionPatch = z
   .object({
@@ -122,7 +126,14 @@ export const compositions = new Hono<AppEnv>()
     const config = parseTopicConfig(topic.config)
     const { data, error } = await c.var.db
       .from('compositions')
-      .insert({ topic_id: topicId, subject: body.subject, mode: body.mode ?? config.compose.mode })
+      .insert({
+        topic_id: topicId,
+        subject: body.subject,
+        mode: body.mode ?? config.compose.mode,
+        ...(body.notes !== undefined ? { notes: body.notes } : {}),
+        ...(body.link !== undefined ? { link: body.link } : {}),
+        ...(body.sources !== undefined ? { sources: body.sources } : {}),
+      })
       .select(COMPOSITION_COLUMNS)
       .single()
     if (error) throw error

@@ -27,6 +27,7 @@ import {
 import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FirstCommentEditor from '../components/FirstCommentEditor.vue'
+import ComposeFromIdea from '../components/compose/ComposeFromIdea.vue'
 import KindSelect from '../components/KindSelect.vue'
 import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
 import { api, type RewriteInput } from '../lib/api'
@@ -385,10 +386,17 @@ async function savePost(postId: string, text: string) {
         }}
       </li>
     </ul>
-    <p>
+    <p class="source-line">
       <a :href="detail.item.canonical_url" target="_blank" rel="noopener noreferrer">{{
         t('draft.source')
       }}</a>
+      <!-- Your own take on it, in Création (when the topic uses it). -->
+      <ComposeFromIdea
+        v-if="detail.status === 'validated' || detail.status === 'published'"
+        :topic-id="topicId"
+        :title="detail.item.title"
+        :url="detail.item.canonical_url"
+      />
     </p>
     <p v-if="detail.triage_reason">{{ t('board.reason', { reason: detail.triage_reason }) }}</p>
 
@@ -709,6 +717,13 @@ async function savePost(postId: string, text: string) {
 </template>
 
 <style scoped>
+.source-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
 /* Drafting status: tone and icon follow the state (text first, color reinforces). */
 .draft-state {
   display: grid;
