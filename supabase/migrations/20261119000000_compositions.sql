@@ -17,6 +17,9 @@ create table public.compositions (
   notes           text not null default '' check (char_length(notes) <= 10000),
   -- [{ url, title, excerpt, selected }]: given links, or search results to choose from.
   sources         jsonb not null default '[]'::jsonb check (jsonb_typeof(sources) = 'array'),
+  -- Link added after the text of every post (like the source of a news item); empty:
+  -- no link. Defaults to the first chosen source.
+  link            text not null default '' check (char_length(link) <= 2000),
   -- Networks to write for (a subset of the topic's networks), checked by the API.
   channels        text[] not null default '{}',
   -- Drafting and search run as jobs; the board polls these.
@@ -53,8 +56,8 @@ create policy "members delete draft compositions" on public.compositions
 -- The person writes the content; statuses and slots go through the functions below and
 -- the jobs (secret key).
 revoke insert, update on public.compositions from authenticated, anon;
-grant insert (topic_id, subject, mode, notes, sources, channels) on public.compositions to authenticated;
-grant update (subject, mode, notes, sources, channels, updated_at) on public.compositions to authenticated;
+grant insert (topic_id, subject, mode, notes, sources, link, channels) on public.compositions to authenticated;
+grant update (subject, mode, notes, sources, link, channels, updated_at) on public.compositions to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Images of a composition: the person's own, stored in the composition-media bucket.
@@ -244,3 +247,53 @@ revoke execute on function public.schedule_composition from public, anon;
 revoke execute on function public.unschedule_composition from public, anon;
 grant execute on function public.schedule_composition to authenticated;
 grant execute on function public.unschedule_composition to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Jobs asked by the person (drafting, search, text alternatives of an image): the
+-- request is marked pending here, after the access check; the API then queues the job.
+-- ---------------------------------------------------------------------------
+create or replace function public.request_compose_job(p_composition_id uuid, p_job text)
+returns boolean
+language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_topic uuid;
+begin
+  select topic_id into v_topic from public.compositions where id = p_composition_id;
+  if v_topic is null or not private.can_access_topic(v_topic) then
+    raise exception 'Composition not found' using errcode = '42501';
+  end if;
+  if p_job = 'draft' then
+    update public.compositions set draft_status = 'pending', draft_error = null
+    where id = p_composition_id and draft_status <> 'pending';
+  elsif p_job = 'research' then
+    update public.compositions set research_status = 'pending', research_error = null
+    where id = p_composition_id and research_status <> 'pending';
+  else
+    raise exception 'Unknown job' using errcode = '22023';
+  end if;
+  return found;
+end;
+$$;
+
+create or replace function public.request_media_alt(p_media_id uuid)
+returns boolean
+language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_topic uuid;
+begin
+  select topic_id into v_topic from public.composition_media where id = p_media_id;
+  if v_topic is null or not private.can_access_topic(v_topic) then
+    raise exception 'Image not found' using errcode = '42501';
+  end if;
+  update public.composition_media set alt_status = 'pending', alt_error = null
+  where id = p_media_id and alt_status <> 'pending';
+  return found;
+end;
+$$;
+
+revoke execute on function public.request_compose_job from public, anon;
+revoke execute on function public.request_media_alt from public, anon;
+grant execute on function public.request_compose_job to authenticated;
+grant execute on function public.request_media_alt to authenticated;

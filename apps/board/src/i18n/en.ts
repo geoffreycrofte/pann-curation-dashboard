@@ -403,6 +403,8 @@ export default {
     no_platform_admin: 'No administrator to notify.',
     onboarding_unavailable: 'The assistant is not available right now.',
     onboarding_credit_exhausted: 'The assistant credit is used up for this workspace.',
+    alt_missing: 'An image has no text alternative in {lang}.',
+    too_many_images: 'Four images at most per post.',
     provider_error: 'The AI service could not answer. It will retry automatically.',
     insufficient_content:
       'Not enough source content for a reliable summary (empty, paywalled or too short page). Read the source.',

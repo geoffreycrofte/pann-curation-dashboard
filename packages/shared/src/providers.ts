@@ -192,6 +192,8 @@ export const ERROR_CODES = [
   'no_platform_admin', // nobody to notify
   'onboarding_unavailable', // no Pann key for the onboarding assistant
   'onboarding_credit_exhausted', // onboarding credit or Pann's monthly cap reached
+  'alt_missing', // :lang (an image of a composed post has no text alternative in it)
+  'too_many_images', // a composed post takes at most 4 images
   'unexpected',
 ] as const
 export type ErrorCode = (typeof ERROR_CODES)[number]

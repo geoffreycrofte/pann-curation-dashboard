@@ -14,9 +14,10 @@ export const LINK_SEPARATOR = '\n\n'
 /** Mastodon counts every link as 23 characters, whatever its length. */
 const MASTODON_URL_LENGTH = 23
 
+/** Text, link (none for a composed post without a link), signature: the published post. */
 export function composePost(body: string, url: string, signature = ''): string {
   const tail = signature.trim()
-  return `${body.trim()}${LINK_SEPARATOR}${url}${tail ? `${LINK_SEPARATOR}${tail}` : ''}`
+  return [body.trim(), url.trim(), tail].filter(Boolean).join(LINK_SEPARATOR)
 }
 
 /** Room taken by a signature at the end of the post (blank line included). */
@@ -25,8 +26,10 @@ function signatureLength(signature: string): number {
   return tail ? LINK_SEPARATOR.length + postLength(tail) : 0
 }
 
-function urlLength(channel: DraftChannel, url: string): number {
-  return channel === 'mastodon' ? MASTODON_URL_LENGTH : postLength(url)
+/** Room taken by the link (blank line included); none without a link. */
+function linkLength(channel: DraftChannel, url: string): number {
+  if (!url.trim()) return 0
+  return LINK_SEPARATOR.length + (channel === 'mastodon' ? MASTODON_URL_LENGTH : postLength(url))
 }
 
 /** Length of the published post (text, link, signature), as the network counts it. */
@@ -36,12 +39,7 @@ export function publishedLength(
   url: string,
   signature = '',
 ): number {
-  return (
-    postLength(body.trim()) +
-    LINK_SEPARATOR.length +
-    urlLength(channel, url) +
-    signatureLength(signature)
-  )
+  return postLength(body.trim()) + linkLength(channel, url) + signatureLength(signature)
 }
 
 /** Room left for the text once the link (and the signature, if any) is added. */
@@ -51,7 +49,7 @@ export function bodyLimit(
   limit: number = POST_LIMITS[channel],
   signature = '',
 ): number {
-  return limit - LINK_SEPARATOR.length - urlLength(channel, url) - signatureLength(signature)
+  return limit - linkLength(channel, url) - signatureLength(signature)
 }
 
 /** Text added at the end of every post of this channel and language (LinkedIn only). */

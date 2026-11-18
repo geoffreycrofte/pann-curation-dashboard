@@ -23,6 +23,14 @@ import { triage } from '../triage/triage'
 import { jobClient } from './client'
 import { notifyAccessRequest } from '../access/notify'
 import { runOnboarding } from '../onboarding/assistant'
+import { claudeComposeModel } from '../compose/model'
+import {
+  runComposeDraft,
+  runComposeResearch,
+  runDescribeMedia,
+  type ComposeDeps,
+} from '../compose/jobs'
+import { exaSearch, fetchSourceText, supabaseComposeStore } from '../compose/store'
 
 /**
  * Work sent by user requests (after an RLS access check) and run by the queue
@@ -49,6 +57,10 @@ export type JobMessage =
   | { type: 'notify-access-request'; requestId: string; origin: string }
   /** Next answer of the onboarding assistant (Pann's key, onboarding credit). */
   | { type: 'onboarding'; sessionId: string }
+  /** Création: search sources, write the posts, propose the text alternatives of an image. */
+  | { type: 'compose-research'; compositionId: string }
+  | { type: 'compose-draft'; compositionId: string }
+  | { type: 'describe-media'; mediaId: string }
 
 export const networks = {
   zernio: publishWithZernio,
@@ -130,6 +142,24 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     case 'notify-access-request': {
       const result = await notifyAccessRequest(db, message.requestId, message.origin)
       console.log(JSON.stringify({ job: 'notify-access-request', result }))
+      return
+    }
+    case 'compose-research':
+    case 'compose-draft':
+    case 'describe-media': {
+      const deps: ComposeDeps = {
+        store: supabaseComposeStore(db),
+        model: claudeComposeModel,
+        fetchSource: fetchSourceText,
+        search: exaSearch,
+      }
+      const result =
+        message.type === 'compose-research'
+          ? await runComposeResearch(deps, message.compositionId)
+          : message.type === 'compose-draft'
+            ? await runComposeDraft(deps, message.compositionId)
+            : await runDescribeMedia(deps, message.mediaId)
+      console.log(JSON.stringify({ job: message.type, result }))
       return
     }
     case 'onboarding': {

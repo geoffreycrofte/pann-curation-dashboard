@@ -11,6 +11,7 @@ import { sources } from './routes/sources'
 import { diffusion } from './routes/diffusion'
 import { newsletter } from './routes/newsletter'
 import { onboarding } from './routes/onboarding'
+import { compositions } from './routes/compositions'
 import { topics } from './routes/topics'
 import { workspaces } from './routes/workspaces'
 
@@ -30,6 +31,7 @@ app.route('/onboarding', onboarding)
 app.route('/topics', topics)
 app.route('/topics', diffusion)
 app.route('/topics', newsletter)
+app.route('/topics', compositions)
 app.route('/topics/:topicId/sources', sources)
 app.route('/workspaces/:workspaceId/credentials', credentials)
 

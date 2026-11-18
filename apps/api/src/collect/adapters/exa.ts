@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { SourceError, type Adapter } from '../types'
 
 /** https://exa.ai/docs/reference/search (checked 2026-10-01). */
-const EXA_SEARCH_URL = 'https://api.exa.ai/search'
+export const EXA_SEARCH_URL = 'https://api.exa.ai/search'
 
 const responseSchema = z.object({
   results: z.array(

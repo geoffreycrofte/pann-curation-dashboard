@@ -407,6 +407,8 @@ export default {
     no_platform_admin: 'Aucun administrateur à prévenir.',
     onboarding_unavailable: 'L’assistant n’est pas disponible pour le moment.',
     onboarding_credit_exhausted: 'Le crédit de l’assistant est épuisé pour cet espace.',
+    alt_missing: 'Une image n’a pas de texte alternatif en {lang}.',
+    too_many_images: 'Quatre images au plus par post.',
     provider_error: 'Le service d’IA n’a pas pu répondre. Nouvel essai automatique.',
     insufficient_content:
       'Contenu de la source insuffisant pour un résumé fiable (page vide, payante ou trop courte). Lisez la source.',
