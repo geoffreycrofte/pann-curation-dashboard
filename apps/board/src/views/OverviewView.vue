@@ -12,13 +12,27 @@ import TopicStatus from '../components/overview/TopicStatus.vue'
 import ContentCard from '../components/ContentCard.vue'
 import Icon from '../components/Icon.vue'
 import TopicSummary from '../components/TopicSummary.vue'
-import { api } from '../lib/api'
+import { api, type QueueItem } from '../lib/api'
 import { contentLangName } from '../lib/langs'
 import { useTopicName } from '../lib/topic-name'
 import { useTopicSummary } from '../lib/topic-summary'
 
 const props = defineProps<{ topicId: string }>()
-const { t, d } = useI18n()
+const { t, d, locale } = useI18n()
+
+/** Scheduled posts of an item, one line per network with the languages it goes out in. */
+function networksOf(item: QueueItem) {
+  const byChannel = new Map<string, string[]>()
+  for (const post of item.posts) {
+    if (post.status !== 'scheduled') continue
+    const langs = byChannel.get(post.channel) ?? []
+    if (post.lang && !langs.includes(post.lang)) langs.push(post.lang)
+    byChannel.set(post.channel, langs)
+  }
+  return [...byChannel].map(([channel, langs]) => ({ channel, langs }))
+}
+const langList = (langs: string[]) =>
+  new Intl.ListFormat(locale.value, { type: 'conjunction' }).format(langs.map(contentLangName))
 const topicName = useTopicName(() => props.topicId)
 const { topic, upcoming, isPending } = useTopicSummary(() => props.topicId)
 
@@ -92,14 +106,20 @@ const formatDate = (value: string) =>
             >
           </template>
           <ul class="channels">
-            <li v-for="p in item.posts.filter((p) => p.status === 'scheduled')" :key="p.id">
-              <Icon :name="p.channel" :size="16" />
-              {{
-                t('overview.postOn', {
-                  channel: t(`draft.channels.${p.channel}`),
-                  lang: contentLangName(p.lang),
-                })
-              }}
+            <li v-for="n in networksOf(item)" :key="n.channel">
+              <Icon :name="n.channel" :size="16" />
+              {{ t(`draft.channels.${n.channel}`) }}
+              <!-- The codes are for the eye; screen readers get the languages' names. -->
+              <template v-if="n.langs.length">
+                <span class="visually-hidden">{{
+                  t('overview.inLangs', { langs: langList(n.langs) })
+                }}</span>
+                <span class="langs" aria-hidden="true">
+                  <span v-for="lang in n.langs" :key="lang" class="badge">{{
+                    lang.toUpperCase()
+                  }}</span>
+                </span>
+              </template>
             </li>
           </ul>
         </ContentCard>
@@ -166,7 +186,13 @@ const formatDate = (value: string) =>
 
 .channels li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+}
+
+.langs {
+  display: inline-flex;
+  gap: var(--space-1);
 }
 </style>

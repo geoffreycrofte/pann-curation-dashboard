@@ -351,7 +351,7 @@ export default {
     next: 'Prochaines publications',
     nothingScheduled: 'Rien de programmé pour l’instant.',
     chooseValidated: 'Choisir parmi les éléments validés',
-    postOn: '{channel} en {lang}',
+    inLangs: ', en {langs}',
     openCalendar: 'Ouvrir le calendrier',
     created: 'Thème créé.',
     collecting:

@@ -352,7 +352,7 @@ export default {
     next: 'Next posts',
     nothingScheduled: 'Nothing scheduled yet.',
     chooseValidated: 'Choose among the validated items',
-    postOn: '{channel} in {lang}',
+    inLangs: ', in {langs}',
     openCalendar: 'Open the calendar',
     created: 'Topic created.',
     collecting:
