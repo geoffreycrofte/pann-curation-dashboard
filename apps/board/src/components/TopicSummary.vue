@@ -8,12 +8,19 @@ import { useI18n } from 'vue-i18n'
 import StatTile from './StatTile.vue'
 import { useTopicSummary } from '../lib/topic-summary'
 
-const props = defineProps<{ topicId: string }>()
+const props = withDefaults(
+  defineProps<{
+    topicId: string
+    /** The date of the next post under its figure (off where the posts are listed). */
+    showNext?: boolean
+  }>(),
+  { showNext: true },
+)
 const { t, d } = useI18n()
 const { topic, modules, toSort, toReview, upcoming, failed } = useTopicSummary(() => props.topicId)
 
 const timeZone = computed(() => topic.value?.config.schedule.timezone)
-const next = computed(() => upcoming.value[0])
+const next = computed(() => (props.showNext ? upcoming.value[0] : undefined))
 const formatDate = (value: string) =>
   d(new Date(value), { dateStyle: 'full', timeStyle: 'short', timeZone: timeZone.value })
 </script>

@@ -58,7 +58,8 @@ const formatDate = (value: string) =>
   <p role="status" class="start" :class="{ empty: !startMessage }">{{ startMessage }}</p>
   <TopicStatus :topic-id="topicId" />
   <OverviewChecklist :topic-id="topicId" />
-  <TopicSummary :topic-id="topicId" />
+  <!-- The next post is listed just below: no "Next:" line in the figures. -->
+  <TopicSummary :topic-id="topicId" :show-next="false" />
 
   <section class="next" aria-labelledby="overview-next">
     <div class="next-head">
@@ -126,7 +127,6 @@ const formatDate = (value: string) =>
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2) var(--space-4);
 }
 
