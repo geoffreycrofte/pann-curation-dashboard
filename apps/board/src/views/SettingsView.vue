@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Icon from '../components/Icon.vue'
 import { useRoute, useRouter } from 'vue-router'
 import BudgetSection from '../components/BudgetSection.vue'
 import DiffusionSettings from '../components/DiffusionSettings.vue'
@@ -172,6 +173,7 @@ const { mutate, isLoading } = useMutation({
       class="button"
       :to="{ name: 'adjust', params: { topicId } }"
     >
+      <Icon name="sparkles" />
       {{ t('adjust.open') }}
     </RouterLink>
   </div>

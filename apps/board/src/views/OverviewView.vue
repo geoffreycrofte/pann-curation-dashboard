@@ -9,6 +9,8 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import OverviewChecklist from '../components/OverviewChecklist.vue'
 import TopicStatus from '../components/overview/TopicStatus.vue'
+import ContentCard from '../components/ContentCard.vue'
+import Icon from '../components/Icon.vue'
 import TopicSummary from '../components/TopicSummary.vue'
 import { api } from '../lib/api'
 import { contentLangName } from '../lib/langs'
@@ -59,7 +61,13 @@ const formatDate = (value: string) =>
   <TopicSummary :topic-id="topicId" />
 
   <section class="next" aria-labelledby="overview-next">
-    <h2 id="overview-next">{{ t('overview.next') }}</h2>
+    <div class="next-head">
+      <h2 id="overview-next">{{ t('overview.next') }}</h2>
+      <RouterLink class="button" data-size="small" :to="{ name: 'calendar', params: { topicId } }">
+        <Icon name="calendar" />
+        {{ t('overview.openCalendar') }}
+      </RouterLink>
+    </div>
     <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
     <p v-else-if="!next.length">
       {{ t('overview.nothingScheduled') }}
@@ -71,34 +79,31 @@ const formatDate = (value: string) =>
     </p>
     <ol v-else class="queue">
       <li v-for="item in next" :key="item.item_id">
-        <p class="when">{{ formatDate(item.publish_at) }}</p>
-        <p class="title">
-          <RouterLink
-            :to="{ name: 'item', params: { topicId, itemId: item.item_id } }"
-            :lang="item.item.source_lang ?? undefined"
-            >{{ item.item.title }}</RouterLink
-          >
-        </p>
-        <p class="hint">
-          {{
-            item.posts
-              .filter((p) => p.status === 'scheduled')
-              .map((p) =>
+        <ContentCard
+          kind="publication"
+          :title="item.item.title"
+          :title-lang="item.item.source_lang ?? undefined"
+          :to="{ name: 'item', params: { topicId, itemId: item.item_id } }"
+        >
+          <template #meta>
+            <span class="when"
+              ><Icon name="clock" :size="16" /> {{ formatDate(item.publish_at) }}</span
+            >
+          </template>
+          <ul class="channels">
+            <li v-for="p in item.posts.filter((p) => p.status === 'scheduled')" :key="p.id">
+              <Icon :name="p.channel" :size="16" />
+              {{
                 t('overview.postOn', {
                   channel: t(`draft.channels.${p.channel}`),
                   lang: contentLangName(p.lang),
-                }),
-              )
-              .join(', ')
-          }}
-        </p>
+                })
+              }}
+            </li>
+          </ul>
+        </ContentCard>
       </li>
     </ol>
-    <p>
-      <RouterLink :to="{ name: 'calendar', params: { topicId } }">{{
-        t('overview.openCalendar')
-      }}</RouterLink>
-    </p>
   </section>
 </template>
 
@@ -113,8 +118,16 @@ const formatDate = (value: string) =>
 
 .next {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
   margin-top: var(--space-8);
+}
+
+.next-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
 }
 
 .next h2,
@@ -122,28 +135,38 @@ const formatDate = (value: string) =>
   margin: 0;
 }
 
+/* Publications side by side: a card each. */
 .queue {
   display: grid;
-  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(min(19rem, 100%), 1fr));
+  gap: var(--space-4);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.queue li {
+.queue > li {
   display: grid;
-  gap: var(--space-1);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-}
-
-.queue p {
-  margin: 0;
 }
 
 .when {
-  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.channels {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.channels li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 </style>

@@ -33,6 +33,18 @@
   /* AI at work: colors of the animated halo, with --color-accent-fill (3:1 on the backgrounds). */
   --color-ai-violet: light-dark(#6d4aff, #b3a1ff);
   --color-ai-teal: light-dark(#0b7f86, #4fd1c5);
+  /*
+   * Content types: an accent each (icons, card edges: 3:1) and a soft background
+   * (--color-text and --color-text-muted on it: 4.5:1). Publications are gold like the
+   * brand, conversations teal, the person's own posts (Création) violet. The type is
+   * also always written: color is never the only sign.
+   */
+  --color-kind-publication: light-dark(#7a5800, #ffc72c);
+  --color-kind-publication-soft: light-dark(#fff1c2, #2e2610);
+  --color-kind-conversation: light-dark(#0b7f86, #4fd1c5);
+  --color-kind-conversation-soft: light-dark(#dcf2f1, #10302e);
+  --color-kind-creation: light-dark(#6d4aff, #b3a1ff);
+  --color-kind-creation-soft: light-dark(#ebe6ff, #251c47);
   /* Badge backgrounds (with --color-text on them). */
   --color-neutral-soft: light-dark(#efe4cf, #2b2b30);
   --color-success-soft: light-dark(#dcefe1, #133420);
@@ -56,6 +68,10 @@
   --shadow-card:
     0 1px 2px light-dark(rgb(20 20 20 / 0.05), rgb(0 0 0 / 0.4)),
     0 10px 30px light-dark(rgb(20 20 20 / 0.06), transparent);
+  /* A card under the pointer, or one that must stand out: one level above --shadow-card. */
+  --shadow-raised:
+    0 2px 4px light-dark(rgb(20 20 20 / 0.06), rgb(0 0 0 / 0.5)),
+    0 16px 40px light-dark(rgb(20 20 20 / 0.1), transparent);
   --radius: 12px;
   --radius-lg: 20px;
   --radius-pill: 999px;

@@ -7,6 +7,7 @@ import { useQuery } from '@pinia/colada'
 import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../../lib/api'
+import Icon from '../Icon.vue'
 
 const props = defineProps<{ topicId: string; status: 'scheduled' | 'published' }>()
 const { t, d } = useI18n()
@@ -40,6 +41,7 @@ const formatDate = (value: string) =>
     <h2 :id="`${id}-title`">{{ t(`compose.calendar.${status}`) }}</h2>
     <ul>
       <li v-for="c in list" :key="c.id">
+        <Icon name="writing" :size="16" class="kind" />
         <RouterLink :to="{ name: 'composition', params: { topicId, compositionId: c.id } }">
           {{ c.subject || t('compose.untitled') }}
         </RouterLink>
@@ -74,8 +76,18 @@ li {
   gap: var(--space-1) var(--space-3);
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border-subtle);
+  border-inline-start: 4px solid var(--color-kind-creation);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+li {
+  align-items: center;
+}
+
+.kind {
+  color: var(--color-kind-creation);
 }
 
 .when {

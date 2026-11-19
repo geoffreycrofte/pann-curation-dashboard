@@ -323,6 +323,7 @@ export default {
     publish: 'No account | Publishing: one account set | Publishing: {n} accounts set',
     noAccounts: 'Publishing: no account set, posts stay drafts',
   },
+  contentKinds: { publication: 'Publication', conversation: 'Conversation', creation: 'Your post' },
   checklist: {
     compose: 'Write a first post of your own',
     openCompose: 'Open Create',

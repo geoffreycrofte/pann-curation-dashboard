@@ -322,6 +322,7 @@ export default {
     publish: 'Aucun compte | Publication : un compte relié | Publication : {n} comptes reliés',
     noAccounts: 'Publication : aucun compte relié, les posts restent en brouillon',
   },
+  contentKinds: { publication: 'Publication', conversation: 'Conversation', creation: 'Création' },
   checklist: {
     compose: 'Écrire un premier post à vous',
     openCompose: 'Ouvrir la Création',
