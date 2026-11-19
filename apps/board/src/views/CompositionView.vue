@@ -28,6 +28,7 @@ import { postWarnings } from '../lib/post-checks'
 import { contentLangName } from '../lib/langs'
 import { toast } from '../lib/toast'
 import { useWorkspace } from '../lib/workspace'
+import { usePageDetail } from '../lib/page-title'
 
 const props = defineProps<{ topicId: string; compositionId: string }>()
 const { t, d } = useI18n()
@@ -241,6 +242,11 @@ async function remove() {
   toast(t('compose.deleted'))
   await router.push({ name: 'compose', params: { topicId: props.topicId } })
 }
+
+// The document title starts with what this page shows.
+usePageDetail(() =>
+  composition.value ? composition.value.subject || t('compose.untitled') : undefined,
+)
 </script>
 
 <template>

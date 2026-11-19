@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { useQuery } from '@pinia/colada'
-import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  watch,
+  watchEffect,
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AccountMenu from './components/AccountMenu.vue'
@@ -8,10 +16,11 @@ import Toaster from './components/Toaster.vue'
 import PannMark from './components/PannMark.vue'
 import { api } from './lib/api'
 import { session } from './lib/session'
+import { pageDetail } from './lib/page-title'
 
 const LandingView = defineAsyncComponent(() => import('./views/LandingView.vue'))
 
-const { t, locale } = useI18n()
+const { t, te, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
@@ -38,6 +47,22 @@ const { data: currentTopic } = useQuery({
   query: () => api.topic(currentTopicId.value!),
   enabled: () => !!session.value && !!currentTopicId.value,
 })
+// Document title, from the most specific to the most general: what the page shows (an
+// item, a tab), the page, the topic, Pann. The marketing page sets its own.
+watchEffect(() => {
+  if (!session.value && route.name === 'home') return
+  const name = String(route.name ?? '')
+  const key = `pageTitle.${name}`
+  const topic = currentTopic.value
+  const parts = [
+    pageDetail.value,
+    name && te(key) ? t(key) : '',
+    currentTopicId.value && topic ? (locale.value === 'fr' ? topic.name_fr : topic.name_en) : '',
+    t('app.name'),
+  ]
+  document.title = parts.filter(Boolean).join(t('pageTitle.separator'))
+})
+
 /** Sections of the open topic: its overview, its tools that are on, what goes out, settings. */
 const topicSections = computed(() => {
   // Before the topic is loaded: its defaults (curation on, engagement off).

@@ -12,6 +12,7 @@ import QueueHistory from '../components/QueueHistory.vue'
 import ScheduledPanel from '../components/ScheduledPanel.vue'
 import ComposeQueue from '../components/compose/ComposeQueue.vue'
 import { useTopicName } from '../lib/topic-name'
+import { usePageDetail } from '../lib/page-title'
 
 const props = defineProps<{ topicId: string }>()
 const { t } = useI18n()
@@ -31,6 +32,9 @@ const tab = computed<Tab>({
       query: { tab: value === 'scheduled' ? undefined : value },
     }),
 })
+
+// The document title starts with what this page shows.
+usePageDetail(() => t(`calendar.tabs.${tab.value}`))
 </script>
 
 <template>

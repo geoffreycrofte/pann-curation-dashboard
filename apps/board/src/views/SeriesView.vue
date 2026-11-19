@@ -12,6 +12,7 @@ import { useRouter } from 'vue-router'
 import { api, type SeriesPost } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
+import { usePageDetail } from '../lib/page-title'
 
 const props = defineProps<{ topicId: string; seriesId: string }>()
 const { t, d, locale } = useI18n()
@@ -158,6 +159,9 @@ async function scheduleSeries() {
   await refetch()
   await queryCache.invalidateQueries({ key: ['compositions', props.topicId] })
 }
+
+// The document title starts with what this page shows.
+usePageDetail(() => series.value?.subject)
 </script>
 
 <template>
