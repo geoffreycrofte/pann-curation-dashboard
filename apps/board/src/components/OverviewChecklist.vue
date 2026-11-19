@@ -10,6 +10,7 @@ import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
 import { api } from '../lib/api'
+import Icon, { type IconName } from './Icon.vue'
 import { useTopicSummary } from '../lib/topic-summary'
 import { useWorkspace } from '../lib/workspace'
 
@@ -55,6 +56,7 @@ interface Line {
   done: boolean
   to: RouteLocationRaw
   action: string
+  icon: IconName
 }
 
 const settings = (tab: string): RouteLocationRaw => ({
@@ -77,6 +79,7 @@ const lines = computed<Line[]>(() => {
       done: !!credentials.value?.some((c) => c.provider === 'anthropic' && c.status !== 'invalid'),
       to: '/connections',
       action: t('checklist.connect'),
+      icon: 'sparkles',
     },
   ]
   if (config.modules.curation) {
@@ -86,6 +89,7 @@ const lines = computed<Line[]>(() => {
       done: !!sources.value?.length,
       to: settings('sources'),
       action: t('checklist.addSources'),
+      icon: 'rss',
     })
     // A line per network aimed at during onboarding, done once an account publishes it.
     for (const channel of config.target_channels)
@@ -95,6 +99,7 @@ const lines = computed<Line[]>(() => {
         done: config.channels.some((c) => c.channel === channel),
         to: settings('publishing'),
         action: t('checklist.choose'),
+        icon: channel,
       })
     if (config.target_newsletter)
       list.push({
@@ -103,6 +108,7 @@ const lines = computed<Line[]>(() => {
         done: newsletterReady(config),
         to: settings('newsletter'),
         action: t('checklist.setUp'),
+        icon: 'mail',
       })
     list.push(
       {
@@ -111,6 +117,7 @@ const lines = computed<Line[]>(() => {
         done: sorted >= 10,
         to: { name: 'board', params: { topicId: props.topicId } },
         action: t('checklist.openWatch'),
+        icon: 'list-check',
       },
       {
         key: 'schedule',
@@ -122,6 +129,7 @@ const lines = computed<Line[]>(() => {
           query: { status: 'validated' },
         },
         action: t('checklist.openValidated'),
+        icon: 'calendar',
       },
     )
   }
@@ -132,6 +140,7 @@ const lines = computed<Line[]>(() => {
       done: !!compositions.value?.length,
       to: { name: 'compose', params: { topicId: props.topicId } },
       action: t('checklist.openCompose'),
+      icon: 'writing',
     })
   if (config.modules.engagement)
     list.push({
@@ -140,6 +149,7 @@ const lines = computed<Line[]>(() => {
       done: (engagementCounts.value?.validated ?? 0) + (engagementCounts.value?.rejected ?? 0) > 0,
       to: { name: 'engagement', params: { topicId: props.topicId } },
       action: t('checklist.openConversations'),
+      icon: 'messages',
     })
   return list
 })
@@ -181,6 +191,7 @@ function setFolded(value: boolean) {
       <button
         type="button"
         class="button"
+        data-size="small"
         :aria-expanded="!folded"
         :aria-controls="`${id}-list`"
         @click="setFolded(!folded)"
@@ -191,13 +202,24 @@ function setFolded(value: boolean) {
     <ol v-show="!folded" :id="`${id}-list`" class="lines">
       <li v-for="line in lines" :key="line.key" :data-done="line.done || undefined">
         <span class="mark" aria-hidden="true">{{ line.done ? '✓' : '' }}</span>
-        <span class="label">
+        <span :id="`${id}-${line.key}`" class="label">
           <span class="visually-hidden">{{
             line.done ? t('checklist.done') : t('checklist.todo')
           }}</span>
           {{ line.label }}
         </span>
-        <RouterLink v-if="!line.done" :to="line.to" class="action">{{ line.action }}</RouterLink>
+        <!-- Several lines share an action word ("Choose the account"): the line's label
+             describes which one. -->
+        <RouterLink
+          v-if="!line.done"
+          :to="line.to"
+          class="button"
+          data-size="small"
+          :aria-describedby="`${id}-${line.key}`"
+        >
+          <Icon :name="line.icon" :size="16" />
+          {{ line.action }}
+        </RouterLink>
       </li>
     </ol>
   </section>
