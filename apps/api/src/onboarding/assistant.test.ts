@@ -140,6 +140,17 @@ describe('onboarding prompt', () => {
     expect(intro).not.toContain('Website text')
   })
 
+  it('tells the assistant its last message must not ask a question', () => {
+    const history = [
+      { role: 'assistant' as const, text: 'Q1' },
+      { role: 'user' as const, text: 'R1' },
+    ]
+    const last = onboardingMessages(context, history, null, true).at(-1)!
+    expect(last.content).toContain('R1')
+    expect(last.content).toContain('this is your last message')
+    expect(String(onboardingMessages(context, history, null).at(-1)!.content)).toBe('R1')
+  })
+
   it('gives the context first, then the exchange', () => {
     const messages = onboardingMessages(
       { ...context, url: 'https://example.org' },

@@ -52,9 +52,6 @@ legend.bubble {
   display: grid;
   gap: var(--space-4);
   margin-inline-start: clamp(0rem, 8%, 4rem);
-  padding: var(--space-4) var(--space-5);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-lg);
 }
 
 /*
@@ -74,5 +71,51 @@ legend.bubble {
 @keyframes sidebar-in {
   from {
     transform: translateX(-100%);
+  }
+}
+
+/* The assistant is writing: three dots that rise in turn (still when motion is reduced;
+   the status text says it anyway). */
+.typing {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+  margin-inline-start: var(--space-2);
+  vertical-align: middle;
+}
+
+.typing span {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .typing span {
+    animation: typing 1.2s ease-in-out infinite;
+  }
+
+  .typing span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .typing span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    transform: none;
+    opacity: 0.35;
+  }
+
+  30% {
+    transform: translateY(-0.3rem);
+    opacity: 1;
   }
 }

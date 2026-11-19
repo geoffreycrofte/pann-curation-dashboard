@@ -1314,7 +1314,7 @@ export default {
       onePage: 'Tout voir sur une page',
       quit: 'Quitter',
       welcome:
-        'Bonjour ! Quelques questions pour préparer votre thème. Rien n’est enregistré avant le récapitulatif, et tout se change ensuite.',
+        'Bonjour ! Quelques questions pour préparer votre thème. Rien n’est enregistré avant le récapitulatif, et tout peut se changer par la suite.',
       q: {
         name: 'Que voulez-vous faire connaître ?',
         url: 'Avez-vous un site ? Je peux le lire pour gagner du temps.',

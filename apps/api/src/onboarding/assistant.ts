@@ -136,6 +136,8 @@ export function onboardingMessages(
   context: OnboardingContext,
   history: OnboardingMessage[],
   siteText: string | null,
+  /** The assistant's last allowed message: it wraps up instead of asking. */
+  lastTurn = false,
 ): Anthropic.Beta.BetaMessageParam[] {
   const intro = [
     `Name: ${context.name}`,
@@ -154,10 +156,17 @@ export function onboardingMessages(
   ]
     .filter((line) => line !== null)
     .join('\n')
-  return [
+  const messages: Anthropic.Beta.BetaMessageParam[] = [
     { role: 'user', content: intro },
     ...history.map((m) => ({ role: m.role, content: m.text }) as Anthropic.Beta.BetaMessageParam),
   ]
+  // Told on the turn itself (the system prompt stays cached): no question left to ask,
+  // or the person would be left with a question they cannot answer.
+  if (lastTurn) {
+    const last = messages[messages.length - 1]!
+    last.content = `${String(last.content)}\n\n[Pann: this is your last message. Do not ask a question: set done to true and wrap up in one or two sentences.]`
+  }
+  return messages
 }
 
 export type AssistantModel = (call: {
@@ -285,7 +294,12 @@ export async function runOnboarding(
   const result = await model({
     apiKey,
     system: onboardingSystemPrompt(session.context),
-    messages: onboardingMessages(session.context, session.messages, siteText),
+    messages: onboardingMessages(
+      session.context,
+      session.messages,
+      siteText,
+      session.messages.filter((m) => m.role === 'assistant').length + 1 >= MAX_QUESTIONS,
+    ),
   })
   if (result.usage) {
     const { error: logError } = await db.from('usage_log').insert({

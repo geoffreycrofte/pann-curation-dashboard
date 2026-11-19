@@ -13,7 +13,7 @@ import { useRoute, useRouter } from 'vue-router'
 import FullScreen from '../components/onboarding/FullScreen.vue'
 import OnboardingRecap from '../components/onboarding/OnboardingRecap.vue'
 import OnboardingThread from '../components/onboarding/OnboardingThread.vue'
-import PanArt from '../components/onboarding/PanArt.vue'
+import HeroProspector from '../components/HeroProspector.vue'
 import { api } from '../lib/api'
 import { provideOnboardingDraft, threadSteps, useOnboardingDraft } from '../lib/onboarding'
 import { useWorkspace } from '../lib/workspace'
@@ -89,9 +89,9 @@ function quit() {
     </template>
     <OnboardingRecap v-else @back="toThread" @restart="restart" @created="clear" />
 
-    <!-- Each answer drops a flake in the pan; the summary turns them into the nugget. -->
+    <!-- The prospector of the public page, his pan catching the gold: decorative. -->
     <template #art>
-      <PanArt :progress="steps.length ? done / steps.length : 0" :complete="mode === 'review'" />
+      <HeroProspector alt="" sizes="22rem" />
     </template>
   </FullScreen>
 </template>
