@@ -2,6 +2,29 @@ import type fr from './fr'
 
 export default {
   app: { name: 'Pann', tagline: 'Make your subject known' },
+  /** Document titles, by route name: detail – page – topic – Pann. */
+  pageTitle: {
+    separator: ' – ',
+    home: 'Today',
+    profile: 'Profile',
+    admin: 'Administration',
+    connections: 'Connections',
+    'oauth-consent': 'Authorize access',
+    login: 'Sign in',
+    'request-access': 'Request access',
+    'new-topic': 'New topic',
+    overview: 'Overview',
+    adjust: 'Adjust with the assistant',
+    board: 'News watch',
+    item: 'News watch',
+    compose: 'Create',
+    series: 'Series',
+    composition: 'Create',
+    calendar: 'Calendar',
+    engagement: 'Conversations',
+    settings: 'Topic settings',
+    'not-found': 'Page not found',
+  },
   toast: { close: 'Close the notification “{text}”' },
   a11y: { skipToContent: 'Skip to content' },
   lang: { label: 'Language', fr: 'Français', en: 'English' },
@@ -352,7 +375,7 @@ export default {
     next: 'Next posts',
     nothingScheduled: 'Nothing scheduled yet.',
     chooseValidated: 'Choose among the validated items',
-    postOn: '{channel} in {lang}',
+    inLangs: ', in {langs}',
     openCalendar: 'Open the calendar',
     created: 'Topic created.',
     collecting:

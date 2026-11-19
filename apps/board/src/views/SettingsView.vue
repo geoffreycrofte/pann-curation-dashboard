@@ -23,6 +23,7 @@ import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { useTopicName } from '../lib/topic-name'
 import { toast } from '../lib/toast'
+import { usePageDetail } from '../lib/page-title'
 
 /**
  * Every setting of a topic, grouped by subject whatever the tool: a tab per subject,
@@ -163,6 +164,9 @@ const { mutate, isLoading } = useMutation({
     message.value = describeError(err.message, t).text
   },
 })
+
+// The document title starts with what this page shows.
+usePageDetail(() => t(`settings.tabs.${tab.value}`))
 </script>
 
 <template>

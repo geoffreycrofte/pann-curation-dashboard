@@ -36,6 +36,7 @@ import { postWarnings } from '../lib/post-checks'
 import { useWorkspace } from '../lib/workspace'
 import { toast } from '../lib/toast'
 import { contentLangName } from '../lib/langs'
+import { usePageDetail } from '../lib/page-title'
 
 const props = defineProps<{ topicId: string; itemId: string }>()
 const { t, d, locale } = useI18n()
@@ -335,6 +336,9 @@ async function savePost(postId: string, text: string) {
   await api.updatePost(props.topicId, postId, text)
   await queryCache.invalidateQueries({ key: key() })
 }
+
+// The document title starts with what this page shows.
+usePageDetail(() => detail.value?.item.title)
 </script>
 
 <template>
