@@ -8,6 +8,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import OverviewChecklist from '../components/OverviewChecklist.vue'
+import TopicStatus from '../components/overview/TopicStatus.vue'
 import TopicSummary from '../components/TopicSummary.vue'
 import { api } from '../lib/api'
 import { contentLangName } from '../lib/langs'
@@ -53,6 +54,7 @@ const formatDate = (value: string) =>
 <template>
   <h1 tabindex="-1">{{ topicName }}</h1>
   <p role="status" class="start" :class="{ empty: !startMessage }">{{ startMessage }}</p>
+  <TopicStatus :topic-id="topicId" />
   <OverviewChecklist :topic-id="topicId" />
   <TopicSummary :topic-id="topicId" />
 

@@ -266,7 +266,9 @@ export interface RewriteInput {
   target: { kind: 'summary'; lang: Lang } | { kind: 'post'; lang: Lang; channel: DraftChannel }
 }
 
-export type TopicPatch = Partial<Pick<Topic, 'monthly_budget_usd' | 'name_fr' | 'name_en'>>
+export type TopicPatch = Partial<
+  Pick<Topic, 'monthly_budget_usd' | 'name_fr' | 'name_en' | 'active'>
+>
 
 export interface Me {
   user: { id: string; email?: string }

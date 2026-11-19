@@ -301,6 +301,28 @@ export default {
     refreshed: 'Account list up to date',
     connectFailed: 'The connection did not complete. You can try again.',
   },
+  topicStatus: {
+    running: 'Running',
+    pausedTitle: 'Paused',
+    pause: 'Pause',
+    resume: 'Resume',
+    pauseEffect:
+      'Paused, Pann no longer collects, sorts, drafts by itself or publishes. Scheduled posts wait for the topic to resume.',
+    resumeEffect:
+      'Nothing is collected or published. On resume, the posts whose slot has passed go out right away.',
+    paused: 'Topic paused',
+    resumed: 'Topic resumed',
+    okLabel: 'Ready:',
+    todoLabel: 'To do:',
+    collect: 'No source | News watch: one source collected | News watch: {n} sources collected',
+    noSources: 'News watch: no source, nothing is collected',
+    listen: 'No search | Conversations: one search | Conversations: {n} searches',
+    noSearches: 'Conversations: no search, nothing is looked for',
+    ai: 'AI connected: sorting and drafting on',
+    noAi: 'AI not connected: no sorting, no drafting',
+    publish: 'No account | Publishing: one account set | Publishing: {n} accounts set',
+    noAccounts: 'Publishing: no account set, posts stay drafts',
+  },
   checklist: {
     compose: 'Write a first post of your own',
     openCompose: 'Open Create',

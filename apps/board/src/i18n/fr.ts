@@ -300,6 +300,28 @@ export default {
     refreshed: 'Liste des comptes à jour',
     connectFailed: 'La connexion n’a pas abouti. Vous pouvez réessayer.',
   },
+  topicStatus: {
+    running: 'En marche',
+    pausedTitle: 'En pause',
+    pause: 'Mettre en pause',
+    resume: 'Reprendre',
+    pauseEffect:
+      'En pause, Pann ne collecte plus, ne trie plus, ne rédige plus de lui-même et ne publie plus. Les posts programmés attendent la reprise.',
+    resumeEffect:
+      'Rien n’est collecté ni publié. À la reprise, les posts dont le créneau est passé partent aussitôt.',
+    paused: 'Thème en pause',
+    resumed: 'Thème repris',
+    okLabel: 'Prêt :',
+    todoLabel: 'À faire :',
+    collect: 'Aucune source | Veille : une source collectée | Veille : {n} sources collectées',
+    noSources: 'Veille : aucune source, rien n’est collecté',
+    listen: 'Aucune recherche | Conversations : une recherche | Conversations : {n} recherches',
+    noSearches: 'Conversations : aucune recherche, rien n’est cherché',
+    ai: 'IA reliée : tri et rédaction en marche',
+    noAi: 'IA non reliée : ni tri ni rédaction',
+    publish: 'Aucun compte | Publication : un compte relié | Publication : {n} comptes reliés',
+    noAccounts: 'Publication : aucun compte relié, les posts restent en brouillon',
+  },
   checklist: {
     compose: 'Écrire un premier post à vous',
     openCompose: 'Ouvrir la Création',
