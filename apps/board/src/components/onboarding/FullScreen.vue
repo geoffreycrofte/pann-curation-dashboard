@@ -102,17 +102,10 @@ const { t } = useI18n()
     bottom: 0;
     z-index: 0;
     display: block;
-    width: calc((100vw - 840px) / 2 - var(--space-6));
-    height: min(70vh, 40rem);
-    overflow: hidden;
+    /* The free margin beside the 840px column, padded, at most 22rem wide. */
+    width: min(calc((100vw - 840px) / 2 - var(--space-8)), 22rem);
+    margin: 0 var(--space-6) var(--space-6) 0;
     pointer-events: none;
-  }
-
-  .art :deep(.pan-art) {
-    position: absolute;
-    bottom: 6vh;
-    left: var(--space-4);
-    width: max(130%, 22rem);
   }
 }
 

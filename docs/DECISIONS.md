@@ -454,3 +454,13 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Comment.** Un profil Zernio par espace (`externalId` = id de l'espace, nom « Pann <id> » car les noms sont uniques), créé à la première connexion. La clé de Pann ne sert qu'aux tâches : la personne demande une connexion (fonction `request_zernio_platform`, membres seulement, espace activé), une tâche prépare le lien de Zernio (`GET /v1/connect/{platform}`, mode standard : Zernio héberge le choix de la Page ou de l'organisation, écran d'accueil au nom de Pann, droits `posting,comments` pour les premiers commentaires), le board y envoie la personne, qui revient sur Connexions. L'adresse de retour est construite par l'API, jamais reçue du navigateur. Au retour, une tâche liste les comptes du profil (`GET /v1/accounts?profileId=`). Vérifié sur docs.zernio.com le 2026-11-19.
 
 **Isolement.** La clé de Pann atteint tous les profils : la tâche de publication n'accepte qu'un compte de la liste du profil de l'espace ; un compte d'un autre espace mis dans les réglages d'un thème est refusé (`channel_not_configured`). Table `zernio_platform_links` (lecture : membres ; écriture : fonctions et tâches).
+
+## 2026-11-19 : Thème en pause, identité visuelle par type de contenu
+
+**Pause.** `topics.active` (déjà en base) se règle depuis l'Aperçu, qui montre aussi ce qui tourne (sources de veille, recherches de conversations, clé d'IA, comptes de publication). Un thème en pause ne collecte plus, ne trie plus, ne rédige plus de lui-même, et `claim_due_posts` ignore ses posts : ils attendent la reprise au lieu d'être perdus.
+
+**Types de contenu.** Trois couleurs (`--color-kind-publication`, `-conversation`, `-creation`, chacune avec sa version `-soft`), toujours doublées d'une icône et d'un libellé : la couleur seule ne porte jamais l'information. `ContentCard` (liste ou compacte, bord coloré, icône ronde, type en petites capitales) sert aux idées, brouillons et publications à venir ; les éléments du calendrier, de la file de la Création et les conversations reprennent le même bord et la même icône. `StatTile` remplace les compteurs de l'Aperçu (toute la tuile est un lien).
+
+**Profondeur.** Deux niveaux d'ombre (`--shadow-card`, `--shadow-raised` au survol) ; les boutons n'ont plus de soulignement et gagnent une taille `small`.
+
+**Icônes.** Tabler Icons (`@tabler/icons-vue`, version figée) via `components/Icon.vue`, qui n'expose qu'une liste choisie (taille du paquet, cohérence). Toujours décoratives (`aria-hidden`) : le texte du bouton reste le nom accessible.

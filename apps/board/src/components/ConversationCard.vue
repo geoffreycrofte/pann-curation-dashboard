@@ -128,6 +128,7 @@ const actions = computed(() =>
 
 <style scoped>
 .conversation {
+  border-inline-start: 4px solid var(--color-kind-conversation);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-4);

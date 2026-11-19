@@ -199,7 +199,10 @@ onBeforeUnmount(stopTimers)
         :class="{ 'visually-hidden': !pending || startError }"
         role="status"
       >
-        <template v-if="pending && !startError">{{ t('onboarding.chat.writing') }}</template>
+        <template v-if="pending && !startError">
+          {{ t('onboarding.chat.writing') }}
+          <span class="typing" aria-hidden="true"><span></span><span></span><span></span></span>
+        </template>
       </p>
 
       <div v-if="startError || failed" class="problem" role="alert">

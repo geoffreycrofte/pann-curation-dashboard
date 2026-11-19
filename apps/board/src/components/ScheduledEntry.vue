@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import type { QueueItem } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { contentLangName } from '../lib/langs'
+import Icon from './Icon.vue'
 
 const props = defineProps<{
   topicId: string
@@ -22,6 +23,7 @@ const failed = computed(() => props.entry.posts.filter((p) => p.status === 'fail
 <template>
   <article class="card entry" :data-compact="compact || undefined">
     <p class="time">
+      <Icon name="news" :size="16" class="kind" />
       <time :datetime="entry.publish_at">{{ time }}</time>
     </p>
     <h4 class="title">
@@ -87,7 +89,14 @@ const failed = computed(() => props.entry.posts.filter((p) => p.status === 'fail
   margin: 0;
 }
 
+.entry {
+  border-inline-start: 4px solid var(--color-kind-publication);
+}
+
 .time {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   font-weight: 750;
   font-variant-numeric: tabular-nums;
 }
@@ -120,6 +129,10 @@ const failed = computed(() => props.entry.posts.filter((p) => p.status === 'fail
 .entry[data-compact] .error {
   font-size: 0.8125rem;
   overflow-wrap: anywhere;
+}
+
+.kind {
+  color: var(--color-kind-publication);
 }
 
 .badge abbr {

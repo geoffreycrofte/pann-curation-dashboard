@@ -8,6 +8,7 @@
 import { useQuery, useQueryCache } from '@pinia/colada'
 import { onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Icon from './Icon.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api, type ZernioPlatformLink } from '../lib/api'
 import { describeError } from '../lib/errors'
@@ -119,12 +120,15 @@ watch(
 
     <div class="actions">
       <button type="button" class="button" :disabled="!!waitingFor" @click="connect('linkedin')">
+        <Icon name="linkedin" />
         {{ t('zernioPlatform.connectLinkedin') }}
       </button>
       <button type="button" class="button" :disabled="!!waitingFor" @click="connect('facebook')">
+        <Icon name="facebook" />
         {{ t('zernioPlatform.connectFacebook') }}
       </button>
       <button type="button" class="button" :disabled="!!waitingFor" @click="refresh">
+        <Icon name="refresh" />
         {{ t('zernioPlatform.refresh') }}
       </button>
     </div>

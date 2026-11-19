@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { api } from '../../lib/api'
 import { describeError } from '../../lib/errors'
+import Icon from '../Icon.vue'
 
 const props = defineProps<{ topicId: string; title: string; url: string; notes?: string }>()
 const { t } = useI18n()
@@ -50,10 +51,12 @@ async function start() {
     <button
       type="button"
       class="button"
+      data-size="small"
       :disabled="busy"
       :aria-label="t('compose.ideas.startLabel', { title })"
       @click="start"
     >
+      <Icon name="writing" />
       {{ t('compose.ideas.start') }}
     </button>
     <span v-if="error" class="error" role="alert">{{ error }}</span>

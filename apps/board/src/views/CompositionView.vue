@@ -19,6 +19,7 @@ import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import FirstCommentEditor from '../components/FirstCommentEditor.vue'
+import Icon from '../components/Icon.vue'
 import TextSaver from '../components/TextSaver.vue'
 import CompositionImages from '../components/compose/CompositionImages.vue'
 import { api, type ComposeModeName, type ComposeSource, type Composition } from '../lib/api'
@@ -350,6 +351,7 @@ async function remove() {
             :disabled="composition.research_status === 'pending' || !form.subject.trim()"
             @click="research"
           >
+            <Icon name="search" />
             {{ form.sources.length ? t('compose.search.again') : t('compose.search.run') }}
           </button>
         </div>
@@ -443,6 +445,7 @@ async function remove() {
           :disabled="composition.draft_status === 'pending'"
           @click="draft"
         >
+          <Icon name="sparkles" />
           {{ posts.length ? t('compose.posts.redraft') : t('compose.posts.draft') }}
         </button>
       </div>
@@ -524,6 +527,7 @@ async function remove() {
           :disabled="altMissing.length > 0"
           @click="schedule('next_slot')"
         >
+          <Icon name="clock" />
           {{ t('compose.publish.nextSlot') }}
         </button>
         <button
@@ -532,6 +536,7 @@ async function remove() {
           :disabled="altMissing.length > 0"
           @click="schedule('now')"
         >
+          <Icon name="send" />
           {{ t('compose.publish.now') }}
         </button>
         <button
@@ -548,6 +553,7 @@ async function remove() {
 
     <div v-if="composition.status === 'draft'" class="block">
       <button type="button" class="button" data-variant="danger" @click="remove">
+        <Icon name="trash" />
         {{ t('compose.delete') }}
       </button>
     </div>

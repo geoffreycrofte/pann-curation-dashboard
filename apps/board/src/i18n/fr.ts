@@ -300,6 +300,29 @@ export default {
     refreshed: 'Liste des comptes à jour',
     connectFailed: 'La connexion n’a pas abouti. Vous pouvez réessayer.',
   },
+  topicStatus: {
+    running: 'En marche',
+    pausedTitle: 'En pause',
+    pause: 'Mettre en pause',
+    resume: 'Reprendre',
+    pauseEffect:
+      'En pause, Pann ne collecte plus, ne trie plus, ne rédige plus de lui-même et ne publie plus. Les posts programmés attendent la reprise.',
+    resumeEffect:
+      'Rien n’est collecté ni publié. À la reprise, les posts dont le créneau est passé partent aussitôt.',
+    paused: 'Thème en pause',
+    resumed: 'Thème repris',
+    okLabel: 'Prêt :',
+    todoLabel: 'À faire :',
+    collect: 'Aucune source | Veille : une source collectée | Veille : {n} sources collectées',
+    noSources: 'Veille : aucune source, rien n’est collecté',
+    listen: 'Aucune recherche | Conversations : une recherche | Conversations : {n} recherches',
+    noSearches: 'Conversations : aucune recherche, rien n’est cherché',
+    ai: 'IA reliée : tri et rédaction en marche',
+    noAi: 'IA non reliée : ni tri ni rédaction',
+    publish: 'Aucun compte | Publication : un compte relié | Publication : {n} comptes reliés',
+    noAccounts: 'Publication : aucun compte relié, les posts restent en brouillon',
+  },
+  contentKinds: { publication: 'Publication', conversation: 'Conversation', creation: 'Création' },
   checklist: {
     compose: 'Écrire un premier post à vous',
     openCompose: 'Ouvrir la Création',
@@ -338,7 +361,6 @@ export default {
     heading: 'Calendrier : {topic}',
     tabsLabel: 'Vues du calendrier',
     tabs: { scheduled: 'Programmés', history: 'Historique', newsletter: 'Newsletter' },
-    compose: 'Création',
   },
   profile: {
     title: 'Profil',
@@ -804,7 +826,7 @@ export default {
     capHint: 'Tous espaces confondus, par mois civil. Au-delà, Pann n’utilise plus ses clés.',
     emailFrom: 'Expéditeur des e-mails du service',
     emailFromHint:
-      'Nom et adresse sur un domaine vérifié dans Resend, par exemple « Pann <noreply@exemple.org> ».',
+      "Nom et adresse sur un domaine vérifié dans Resend, par exemple « Pann <noreply{'@'}exemple.org> ».",
     requestsTitle: 'Demandes d’accès',
     requestsIntro:
       'Envoyées depuis la page de connexion, et transmises par e-mail aux administrateurs. L’invitation elle-même se fait dans Supabase (Authentication, Invite user).',
@@ -1000,7 +1022,7 @@ export default {
       },
     },
     disclosure: 'Mention de votre lien avec le produit',
-    disclosurePlaceholder: 'Exemple : Je suis le créateur de CheckFox.',
+    disclosurePlaceholder: 'Exemple : J’ai créé cet outil.',
     disclosureHint:
       'Ajoutée chaque fois que le produit est cité dans une réponse, pour que votre lien avec lui soit clair.',
   },
@@ -1315,7 +1337,7 @@ export default {
       onePage: 'Tout voir sur une page',
       quit: 'Quitter',
       welcome:
-        'Bonjour ! Quelques questions pour préparer votre thème. Rien n’est enregistré avant le récapitulatif, et tout se change ensuite.',
+        'Bonjour ! Quelques questions pour préparer votre thème. Rien n’est enregistré avant le récapitulatif, et tout peut se changer par la suite.',
       q: {
         name: 'Que voulez-vous faire connaître ?',
         url: 'Avez-vous un site ? Je peux le lire pour gagner du temps.',
@@ -1595,10 +1617,10 @@ export default {
       newsletter: 'Newsletter',
       feed: 'Flux publics',
       conversations: 'Conversations',
+      compose: 'Création',
       budget: 'Budget',
     },
     curationSources: 'Sources de la veille',
-    engagementSources: 'Sources des conversations',
     criteria: 'Critères de pertinence',
     criteriaHint:
       'Décrivez ce qui rend un élément utile pour ce thème : sujets, normes, publics, ce qu’il faut écarter. L’IA s’en sert pour noter chaque élément.',
@@ -1733,7 +1755,7 @@ export default {
       'La clé du service se règle dans Connexions. SendFox envoie avec l’expéditeur par défaut de votre compte.',
     feed: 'Flux public',
     feedHint:
-      'Flux RSS et JSON des éléments validés, avec leur résumé, un par langue. À brancher sur un lecteur de flux ou sur une page de veille (CheckFox, par exemple).',
+      'Flux RSS et JSON des éléments validés, avec leur résumé, un par langue. À brancher sur un lecteur de flux ou sur une page de veille de votre site.',
     feedOff: 'Les flux sont désactivés : aucune adresse publique.',
     feedEnable: 'Activer les flux publics',
     feedDisable: 'Désactiver les flux',
@@ -1755,6 +1777,6 @@ export default {
     feedTitleHint: 'Laissé vide, le nom du thème est utilisé.',
     feedDescription: 'Description du flux en {lang}',
     feedSiteUrl: 'Page qui présente la veille',
-    feedSiteUrlHint: 'Facultatif. Adresse complète, par exemple https://checkfox.eu/veille.',
+    feedSiteUrlHint: 'Facultatif. Adresse complète, par exemple https://exemple.org/veille.',
   },
 }

@@ -88,6 +88,8 @@ const topicPatch = z
     monthly_budget_usd: z.number().min(0).max(10_000),
     name_fr: topicName,
     name_en: topicName,
+    /** false pauses the topic: nothing is collected, sorted, drafted by itself or published. */
+    active: z.boolean(),
   })
   .partial()
 

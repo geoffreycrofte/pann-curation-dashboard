@@ -64,6 +64,14 @@ const PAIRS = [
   ['color-ai-violet', 'color-surface', 3],
   ['color-ai-teal', 'color-bg', 3],
   ['color-ai-teal', 'color-surface', 3],
+  // Content types: accents (icons, edges) and soft backgrounds.
+  ...['publication', 'conversation', 'creation'].flatMap((kind) => [
+    [`color-kind-${kind}`, 'color-surface', 3],
+    [`color-kind-${kind}`, 'color-bg', 3],
+    [`color-kind-${kind}`, `color-kind-${kind}-soft`, 3],
+    ['color-text', `color-kind-${kind}-soft`, 4.5],
+    ['color-text-muted', `color-kind-${kind}-soft`, 4.5],
+  ]),
   // Toasts.
   ['color-on-success', 'color-success-fill', 4.5],
   // Marketing page.

@@ -2,6 +2,7 @@
 import { computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LandingFigure from '../components/LandingFigure.vue'
+import HeroProspector from '../components/HeroProspector.vue'
 import PannMark from '../components/PannMark.vue'
 import { setLang } from '../i18n'
 import { ILLUSTRATIONS } from '../lib/landing-images'
@@ -77,17 +78,13 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
           </div>
           <p class="invite">{{ t('landing.hero.invite') }}</p>
         </div>
-        <LandingFigure
+        <HeroProspector
           class="hero-figure"
-          :image="ILLUSTRATIONS.hero"
           on-scene
           :alt="t('landing.hero.alt')"
           sizes="(min-width: 56rem) 34rem, 80vw"
           eager
-        >
-          <span class="sparkle" aria-hidden="true"></span>
-          <span class="grains" aria-hidden="true"><i></i><i></i><i></i></span>
-        </LandingFigure>
+        />
       </section>
 
       <!-- The problem, on ink. -->
@@ -381,96 +378,6 @@ h1 {
 
   width: min(100%, 32rem);
   justify-self: center;
-}
-
-/* The nugget catches the light; grains of sand fall from the rim of the pan. */
-.sparkle {
-  position: absolute;
-  top: 53.5%;
-  left: 63.5%;
-  width: 9%;
-  aspect-ratio: 1;
-  background:
-    radial-gradient(circle, #fff 0 12%, transparent 13%),
-    conic-gradient(
-      from 45deg,
-      transparent 0 20deg,
-      rgb(255 255 255 / 0.95) 45deg,
-      transparent 70deg 110deg,
-      rgb(255 255 255 / 0.95) 135deg,
-      transparent 160deg 200deg,
-      rgb(255 255 255 / 0.95) 225deg,
-      transparent 250deg 290deg,
-      rgb(255 255 255 / 0.95) 315deg,
-      transparent 340deg
-    );
-  border-radius: 50%;
-  mask: radial-gradient(circle, #000 35%, transparent 70%);
-  opacity: 0;
-  animation: twinkle 3.2s ease-in-out 0.6s infinite;
-}
-
-.grains {
-  position: absolute;
-  top: 63.5%;
-  left: 69%;
-  width: 6%;
-  height: 10%;
-}
-
-.grains i {
-  position: absolute;
-  top: 0;
-  width: 0.3rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #b98f4e;
-  opacity: 0;
-  animation: fall 2.4s ease-in infinite;
-}
-
-.grains i:nth-child(1) {
-  left: 10%;
-}
-
-.grains i:nth-child(2) {
-  left: 45%;
-  animation-delay: 0.8s;
-}
-
-.grains i:nth-child(3) {
-  left: 75%;
-  animation-delay: 1.6s;
-}
-
-@keyframes twinkle {
-  0%,
-  55%,
-  100% {
-    opacity: 0;
-    transform: scale(0.4) rotate(0deg);
-  }
-
-  70% {
-    opacity: 1;
-    transform: scale(1) rotate(25deg);
-  }
-}
-
-@keyframes fall {
-  0% {
-    opacity: 0;
-    transform: translateY(0);
-  }
-
-  15% {
-    opacity: 0.9;
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(5rem);
-  }
 }
 
 /* ---------------------------------------------------------------- bands */
@@ -910,14 +817,8 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sparkle,
-  .grains,
   .drift :deep(img) {
     animation: none;
-  }
-
-  .grains {
-    display: none;
   }
 
   .step::after,

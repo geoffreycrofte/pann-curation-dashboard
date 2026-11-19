@@ -58,9 +58,6 @@ defineExpose({ focus: () => document.getElementById(`${id}-0`)?.focus() })
 <style scoped>
 .choices {
   min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
 }
 
 .body {

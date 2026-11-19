@@ -5,6 +5,7 @@
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import StatTile from './StatTile.vue'
 import { useTopicSummary } from '../lib/topic-summary'
 
 const props = defineProps<{ topicId: string }>()
@@ -20,31 +21,40 @@ const formatDate = (value: string) =>
 <template>
   <ul class="figures">
     <li v-if="modules?.curation">
-      <RouterLink :to="{ name: 'board', params: { topicId }, query: { status: 'new' } }">
-        <span class="number">{{ toSort }}</span>
-        {{ t('summary.toSort', toSort) }}
-      </RouterLink>
+      <StatTile
+        icon="inbox"
+        tone="publication"
+        :value="toSort"
+        :label="t('summary.toSort', toSort)"
+        :to="{ name: 'board', params: { topicId }, query: { status: 'new' } }"
+      />
     </li>
     <li v-if="modules?.engagement">
-      <RouterLink :to="{ name: 'engagement', params: { topicId }, query: { status: 'new' } }">
-        <span class="number">{{ toReview }}</span>
-        {{ t('summary.toReview', toReview) }}
-      </RouterLink>
+      <StatTile
+        icon="messages"
+        tone="conversation"
+        :value="toReview"
+        :label="t('summary.toReview', toReview)"
+        :to="{ name: 'engagement', params: { topicId }, query: { status: 'new' } }"
+      />
     </li>
     <li>
-      <RouterLink :to="{ name: 'calendar', params: { topicId } }">
-        <span class="number">{{ upcoming.length }}</span>
-        {{ t('summary.upcoming', upcoming.length) }}
-      </RouterLink>
-      <span v-if="next" class="hint next">
-        {{ t('summary.next', { date: formatDate(next.publish_at) }) }}
-      </span>
+      <StatTile
+        icon="calendar"
+        :value="upcoming.length"
+        :label="t('summary.upcoming', upcoming.length)"
+        :hint="next ? t('summary.next', { date: formatDate(next.publish_at) }) : undefined"
+        :to="{ name: 'calendar', params: { topicId } }"
+      />
     </li>
-    <li v-if="failed.length" class="failed">
-      <RouterLink :to="{ name: 'calendar', params: { topicId }, query: { tab: 'history' } }">
-        <span class="number">{{ failed.length }}</span>
-        {{ t('summary.failed', failed.length) }}
-      </RouterLink>
+    <li v-if="failed.length">
+      <StatTile
+        icon="alert-circle"
+        tone="danger"
+        :value="failed.length"
+        :label="t('summary.failed', failed.length)"
+        :to="{ name: 'calendar', params: { topicId }, query: { tab: 'history' } }"
+      />
     </li>
   </ul>
 </template>
@@ -52,7 +62,7 @@ const formatDate = (value: string) =>
 <style scoped>
 .figures {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(12rem, 100%), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
   gap: var(--space-3);
   margin: 0;
   padding: 0;
@@ -61,38 +71,5 @@ const formatDate = (value: string) =>
 
 .figures li {
   display: grid;
-  gap: var(--space-1);
-}
-
-.figures a {
-  display: grid;
-  align-content: start;
-  gap: var(--space-1);
-  min-height: 2.75rem;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.figures a:hover {
-  border-color: var(--color-text);
-}
-
-.number {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.failed a {
-  border-color: var(--color-danger);
-}
-
-.next {
-  padding: 0 var(--space-1);
 }
 </style>
