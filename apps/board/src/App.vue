@@ -443,6 +443,8 @@ nav ul {
 main {
   width: 100%;
   max-width: 72rem;
+  /* Centred in the space the sidebar leaves. */
+  margin-inline: auto;
   padding: var(--space-8) clamp(var(--space-4), 4vw, 3.5rem) 4rem;
 }
 
