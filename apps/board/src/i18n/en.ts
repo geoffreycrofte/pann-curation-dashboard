@@ -1035,6 +1035,35 @@ export default {
     disclosureHint:
       'Added each time the product is mentioned in a reply, so that your link with it is clear.',
   },
+  /** Empty state of the lists to sort: collect now, add sources, or resume the topic. */
+  collect: {
+    run: 'Collect now',
+    running: 'Collecting…',
+    manageSources: 'Manage sources',
+    addSources: 'Add sources',
+    toOverview: 'Resume from the overview',
+    paused: 'This topic is paused: nothing is collected.',
+    noSources: {
+      curation: 'No news watch source: add some so that Pann collects items to sort.',
+      engagement: 'No conversation source: add some so that Pann finds conversations to help in.',
+    },
+    empty: {
+      curation:
+        'Nothing to sort yet. Pann collects your sources regularly; you can also collect now.',
+      engagement:
+        'No conversation to review yet. Pann searches regularly; you can also collect now.',
+    },
+    done: {
+      curation:
+        'Collection done: no new item. | Collection done: {count} new item. | Collection done: {count} new items.',
+      engagement:
+        'Collection done: no new conversation. | Collection done: {count} new conversation. | Collection done: {count} new conversations.',
+    },
+    doneWithErrors:
+      'Collection done, but {failed} source failed: see the sources for details. | Collection done, but {failed} sources failed: see the sources for details.',
+    slow: 'The collection takes longer than expected: new items will show up in the list.',
+    failedToStart: 'The collection could not start. Try again in a moment.',
+  },
   board: {
     heading: 'News watch: {topic}',
     openDetail: 'Details and drafts',
@@ -1048,9 +1077,6 @@ export default {
     noTopic: 'No topic yet.',
     statusFilter: 'Filter by status',
     empty: 'Nothing in this list.',
-    emptyNew:
-      'Nothing new for now. Pann collects your sources regularly; add some or run a collection.',
-    emptyNewAction: 'Manage the sources',
     loading: 'Loading…',
     loadError: 'Loading error: {message}',
     relevance: 'Relevance: {score} out of 100',
@@ -1496,7 +1522,6 @@ export default {
     },
     statusChanged: '“{title}”: {status}.',
     empty: {
-      new: 'No conversation to review. Add sources or run a collection.',
       validated: 'No conversation to reply to.',
       rejected: 'No dismissed conversation.',
       archived: 'No conversation archived by the triage.',

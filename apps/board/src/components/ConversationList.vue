@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
+import CollectNow from './CollectNow.vue'
 import ConversationCard from './ConversationCard.vue'
 
 const props = defineProps<{ topicId: string; status: ItemTopicStatus }>()
@@ -53,7 +54,13 @@ const { mutate, isLoading } = useMutation({
   <p v-if="isPending" role="status">{{ t('board.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
   <div v-else ref="listEl" tabindex="-1">
-    <p v-if="!conversations?.length">{{ t(`engagement.empty.${status}`) }}</p>
+    <CollectNow
+      v-if="!conversations?.length && status === 'new'"
+      :topic-id="topicId"
+      module="engagement"
+      @announce="emit('announce', $event)"
+    />
+    <p v-else-if="!conversations?.length">{{ t(`engagement.empty.${status}`) }}</p>
     <ul v-else class="list">
       <li v-for="conversation in conversations" :key="conversation.item_id">
         <ConversationCard
