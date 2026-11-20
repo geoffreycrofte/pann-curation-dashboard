@@ -497,6 +497,9 @@ export const topics = new Hono<AppEnv>()
       .eq('status', status)
       .order('relevance_score', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
+      // Items of one collection share created_at (one transaction): a unique last key keeps
+      // ties in a stable order, across refreshes and pages.
+      .order('item_id')
       .range(offset, offset + limit - 1)
       .returns<ConversationRow[]>()
     if (error) throw error
@@ -537,6 +540,9 @@ export const topics = new Hono<AppEnv>()
     const { data, error } = await request
       .order('relevance_score', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
+      // Items of one collection share created_at (one transaction): a unique last key keeps
+      // ties in a stable order, across refreshes and pages.
+      .order('item_id')
       .range(offset, offset + limit - 1)
     if (error) throw error
     return c.json(data)

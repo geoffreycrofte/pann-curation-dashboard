@@ -30,11 +30,6 @@ Décidée le 2026-11-16, arbitrée le 2026-11-17 : **tout d'un coup**, sans ver
 - **Streak de publication** : compter les semaines d'affilée avec au moins une publication, l'afficher, et prévenir quand la semaine en cours n'a encore rien de programmé (« vous êtes sur le point de casser votre streak, choisissez des éléments à publier »). Préciser le canal de la notification (dans le board, par e-mail).
 - **Pause de la collecte** : réglage « au-delà de N éléments dans À trier, Pann se met en pause », pour ne pas accumuler plus qu'on ne peut trier (et ne pas payer le tri par IA pour rien). Reprise automatique sous le seuil.
 
-## À corriger
-
-- **Ordre instable des listes** : des éléments validés ou rejetés semblent changer de place dans les listes du tri. Trouver un ordre stable (clé de tri secondaire unique, par exemple date puis identifiant) et vérifier ce que fait le rafraîchissement après une action.
-- **Onglets et filtres qui défilent** : masquer la barre de défilement horizontale et indiquer le débordement par un fondu à gauche ou à droite, sans perdre l'accès au clavier ni la visibilité de l'onglet courant.
-
 ## Déjà évoqué
 
 - **Doublons** : URL canonique de la page, normalisation (AMP, `m.`, `index.html`), regroupement par sujet au tri (branche prévue `feat/dedup`).
