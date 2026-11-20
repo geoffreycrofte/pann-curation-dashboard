@@ -468,6 +468,9 @@ a.menu-item {
   /* Positioned: hidden helper texts (absolute) stay inside the scrolling row. */
   position: relative;
   overflow-x: auto;
+  /* A row that scrolls sideways would otherwise scroll vertically too (overflow-y
+   * computes to auto): nothing may stick out below, or a scrollbar shows. */
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   scroll-padding-inline: var(--space-4);
   scrollbar-width: thin;
@@ -485,7 +488,6 @@ a.menu-item {
 .subtab {
   white-space: nowrap;
   min-height: 2.75rem;
-  margin-bottom: -1px;
   padding: var(--space-2) var(--space-4);
   border: 0;
   border-bottom: 4px solid transparent;
