@@ -922,6 +922,12 @@ export default {
     confirmNowTitle: 'Publier maintenant ?',
     confirmNowText:
       'Les posts partent tout de suite sur les comptes choisis. Une fois publié, un post ne peut pas être retiré depuis Pann.',
+    confirmScheduleTitle: 'Programmer au prochain créneau ?',
+    confirmRetryTitle: 'Programmer de nouveau les posts en échec ?',
+    confirmScheduleText:
+      'Les posts rejoignent la file et partent au prochain créneau libre. D’ici là, vous pouvez les retirer de la file.',
+    confirmSchedule: 'Programmer',
+    quickLabel: 'Diffuser cet élément',
     scheduled: 'Programmé le {date}.',
     unscheduled: 'Retiré de la file : les posts redeviennent des brouillons.',
     publishing: 'Publication demandée : le statut se met à jour dans quelques instants.',

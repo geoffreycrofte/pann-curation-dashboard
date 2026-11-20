@@ -910,6 +910,12 @@ export default {
     confirmNowTitle: 'Publish now?',
     confirmNowText:
       'The posts go out right away on the chosen accounts. Once published, a post cannot be removed from Pann.',
+    confirmScheduleTitle: 'Schedule on the next slot?',
+    confirmRetryTitle: 'Schedule the failed posts again?',
+    confirmScheduleText:
+      'The posts join the queue and go out on the next free slot. Until then, you can remove them from the queue.',
+    confirmSchedule: 'Schedule',
+    quickLabel: 'Publish this item',
     scheduled: 'Scheduled for {date}.',
     unscheduled: 'Removed from the queue: the posts are drafts again.',
     publishing: 'Publication requested: the status updates in a few moments.',

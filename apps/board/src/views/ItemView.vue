@@ -29,6 +29,7 @@ import { useI18n } from 'vue-i18n'
 import FirstCommentEditor from '../components/FirstCommentEditor.vue'
 import ComposeFromIdea from '../components/compose/ComposeFromIdea.vue'
 import KindSelect from '../components/KindSelect.vue'
+import QuickPublish from '../components/QuickPublish.vue'
 import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
 import { api, type RewriteInput } from '../lib/api'
 import { describeError } from '../lib/errors'
@@ -259,6 +260,19 @@ const diffusionError = ref(false)
 function diffusionFailed(err: Error) {
   diffusionError.value = true
   diffusionMessage.value = describeError(err.message, t).text
+  // Asked from the floating island: bring the error into view, with its context.
+  if (fromIsland) diffusionHeading.value?.scrollIntoView({ block: 'start' })
+  fromIsland = false
+}
+
+/** Diffusion section and its heading: the floating island hides over the one, focuses the other. */
+const diffusionSection = ref<HTMLElement | null>(null)
+const diffusionHeading = ref<HTMLElement | null>(null)
+/** Asked from the floating island: the outcome is far below, a toast shows it too. */
+let fromIsland = false
+function quickPublish(when: 'next_slot' | 'now') {
+  fromIsland = true
+  schedule(when)
 }
 
 const { mutate: schedule, isLoading: scheduling } = useMutation({
@@ -272,6 +286,8 @@ const { mutate: schedule, isLoading: scheduling } = useMutation({
     } else {
       diffusionMessage.value = t('diffusion.scheduled', { date: formatDate(result.publish_at) })
     }
+    if (fromIsland) toast(diffusionMessage.value)
+    fromIsland = false
     await queryCache.invalidateQueries({ key: key() })
     await queryCache.invalidateQueries({ key: ['queue', props.topicId] })
     await queryCache.invalidateQueries({ key: ['items', props.topicId] })
@@ -656,8 +672,13 @@ usePageDetail(() => detail.value?.item.title)
       </section>
     </section>
 
-    <section v-if="detail.posts.length" class="block" aria-labelledby="diffusion">
-      <h2 id="diffusion">{{ t('diffusion.title') }}</h2>
+    <section
+      v-if="detail.posts.length"
+      ref="diffusionSection"
+      class="block"
+      aria-labelledby="diffusion"
+    >
+      <h2 id="diffusion" ref="diffusionHeading" tabindex="-1">{{ t('diffusion.title') }}</h2>
       <p class="hint">{{ t('diffusion.intro') }}</p>
       <p v-if="detail.publish_at && queued.length">
         {{ t('diffusion.scheduledFor', { date: formatDate(detail.publish_at) }) }}
@@ -717,6 +738,16 @@ usePageDetail(() => detail.value?.item.title)
     <p v-else-if="detail.draft_status !== 'pending'" class="hint empty-note">
       {{ t('draft.empty') }}
     </p>
+    <QuickPublish
+      v-if="canDiffuse && hasChannels"
+      :can-schedule="toSchedule.length > 0"
+      :retry="onlyFailed"
+      :can-publish-now="toSchedule.length > 0 || canUnschedule"
+      :busy="scheduling"
+      :target="diffusionSection"
+      :fallback-focus="diffusionHeading"
+      @confirm="quickPublish"
+    />
   </template>
 </template>
 
