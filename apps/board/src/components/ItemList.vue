@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
+import CollectNow from './CollectNow.vue'
 import ItemCard from './ItemCard.vue'
 
 const props = defineProps<{ topicId: string; status: ItemTopicStatus }>()
@@ -78,12 +79,12 @@ const { mutate: excludeSite, isLoading: excluding } = useMutation({
   <p v-if="isPending" role="status">{{ t('board.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
   <div v-else ref="listEl" tabindex="-1" class="list-wrapper">
-    <p v-if="!items?.length && status === 'new'">
-      {{ t('board.emptyNew') }}
-      <RouterLink :to="{ name: 'settings', params: { topicId }, query: { tab: 'sources' } }">{{
-        t('board.emptyNewAction')
-      }}</RouterLink>
-    </p>
+    <CollectNow
+      v-if="!items?.length && status === 'new'"
+      :topic-id="topicId"
+      module="curation"
+      @announce="emit('announce', $event)"
+    />
     <p v-else-if="!items?.length">{{ t('board.empty') }}</p>
     <ul v-else class="list">
       <li v-for="item in items" :key="item.item_id">

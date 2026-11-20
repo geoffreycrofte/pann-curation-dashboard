@@ -922,6 +922,12 @@ export default {
     confirmNowTitle: 'Publier maintenant ?',
     confirmNowText:
       'Les posts partent tout de suite sur les comptes choisis. Une fois publié, un post ne peut pas être retiré depuis Pann.',
+    confirmScheduleTitle: 'Programmer au prochain créneau ?',
+    confirmRetryTitle: 'Programmer de nouveau les posts en échec ?',
+    confirmScheduleText:
+      'Les posts rejoignent la file et partent au prochain créneau libre. D’ici là, vous pouvez les retirer de la file.',
+    confirmSchedule: 'Programmer',
+    quickLabel: 'Diffuser cet élément',
     scheduled: 'Programmé le {date}.',
     unscheduled: 'Retiré de la file : les posts redeviennent des brouillons.',
     publishing: 'Publication demandée : le statut se met à jour dans quelques instants.',
@@ -1049,6 +1055,37 @@ export default {
     disclosureHint:
       'Ajoutée chaque fois que le produit est cité dans une réponse, pour que votre lien avec lui soit clair.',
   },
+  /** Empty state of the lists to sort: collect now, add sources, or resume the topic. */
+  collect: {
+    run: 'Lancer une collecte',
+    running: 'Collecte en cours…',
+    manageSources: 'Gérer les sources',
+    addSources: 'Ajouter des sources',
+    toOverview: 'Reprendre depuis l’aperçu',
+    paused: 'Ce thème est en pause : rien n’est collecté.',
+    noSources: {
+      curation:
+        'Aucune source pour la veille : ajoutez-en pour que Pann collecte des éléments à trier.',
+      engagement:
+        'Aucune source de conversations : ajoutez-en pour que Pann cherche des conversations où aider.',
+    },
+    empty: {
+      curation:
+        'Rien à trier pour l’instant. Pann collecte vos sources régulièrement ; vous pouvez aussi lancer une collecte maintenant.',
+      engagement:
+        'Aucune conversation à examiner pour l’instant. Pann cherche régulièrement ; vous pouvez aussi lancer une collecte maintenant.',
+    },
+    done: {
+      curation:
+        'Collecte terminée : aucun nouvel élément. | Collecte terminée : {count} nouvel élément. | Collecte terminée : {count} nouveaux éléments.',
+      engagement:
+        'Collecte terminée : aucune nouvelle conversation. | Collecte terminée : {count} nouvelle conversation. | Collecte terminée : {count} nouvelles conversations.',
+    },
+    doneWithErrors:
+      'Collecte terminée, mais {failed} source en échec : le détail est dans les sources. | Collecte terminée, mais {failed} sources en échec : le détail est dans les sources.',
+    slow: 'La collecte prend plus de temps que prévu : les nouveautés arriveront dans la liste.',
+    failedToStart: 'La collecte n’a pas pu être lancée. Réessayez dans un instant.',
+  },
   board: {
     heading: 'Veille : {topic}',
     openDetail: 'Fiche et rédaction',
@@ -1062,9 +1099,6 @@ export default {
     noTopic: "Aucun thème pour l'instant.",
     statusFilter: 'Filtrer par statut',
     empty: 'Aucun élément dans cette liste.',
-    emptyNew:
-      'Rien de nouveau pour l’instant. Pann collecte vos sources régulièrement ; ajoutez-en ou lancez une collecte.',
-    emptyNewAction: 'Gérer les sources',
     loading: 'Chargement…',
     loadError: 'Erreur de chargement : {message}',
     relevance: 'Pertinence : {score} sur 100',
@@ -1515,7 +1549,6 @@ export default {
     },
     statusChanged: '« {title} » : {status}.',
     empty: {
-      new: 'Aucune conversation à examiner. Ajoutez des sources ou lancez une collecte.',
       validated: 'Aucune conversation à répondre.',
       rejected: 'Aucune conversation écartée.',
       archived: 'Aucune conversation archivée par le tri.',
