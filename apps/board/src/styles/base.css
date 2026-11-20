@@ -472,8 +472,41 @@ a.menu-item {
    * computes to auto): nothing may stick out below, or a scrollbar shows. */
   overflow-y: hidden;
   overscroll-behavior-x: contain;
-  scroll-padding-inline: var(--space-4);
-  scrollbar-width: thin;
+  /* Clear of the fades, so that a tab reached by keyboard is fully readable. */
+  scroll-padding-inline: 3rem;
+  /* No scrollbar: the fades below (set by v-scroll-active) say the row goes on. */
+  scrollbar-width: none;
+  --fade-start: 0px;
+  --fade-end: 0px;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--fade-start),
+    #000 calc(100% - var(--fade-end)),
+    transparent
+  );
+}
+
+.tab-row::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-row[data-more-start] {
+  --fade-start: 2.5rem;
+}
+
+.tab-row[data-more-end] {
+  --fade-end: 2.5rem;
+}
+
+[dir='rtl'] .tab-row {
+  mask-image: linear-gradient(
+    to left,
+    transparent,
+    #000 var(--fade-start),
+    #000 calc(100% - var(--fade-end)),
+    transparent
+  );
 }
 
 .tab-row > * {
