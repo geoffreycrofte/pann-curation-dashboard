@@ -8,6 +8,7 @@ import {
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RewriteModel } from '../rewrite/rewrite'
 import { ENGAGEMENT_CONTENT_CHARS, productBlock, type EngagementTopic } from './prompt'
+import { missingKeyError } from '../lib/key-error'
 
 /** Bump when the prompt changes. Stored with the usage of each reply. */
 export const REPLY_PROMPT_VERSION = 'engagement-reply-v1'
@@ -139,7 +140,8 @@ export async function runReplyDraft(
   const apiKey = ((secrets ?? []) as { provider: string; secret: string }[]).find(
     (s) => s.provider === 'anthropic',
   )?.secret
-  if (!apiKey) return finish({ reply_error: 'missing_credential:anthropic' })
+  if (!apiKey)
+    return finish({ reply_error: await missingKeyError(db, row.topic.workspace_id, 'anthropic') })
 
   const meta = row.item.meta ?? {}
   const modelId = config.ai.draft_model

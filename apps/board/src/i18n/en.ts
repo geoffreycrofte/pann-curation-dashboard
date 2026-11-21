@@ -416,6 +416,22 @@ export default {
     tabsLabel: 'Calendar views',
     tabs: { scheduled: 'Scheduled', history: 'History', newsletter: 'Newsletter' },
   },
+  plans: {
+    label: 'Offer',
+    names: {
+      own_keys: 'Own keys',
+      essential: 'Intermediate',
+      pro: 'Higher',
+      custom: 'Custom',
+    },
+    topics: 'Topics: {used} of {max}',
+    topicsUnlimited: 'Topics: {used}, no limit',
+    ownKeys: 'AI, search and publishing go through your own keys (Connections page).',
+    tokens: 'Tokens this month: {used} of {max}',
+    tokensHint:
+      'Pann provides the AI and the search. Drafting counts more than triage: it costs more. The counter resets on the 1st of the month.',
+    change: 'To change offer or get a custom one, contact Pann.',
+  },
   profile: {
     title: 'Profile',
     intro: 'Your Pann account: identity, preferences, workspace and sessions.',
@@ -683,6 +699,10 @@ export default {
     provider_error: 'The AI service could not answer. It will retry automatically.',
     insufficient_content:
       'Not enough source content for a reliable summary (empty, paywalled or too short page). Read the source.',
+    token_quota_reached:
+      'This month’s tokens are used up: AI and search resume on the 1st of next month.',
+    plan_topic_limit:
+      'Your offer allows no other topic. To add one, you need a higher offer or a custom one.',
     budget_exceeded: 'Monthly cap of the topic reached: drafting paused until next month.',
     refusal: 'The model declined to process this content.',
     invalid_output: 'Unusable answer from the model.',
@@ -839,6 +859,11 @@ export default {
         name: 'Anthropic (Claude)',
         purpose: 'AI of the onboarding conversation and of the offers where Pann provides the AI.',
       },
+      exa: {
+        name: 'Exa',
+        purpose:
+          'Web search for the offers where Pann provides the services (search sources, Création). Exa has no free check: the key is saved without a test.',
+      },
       zernio: {
         name: 'Zernio, platform mode',
         purpose:
@@ -899,10 +924,25 @@ export default {
     usageCaption: 'Spending paid by Pann in {month}',
     statsTitle: 'Costs per workspace',
     statsHint:
-      'Everything each workspace spent that month, with its keys or Pann’s, and the cost per day and per published post. Workspaces without spending are not listed.',
+      'The offer of each workspace, everything it spent that month with its keys or Pann’s, and the cost per day and per published post.',
     noStats: 'No spending that month.',
     statsCaption: 'Costs per workspace in {month}',
     colTopics: 'Topics',
+    colPlan: 'Offer',
+    plans: {
+      title: 'Offers',
+      intro:
+        'The limits of each offer, applied to every workspace that has it. The custom offer is set workspace by workspace, in the costs table.',
+      maxTopics: 'Topics at most',
+      maxAccounts: 'LinkedIn and Facebook accounts',
+      monthlyTokens: 'Tokens per month',
+      emptyHint:
+        'An empty field means no limit. LinkedIn and Facebook accounts are not limited by Pann yet. Custom, without tokens, the workspace uses its own keys.',
+      saved: '{plan} offer saved.',
+      workspaceSaved: '{name}: {plan} offer.',
+      planOf: 'Offer of {name}',
+      customOf: 'Custom limits of {name}',
+    },
     colPaidByPann: 'Paid by Pann',
     colPerDay: 'Per day',
     colPublished: 'Posts published',
@@ -1410,6 +1450,11 @@ export default {
     lastError: 'Last error: {message}',
   },
   onboarding: {
+    limit: {
+      title: 'No room for a new topic',
+      text: 'The {plan} offer allows {max} topics, and they are all created. To add one, you need a higher offer or a custom one; you can also delete a topic you no longer need.',
+      link: 'See my offer',
+    },
     goal: {
       name: 'What do you want to make known?',
       url: 'Website address',
@@ -1779,6 +1824,8 @@ export default {
     postRulesPlaceholder: 'Example: at most 2 hashtags, no emoji.',
     budget: 'Monthly budget of this topic',
     budgetLabel: 'Monthly cap (US dollars)',
+    budgetLabelTokens: 'Monthly cap (in tokens)',
+    tokensAmount: '{n} tokens',
     budgetHint: 'Beyond it, AI drafting stops until next month. Triage goes on: it costs little.',
     spent: 'Spent this month: {spent} of {budget}',
     spentCaption: 'Spending of the month by operation',

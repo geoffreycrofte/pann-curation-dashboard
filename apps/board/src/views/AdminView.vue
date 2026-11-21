@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AdminPlans from '../components/admin/AdminPlans.vue'
+import AdminWorkspacePlan from '../components/admin/AdminWorkspacePlan.vue'
 import Icon from '../components/Icon.vue'
 /**
  * Administration of Pann (platform admins only): the keys Pann pays for itself and the
@@ -135,7 +137,7 @@ const monthDays = computed(() => {
   if (month.value === currentMonth) return new Date().getUTCDate()
   return new Date(Date.UTC(year, m, 0)).getUTCDate()
 })
-const usedStats = computed(() => (stats.value ?? []).filter((s) => Number(s.calls) > 0))
+const usedStats = computed(() => stats.value ?? [])
 // Access requests: sign-up stays on invitation.
 const { data: requests, error: requestsError } = useQuery({
   key: ['admin', 'access-requests'],
@@ -579,6 +581,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
           <thead>
             <tr>
               <th scope="col">{{ t('admin.colWorkspace') }}</th>
+              <th scope="col">{{ t('admin.colPlan') }}</th>
               <th scope="col" class="num">{{ t('admin.colTopics') }}</th>
               <th scope="col" class="num">{{ t('admin.colCost') }}</th>
               <th scope="col" class="num">{{ t('admin.colPaidByPann') }}</th>
@@ -590,6 +593,15 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
           <tbody>
             <tr v-for="row in usedStats" :key="row.workspace_id">
               <th scope="row">{{ row.workspace_name }}</th>
+              <td>
+                <AdminWorkspacePlan
+                  :key="`${row.workspace_id}-${row.plan}`"
+                  :workspace-id="row.workspace_id"
+                  :workspace-name="row.workspace_name"
+                  :plan="row.plan"
+                  :limits="row.plan_limits"
+                />
+              </td>
               <td class="num">{{ n(Number(row.topics)) }}</td>
               <td class="num">{{ usd(Number(row.cost_usd)) }}</td>
               <td class="num">{{ usd(Number(row.platform_cost_usd)) }}</td>
@@ -608,6 +620,8 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
       </div>
     </div>
   </section>
+
+  <AdminPlans />
 </template>
 
 <style scoped>

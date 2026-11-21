@@ -18,6 +18,9 @@ import type {
   WorkspaceCredential,
   PostDraft,
   Summary,
+  Plan,
+  PlanLimits,
+  WorkspacePlan,
 } from '@pann/shared'
 import { supabase } from './supabase'
 
@@ -399,10 +402,18 @@ export interface TopicUsage {
   days_in_month: number
 }
 
+/** Admin space: an offer and its limits. */
+export interface AdminPlan extends PlanLimits {
+  key: Plan
+  updated_at: string
+}
+
 /** Admin space: one workspace over a month. */
 export interface WorkspaceStats {
   workspace_id: string
   workspace_name: string
+  plan: Plan
+  plan_limits: Partial<PlanLimits>
   topics: number
   calls: number
   cost_usd: number
@@ -442,6 +453,13 @@ export const api = {
   adminUsage: (month: string) => request<PlatformUsageRow[]>(`/admin/usage?month=${month}`),
   adminWorkspaceStats: (month: string) =>
     request<WorkspaceStats[]>(`/admin/workspace-stats?month=${month}`),
+  /** The workspace's plan, its limits and its tokens this month. */
+  workspacePlan: (workspaceId: string) => request<WorkspacePlan>(`/workspaces/${workspaceId}/plan`),
+  adminPlans: () => request<AdminPlan[]>('/admin/plans'),
+  adminUpdatePlan: (key: Plan, limits: PlanLimits) =>
+    request<AdminPlan>(`/admin/plans/${key}`, json('PATCH', limits)),
+  adminSetWorkspacePlan: (workspaceId: string, plan: Plan, limits: Partial<PlanLimits> = {}) =>
+    request<{ plan: Plan }>(`/admin/workspaces/${workspaceId}/plan`, json('PUT', { plan, limits })),
   renameWorkspace: (workspaceId: string, name: string) =>
     request<{ id: string; name: string }>(`/workspaces/${workspaceId}`, json('PATCH', { name })),
   /** Queues the deletion of the account; the email typed by the person confirms it. */

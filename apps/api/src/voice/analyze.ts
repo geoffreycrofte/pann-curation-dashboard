@@ -2,6 +2,7 @@ import { claudeCostUsd, errorCode, langName, parseTopicConfig } from '@pann/shar
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import type { ComposeModel } from '../compose/model'
+import { missingKeyError } from '../lib/key-error'
 
 export const VOICE_PROMPT_VERSION = 'voice-v1'
 
@@ -81,7 +82,10 @@ export async function runVoiceAnalysis(
     (k) => k.provider === 'anthropic',
   )?.secret
   if (!apiKey) {
-    await finish({ status: 'failed', error: errorCode('missing_credential', 'anthropic') })
+    await finish({
+      status: 'failed',
+      error: await missingKeyError(db, row.topic.workspace_id, 'anthropic'),
+    })
     return 'missing_credential'
   }
 

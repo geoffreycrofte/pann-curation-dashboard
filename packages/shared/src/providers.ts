@@ -83,7 +83,7 @@ export interface CredentialMeta {
  * service emails (access requests). Other AI services join this list when Pann supports
  * them.
  */
-export const PLATFORM_PROVIDERS = ['anthropic', 'zernio', 'resend'] as const
+export const PLATFORM_PROVIDERS = ['anthropic', 'exa', 'zernio', 'resend'] as const
 export type PlatformProvider = (typeof PLATFORM_PROVIDERS)[number]
 
 export const MULTI_ACCOUNT_PROVIDERS = ['mastodon', 'bluesky', 'discord'] as const
@@ -175,6 +175,8 @@ export const ERROR_CODES = [
   'invalid_config',
   'insufficient_content',
   'budget_exceeded',
+  'token_quota_reached', // plans where Pann provides the AI: the month's tokens are used up
+  'plan_topic_limit', // the plan allows no more topics
   'refusal',
   'invalid_output',
   'provider_error',
