@@ -226,13 +226,18 @@ export default {
     list: {
       empty: 'Aucun post pour l’instant. Commencez par « Nouveau post ».',
       groups: { draft: 'Brouillons', scheduled: 'Programmés', published: 'Publiés' },
+      hints: {
+        draft: 'Les posts en cours d’écriture.',
+        scheduled: 'Prêts : ils partent sur les créneaux de la Création.',
+        published: 'Déjà partis sur vos réseaux.',
+      },
       scheduledFor: 'programmé le {date}',
       updated: 'modifié le {date}',
     },
     calendar: { scheduled: 'Création, programmés', published: 'Création, publiés' },
     ideas: {
       title: 'Idées',
-      hint: 'Ce que vous avez gardé dans la veille et les conversations : de quoi écrire votre propre post.',
+      hint: 'Gardé dans la veille et les conversations : de quoi écrire votre propre post.',
       from: { curation: 'Gardé dans la veille', engagement: 'Conversation à laquelle répondre' },
       start: 'Écrire un post à partir de ceci',
       startLabel: 'Écrire un post à partir de « {title} »',

@@ -227,13 +227,18 @@ export default {
     list: {
       empty: 'No post yet. Start with “New post”.',
       groups: { draft: 'Drafts', scheduled: 'Scheduled', published: 'Published' },
+      hints: {
+        draft: 'Posts being written.',
+        scheduled: 'Ready: they go out on the Create slots.',
+        published: 'Already out on your networks.',
+      },
       scheduledFor: 'scheduled on {date}',
       updated: 'edited on {date}',
     },
     calendar: { scheduled: 'Create, scheduled', published: 'Create, published' },
     ideas: {
       title: 'Ideas',
-      hint: 'What you kept in the news watch and the conversations: material for a post of your own.',
+      hint: 'Kept in the news watch and the conversations: material for a post of your own.',
       from: { curation: 'Kept in the news watch', engagement: 'Conversation to answer' },
       start: 'Write a post from this',
       startLabel: 'Write a post from “{title}”',

@@ -105,13 +105,9 @@ async function create() {
 </script>
 
 <template>
-  <div class="head">
+  <div class="page-head">
     <h1 tabindex="-1">{{ t('compose.heading', { topic: topicName }) }}</h1>
     <div class="head-actions">
-      <RouterLink class="button" :to="{ name: 'series', params: { topicId, seriesId: 'new' } }">
-        <Icon name="calendar" />
-        {{ t('series.open') }}
-      </RouterLink>
       <button
         type="button"
         class="button"
@@ -122,9 +118,17 @@ async function create() {
         <Icon name="plus" />
         {{ t('compose.new') }}
       </button>
+      <RouterLink
+        class="button"
+        data-size="small"
+        :to="{ name: 'series', params: { topicId, seriesId: 'new' } }"
+      >
+        <Icon name="calendar" />
+        {{ t('series.open') }}
+      </RouterLink>
     </div>
   </div>
-  <p class="hint">{{ t('compose.intro') }}</p>
+  <p class="hint intro">{{ t('compose.intro') }}</p>
   <p v-if="createError" class="error" role="alert">{{ createError }}</p>
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
@@ -163,6 +167,7 @@ async function create() {
           {{ t('compose.list.groups.draft') }}
           <span class="count">({{ drafts.length }})</span>
         </h2>
+        <p class="hint">{{ t('compose.list.hints.draft') }}</p>
         <ul class="list">
           <li v-for="c in drafts" :key="c.id">
             <ContentCard
@@ -194,6 +199,7 @@ async function create() {
         {{ t(`compose.list.groups.${group.status}`) }}
         <span class="count">({{ group.list.length }})</span>
       </h2>
+      <p class="hint">{{ t(`compose.list.hints.${group.status}`) }}</p>
       <ul class="list">
         <li v-for="c in group.list" :key="c.id">
           <ContentCard
@@ -210,21 +216,16 @@ async function create() {
 </template>
 
 <style scoped>
-.head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3) var(--space-5);
-}
-
-.head h1 {
-  margin: 0;
+/* The intro sits under the title row, before the first group. */
+.intro {
+  margin: calc(-1 * var(--space-2)) 0 0;
+  max-width: 48rem;
 }
 
 .head-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-3);
 }
 
@@ -245,9 +246,11 @@ async function create() {
 }
 
 .group h2 {
+  margin: 0 0 var(--space-1);
   font-size: 1.25rem;
 }
 
+/* Each group: title, one line saying what it holds, then its cards. */
 .group .hint {
   margin: 0 0 var(--space-3);
 }

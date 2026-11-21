@@ -26,17 +26,6 @@ Revue page par page des captures (ordinateur et mobile, données simulées), ave
 
 ## Par page (à reprendre)
 
-- **Aujourd'hui** :
-  - les tuiles sans ligne secondaire ont un vide entre le chiffre et le libellé ;
-  - un thème sans rien en attente prend autant de place qu'un autre ; le replier en « Rien en attente ».
-- **Aperçu** :
-  - le texte « En pause, Pann ne collecte plus… » s'affiche alors que le thème tourne ; le garder pour la confirmation de pause ;
-  - sur mobile, « Mettre en pause » passe en dernier.
-- **Conversations** :
-  - le badge « Répondre » répète le bouton « À répondre » ;
-  - l'extrait est trop long et masque l'angle de réponse ;
-  - sur mobile, garder les boutons sur une ligne.
-- **Création** : « Nouveau post » à mettre en premier, ou dans un `.page-head`.
 - **Calendrier** :
   - deux niveaux d'onglets au même style ;
   - les posts de Création sont à part de la liste des dates ;
@@ -75,3 +64,18 @@ Revue page par page des captures (ordinateur et mobile, données simulées), ave
 - Brouillons de posts :
   - l'état du post (badge) passe au-dessus du texte au lieu de flotter sous le premier commentaire ;
   - chaque réseau est séparé par un filet et plus d'espace.
+- **Aujourd'hui** :
+  - le chiffre et le libellé d'une tuile restent groupés, même quand une tuile voisine est plus haute ;
+  - une flèche dit que la tuile mène quelque part ;
+  - un thème sans rien en attente tient sur une ligne, « Rien en attente pour l'instant. ».
+- **Aperçu** :
+  - « Mettre en pause » (petit) passe sous l'état, sur ordinateur comme sur mobile, avec son effet en retrait à côté ;
+  - en pause, l'effet de la reprise reprend la taille du texte courant.
+- **Conversations** :
+  - même carte que la Veille, avec le liseré du type, le même style de score, les métadonnées et les boutons (petits) sur une ligne ;
+  - « Comment aider » passe avant l'extrait, réduit à deux lignes en citation discrète ;
+  - le badge « Répondre » ne s'affiche plus (le bouton le dit) ; seuls « Surveiller » et « Passer » gardent un badge ;
+  - sur mobile, les boutons tiennent sur une ligne.
+- **Création** :
+  - le titre et les actions sont dans un `.page-head`, « Nouveau post » en premier, « Planifier une série » en petit ;
+  - chaque groupe (Idées, Brouillons, Programmés, Publiés) a une ligne d'explication, même espacement.
