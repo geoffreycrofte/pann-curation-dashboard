@@ -80,10 +80,16 @@ const { mutate, isLoading } = useMutation({
     <SearchSourceFields v-if="searchType" v-model="draft" :type="searchType" />
     <p v-else class="hint">{{ t('sources.rssUrlFixed') }}</p>
     <div class="actions">
-      <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
+      <button
+        type="submit"
+        class="button"
+        data-variant="primary"
+        data-size="small"
+        :disabled="isLoading"
+      >
         {{ isLoading ? t('common.saving') : t('common.save') }}
       </button>
-      <button type="button" class="button" @click="emit('done', '')">
+      <button type="button" class="button" data-size="small" @click="emit('done', '')">
         {{ t('common.cancel') }}
       </button>
     </div>

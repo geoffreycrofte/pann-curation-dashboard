@@ -66,8 +66,8 @@ const FIELDS = ['style_rules', 'post_rules'] as const
 </script>
 
 <template>
-  <section class="voice" :aria-labelledby="`${id}-title`">
-    <h2 :id="`${id}-title`">{{ t('voice.title') }}</h2>
+  <section class="section-card voice" :aria-labelledby="`${id}-title`">
+    <h2 :id="`${id}-title`" class="section-title">{{ t('voice.title') }}</h2>
     <p class="hint">{{ t('voice.hint') }}</p>
     <div class="form-row">
       <label :for="`${id}-samples`">{{ t('voice.samples') }}</label>
@@ -75,14 +75,20 @@ const FIELDS = ['style_rules', 'post_rules'] as const
         :id="`${id}-samples`"
         v-model="samples"
         class="field"
-        rows="8"
+        rows="6"
         maxlength="12000"
         :aria-describedby="`${id}-samples-hint`"
       ></textarea>
       <p :id="`${id}-samples-hint`" class="hint">{{ t('voice.samplesHint') }}</p>
     </div>
     <div>
-      <button type="button" class="button" :disabled="status === 'pending'" @click="analyze">
+      <button
+        type="button"
+        class="button"
+        data-size="small"
+        :disabled="status === 'pending'"
+        @click="analyze"
+      >
         {{ t('voice.analyze') }}
       </button>
     </div>
@@ -109,6 +115,7 @@ const FIELDS = ['style_rules', 'post_rules'] as const
           <button
             type="button"
             class="button"
+            data-size="small"
             :disabled="!result[field].trim() || result[field] === current[field]"
             @click="emit('apply', field, result[field])"
           >
@@ -121,19 +128,16 @@ const FIELDS = ['style_rules', 'post_rules'] as const
 </template>
 
 <style scoped>
-.voice,
 .proposals,
 .proposal {
   display: grid;
   gap: var(--space-3);
 }
 
-.voice {
-  max-width: 48rem;
-  margin-bottom: var(--space-8);
+.voice p {
+  margin: 0;
 }
 
-.voice h2,
 .proposal h3 {
   margin: 0;
 }

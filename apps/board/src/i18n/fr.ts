@@ -1305,7 +1305,7 @@ export default {
   kinds: {
     title: 'Types de contenu',
     intro:
-      'Les types servent à étiqueter les éléments, à régler la fréquence de collecte (onglet Collecte) et à guider le tri par IA. Pann en propose quatre au départ : renommez-les, ajoutez-en ou retirez-en selon votre thème.',
+      'Les types servent à étiqueter les éléments, à régler la fréquence de collecte (ci-dessous) et à guider le tri par IA. Pann en propose quatre au départ : renommez-les, ajoutez-en ou retirez-en selon votre thème.',
     newKind: 'Nouveau type',
     labelFr: 'Nom en français',
     labelEn: 'Nom en anglais',
@@ -1313,7 +1313,11 @@ export default {
     description: 'Ce que ce type regroupe',
     descriptionHint:
       'L’IA lit cette définition pour choisir le type d’un élément. Exemple : décisions de justice et avis des autorités.',
-    remove: 'Retirer ce type',
+    remove: 'Retirer',
+    edit: 'Modifier',
+    editLabel: 'Modifier le type « {kind} »',
+    noDescription: 'Pas encore de définition.',
+    incomplete: 'Donnez un nom en français et en anglais à chaque type.',
     removeLabel: 'Retirer le type « {kind} »',
     add: 'Ajouter un type',
     removedTitle: 'Types retirés',
@@ -1864,6 +1868,7 @@ export default {
     feedTitle: 'Titre du flux en {lang}',
     feedTitleHint: 'Laissé vide, le nom du thème est utilisé.',
     feedDescription: 'Description du flux en {lang}',
+    feedDetails: 'Présentation des flux',
     feedSiteUrl: 'Page qui présente la veille',
     feedSiteUrlHint: 'Facultatif. Adresse complète, par exemple https://exemple.org/veille.',
   },

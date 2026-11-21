@@ -73,88 +73,103 @@ const { mutate, isLoading } = useMutation({
 </script>
 
 <template>
-  <form class="form newsletter" :aria-labelledby="`${id}-title`" @submit.prevent="mutate()">
-    <h2 :id="`${id}-title`">{{ t('settings.newsletter') }}</h2>
-    <p class="hint">{{ t('settings.newsletterHint') }}</p>
-    <div class="form-row">
-      <label :for="`${id}-provider`">{{ t('settings.newsletterProvider') }}</label>
-      <select
-        :id="`${id}-provider`"
-        v-model="form.provider"
-        class="field"
-        :aria-describedby="`${id}-provider-hint`"
-      >
-        <option v-for="p in NEWSLETTER_PROVIDERS" :key="p" :value="p">
-          {{ t(`connections.providers.${p}.name`) }}
-        </option>
-      </select>
-      <p :id="`${id}-provider-hint`" class="hint">{{ t('settings.newsletterProviderHint') }}</p>
-    </div>
-    <p v-if="credentials && !service">
-      {{ form.provider === 'sendfox' ? t('settings.noSendfox') : t('settings.noBrevo') }}
-      <RouterLink to="/connections">{{ t('nav.connections') }}</RouterLink>
-    </p>
-
-    <div class="check-row">
-      <input
-        :id="`${id}-auto`"
-        v-model="form.auto_send"
-        type="checkbox"
-        :aria-describedby="`${id}-auto-hint`"
-      />
-      <label :for="`${id}-auto`">{{ t('settings.autoSend') }}</label>
-    </div>
-    <p :id="`${id}-auto-hint`" class="hint">{{ t('settings.autoSendHint') }}</p>
-
-    <div class="grid">
+  <form
+    class="section-stack newsletter"
+    :aria-labelledby="`${id}-title`"
+    @submit.prevent="mutate()"
+  >
+    <div class="section-card">
+      <h2 :id="`${id}-title`" class="section-title">{{ t('settings.newsletter') }}</h2>
+      <p class="hint">{{ t('settings.newsletterHint') }}</p>
       <div class="form-row">
-        <label :for="`${id}-weekday`">{{ t('settings.weekday') }}</label>
-        <select :id="`${id}-weekday`" v-model.number="digest.weekday" class="field">
-          <option v-for="(name, index) in weekdays" :key="index" :value="index">{{ name }}</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-time`">{{ t('settings.time') }}</label>
-        <input
-          :id="`${id}-time`"
-          v-model="digest.time"
+        <label :for="`${id}-provider`">{{ t('settings.newsletterProvider') }}</label>
+        <select
+          :id="`${id}-provider`"
+          v-model="form.provider"
           class="field"
-          type="time"
-          required
-          :aria-describedby="`${id}-time-hint`"
-        />
-        <p :id="`${id}-time-hint`" class="hint">{{ t('settings.timeHint') }}</p>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-first`">{{ t('settings.firstIssueFrom') }}</label>
-        <input
-          :id="`${id}-first`"
-          v-model="form.first_issue_from"
-          class="field"
-          type="date"
-          :aria-describedby="`${id}-first-hint`"
-        />
-        <p :id="`${id}-first-hint`" class="hint">{{ t('settings.firstIssueFromHint') }}</p>
-      </div>
-      <div v-if="form.provider === 'brevo'" class="form-row">
-        <label :for="`${id}-sender`">{{ t('settings.sender') }}</label>
-        <select :id="`${id}-sender`" v-model="form.sender_id" class="field">
-          <option :value="null">{{ t('settings.noSender') }}</option>
-          <option v-for="sender in service?.meta.senders ?? []" :key="sender.id" :value="sender.id">
-            {{
-              sender.active
-                ? t('connections.senderLine', { name: sender.name, email: sender.email })
-                : t('settings.senderInactive', {
-                    sender: t('connections.senderLine', { name: sender.name, email: sender.email }),
-                  })
-            }}
+          :aria-describedby="`${id}-provider-hint`"
+        >
+          <option v-for="p in NEWSLETTER_PROVIDERS" :key="p" :value="p">
+            {{ t(`connections.providers.${p}.name`) }}
           </option>
         </select>
+        <p :id="`${id}-provider-hint`" class="hint">{{ t('settings.newsletterProviderHint') }}</p>
+      </div>
+      <p v-if="credentials && !service">
+        {{ form.provider === 'sendfox' ? t('settings.noSendfox') : t('settings.noBrevo') }}
+        <RouterLink to="/connections">{{ t('nav.connections') }}</RouterLink>
+      </p>
+
+      <div class="form-check">
+        <input
+          :id="`${id}-auto`"
+          v-model="form.auto_send"
+          type="checkbox"
+          :aria-describedby="`${id}-auto-hint`"
+        />
+        <label :for="`${id}-auto`">{{ t('settings.autoSend') }}</label>
+        <p :id="`${id}-auto-hint`" class="hint">{{ t('settings.autoSendHint') }}</p>
+      </div>
+
+      <div class="grid">
+        <div class="form-row">
+          <label :for="`${id}-weekday`">{{ t('settings.weekday') }}</label>
+          <select :id="`${id}-weekday`" v-model.number="digest.weekday" class="field">
+            <option v-for="(name, index) in weekdays" :key="index" :value="index">
+              {{ name }}
+            </option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label :for="`${id}-time`">{{ t('settings.time') }}</label>
+          <input
+            :id="`${id}-time`"
+            v-model="digest.time"
+            class="field"
+            type="time"
+            required
+            :aria-describedby="`${id}-time-hint`"
+          />
+          <p :id="`${id}-time-hint`" class="hint">{{ t('settings.timeHint') }}</p>
+        </div>
+        <div class="form-row">
+          <label :for="`${id}-first`">{{ t('settings.firstIssueFrom') }}</label>
+          <input
+            :id="`${id}-first`"
+            v-model="form.first_issue_from"
+            class="field"
+            type="date"
+            :aria-describedby="`${id}-first-hint`"
+          />
+          <p :id="`${id}-first-hint`" class="hint">{{ t('settings.firstIssueFromHint') }}</p>
+        </div>
+        <div v-if="form.provider === 'brevo'" class="form-row sender">
+          <label :for="`${id}-sender`">{{ t('settings.sender') }}</label>
+          <select :id="`${id}-sender`" v-model="form.sender_id" class="field">
+            <option :value="null">{{ t('settings.noSender') }}</option>
+            <option
+              v-for="sender in service?.meta.senders ?? []"
+              :key="sender.id"
+              :value="sender.id"
+            >
+              {{
+                sender.active
+                  ? t('connections.senderLine', { name: sender.name, email: sender.email })
+                  : t('settings.senderInactive', {
+                      sender: t('connections.senderLine', {
+                        name: sender.name,
+                        email: sender.email,
+                      }),
+                    })
+              }}
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <fieldset v-for="lang in config.output_langs" :key="lang" class="lang-block">
-      <legend>{{ contentLangName(lang) }}</legend>
+    <fieldset v-for="lang in config.output_langs" :key="lang" class="section-card lang-block">
+      <legend class="section-title">{{ contentLangName(lang) }}</legend>
       <div class="form-row">
         <label :for="`${id}-list-${lang}`">
           {{ t('settings.list', { lang: contentLangName(lang) }) }}
@@ -233,8 +248,8 @@ const { mutate, isLoading } = useMutation({
       </details>
     </fieldset>
 
-    <fieldset class="lang-block">
-      <legend>{{ t('settings.newsletterLook') }}</legend>
+    <fieldset class="section-card">
+      <legend class="section-title">{{ t('settings.newsletterLook') }}</legend>
       <div class="form-row">
         <label :for="`${id}-logo`">{{ t('settings.newsletterLogo') }}</label>
         <input
@@ -263,7 +278,7 @@ const { mutate, isLoading } = useMutation({
         </div>
         <p :id="`${id}-accent-hint`" class="hint">{{ t('settings.newsletterAccentHint') }}</p>
       </div>
-      <div class="check-row">
+      <div class="form-check">
         <input
           :id="`${id}-group`"
           v-model="form.group_by_kind"
@@ -271,30 +286,26 @@ const { mutate, isLoading } = useMutation({
           :aria-describedby="`${id}-group-hint`"
         />
         <label :for="`${id}-group`">{{ t('settings.newsletterGroup') }}</label>
+        <p :id="`${id}-group-hint`" class="hint">{{ t('settings.newsletterGroupHint') }}</p>
       </div>
-      <p :id="`${id}-group-hint`" class="hint">{{ t('settings.newsletterGroupHint') }}</p>
     </fieldset>
 
-    <div>
+    <div class="section-actions">
       <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
         {{ isLoading ? t('common.saving') : t('common.save') }}
       </button>
+      <p role="status" :class="{ error: isError }">{{ message }}</p>
     </div>
-    <p role="status" :class="{ error: isError }">{{ message }}</p>
   </form>
 </template>
 
 <style scoped>
-.newsletter {
-  display: grid;
-  gap: var(--space-4);
-  max-width: 40rem;
-  margin-top: var(--space-8);
-}
-
-.newsletter h2,
 .newsletter p {
   margin: 0;
+}
+
+.form-check label {
+  font-weight: 600;
 }
 
 .grid {
@@ -321,28 +332,13 @@ const { mutate, isLoading } = useMutation({
   cursor: pointer;
 }
 
+.sender {
+  grid-column: 1 / -1;
+}
+
 .grid .field {
   width: 100%;
   min-width: 0;
-}
-
-.check-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 2.75rem;
-  font-weight: 600;
-}
-
-.check-row input {
-  width: 1.25rem;
-  height: 1.25rem;
-  accent-color: var(--color-accent-text);
-}
-
-.lang-block {
-  display: grid;
-  gap: var(--space-4);
 }
 
 .lang-block legend::first-letter {

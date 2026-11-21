@@ -41,9 +41,9 @@ const { mutate, isLoading } = useMutation({
 </script>
 
 <template>
-  <form class="form product" @submit.prevent="mutate()">
-    <fieldset :aria-describedby="`${id}-hint`">
-      <legend>{{ t('product.heading') }}</legend>
+  <form class="section-stack" @submit.prevent="mutate()">
+    <fieldset class="section-card" :aria-describedby="`${id}-hint`">
+      <legend class="section-title">{{ t('product.heading') }}</legend>
       <p :id="`${id}-hint`" class="hint">{{ t('product.hint') }}</p>
       <div class="identity">
         <div class="form-row">
@@ -96,36 +96,17 @@ const { mutate, isLoading } = useMutation({
         />
         <p :id="`${id}-disclosure-hint`" class="hint">{{ t('product.disclosureHint') }}</p>
       </div>
+      <div class="section-actions">
+        <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
+          {{ isLoading ? t('common.saving') : t('common.save') }}
+        </button>
+        <p role="status" :class="{ error: isError }">{{ message }}</p>
+      </div>
     </fieldset>
-    <div>
-      <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
-        {{ isLoading ? t('common.saving') : t('common.save') }}
-      </button>
-    </div>
-    <p role="status" :class="{ error: isError }">{{ message }}</p>
   </form>
 </template>
 
 <style scoped>
-.product {
-  max-width: 40rem;
-}
-
-.product fieldset {
-  display: grid;
-  gap: var(--space-4);
-  padding: 0;
-  border: 0;
-  background: none;
-  box-shadow: none;
-}
-
-.product legend {
-  margin-bottom: var(--space-2);
-  padding: 0;
-  font-size: 1.375rem;
-}
-
 .identity {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
@@ -135,9 +116,5 @@ const { mutate, isLoading } = useMutation({
 textarea.field {
   width: 100%;
   resize: vertical;
-}
-
-.product p[role='status'] {
-  margin: 0;
 }
 </style>

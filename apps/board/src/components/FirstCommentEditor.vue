@@ -94,7 +94,7 @@ async function submit() {
         ></textarea>
       </div>
       <div v-if="!readonly">
-        <button type="submit" class="button" :disabled="!dirty || saving">
+        <button type="submit" class="button" data-size="small" :disabled="!dirty || saving">
           {{ saving ? t('common.saving') : t('firstComment.save') }}
         </button>
       </div>
@@ -113,8 +113,12 @@ async function submit() {
   border-radius: var(--radius);
 }
 
+/* The title inside the frame, not across its border (floated, the legend is laid out
+ * like the other children). */
 .first-comment legend {
-  padding: 0 var(--space-1);
+  float: left;
+  width: 100%;
+  padding: 0;
   font-weight: 650;
 }
 

@@ -44,80 +44,77 @@ const { mutate, isLoading } = useMutation({
 </script>
 
 <template>
-  <form class="form engagement-settings" @submit.prevent="mutate()">
-    <h2>{{ t('engagement.settings.title') }}</h2>
-    <p class="hint">{{ t('engagement.settings.intro') }}</p>
-    <p class="hint">
-      {{ t('engagement.settings.product') }}
-      <RouterLink
-        :to="{ name: 'settings', params: { topicId: topic.id }, query: { tab: 'product' } }"
-      >
-        {{ t('engagement.settings.productLink') }}
-      </RouterLink>
-    </p>
-    <div class="form-row">
-      <label :for="`${id}-criteria`">{{ t('engagement.settings.criteria') }}</label>
-      <textarea
-        :id="`${id}-criteria`"
-        v-model="criteria"
-        class="field"
-        rows="5"
-        maxlength="4000"
-        :placeholder="t('engagement.settings.criteriaPlaceholder')"
-        :aria-describedby="`${id}-criteria-hint`"
-      ></textarea>
-      <p :id="`${id}-criteria-hint`" class="hint">{{ t('engagement.settings.criteriaHint') }}</p>
-    </div>
-    <div class="pair">
+  <form class="section-stack engagement-settings" @submit.prevent="mutate()">
+    <section class="section-card" :aria-labelledby="`${id}-title`">
+      <h2 :id="`${id}-title`" class="section-title">{{ t('engagement.settings.title') }}</h2>
+      <p class="hint">{{ t('engagement.settings.intro') }}</p>
+      <p class="hint">
+        {{ t('engagement.settings.product') }}
+        <RouterLink
+          :to="{ name: 'settings', params: { topicId: topic.id }, query: { tab: 'product' } }"
+        >
+          {{ t('engagement.settings.productLink') }}
+        </RouterLink>
+      </p>
       <div class="form-row">
-        <label :for="`${id}-threshold`">{{ t('engagement.settings.threshold') }}</label>
-        <input
-          :id="`${id}-threshold`"
-          v-model.number="threshold"
-          class="field number"
-          type="number"
-          min="0"
-          max="100"
-          step="1"
-          required
-          :aria-describedby="`${id}-threshold-hint`"
-        />
-        <p :id="`${id}-threshold-hint`" class="hint">
-          {{ t('engagement.settings.thresholdHint') }}
-        </p>
+        <label :for="`${id}-criteria`">{{ t('engagement.settings.criteria') }}</label>
+        <textarea
+          :id="`${id}-criteria`"
+          v-model="criteria"
+          class="field"
+          rows="5"
+          maxlength="4000"
+          :placeholder="t('engagement.settings.criteriaPlaceholder')"
+          :aria-describedby="`${id}-criteria-hint`"
+        ></textarea>
+        <p :id="`${id}-criteria-hint`" class="hint">{{ t('engagement.settings.criteriaHint') }}</p>
       </div>
-      <div class="form-row">
-        <label :for="`${id}-age`">{{ t('engagement.settings.maxAge') }}</label>
-        <input
-          :id="`${id}-age`"
-          v-model.number="maxAge"
-          class="field number"
-          type="number"
-          min="1"
-          max="90"
-          step="1"
-          required
-          :aria-describedby="`${id}-age-hint`"
-        />
-        <p :id="`${id}-age-hint`" class="hint">{{ t('engagement.settings.maxAgeHint') }}</p>
+      <div class="pair">
+        <div class="form-row">
+          <label :for="`${id}-threshold`">{{ t('engagement.settings.threshold') }}</label>
+          <input
+            :id="`${id}-threshold`"
+            v-model.number="threshold"
+            class="field number"
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            required
+            :aria-describedby="`${id}-threshold-hint`"
+          />
+          <p :id="`${id}-threshold-hint`" class="hint">
+            {{ t('engagement.settings.thresholdHint') }}
+          </p>
+        </div>
+        <div class="form-row">
+          <label :for="`${id}-age`">{{ t('engagement.settings.maxAge') }}</label>
+          <input
+            :id="`${id}-age`"
+            v-model.number="maxAge"
+            class="field number"
+            type="number"
+            min="1"
+            max="90"
+            step="1"
+            required
+            :aria-describedby="`${id}-age-hint`"
+          />
+          <p :id="`${id}-age-hint`" class="hint">{{ t('engagement.settings.maxAgeHint') }}</p>
+        </div>
       </div>
-    </div>
-    <BacklogLimitField v-model="pauseAbove" module="engagement" />
-    <div>
-      <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
-        {{ isLoading ? t('common.saving') : t('common.save') }}
-      </button>
-    </div>
-    <p role="status" :class="{ error: isError }">{{ message }}</p>
+      <BacklogLimitField v-model="pauseAbove" module="engagement" class="subsection" />
+      <div class="section-actions">
+        <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
+          {{ isLoading ? t('common.saving') : t('common.save') }}
+        </button>
+        <p role="status" :class="{ error: isError }">{{ message }}</p>
+      </div>
+    </section>
   </form>
 </template>
 
 <style scoped>
-.engagement-settings {
-  max-width: 40rem;
-}
-
-.engagement-settings h2,
 .engagement-settings p {
   margin: 0;
 }

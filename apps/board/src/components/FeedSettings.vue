@@ -91,102 +91,108 @@ async function copy(lang: Lang, format: 'xml' | 'json') {
 </script>
 
 <template>
-  <section class="feed" :aria-labelledby="`${id}-title`">
-    <h2 :id="`${id}-title`">{{ t('settings.feed') }}</h2>
-    <p class="hint">{{ t('settings.feedHint') }}</p>
+  <div class="section-stack feed">
+    <section class="section-card" :aria-labelledby="`${id}-title`">
+      <h2 :id="`${id}-title`" class="section-title">{{ t('settings.feed') }}</h2>
+      <p class="hint">{{ t('settings.feedHint') }}</p>
 
-    <template v-if="!feedKey">
-      <p>{{ t('settings.feedOff') }}</p>
-      <div>
-        <button
-          type="button"
-          class="button"
-          data-variant="primary"
-          :disabled="switching"
-          @click="setFeed({ enabled: true })"
-        >
-          {{ t('settings.feedEnable') }}
-        </button>
-      </div>
-    </template>
+      <template v-if="!feedKey">
+        <p>{{ t('settings.feedOff') }}</p>
+        <div>
+          <button
+            type="button"
+            class="button"
+            data-variant="primary"
+            :disabled="switching"
+            @click="setFeed({ enabled: true })"
+          >
+            {{ t('settings.feedEnable') }}
+          </button>
+        </div>
+      </template>
 
-    <template v-else>
-      <p class="hint">{{ t('settings.feedPrivacy') }}</p>
-      <h3 :id="`${id}-urls`">{{ t('settings.feedUrls') }}</h3>
-      <ul class="urls" :aria-labelledby="`${id}-urls`">
-        <template v-for="lang in config.output_langs" :key="lang">
-          <li v-for="format in PUBLIC_FEED_FORMATS" :key="format">
-            <span class="url-label">
-              {{
-                t('settings.feedUrl', {
-                  format: FORMAT_NAMES[format],
-                  lang: contentLangName(lang),
-                })
-              }}
-            </span>
-            <a class="url" :href="url(lang, format)" target="_blank" rel="noopener">{{
-              url(lang, format)
-            }}</a>
-            <button
-              type="button"
-              class="button"
-              :aria-label="
-                t('settings.feedCopyLabel', {
-                  format: FORMAT_NAMES[format],
-                  lang: contentLangName(lang),
-                })
-              "
-              @click="copy(lang, format)"
-            >
-              {{ t('settings.feedCopy') }}
-            </button>
-          </li>
-        </template>
-      </ul>
+      <template v-else>
+        <p class="hint">{{ t('settings.feedPrivacy') }}</p>
+        <h3 :id="`${id}-urls`">{{ t('settings.feedUrls') }}</h3>
+        <ul class="urls" :aria-labelledby="`${id}-urls`">
+          <template v-for="lang in config.output_langs" :key="lang">
+            <li v-for="format in PUBLIC_FEED_FORMATS" :key="format">
+              <span class="url-label">
+                {{
+                  t('settings.feedUrl', {
+                    format: FORMAT_NAMES[format],
+                    lang: contentLangName(lang),
+                  })
+                }}
+              </span>
+              <a class="url" :href="url(lang, format)" target="_blank" rel="noopener">{{
+                url(lang, format)
+              }}</a>
+              <button
+                type="button"
+                class="button"
+                data-size="small"
+                :aria-label="
+                  t('settings.feedCopyLabel', {
+                    format: FORMAT_NAMES[format],
+                    lang: contentLangName(lang),
+                  })
+                "
+                @click="copy(lang, format)"
+              >
+                {{ t('settings.feedCopy') }}
+              </button>
+            </li>
+          </template>
+        </ul>
 
-      <div class="row">
-        <AlertDialogRoot>
-          <AlertDialogTrigger as-child>
-            <button type="button" class="button" :disabled="switching">
-              {{ t('settings.feedRegenerate') }}
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogPortal>
-            <AlertDialogOverlay class="dialog-overlay" />
-            <AlertDialogContent class="dialog">
-              <AlertDialogTitle class="dialog-title">
-                {{ t('settings.feedRegenerateTitle') }}
-              </AlertDialogTitle>
-              <AlertDialogDescription>{{
-                t('settings.feedRegenerateText')
-              }}</AlertDialogDescription>
-              <div class="dialog-actions">
-                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
-                <AlertDialogAction
-                  class="button"
-                  data-variant="primary"
-                  @click="setFeed({ enabled: true, regenerate: true })"
-                >
-                  {{ t('settings.feedRegenerate') }}
-                </AlertDialogAction>
-              </div>
-            </AlertDialogContent>
-          </AlertDialogPortal>
-        </AlertDialogRoot>
-        <button
-          type="button"
-          class="button"
-          :disabled="switching"
-          @click="setFeed({ enabled: false })"
-        >
-          {{ t('settings.feedDisable') }}
-        </button>
-      </div>
-    </template>
+        <div class="row">
+          <AlertDialogRoot>
+            <AlertDialogTrigger as-child>
+              <button type="button" class="button" data-size="small" :disabled="switching">
+                {{ t('settings.feedRegenerate') }}
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogPortal>
+              <AlertDialogOverlay class="dialog-overlay" />
+              <AlertDialogContent class="dialog">
+                <AlertDialogTitle class="dialog-title">
+                  {{ t('settings.feedRegenerateTitle') }}
+                </AlertDialogTitle>
+                <AlertDialogDescription>{{
+                  t('settings.feedRegenerateText')
+                }}</AlertDialogDescription>
+                <div class="dialog-actions">
+                  <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                  <AlertDialogAction
+                    class="button"
+                    data-variant="primary"
+                    @click="setFeed({ enabled: true, regenerate: true })"
+                  >
+                    {{ t('settings.feedRegenerate') }}
+                  </AlertDialogAction>
+                </div>
+              </AlertDialogContent>
+            </AlertDialogPortal>
+          </AlertDialogRoot>
+          <button
+            type="button"
+            class="button"
+            data-size="small"
+            data-variant="danger"
+            :disabled="switching"
+            @click="setFeed({ enabled: false })"
+          >
+            {{ t('settings.feedDisable') }}
+          </button>
+        </div>
+      </template>
+    </section>
 
-    <form class="form" @submit.prevent="save()">
-      <fieldset v-for="lang in config.output_langs" :key="lang" class="lang-block">
-        <legend>{{ contentLangName(lang) }}</legend>
+    <form class="section-card" :aria-labelledby="`${id}-details`" @submit.prevent="save()">
+      <h2 :id="`${id}-details`" class="section-title">{{ t('settings.feedDetails') }}</h2>
+      <fieldset v-for="lang in config.output_langs" :key="lang" class="subsection lang-block">
+        <legend class="subsection-title">{{ contentLangName(lang) }}</legend>
         <div class="form-row">
           <label :for="`${id}-title-${lang}`">
             {{ t('settings.feedTitle', { lang: contentLangName(lang) }) }}
@@ -216,7 +222,7 @@ async function copy(lang: Lang, format: 'xml' | 'json') {
           ></textarea>
         </div>
       </fieldset>
-      <div class="form-row">
+      <div class="form-row subsection">
         <label :for="`${id}-site`">{{ t('settings.feedSiteUrl') }}</label>
         <input
           :id="`${id}-site`"
@@ -228,39 +234,36 @@ async function copy(lang: Lang, format: 'xml' | 'json') {
         />
         <p :id="`${id}-site-hint`" class="hint">{{ t('settings.feedSiteUrlHint') }}</p>
       </div>
-      <div>
+      <div class="section-actions">
         <button type="submit" class="button" data-variant="primary" :disabled="saving">
           {{ saving ? t('common.saving') : t('common.save') }}
         </button>
       </div>
     </form>
     <p role="status" :class="{ error: isError }">{{ message }}</p>
-  </section>
+  </div>
 </template>
 
 <style scoped>
-.feed {
-  display: grid;
-  gap: var(--space-4);
-  max-width: 40rem;
-  margin-top: var(--space-8);
-}
-
-.feed h2,
 .feed h3,
 .feed p {
   margin: 0;
+}
+
+.feed p:empty {
+  display: none;
 }
 
 .feed h3 {
   font-size: 1rem;
 }
 
+/* The addresses as a bordered list: name and address, Copy on the right. */
 .urls {
-  display: grid;
-  gap: var(--space-3);
   margin: 0;
   padding: 0;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
   list-style: none;
 }
 
@@ -268,11 +271,21 @@ async function copy(lang: Lang, format: 'xml' | 'json') {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--space-1) var(--space-3);
+  gap: 0 var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+}
+
+.urls li + li {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.urls .button {
+  grid-row: 1 / 3;
+  grid-column: 2;
 }
 
 .url-label {
-  grid-column: 1 / -1;
+  grid-column: 1;
   font-weight: 650;
 }
 
@@ -285,16 +298,6 @@ async function copy(lang: Lang, format: 'xml' | 'json') {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-}
-
-.form {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.lang-block {
-  display: grid;
-  gap: var(--space-4);
 }
 
 .lang-block legend::first-letter {

@@ -29,6 +29,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AddSourceSection from '../components/AddSourceSection.vue'
 import ExcludedSites from '../components/ExcludedSites.vue'
+import Icon from '../components/Icon.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
 import SourceEditor from '../components/SourceEditor.vue'
 import { api, type SourcePatch } from '../lib/api'
@@ -317,11 +318,14 @@ function feedUrl(source: Source): string | undefined {
               </div>
             </div>
 
-            <p v-if="source.last_error" class="error source-error">
-              {{ t('sources.lastError', { message: describeError(source.last_error, t).text }) }}
-              <RouterLink v-if="describeError(source.last_error, t).provider" to="/connections">
-                {{ t('errors.fixInConnections') }}
-              </RouterLink>
+            <p v-if="source.last_error" class="notice notice-inline" data-tone="danger">
+              <Icon name="alert-circle" />
+              <span>
+                {{ t('sources.lastError', { message: describeError(source.last_error, t).text }) }}
+                <RouterLink v-if="describeError(source.last_error, t).provider" to="/connections">
+                  {{ t('errors.fixInConnections') }}
+                </RouterLink>
+              </span>
             </p>
 
             <div class="source-controls">
@@ -355,6 +359,7 @@ function feedUrl(source: Source): string | undefined {
                   :id="`edit-${source.id}`"
                   type="button"
                   class="button"
+                  data-size="small"
                   :aria-expanded="editing === source.id"
                   :aria-label="t('sources.editLabel', { label: source.label })"
                   @click="editing = editing === source.id ? null : source.id"
@@ -364,7 +369,7 @@ function feedUrl(source: Source): string | undefined {
                 <button
                   type="button"
                   class="button"
-                  data-variant="primary"
+                  data-size="small"
                   :aria-label="t('sources.collectLabel', { label: source.label })"
                   :disabled="collectionPending(source) || !source.active"
                   @click="collectNow(source)"
@@ -376,6 +381,8 @@ function feedUrl(source: Source): string | undefined {
                     <button
                       type="button"
                       class="button"
+                      data-size="small"
+                      data-variant="danger"
                       :aria-label="t('sources.deleteLabel', { label: source.label })"
                     >
                       {{ t('common.delete') }}
@@ -453,8 +460,8 @@ function feedUrl(source: Source): string | undefined {
 
 .source {
   display: grid;
-  gap: var(--space-4);
-  padding: var(--space-5) var(--space-6);
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
 }
 
 .source[data-active='false'] {
@@ -546,26 +553,23 @@ function feedUrl(source: Source): string | undefined {
   font-weight: 650;
 }
 
-.source-error {
-  margin: 0;
-}
-
 .source-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: end;
-  gap: var(--space-4) var(--space-6);
-  padding-top: var(--space-4);
+  gap: var(--space-3) var(--space-6);
+  padding-top: var(--space-3);
   border-top: 1px solid var(--color-border-subtle);
 }
 
 .active-check {
-  min-height: 2.75rem;
+  min-height: 2.25rem;
 }
 
 .row-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
   margin-inline-start: auto;
 }

@@ -1288,7 +1288,7 @@ export default {
   kinds: {
     title: 'Kinds of content',
     intro:
-      'Kinds label the items, set how often sources are collected (Collection tab) and guide the AI triage. Pann offers four to start with: rename them, add or remove some to fit your topic.',
+      'Kinds label the items, set how often sources are collected (below) and guide the AI triage. Pann offers four to start with: rename them, add or remove some to fit your topic.',
     newKind: 'New kind',
     labelFr: 'Name in French',
     labelEn: 'Name in English',
@@ -1296,7 +1296,11 @@ export default {
     description: 'What this kind covers',
     descriptionHint:
       'The AI reads this definition to choose the kind of an item. Example: court decisions and opinions of authorities.',
-    remove: 'Remove this kind',
+    remove: 'Remove',
+    edit: 'Edit',
+    editLabel: 'Edit the “{kind}” kind',
+    noDescription: 'No definition yet.',
+    incomplete: 'Give each kind a name in French and in English.',
     removeLabel: 'Remove the “{kind}” kind',
     add: 'Add a kind',
     removedTitle: 'Removed kinds',
@@ -1831,6 +1835,7 @@ export default {
     feedTitle: 'Feed title in {lang}',
     feedTitleHint: 'Left empty, the topic name is used.',
     feedDescription: 'Feed description in {lang}',
+    feedDetails: 'Feed details',
     feedSiteUrl: 'Page that presents the curation',
     feedSiteUrlHint: 'Optional. Full address, for example https://example.org/curation.',
   },

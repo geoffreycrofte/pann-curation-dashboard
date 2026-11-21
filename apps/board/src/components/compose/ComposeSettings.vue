@@ -50,9 +50,9 @@ function submit() {
 </script>
 
 <template>
-  <form class="form settings" novalidate @submit.prevent="submit">
-    <fieldset :aria-describedby="`${id}-hint`">
-      <legend>{{ t('compose.settings.heading') }}</legend>
+  <form class="section-stack" novalidate @submit.prevent="submit">
+    <fieldset class="section-card" :aria-describedby="`${id}-hint`">
+      <legend class="section-title">{{ t('compose.settings.heading') }}</legend>
       <p :id="`${id}-hint`" class="hint">
         {{ t('compose.settings.hint', { timezone: topic.config.schedule.timezone }) }}
       </p>
@@ -95,36 +95,17 @@ function submit() {
           </option>
         </select>
       </div>
+      <div class="section-actions">
+        <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
+          {{ isLoading ? t('common.saving') : t('common.save') }}
+        </button>
+        <p role="status" :class="{ error: isError }">{{ message }}</p>
+      </div>
     </fieldset>
-    <div>
-      <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
-        {{ isLoading ? t('common.saving') : t('common.save') }}
-      </button>
-    </div>
-    <p role="status" :class="{ error: isError }">{{ message }}</p>
   </form>
 </template>
 
 <style scoped>
-.settings {
-  max-width: 40rem;
-}
-
-.settings fieldset {
-  display: grid;
-  gap: var(--space-4);
-  padding: 0;
-  border: 0;
-  background: none;
-  box-shadow: none;
-}
-
-.settings legend {
-  margin-bottom: var(--space-2);
-  padding: 0;
-  font-size: 1.375rem;
-}
-
 .pair {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));

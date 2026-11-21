@@ -17,7 +17,7 @@ const type = ref<CurationSourceType>('rss')
 
 <template>
   <section :aria-labelledby="`${id}-heading`" class="add-source">
-    <h2 :id="`${id}-heading`">{{ t('addSource.title') }}</h2>
+    <h2 :id="`${id}-heading`" class="section-title">{{ t('addSource.title') }}</h2>
     <fieldset class="type-choice">
       <legend class="form-label">{{ t('addSource.type') }}</legend>
       <div class="choices">
@@ -39,17 +39,18 @@ const type = ref<CurationSourceType>('rss')
 .add-source {
   display: grid;
   gap: var(--space-5);
-  max-width: 44rem;
   margin-top: var(--space-6);
-  padding: var(--space-5) var(--space-6) var(--space-6);
+  padding: var(--space-5) var(--space-6);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
 
-.add-source h2 {
-  margin: 0;
+@media (max-width: 40rem) {
+  .add-source {
+    padding: var(--space-4);
+  }
 }
 
 .type-choice {
