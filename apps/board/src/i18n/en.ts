@@ -50,6 +50,7 @@ export default {
     error: 'Not saved: {message}',
   },
   common: {
+    helpFor: 'Help: {label}',
     newTab: '(new tab)',
     save: 'Save',
     saving: 'Saving…',

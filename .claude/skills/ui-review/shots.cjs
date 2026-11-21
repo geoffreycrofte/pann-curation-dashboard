@@ -343,6 +343,8 @@ async function shoot(page, name, path, opts = {}) {
   if (opts.click) {
     // A handle, not a locator: the selector stops matching once the button is open.
     const target = await page.locator(opts.click).first().elementHandle()
+    // Instant scroll: a smooth one moves the button while the click is aimed at it.
+    await target.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }))
     await target.click()
     await page.waitForTimeout(300)
     await target.evaluate((el) => el.closest('section')?.scrollIntoView())
@@ -379,6 +381,11 @@ async function shoot(page, name, path, opts = {}) {
     ['settings-general', '/t/t1/settings'],
     ['settings-sources', '/t/t1/settings?tab=sources'],
     ['settings-sources-conversations', '/t/t1/settings?tab=sources&sub=conversations'],
+    [
+      'settings-sources-help',
+      '/t/t1/settings?tab=sources&sub=conversations',
+      { click: 'button.help-tip', viewport: true },
+    ],
     ['settings-triage', '/t/t1/settings?tab=triage'],
     ['settings-publishing', '/t/t1/settings?tab=publishing'],
     ['settings-product', '/t/t1/settings?tab=product'],

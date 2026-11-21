@@ -49,6 +49,7 @@ export default {
     error: 'Non enregistré : {message}',
   },
   common: {
+    helpFor: 'Aide : {label}',
     newTab: '(nouvel onglet)',
     save: 'Enregistrer',
     saving: 'Enregistrement…',

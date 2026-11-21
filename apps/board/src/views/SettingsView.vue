@@ -379,6 +379,8 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
 <style scoped>
 .layout {
   display: grid;
+  /* One column that may shrink: a row of sub-tabs scrolls instead of widening the page. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
 }
 

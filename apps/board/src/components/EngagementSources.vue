@@ -17,6 +17,7 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import Icon from './Icon.vue'
+import HelpTip from './HelpTip.vue'
 
 /** Where the engagement tool looks for conversations: Hacker News and Bluesky searches. */
 const props = defineProps<{ topicId: string }>()
@@ -255,7 +256,13 @@ const queryOf = (source: Source) =>
           </select>
         </div>
         <div v-if="type === 'hackernews'" class="form-row">
-          <label :for="`${id}-points`">{{ t('engagement.sources.minPoints') }}</label>
+          <div class="label-row">
+            <label :for="`${id}-points`">{{ t('engagement.sources.minPoints') }}</label>
+            <HelpTip
+              :label="t('engagement.sources.minPoints')"
+              :text="t('engagement.sources.minPointsHint')"
+            />
+          </div>
           <input
             :id="`${id}-points`"
             v-model.number="minPoints"
@@ -263,11 +270,7 @@ const queryOf = (source: Source) =>
             type="number"
             min="0"
             step="1"
-            :aria-describedby="`${id}-points-hint`"
           />
-          <p :id="`${id}-points-hint`" class="hint">
-            {{ t('engagement.sources.minPointsHint') }}
-          </p>
         </div>
         <div v-if="type === 'bluesky'" class="form-row">
           <label :for="`${id}-lang`"
@@ -412,6 +415,16 @@ const queryOf = (source: Source) =>
 .pair .field {
   width: 100%;
   min-width: 0;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.label-row > label {
+  font-weight: 650;
 }
 
 .pair .number {
