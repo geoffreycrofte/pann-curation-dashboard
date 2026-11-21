@@ -2,7 +2,7 @@
 /**
  * Diffusion within thumb's reach on small screens: once the page is scrolled a little,
  * a floating island offers "schedule on the next slot" and "publish now" as icon
- * buttons, so a long item (summaries, posts) need not be read to the end to publish it.
+ * buttons, so a long page (summaries, posts) need not be read to the end to publish.
  * Either opens a drawer, grown from the island, that asks to confirm. The island hides
  * while the diffusion section itself is on screen: its buttons are then right there.
  */
