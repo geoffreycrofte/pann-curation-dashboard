@@ -28,6 +28,7 @@ import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FirstCommentEditor from '../components/FirstCommentEditor.vue'
 import ComposeFromIdea from '../components/compose/ComposeFromIdea.vue'
+import Icon from '../components/Icon.vue'
 import KindSelect from '../components/KindSelect.vue'
 import QuickPublish from '../components/QuickPublish.vue'
 import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
@@ -367,6 +368,7 @@ usePageDetail(() => detail.value?.item.title)
       </RouterLink>
     </p>
     <h1 tabindex="-1" :lang="detail.item.source_lang ?? undefined">{{ detail.item.title }}</h1>
+    <!-- Where the item stands, at a glance: status, score, warnings, date. -->
     <ul class="meta">
       <li>
         <span
@@ -383,7 +385,45 @@ usePageDetail(() => detail.value?.item.title)
           {{ t(`statusOne.${detail.status}`) }}
         </span>
       </li>
-      <li class="kind-field">
+      <li v-if="detail.relevance_score !== null">
+        <span class="badge" data-tone="accent">
+          {{ t('board.relevance', { score: detail.relevance_score }) }}
+        </span>
+      </li>
+      <li v-if="detail.is_commercial">
+        <span class="badge" data-dot>{{ t('board.commercial') }}</span>
+      </li>
+      <li class="date">
+        {{
+          t('board.discovered', {
+            date: d(new Date(detail.item.discovered_at), { dateStyle: 'medium' }),
+          })
+        }}
+      </li>
+    </ul>
+    <p v-if="detail.triage_reason" class="reason">
+      {{ t('board.reason', { reason: detail.triage_reason }) }}
+    </p>
+    <!-- What can be done with the item itself: read it, take it to Création, file it. -->
+    <div class="toolbar">
+      <a
+        class="source-link"
+        :href="detail.item.canonical_url"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ t('draft.source') }}
+        <Icon name="external-link" :size="16" />
+        <span class="visually-hidden">{{ t('common.newTab') }}</span>
+      </a>
+      <!-- Your own take on it, in Création (when the topic uses it). -->
+      <ComposeFromIdea
+        v-if="detail.status === 'validated' || detail.status === 'published'"
+        :topic-id="topicId"
+        :title="detail.item.title"
+        :url="detail.item.canonical_url"
+      />
+      <div class="kind-field">
         <!-- The kind of the item in this topic: set by the source, the triage or here. -->
         <label for="item-kind">{{ t('itemKind.label') }}</label>
         <KindSelect
@@ -393,32 +433,8 @@ usePageDetail(() => detail.value?.item.title)
           :disabled="savingKind"
           @update:model-value="(kind) => saveKind(kind)"
         />
-      </li>
-      <li v-if="detail.relevance_score !== null">
-        {{ t('board.relevance', { score: detail.relevance_score }) }}
-      </li>
-      <li v-if="detail.is_commercial">{{ t('board.commercial') }}</li>
-      <li>
-        {{
-          t('board.discovered', {
-            date: d(new Date(detail.item.discovered_at), { dateStyle: 'medium' }),
-          })
-        }}
-      </li>
-    </ul>
-    <p class="source-line">
-      <a :href="detail.item.canonical_url" target="_blank" rel="noopener noreferrer">{{
-        t('draft.source')
-      }}</a>
-      <!-- Your own take on it, in Création (when the topic uses it). -->
-      <ComposeFromIdea
-        v-if="detail.status === 'validated' || detail.status === 'published'"
-        :topic-id="topicId"
-        :title="detail.item.title"
-        :url="detail.item.canonical_url"
-      />
-    </p>
-    <p v-if="detail.triage_reason">{{ t('board.reason', { reason: detail.triage_reason }) }}</p>
+      </div>
+    </div>
 
     <section class="block draft-state" :data-tone="draftTone" aria-labelledby="drafting-status">
       <span class="state-icon" aria-hidden="true">
@@ -551,31 +567,72 @@ usePageDetail(() => detail.value?.item.title)
       </p>
     </section>
 
-    <section v-if="detail.summaries.length" class="block" aria-labelledby="summaries">
-      <h2 id="summaries">{{ t('draft.summaries') }}</h2>
-      <p v-if="nature">{{ t('draft.sourceNature', { nature: t(`draft.natures.${nature}`) }) }}</p>
-      <figure v-if="excerpt" class="excerpt">
-        <figcaption class="hint">{{ t('draft.excerpt') }}</figcaption>
-        <blockquote :lang="detail.item.source_lang ?? undefined">{{ excerpt }}</blockquote>
-      </figure>
-      <div class="pair">
-        <template v-for="lang in contentLangs" :key="lang">
-          <TextSaver
-            v-if="detail.summaries.find((s) => s.lang === lang)"
-            :label="t('draft.summaryLabel', { lang: contentLangName(lang) })"
-            :value="detail.summaries.find((s) => s.lang === lang)!.summary"
-            :lang="lang"
-            :edited="detail.summaries.find((s) => s.lang === lang)!.edited_by_human"
-            :description="t('draft.summaryUse')"
-            :save="(text) => saveSummary(lang, text)"
-            :rewrite="
-              (text, preset, instruction) =>
-                rewriteText({ kind: 'summary', lang }, text, preset, instruction)
-            "
-          />
-        </template>
+    <section
+      v-if="detail.posts.length"
+      ref="diffusionSection"
+      class="block next-step"
+      aria-labelledby="diffusion"
+    >
+      <h2 id="diffusion" ref="diffusionHeading" tabindex="-1">{{ t('diffusion.title') }}</h2>
+      <p class="hint">{{ t('diffusion.intro') }}</p>
+      <p v-if="detail.publish_at && queued.length">
+        {{ t('diffusion.scheduledFor', { date: formatDate(detail.publish_at) }) }}
+      </p>
+      <p v-if="!canDiffuse">{{ t('diffusion.notReady') }}</p>
+      <p v-else-if="topic && !hasChannels">
+        {{ t('diffusion.noAccount') }}
+        <RouterLink :to="{ name: 'settings', params: { topicId }, query: { tab: 'publishing' } }">{{
+          t('diffusion.configure')
+        }}</RouterLink>
+      </p>
+      <div v-else class="row">
+        <button
+          v-if="toSchedule.length"
+          type="button"
+          class="button"
+          data-variant="primary"
+          :disabled="scheduling"
+          @click="schedule('next_slot')"
+        >
+          {{ onlyFailed ? t('diffusion.retry') : t('diffusion.schedule') }}
+        </button>
+        <AlertDialogRoot v-if="toSchedule.length || canUnschedule">
+          <AlertDialogTrigger as-child>
+            <button type="button" class="button" :disabled="scheduling">
+              {{ t('diffusion.publishNow') }}
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogPortal>
+            <AlertDialogOverlay class="dialog-overlay" />
+            <AlertDialogContent class="dialog">
+              <AlertDialogTitle class="dialog-title">
+                {{ t('diffusion.confirmNowTitle') }}
+              </AlertDialogTitle>
+              <AlertDialogDescription>{{ t('diffusion.confirmNowText') }}</AlertDialogDescription>
+              <div class="dialog-actions">
+                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                <AlertDialogAction class="button" data-variant="primary" @click="schedule('now')">
+                  {{ t('diffusion.publishNow') }}
+                </AlertDialogAction>
+              </div>
+            </AlertDialogContent>
+          </AlertDialogPortal>
+        </AlertDialogRoot>
+        <button
+          v-if="canUnschedule"
+          type="button"
+          class="button"
+          :disabled="unscheduling"
+          @click="unschedule()"
+        >
+          {{ t('diffusion.unschedule') }}
+        </button>
       </div>
+      <p role="status" :class="{ error: diffusionError }">{{ diffusionMessage }}</p>
     </section>
+    <p v-else-if="detail.draft_status !== 'pending'" class="hint empty-note">
+      {{ t('draft.empty') }}
+    </p>
 
     <section v-if="missing.length" class="missing-posts" aria-labelledby="missing-posts-title">
       <h2 id="missing-posts-title">{{ t('missingPosts.title') }}</h2>
@@ -672,72 +729,31 @@ usePageDetail(() => detail.value?.item.title)
       </section>
     </section>
 
-    <section
-      v-if="detail.posts.length"
-      ref="diffusionSection"
-      class="block"
-      aria-labelledby="diffusion"
-    >
-      <h2 id="diffusion" ref="diffusionHeading" tabindex="-1">{{ t('diffusion.title') }}</h2>
-      <p class="hint">{{ t('diffusion.intro') }}</p>
-      <p v-if="detail.publish_at && queued.length">
-        {{ t('diffusion.scheduledFor', { date: formatDate(detail.publish_at) }) }}
-      </p>
-      <p v-if="!canDiffuse">{{ t('diffusion.notReady') }}</p>
-      <p v-else-if="topic && !hasChannels">
-        {{ t('diffusion.noAccount') }}
-        <RouterLink :to="{ name: 'settings', params: { topicId }, query: { tab: 'publishing' } }">{{
-          t('diffusion.configure')
-        }}</RouterLink>
-      </p>
-      <div v-else class="row">
-        <button
-          v-if="toSchedule.length"
-          type="button"
-          class="button"
-          data-variant="primary"
-          :disabled="scheduling"
-          @click="schedule('next_slot')"
-        >
-          {{ onlyFailed ? t('diffusion.retry') : t('diffusion.schedule') }}
-        </button>
-        <AlertDialogRoot v-if="toSchedule.length || canUnschedule">
-          <AlertDialogTrigger as-child>
-            <button type="button" class="button" :disabled="scheduling">
-              {{ t('diffusion.publishNow') }}
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogPortal>
-            <AlertDialogOverlay class="dialog-overlay" />
-            <AlertDialogContent class="dialog">
-              <AlertDialogTitle class="dialog-title">
-                {{ t('diffusion.confirmNowTitle') }}
-              </AlertDialogTitle>
-              <AlertDialogDescription>{{ t('diffusion.confirmNowText') }}</AlertDialogDescription>
-              <div class="dialog-actions">
-                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
-                <AlertDialogAction class="button" data-variant="primary" @click="schedule('now')">
-                  {{ t('diffusion.publishNow') }}
-                </AlertDialogAction>
-              </div>
-            </AlertDialogContent>
-          </AlertDialogPortal>
-        </AlertDialogRoot>
-        <button
-          v-if="canUnschedule"
-          type="button"
-          class="button"
-          :disabled="unscheduling"
-          @click="unschedule()"
-        >
-          {{ t('diffusion.unschedule') }}
-        </button>
+    <section v-if="detail.summaries.length" class="block" aria-labelledby="summaries">
+      <h2 id="summaries">{{ t('draft.summaries') }}</h2>
+      <p v-if="nature">{{ t('draft.sourceNature', { nature: t(`draft.natures.${nature}`) }) }}</p>
+      <figure v-if="excerpt" class="excerpt">
+        <figcaption class="hint">{{ t('draft.excerpt') }}</figcaption>
+        <blockquote :lang="detail.item.source_lang ?? undefined">{{ excerpt }}</blockquote>
+      </figure>
+      <div class="pair">
+        <template v-for="lang in contentLangs" :key="lang">
+          <TextSaver
+            v-if="detail.summaries.find((s) => s.lang === lang)"
+            :label="t('draft.summaryLabel', { lang: contentLangName(lang) })"
+            :value="detail.summaries.find((s) => s.lang === lang)!.summary"
+            :lang="lang"
+            :edited="detail.summaries.find((s) => s.lang === lang)!.edited_by_human"
+            :description="t('draft.summaryUse')"
+            :save="(text) => saveSummary(lang, text)"
+            :rewrite="
+              (text, preset, instruction) =>
+                rewriteText({ kind: 'summary', lang }, text, preset, instruction)
+            "
+          />
+        </template>
       </div>
-      <p role="status" :class="{ error: diffusionError }">{{ diffusionMessage }}</p>
     </section>
-    <p v-else-if="detail.draft_status !== 'pending'" class="hint empty-note">
-      {{ t('draft.empty') }}
-    </p>
     <QuickPublish
       v-if="canDiffuse && hasChannels"
       :can-schedule="toSchedule.length > 0"
@@ -752,11 +768,46 @@ usePageDetail(() => detail.value?.item.title)
 </template>
 
 <style scoped>
-.source-line {
+/* Diffusion, the next step once the drafting is ready: the gold edge marks it. */
+.block.next-step {
+  border-inline-start: 6px solid var(--color-accent-fill);
+}
+
+/* .block comes later and resets the border: the status edge keeps its width here. */
+.block.draft-state {
+  border-inline-start-width: 6px;
+}
+
+/* Header: status line, the AI's reason, then the item's own tools on one row. */
+.reason {
+  max-width: 48rem;
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}
+
+.toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.25rem;
+  font-weight: 650;
+}
+
+/* The kind is filed away from the actions, at the end of the row (wide screens). */
+@media (min-width: 40rem) {
+  .toolbar .kind-field {
+    margin-inline-start: auto;
+  }
 }
 
 /* Drafting status: tone and icon follow the state (text first, color reinforces). */
@@ -927,10 +978,16 @@ usePageDetail(() => detail.value?.item.title)
 .meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) var(--space-4);
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
   padding: 0;
   list-style: none;
   color: var(--color-text-muted);
+}
+
+.meta .date {
+  font-size: 0.875rem;
 }
 
 .block {

@@ -112,13 +112,14 @@ const { mutate, isLoading } = useMutation({
 </template>
 
 <style scoped>
+/* In the page header: the button sits by the heading, the open form takes a full row. */
 .add-item {
-  margin-bottom: var(--space-4);
+  display: contents;
 }
 
 .form {
+  flex-basis: 100%;
   max-width: 40rem;
-  margin-top: var(--space-3);
   padding: var(--space-5) var(--space-6) var(--space-6);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg);

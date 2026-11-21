@@ -47,6 +47,20 @@ h2 {
   font-weight: 700;
 }
 
+/* Page header: the heading, and the page's own action on its right (wraps under it). */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.page-head h1 {
+  margin: 0;
+}
+
 h3 {
   font-size: 1.125rem;
   font-weight: 700;

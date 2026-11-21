@@ -43,6 +43,7 @@ export default {
   },
   theme: { dark: 'Mode sombre' },
   common: {
+    newTab: '(nouvel onglet)',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
     saved: 'Modifications enregistrées.',
@@ -1114,8 +1115,7 @@ export default {
   },
   board: {
     heading: 'Veille : {topic}',
-    openDetail: 'Fiche et rédaction',
-    openDetailLabel: 'Fiche et rédaction de « {title} »',
+    sourceLabel: '{site} : lire la source de « {title} » (nouvel onglet)',
     reason: 'Analyse : {reason}',
     commercial: 'Contenu promotionnel',
     triagePending: 'En attente du tri IA',

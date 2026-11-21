@@ -12,6 +12,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { describeError } from '../lib/errors'
 import { useTopicKinds } from '../lib/kinds'
+import Icon from './Icon.vue'
 
 const props = defineProps<{ item: BoardItem; busy: boolean }>()
 const emit = defineEmits<{ setStatus: [status: ItemTopicStatus]; excludeSite: [domain: string] }>()
@@ -29,6 +30,13 @@ const level = computed(() => {
   if (score >= 50) return 'mid'
   return 'low'
 })
+const draftTone = computed(() =>
+  props.item.draft_status === 'ready'
+    ? 'success'
+    : props.item.draft_status === 'failed'
+      ? 'danger'
+      : 'accent',
+)
 const actions = computed(() =>
   (
     [
@@ -56,63 +64,74 @@ const actions = computed(() =>
       <ul class="badges">
         <li v-if="item.kind" class="badge" data-tone="accent">{{ kindLabel(item.kind) }}</li>
         <li v-if="item.origin === 'manual'" class="badge">{{ t('board.manual') }}</li>
-        <li v-if="item.is_commercial" class="badge" data-tone="danger" data-dot>
+        <li v-if="item.is_commercial" class="badge" data-dot>
           {{ t('board.commercial') }}
+        </li>
+        <!-- Where the drafting stands: the next step of a validated item. -->
+        <li v-if="item.draft_status !== 'none'" class="badge" data-dot :data-tone="draftTone">
+          {{ t(`draft.status.${item.draft_status}`) }}
         </li>
       </ul>
 
+      <!-- The title leads to the item page (summaries, posts, diffusion); the site, to the source. -->
       <h2 :id="headingId" class="title">
-        <a
-          :href="item.canonical_url"
-          target="_blank"
-          rel="noopener noreferrer"
+        <RouterLink
+          :to="{ name: 'item', params: { topicId: item.topic_id, itemId: item.item_id } }"
           :lang="item.source_lang ?? undefined"
         >
           {{ item.title }}
-        </a>
+        </RouterLink>
       </h2>
 
       <p v-if="item.triage_reason" class="reason">
         {{ t('board.reason', { reason: item.triage_reason }) }}
       </p>
 
-      <ul class="meta">
-        <!-- Shown by the score tile; kept here as text for assistive technologies. -->
-        <li :class="{ 'visually-hidden': item.relevance_score !== null }">
-          {{
-            item.relevance_score === null
-              ? t('board.triagePending')
-              : t('board.relevance', { score: item.relevance_score })
-          }}
-        </li>
-        <li>
-          {{
-            t('board.discovered', {
-              date: d(new Date(item.discovered_at), { dateStyle: 'medium' }),
-            })
-          }}
-        </li>
-        <li v-if="site" class="site">{{ site }}</li>
-        <li v-if="item.publish_at && Date.parse(item.publish_at) > Date.now()">
-          {{
-            t('board.scheduledFor', {
-              date: d(new Date(item.publish_at), { dateStyle: 'medium', timeStyle: 'short' }),
-            })
-          }}
-        </li>
-        <li v-if="item.draft_status !== 'none'" :class="{ error: item.draft_error }">
-          {{
-            item.draft_error
-              ? t('draft.statusWithError', {
-                  status: t(`draft.status.${item.draft_status}`),
-                  error: describeError(item.draft_error, t).text,
-                })
-              : t(`draft.status.${item.draft_status}`)
-          }}
-        </li>
-      </ul>
-
       <div class="footer">
+        <ul class="meta">
+          <!-- Shown by the score tile; kept here as text for assistive technologies. -->
+          <li :class="{ 'visually-hidden': item.relevance_score !== null }">
+            {{
+              item.relevance_score === null
+                ? t('board.triagePending')
+                : t('board.relevance', { score: item.relevance_score })
+            }}
+          </li>
+          <li>
+            {{
+              t('board.discovered', {
+                date: d(new Date(item.discovered_at), { dateStyle: 'medium' }),
+              })
+            }}
+          </li>
+          <li v-if="site" class="site">
+            <a
+              :href="item.canonical_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              :aria-label="t('board.sourceLabel', { site, title: item.title })"
+            >
+              {{ site }}
+              <Icon name="external-link" :size="14" />
+            </a>
+          </li>
+          <li v-if="item.publish_at && Date.parse(item.publish_at) > Date.now()">
+            {{
+              t('board.scheduledFor', {
+                date: d(new Date(item.publish_at), { dateStyle: 'medium', timeStyle: 'short' }),
+              })
+            }}
+          </li>
+          <li v-if="item.draft_error" class="error">
+            {{
+              t('draft.statusWithError', {
+                status: t(`draft.status.${item.draft_status}`),
+                error: describeError(item.draft_error, t).text,
+              })
+            }}
+          </li>
+        </ul>
+
         <div
           v-if="actions.length"
           class="actions"
@@ -123,7 +142,7 @@ const actions = computed(() =>
             <!-- Reject: this item only, or the whole site from now on. -->
             <DropdownMenuRoot v-if="action.to === 'rejected' && site">
               <DropdownMenuTrigger as-child>
-                <button type="button" class="button" :disabled="busy">
+                <button type="button" class="button" data-size="small" :disabled="busy">
                   {{ t(action.label) }}
                   <svg
                     class="chevron"
@@ -157,6 +176,7 @@ const actions = computed(() =>
               v-else
               type="button"
               class="button"
+              data-size="small"
               :data-variant="action.variant"
               :disabled="busy"
               @click="emit('setStatus', action.to)"
@@ -165,25 +185,19 @@ const actions = computed(() =>
             </button>
           </template>
         </div>
-        <RouterLink
-          class="detail-link"
-          :to="{ name: 'item', params: { topicId: item.topic_id, itemId: item.item_id } }"
-          :aria-label="t('board.openDetailLabel', { title: item.title })"
-        >
-          {{ t('board.openDetail') }}
-          <span aria-hidden="true">→</span>
-        </RouterLink>
       </div>
     </div>
   </article>
 </template>
 
 <style scoped>
+/* A publication: the gold edge of its content type, as in Création and Conversations. */
 .item {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--space-5);
-  padding: var(--space-5);
+  gap: var(--space-2) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border-inline-start: 4px solid var(--color-kind-publication);
 }
 
 .item:focus-visible {
@@ -196,8 +210,8 @@ const actions = computed(() =>
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 4rem;
+  height: 4rem;
   border-radius: var(--radius-lg);
   background: var(--color-surface-2);
   color: var(--color-text);
@@ -205,7 +219,7 @@ const actions = computed(() =>
 
 .score-value {
   font-family: var(--font-display);
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 800;
   line-height: 1;
 }
@@ -253,21 +267,27 @@ const actions = computed(() =>
 
 .title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.1875rem;
+  line-height: 1.3;
 }
 
 .title a {
   color: var(--color-text);
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-subtle);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
 }
 
 .title a:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
+/* The AI's reason supports the title: quieter, still fully readable. */
 .reason {
   margin: 0;
-  color: var(--color-text);
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
 }
 
 .meta {
@@ -282,9 +302,19 @@ const actions = computed(() =>
   overflow-wrap: anywhere;
 }
 
-.meta .site::before {
-  content: '•' / '';
-  margin-inline-end: var(--space-4);
+.meta .site a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: inherit;
+}
+
+/* The separator only while date and site share a line. */
+@media (min-width: 36rem) {
+  .meta .site::before {
+    content: '•' / '';
+    margin-inline-end: var(--space-4);
+  }
 }
 
 .footer {
@@ -293,21 +323,13 @@ const actions = computed(() =>
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-top: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-}
-
-.detail-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 2.75rem;
-  font-weight: 650;
 }
 
 @media (max-width: 36rem) {

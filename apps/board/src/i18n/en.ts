@@ -44,6 +44,7 @@ export default {
   },
   theme: { dark: 'Dark mode' },
   common: {
+    newTab: '(new tab)',
     save: 'Save',
     saving: 'Saving…',
     saved: 'Changes saved.',
@@ -1098,8 +1099,7 @@ export default {
   },
   board: {
     heading: 'News watch: {topic}',
-    openDetail: 'Details and drafts',
-    openDetailLabel: 'Details and drafts of “{title}”',
+    sourceLabel: '{site}: read the source of “{title}” (new tab)',
     reason: 'Analysis: {reason}',
     commercial: 'Promotional content',
     triagePending: 'Waiting for AI triage',
