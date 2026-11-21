@@ -1,0 +1,87 @@
+{
+  "modules": { "curation": true, "engagement": true },
+  "product": {
+    "name": "",
+    "url": "",
+    "description": "",
+    "audience": "",
+    "messages": "",
+    "proof_points": "",
+    "claims_to_avoid": "",
+    "disclosure": ""
+  },
+  "engagement": { "criteria": "", "threshold": 60, "max_age_days": 14 },
+  "kinds": [
+    {
+      "key": "news",
+      "label_fr": "Actualité",
+      "label_en": "News",
+      "labels": {},
+      "description": "Announcements, events, industry news."
+    },
+    {
+      "key": "legal",
+      "label_fr": "Légal",
+      "label_en": "Legal",
+      "labels": {},
+      "description": "Laws, regulations, standards, court or authority decisions, official guidance."
+    },
+    {
+      "key": "tool",
+      "label_fr": "Outil",
+      "label_en": "Tool",
+      "labels": {},
+      "description": "Software, libraries, extensions, services, new releases."
+    },
+    {
+      "key": "resource",
+      "label_fr": "Ressource",
+      "label_en": "Resource",
+      "labels": {},
+      "description": "Guides, tutorials, articles, research, talks."
+    }
+  ],
+  "output_langs": ["fr", "en", "de"],
+  "ai": {
+    "triage_model": "claude-haiku-4-5",
+    "draft_model": "claude-sonnet-5-5",
+    "draft_mode": "on_validate",
+    "draft_effort": "low",
+    "relevance_threshold": 50,
+    "relevance_criteria": "",
+    "editorial_rules": "",
+    "style_rules": "",
+    "post_rules": "",
+    "prompt_version": "v1"
+  },
+  "collection": {
+    "intervals_hours": { "news": 24, "legal": 48, "tool": 168, "resource": 72 },
+    "default_hours": 24,
+    "max_age_days": 30,
+    "excluded_domains": []
+  },
+  "schedule": {
+    "timezone": "Europe/Luxembourg",
+    "posts_per_day": 2,
+    "slots": ["09:00", "16:00"],
+    "digest": { "weekday": 5, "time": "08:00" }
+  },
+  "newsletter": {
+    "auto_send": false,
+    "provider": "brevo",
+    "sender_id": null,
+    "lists": {},
+    "title": {},
+    "intro": {},
+    "first_issue_from": "",
+    "logo_url": "",
+    "accent_color": "#ffc72c",
+    "footer": {},
+    "texts": {},
+    "group_by_kind": false
+  },
+  "feed": { "title": {}, "description": {}, "site_url": "" },
+  "target_channels": ["linkedin", "bluesky"],
+  "linkedin": { "signature": {}, "first_comment": {} },
+  "channels": [{ "channel": "linkedin", "account_id": "li", "langs": ["fr", "en"] }]
+}
