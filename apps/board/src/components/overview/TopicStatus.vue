@@ -150,25 +150,10 @@ const { mutate, isLoading } = useMutation({
     :data-active="active || undefined"
     :aria-labelledby="`${id}-title`"
   >
-    <div class="head">
-      <h2 :id="`${id}-title`">
-        <span class="dot" aria-hidden="true"></span>
-        {{ active ? t('topicStatus.running') : t('topicStatus.pausedTitle') }}
-      </h2>
-      <button
-        type="button"
-        class="button"
-        :disabled="isLoading"
-        :aria-describedby="`${id}-effect`"
-        @click="mutate(!active)"
-      >
-        <Icon :name="active ? 'player-pause' : 'player-play'" />
-        {{ active ? t('topicStatus.pause') : t('topicStatus.resume') }}
-      </button>
-    </div>
-    <p :id="`${id}-effect`" class="hint">
-      {{ active ? t('topicStatus.pauseEffect') : t('topicStatus.resumeEffect') }}
-    </p>
+    <h2 :id="`${id}-title`">
+      <span class="dot" aria-hidden="true"></span>
+      {{ active ? t('topicStatus.running') : t('topicStatus.pausedTitle') }}
+    </h2>
     <ul v-if="active" class="lines">
       <li v-for="line in lines" :key="line.key" :data-tone="line.tone">
         <!-- Colour and shape both say the state; the hidden label says it in words. -->
@@ -180,6 +165,24 @@ const { mutate, isLoading } = useMutation({
         <span>{{ line.text }}</span>
       </li>
     </ul>
+    <!-- The switch comes after the state it changes, its effect beside it: quiet while
+         the topic runs, the main thing to read once it is paused. -->
+    <div class="switch">
+      <button
+        type="button"
+        class="button"
+        data-size="small"
+        :disabled="isLoading"
+        :aria-describedby="`${id}-effect`"
+        @click="mutate(!active)"
+      >
+        <Icon :name="active ? 'player-pause' : 'player-play'" />
+        {{ active ? t('topicStatus.pause') : t('topicStatus.resume') }}
+      </button>
+      <p :id="`${id}-effect`" class="hint">
+        {{ active ? t('topicStatus.pauseEffect') : t('topicStatus.resumeEffect') }}
+      </p>
+    </div>
   </section>
 </template>
 
@@ -191,15 +194,7 @@ const { mutate, isLoading } = useMutation({
   padding: var(--space-4) var(--space-5);
 }
 
-.head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-}
-
-.head h2 {
+.status h2 {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -219,8 +214,30 @@ const { mutate, isLoading } = useMutation({
   background: var(--color-success);
 }
 
-.hint {
+.switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.switch .button {
+  flex: none;
+}
+
+.switch .hint {
+  flex: 1 1 20rem;
   margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Paused: the effect of resuming is what matters now, at full size. */
+.status:not([data-active]) .switch .hint {
+  font-size: 1rem;
+  color: var(--color-text);
 }
 
 .lines {
