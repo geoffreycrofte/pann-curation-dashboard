@@ -335,6 +335,10 @@ export default {
       'Nothing is collected or published. On resume, the posts whose slot has passed go out right away.',
     paused: 'Topic paused',
     resumed: 'Topic resumed',
+    collectWaiting:
+      'News watch: collection paused, {count} items are waiting to be sorted (limit of {limit})',
+    listenWaiting:
+      'Conversations: collection paused, {count} conversations are waiting to be sorted (limit of {limit})',
     okLabel: 'Ready:',
     todoLabel: 'To do:',
     collect: 'No source | News watch: one source collected | News watch: {n} sources collected',

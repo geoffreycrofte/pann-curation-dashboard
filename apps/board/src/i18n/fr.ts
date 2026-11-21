@@ -334,6 +334,10 @@ export default {
       'Rien n’est collecté ni publié. À la reprise, les posts dont le créneau est passé partent aussitôt.',
     paused: 'Thème en pause',
     resumed: 'Thème repris',
+    collectWaiting:
+      'Veille : collecte en pause, {count} éléments attendent le tri (seuil de {limit})',
+    listenWaiting:
+      'Conversations : collecte en pause, {count} conversations attendent le tri (seuil de {limit})',
     okLabel: 'Prêt :',
     todoLabel: 'À faire :',
     collect: 'Aucune source | Veille : une source collectée | Veille : {n} sources collectées',

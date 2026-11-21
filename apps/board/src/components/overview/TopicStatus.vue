@@ -4,6 +4,7 @@
  * and the switch to pause it or resume it. Paused: nothing is collected, sorted, drafted
  * by itself or published; scheduled posts wait and go out once the topic is resumed.
  */
+import { backlogLimitOf, isBacklogFull } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -40,6 +41,26 @@ const { data: engagementSources } = useQuery({
   enabled: () => !!modules.value?.engagement,
 })
 
+// Same keys as the lists: one fetch, refreshed together.
+const { data: curationCounts } = useQuery({
+  key: () => ['items', props.topicId, 'counts'],
+  query: () => api.counts(props.topicId),
+  enabled: () => !!modules.value?.curation,
+})
+const { data: engagementCounts } = useQuery({
+  key: () => ['conversations', props.topicId, 'counts'],
+  query: () => api.counts(props.topicId, 'engagement'),
+  enabled: () => !!modules.value?.engagement,
+})
+/** Collection of a tool waiting, as too much is left to sort (`pause_above`). */
+function waiting(module: 'curation' | 'engagement') {
+  const config = topic.value?.config
+  const toSort = (module === 'curation' ? curationCounts : engagementCounts).value?.new
+  if (!config || toSort === undefined) return null
+  const limit = backlogLimitOf(config, module)
+  return isBacklogFull(toSort, limit) ? { count: toSort, limit } : null
+}
+
 const active = computed(() => topic.value?.active !== false)
 const hasAi = computed(
   () => !!credentials.value?.some((c) => c.provider === 'anthropic' && c.status !== 'invalid'),
@@ -58,20 +79,30 @@ const lines = computed<Line[]>(() => {
   const list: Line[] = []
   if (config.modules.curation) {
     const n = (curationSources.value ?? []).filter((s) => s.active).length
+    const wait = n ? waiting('curation') : null
     list.push({
       key: 'collect',
       icon: 'rss',
-      ok: n > 0,
-      text: n ? t('topicStatus.collect', n) : t('topicStatus.noSources'),
+      ok: n > 0 && !wait,
+      text: wait
+        ? t('topicStatus.collectWaiting', wait)
+        : n
+          ? t('topicStatus.collect', n)
+          : t('topicStatus.noSources'),
     })
   }
   if (config.modules.engagement) {
     const n = (engagementSources.value ?? []).filter((s) => s.active).length
+    const wait = n ? waiting('engagement') : null
     list.push({
       key: 'listen',
       icon: 'messages',
-      ok: n > 0,
-      text: n ? t('topicStatus.listen', n) : t('topicStatus.noSearches'),
+      ok: n > 0 && !wait,
+      text: wait
+        ? t('topicStatus.listenWaiting', wait)
+        : n
+          ? t('topicStatus.listen', n)
+          : t('topicStatus.noSearches'),
     })
   }
   list.push({
