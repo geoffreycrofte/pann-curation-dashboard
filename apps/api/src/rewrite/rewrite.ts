@@ -13,6 +13,7 @@ import {
   rewriteSystemPrompt,
   rewriteUserMessage,
 } from './prompt'
+import { missingKeyError } from '../lib/key-error'
 
 export type RewriteModel = (call: {
   apiKey: string
@@ -117,7 +118,11 @@ export async function runRewrite(db: SupabaseClient, id: string, model: RewriteM
   const apiKey = ((secrets ?? []) as { provider: string; secret: string }[]).find(
     (s) => s.provider === 'anthropic',
   )?.secret
-  if (!apiKey) return finish({ status: 'failed', error: 'missing_credential:anthropic' })
+  if (!apiKey)
+    return finish({
+      status: 'failed',
+      error: await missingKeyError(db, row.topic.workspace_id, 'anthropic'),
+    })
 
   const target = request.data.target
   let maxChars: number | undefined

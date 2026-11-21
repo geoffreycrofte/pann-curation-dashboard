@@ -52,6 +52,8 @@ export interface DraftWrite {
 export interface DraftStore {
   pending(options: { limit: number; topicId?: string; itemId?: string }): Promise<PendingDraft[]>
   anthropicKey(workspaceId: string): Promise<string | undefined>
+  /** Why there is no key (quota used up on plans where Pann provides the AI). */
+  missingKeyError?(workspaceId: string): Promise<string>
   markCredentialInvalid(workspaceId: string): Promise<void>
   monthCostUsd(topicId: string): Promise<number>
   /** Page text for items collected without content (manual links, short feeds). */
@@ -157,7 +159,9 @@ export async function draft(deps: {
     }
     const apiKey = await deps.store.anthropicKey(item.workspace_id)
     if (!apiKey) {
-      await deps.store.saveFailure(item, 'missing_credential:anthropic', true)
+      const reason =
+        (await deps.store.missingKeyError?.(item.workspace_id)) ?? 'missing_credential:anthropic'
+      await deps.store.saveFailure(item, reason, true)
       report.skipped++
       continue
     }

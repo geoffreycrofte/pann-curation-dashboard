@@ -23,6 +23,7 @@ import { session } from '../lib/session'
 import { supabase } from '../lib/supabase'
 import { chosenTheme, setTheme, type Theme } from '../lib/theme'
 import { useWorkspace } from '../lib/workspace'
+import WorkspacePlan from '../components/WorkspacePlan.vue'
 import { toast } from '../lib/toast'
 
 /** The account of the signed-in person: identity, preferences, workspace, sessions. */
@@ -249,6 +250,7 @@ async function signOutEverywhere() {
           <span class="workspace-name">{{ membership.workspace.name }}</span>
           <span class="badge">{{ t(`profile.roles.${membership.role}`) }}</span>
         </p>
+        <WorkspacePlan :workspace-id="membership.workspace.id" />
       </div>
       <p role="status" class="message" :class="{ error: workspaceError }">
         {{ workspaceMessage }}

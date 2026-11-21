@@ -5,6 +5,7 @@ import { extractArticleText } from '../lib/article-text'
 import { fetchText } from '../lib/fetch-text'
 import type { ComposeStore, CompositionRow, MediaRow, SearchOutcome } from './jobs'
 import { SOURCE_CHARS } from './prompt'
+import { missingKeyError } from '../lib/key-error'
 
 export const MEDIA_BUCKET = 'composition-media'
 
@@ -109,6 +110,8 @@ export function supabaseComposeStore(db: SupabaseClient): ComposeStore {
         0,
       )
     },
+
+    missingKeyError: (workspaceId, provider) => missingKeyError(db, workspaceId, provider),
 
     async key(workspaceId, provider) {
       const { data, error } = await db.rpc('workspace_credentials_for_jobs', {

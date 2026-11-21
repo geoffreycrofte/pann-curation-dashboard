@@ -506,3 +506,15 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Haiku 5.5.** Le tri (veille et conversations) passe de Haiku 4.5 à Haiku 5.5 : dix fois moins cher (0,10 $ / 0,50 $ par million de tokens), qualité déjà vérifiée par Geoffrey sur un autre outil. Le modèle réfléchit avant de répondre et cette réflexion compte dans `max_tokens` : effort `low` et 2 048 tokens de marge. Les thèmes qui avaient l'ancien défaut enregistré passent au nouveau (migration) ; un autre choix est gardé.
 
 **Coûts lisibles.** Le Budget du thème donne le coût moyen par appel, par jour, par post rédigé et par post publié, et la projection du mois. L'espace d'admin liste chaque espace avec tout ce qu'il a dépensé (ses clés ou celles de Pann), la part payée par Pann, le coût par jour et par post publié (`platform_workspace_stats`) : de quoi fixer les quotas des offres sur l'usage réel.
+
+## 2026-11-21 : offres dans le produit
+
+**Une offre par espace.** Table `plans` (`own_keys`, `essential`, `pro`, `custom`) avec ses limites : thèmes, comptes LinkedIn et Facebook, tokens par mois. Les limites se règlent dans l'espace d'admin, sans déploiement. `workspaces.plan` (par défaut `own_keys`, comme avant) et `workspaces.plan_limits` pour l'offre sur mesure. Seul l'admin change l'offre d'un espace (`set_workspace_plan`) : le paiement viendra plus tard. Les membres ne peuvent plus modifier que le nom de l'espace.
+
+**Tokens pondérés.** Un token vaut 2 $ par million, le prix d'entrée du modèle de rédaction : le compteur se déduit du coût déjà enregistré dans `usage_log` (`private.cost_to_tokens`), sans compter les tokens modèle par modèle. Une rédaction compte donc plus qu'un tri, comme elle coûte plus.
+
+**Pann fournit l'IA et la recherche** sur les offres qui ont un quota de tokens. `workspace_credentials_for_jobs` y remplace les clés Anthropic et Exa de l'espace par celles de Pann tant que le quota du mois et le plafond mensuel de Pann ne sont pas atteints ; au-delà, plus de clé pour ces services, et les jobs disent `token_quota_reached` au lieu de « clé manquante ». Un trigger sur `usage_log` compte ces dépenses à Pann (`billed_to = 'platform'`), quel que soit le job qui les enregistre. Exa rejoint les clés de Pann.
+
+**Limites.** Le nombre de thèmes est vérifié par un trigger à la création (`plan_topic_limit`) ; la page « Nouveau thème » le dit avant que la personne ne commence. Les espaces existants qui ont déjà plus de thèmes que leur offre les gardent. Les comptes LinkedIn et Facebook ne sont pas encore limités.
+
+**Affichage.** Le Profil montre l'offre, les thèmes utilisés et, quand Pann fournit l'IA, les tokens du mois. Le Budget d'un thème passe alors en tokens : jamais de dollars sur ces offres.

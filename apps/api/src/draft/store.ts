@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { extractArticleText } from '../lib/article-text'
 import { fetchText } from '../lib/fetch-text'
 import { MAX_DRAFT_ATTEMPTS, type DraftStore, type PendingDraft } from './draft'
+import { missingKeyError } from '../lib/key-error'
 
 interface PendingRow {
   item_id: string
@@ -67,6 +68,8 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
         ...row.item,
       }))
     },
+
+    missingKeyError: (workspaceId) => missingKeyError(db, workspaceId, 'anthropic'),
 
     async anthropicKey(workspaceId) {
       const { data, error } = await db.rpc('workspace_credentials_for_jobs', {

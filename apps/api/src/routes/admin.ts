@@ -1,4 +1,4 @@
-import { PLATFORM_PROVIDERS, type PlatformProvider } from '@pann/shared'
+import { PLANS, PLATFORM_PROVIDERS, type PlatformProvider } from '@pann/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
@@ -29,6 +29,16 @@ const settingsBody = z
   })
   .partial()
 const handleBody = z.object({ status: z.enum(['new', 'accepted', 'declined']) })
+const limitsBody = z.object({
+  max_topics: z.number().int().min(1).max(1000).nullable(),
+  max_social_accounts: z.number().int().min(1).max(1000).nullable(),
+  monthly_tokens: z.number().int().min(1).max(10_000_000_000).nullable(),
+})
+const workspacePlanBody = z.object({
+  plan: z.enum(PLANS),
+  /** Only for the custom plan. */
+  limits: limitsBody.partial().default({}),
+})
 const usageQuery = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) })
 
 function platformProvider(value: string): PlatformProvider {
@@ -136,6 +146,46 @@ export const admin = new Hono<AppEnv>()
     })
     if (error) throw error
     return c.json(data)
+  })
+
+  /** The offers and their limits. */
+  .get('/plans', async (c) => {
+    const { data, error } = await c.var.db
+      .from('plans')
+      .select('key, max_topics, max_social_accounts, monthly_tokens, updated_at')
+    if (error) throw error
+    return c.json(PLANS.map((key) => data.find((p) => p.key === key)).filter(Boolean))
+  })
+
+  /** Limits of an offer (custom excepted: set per workspace). */
+  .patch('/plans/:key', async (c) => {
+    const key = c.req.param('key')
+    if (!(PLANS as readonly string[]).includes(key) || key === 'custom')
+      throw new HTTPException(404, { message: 'Plan not found' })
+    const body = await parseJson(limitsBody, c.req.raw)
+    const { data, error } = await c.var.db
+      .from('plans')
+      .update({ ...body, updated_at: new Date().toISOString(), updated_by: c.var.user.id })
+      .eq('key', key)
+      .select('key, max_topics, max_social_accounts, monthly_tokens, updated_at')
+      .maybeSingle()
+    if (error) throw error
+    // RLS: only platform admins update plans; anyone else updates nothing.
+    if (!data) throw new HTTPException(404, { message: 'Plan not found' })
+    return c.json(data)
+  })
+
+  /** Sets a workspace's offer (until payment does it). */
+  .put('/workspaces/:workspaceId/plan', async (c) => {
+    const body = await parseJson(workspacePlanBody, c.req.raw)
+    const { error } = await c.var.db.rpc('set_workspace_plan', {
+      p_workspace_id: c.req.param('workspaceId'),
+      p_plan: body.plan,
+      p_limits: body.limits,
+    })
+    if (error?.code === 'P0002') throw new HTTPException(404, { message: 'Workspace not found' })
+    if (error) throw error
+    return c.json({ plan: body.plan })
   })
 
   /** Access requests, newest first (the last 200). */

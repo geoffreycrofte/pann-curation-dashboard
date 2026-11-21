@@ -83,6 +83,8 @@ export interface ComposeStore {
   ): Promise<void>
   monthCostUsd(topicId: string): Promise<number>
   key(workspaceId: string, provider: 'anthropic' | 'exa'): Promise<string | undefined>
+  /** Why there is no key (quota used up on plans where Pann provides the AI). */
+  missingKeyError?(workspaceId: string, provider: string): Promise<string>
   logUsage(composition: CompositionRow, entry: UsageEntry): Promise<void>
 }
 
@@ -141,7 +143,11 @@ export async function runComposeResearch(deps: ComposeDeps, compositionId: strin
   if ((await store.monthCostUsd(composition.topic_id)) >= monthly_budget_usd)
     return fail('budget_exceeded')
   const key = await store.key(composition.workspace_id, 'exa')
-  if (!key) return fail(errorCode('missing_credential', 'exa'))
+  if (!key)
+    return fail(
+      (await store.missingKeyError?.(composition.workspace_id, 'exa')) ??
+        errorCode('missing_credential', 'exa'),
+    )
   const query = composition.subject.trim() || composition.notes.trim().slice(0, 300)
   if (!query) return fail('insufficient_content')
 
@@ -189,7 +195,11 @@ export async function runComposeDraft(deps: ComposeDeps, compositionId: string) 
   if ((await store.monthCostUsd(composition.topic_id)) >= monthly_budget_usd)
     return fail('budget_exceeded')
   const apiKey = await store.key(composition.workspace_id, 'anthropic')
-  if (!apiKey) return fail(errorCode('missing_credential', 'anthropic'))
+  if (!apiKey)
+    return fail(
+      (await store.missingKeyError?.(composition.workspace_id, 'anthropic')) ??
+        errorCode('missing_credential', 'anthropic'),
+    )
 
   // Material: notes always; with links or search, the chosen sources (read once).
   let sources = composition.sources
@@ -274,7 +284,11 @@ export async function runDescribeMedia(deps: ComposeDeps, mediaId: string) {
   if ((await store.monthCostUsd(composition.topic_id)) >= monthly_budget_usd)
     return fail('budget_exceeded')
   const apiKey = await store.key(composition.workspace_id, 'anthropic')
-  if (!apiKey) return fail(errorCode('missing_credential', 'anthropic'))
+  if (!apiKey)
+    return fail(
+      (await store.missingKeyError?.(composition.workspace_id, 'anthropic')) ??
+        errorCode('missing_credential', 'anthropic'),
+    )
 
   const bytes = await store.mediaBytes(media.storage_path)
   const model = config.ai.draft_model

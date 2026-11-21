@@ -416,6 +416,22 @@ export default {
     tabsLabel: 'Vues du calendrier',
     tabs: { scheduled: 'Programmés', history: 'Historique', newsletter: 'Newsletter' },
   },
+  plans: {
+    label: 'Offre',
+    names: {
+      own_keys: 'Clés personnelles',
+      essential: 'Intermédiaire',
+      pro: 'Supérieure',
+      custom: 'Sur mesure',
+    },
+    topics: 'Thèmes : {used} sur {max}',
+    topicsUnlimited: 'Thèmes : {used}, sans limite',
+    ownKeys: 'L’IA, la recherche et la publication passent par vos propres clés (page Connexions).',
+    tokens: 'Tokens ce mois-ci : {used} sur {max}',
+    tokensHint:
+      'Pann fournit l’IA et la recherche. Une rédaction compte davantage qu’un tri : elle coûte plus. Le compteur repart le 1er du mois.',
+    change: 'Pour changer d’offre ou obtenir une offre sur mesure, contactez Pann.',
+  },
   profile: {
     title: 'Profil',
     intro: 'Votre compte Pann : identité, préférences, espace de travail et sessions.',
@@ -688,6 +704,10 @@ export default {
     provider_error: 'Le service d’IA n’a pas pu répondre. Nouvel essai automatique.',
     insufficient_content:
       'Contenu de la source insuffisant pour un résumé fiable (page vide, payante ou trop courte). Lisez la source.',
+    token_quota_reached:
+      'Les tokens du mois sont épuisés : l’IA et la recherche reprennent le 1er du mois prochain.',
+    plan_topic_limit:
+      'Votre offre ne permet pas d’autre thème. Pour en ajouter, il faut une offre plus élevée ou une offre sur mesure.',
     budget_exceeded:
       'Plafond mensuel du thème atteint : rédaction suspendue jusqu’au mois prochain.',
     refusal: 'Le modèle a refusé de traiter ce contenu.',
@@ -847,6 +867,11 @@ export default {
         name: 'Anthropic (Claude)',
         purpose: 'IA de la conversation d’onboarding et des offres où Pann fournit l’IA.',
       },
+      exa: {
+        name: 'Exa',
+        purpose:
+          'Recherche web des offres où Pann fournit les services (sources de recherche, Création). Exa n’a pas de vérification gratuite : la clé est enregistrée sans être testée.',
+      },
       zernio: {
         name: 'Zernio, mode plateforme',
         purpose:
@@ -912,10 +937,25 @@ export default {
     usageCaption: 'Dépenses payées par Pann en {month}',
     statsTitle: 'Coûts par espace',
     statsHint:
-      'Tout ce que chaque espace a dépensé ce mois-là, avec ses clés ou celles de Pann, et le coût par jour et par post publié. Les espaces sans dépense ne sont pas listés.',
+      'L’offre de chaque espace, tout ce qu’il a dépensé ce mois-là avec ses clés ou celles de Pann, et le coût par jour et par post publié.',
     noStats: 'Aucune dépense ce mois-là.',
     statsCaption: 'Coûts par espace en {month}',
     colTopics: 'Thèmes',
+    colPlan: 'Offre',
+    plans: {
+      title: 'Offres',
+      intro:
+        'Les limites de chaque offre, appliquées à tous les espaces qui l’ont. L’offre sur mesure se règle espace par espace, dans le tableau des coûts.',
+      maxTopics: 'Thèmes au maximum',
+      maxAccounts: 'Comptes LinkedIn et Facebook',
+      monthlyTokens: 'Tokens par mois',
+      emptyHint:
+        'Un champ vide veut dire sans limite. Les comptes LinkedIn et Facebook ne sont pas encore limités par Pann. Sur mesure, sans tokens, l’espace utilise ses propres clés.',
+      saved: 'Offre {plan} enregistrée.',
+      workspaceSaved: '{name} : offre {plan}.',
+      planOf: 'Offre de {name}',
+      customOf: 'Limites sur mesure de {name}',
+    },
     colPaidByPann: 'Dont Pann',
     colPerDay: 'Par jour',
     colPublished: 'Posts publiés',
@@ -1430,6 +1470,11 @@ export default {
     lastError: 'Dernière erreur : {message}',
   },
   onboarding: {
+    limit: {
+      title: 'Plus de place pour un nouveau thème',
+      text: 'L’offre {plan} permet {max} thèmes, et ils sont tous créés. Pour en ajouter un, il faut une offre plus élevée ou une offre sur mesure ; vous pouvez aussi supprimer un thème dont vous n’avez plus besoin.',
+      link: 'Voir mon offre',
+    },
     goal: {
       name: 'Que voulez-vous faire connaître ?',
       url: 'Adresse du site',
@@ -1808,6 +1853,8 @@ export default {
     postRulesPlaceholder: 'Exemple : 2 hashtags au maximum, pas d’emoji.',
     budget: 'Budget mensuel de ce thème',
     budgetLabel: 'Plafond mensuel (en dollars US)',
+    budgetLabelTokens: 'Plafond mensuel (en tokens)',
+    tokensAmount: '{n} tokens',
     budgetHint:
       'Au-delà, la rédaction par IA se suspend jusqu’au mois suivant. Le tri continue : il coûte peu.',
     spent: 'Dépensé ce mois-ci : {spent} sur {budget}',

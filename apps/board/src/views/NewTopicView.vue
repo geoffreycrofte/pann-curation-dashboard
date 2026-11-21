@@ -27,6 +27,16 @@ provideOnboardingDraft(draft)
 
 // The assistant's part exists only when Pann's assistant can run for this workspace (key
 // set, onboarding credit and monthly cap not reached); otherwise its questions are text.
+// The offer may allow no other topic: say so before the person spends time on the setup.
+const { data: plan } = useQuery({
+  key: () => ['workspace-plan', workspaceId.value ?? ''],
+  query: () => api.workspacePlan(workspaceId.value!),
+  enabled: () => !!workspaceId.value,
+})
+const atLimit = computed(
+  () =>
+    !!plan.value && plan.value.max_topics !== null && plan.value.topics >= plan.value.max_topics,
+)
 const { data: assistant } = useQuery({
   key: () => ['onboarding-available', workspaceId.value ?? ''],
   query: () => api.onboardingAvailable(workspaceId.value!),
@@ -78,7 +88,19 @@ function quit() {
       </button>
     </template>
 
-    <template v-if="mode === 'thread'">
+    <template v-if="atLimit && plan">
+      <h1 tabindex="-1">{{ t('onboarding.limit.title') }}</h1>
+      <p class="notice" role="note">
+        {{
+          t('onboarding.limit.text', {
+            plan: t(`plans.names.${plan.plan}`),
+            max: plan.max_topics,
+          })
+        }}
+        <RouterLink :to="{ name: 'profile' }">{{ t('onboarding.limit.link') }}</RouterLink>
+      </p>
+    </template>
+    <template v-else-if="mode === 'thread'">
       <h1 tabindex="-1">{{ t('onboarding.thread.title') }}</h1>
       <OnboardingThread
         v-if="workspaceId"
