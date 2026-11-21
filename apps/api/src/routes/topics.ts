@@ -614,6 +614,7 @@ export const topics = new Hono<AppEnv>()
       // ties in a stable order, across refreshes and pages.
       .order('item_id')
       .range(offset, offset + limit - 1)
+      .returns<({ same_story_of: string | null } & Record<string, unknown>)[]>()
     if (error) throw error
     // The same story found at triage: its title, to name it on the card.
     const ids = [...new Set(data.map((row) => row.same_story_of).filter((id) => id !== null))]

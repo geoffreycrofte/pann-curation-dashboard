@@ -59,6 +59,7 @@ describe('triage', () => {
         relevance: user.includes('/a') ? 87 : 12,
         commercial: false,
         reason: 'Reason',
+        same_story_as: 0,
       },
     })
     const report = await triage({ store, model })
@@ -83,7 +84,14 @@ describe('triage', () => {
       return {
         ok: true,
         usage,
-        output: { language: 'en', kind: 'news', relevance: 70, commercial: false, reason: 'r' },
+        output: {
+          language: 'en',
+          kind: 'news',
+          relevance: 70,
+          commercial: false,
+          reason: 'r',
+          same_story_as: 0,
+        },
       }
     }
     const report = await triage({ store, model })
