@@ -99,6 +99,7 @@ export default {
     upcoming: 'publication programmée | publication programmée | publications programmées',
     failed: 'publication en échec | publication en échec | publications en échec',
     next: 'Prochaine : {date}',
+    idle: 'Rien en attente pour l’instant.',
   },
   adjust: {
     title: 'Ajuster « {topic} » avec l’assistant',

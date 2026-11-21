@@ -100,6 +100,7 @@ export default {
     upcoming: 'scheduled posts | scheduled post | scheduled posts',
     failed: 'failed posts | failed post | failed posts',
     next: 'Next: {date}',
+    idle: 'Nothing waiting for now.',
   },
   adjust: {
     title: 'Adjust “{topic}” with the assistant',

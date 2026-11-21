@@ -42,6 +42,14 @@ export function useTopicSummary(topicId: MaybeRefOrGetter<string>) {
     topic,
     modules,
     isPending,
+    /** Every figure loaded: an empty summary can be told apart from one still coming. */
+    isReady: computed(
+      () =>
+        !!topic.value &&
+        !!queue.value &&
+        (!modules.value?.curation || !!curationCounts.value) &&
+        (!modules.value?.engagement || !!engagementCounts.value),
+    ),
     toSort: computed(() => curationCounts.value?.new ?? 0),
     toReview: computed(() => engagementCounts.value?.new ?? 0),
     upcoming,
