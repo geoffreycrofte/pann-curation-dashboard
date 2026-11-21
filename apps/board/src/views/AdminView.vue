@@ -122,6 +122,20 @@ const { data: usage, isPending: usagePending } = useQuery({
   enabled: () => /^\d{4}-\d{2}$/.test(month.value),
 })
 const total = computed(() => (usage.value ?? []).reduce((sum, r) => sum + Number(r.cost_usd), 0))
+// Per workspace: everything it spent (its keys or Pann's) and what it produced, to price
+// the offers from real figures.
+const { data: stats } = useQuery({
+  key: () => ['admin', 'workspace-stats', month.value],
+  query: () => api.adminWorkspaceStats(month.value),
+  enabled: () => /^\d{4}-\d{2}$/.test(month.value),
+})
+/** Days counted for the month: so far for the current one, all of them otherwise. */
+const monthDays = computed(() => {
+  const [year, m] = month.value.split('-').map(Number) as [number, number]
+  if (month.value === currentMonth) return new Date().getUTCDate()
+  return new Date(Date.UTC(year, m, 0)).getUTCDate()
+})
+const usedStats = computed(() => (stats.value ?? []).filter((s) => Number(s.calls) > 0))
 // Access requests: sign-up stays on invitation.
 const { data: requests, error: requestsError } = useQuery({
   key: ['admin', 'access-requests'],
@@ -548,6 +562,50 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
           </table>
         </div>
       </template>
+    </div>
+
+    <!-- Every workspace, whoever pays: cost per day and per post, to set the offers. -->
+    <div class="subsection">
+      <h3 class="subsection-title">{{ t('admin.statsTitle') }}</h3>
+      <p class="hint">{{ t('admin.statsHint') }}</p>
+      <p v-if="!usedStats.length">{{ t('admin.noStats') }}</p>
+      <div v-else class="table-wrap">
+        <table>
+          <caption class="visually-hidden">
+            {{
+              t('admin.statsCaption', { month })
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">{{ t('admin.colWorkspace') }}</th>
+              <th scope="col" class="num">{{ t('admin.colTopics') }}</th>
+              <th scope="col" class="num">{{ t('admin.colCost') }}</th>
+              <th scope="col" class="num">{{ t('admin.colPaidByPann') }}</th>
+              <th scope="col" class="num">{{ t('admin.colPerDay') }}</th>
+              <th scope="col" class="num">{{ t('admin.colPublished') }}</th>
+              <th scope="col" class="num">{{ t('admin.colPerPost') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in usedStats" :key="row.workspace_id">
+              <th scope="row">{{ row.workspace_name }}</th>
+              <td class="num">{{ n(Number(row.topics)) }}</td>
+              <td class="num">{{ usd(Number(row.cost_usd)) }}</td>
+              <td class="num">{{ usd(Number(row.platform_cost_usd)) }}</td>
+              <td class="num">{{ usd(Number(row.cost_usd) / monthDays) }}</td>
+              <td class="num">{{ n(Number(row.posts_published)) }}</td>
+              <td class="num">
+                {{
+                  Number(row.posts_published)
+                    ? usd(Number(row.cost_usd) / Number(row.posts_published))
+                    : '-'
+                }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 </template>

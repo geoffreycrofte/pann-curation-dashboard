@@ -8,8 +8,8 @@
 - **Le repérage de conversations est la partie chère du marché** : 30 à 50 $ chez les outils indépendants, 159 à 249 $ chez Octolens et Brand24. C'est l'argument de l'offre intermédiaire.
 - **La publication seule est bon marché** : 4 à 6 $ par réseau (Publer, Buffer), 16 à 20 $ pour un forfait (Metricool, Later, ContentStudio). Pann ne gagnera pas sur ce terrain-là.
 - **Le coût de Pann par client vient surtout de Zernio** (comptes LinkedIn et Facebook), puis de la rédaction par IA. Exa est négligeable.
-- **Le tri sur Haiku 4.5 coûte dix fois trop cher** : Haiku 5.5 fait le même travail à 0,10 $ / 0,50 $ par million de tokens, contre 1 $ / 5 $. À tester avant de fixer les quotas.
-- **Proposition à discuter** : clés personnelles à 2 € par mois (24 € par an), offre intermédiaire autour de 19 € par mois, offre supérieure autour de 49 € par mois, avec 20 % de remise à l'année.
+- **Le tri passe sur Haiku 5.5** (décision du 2026-11-21) : le même travail à 0,10 $ / 0,50 $ par million de tokens, contre 1 $ / 5 $ pour Haiku 4.5.
+- **Proposition à discuter** : clés personnelles à 2 € par mois (24 € par an, 2 thèmes), offre intermédiaire autour de 19 € par mois (3 thèmes), offre supérieure autour de 49 € par mois (5 thèmes), sur mesure au-delà, avec 20 % de remise à l'année.
 
 ## Ce que coûte la concurrence
 
@@ -85,6 +85,8 @@ Estimation tirée de la taille des prompts du code, pas de la consommation réel
 | Réponse proposée                          | Sonnet 5.5 | 2 500 / 400                                     | 0,009 $        |
 | Post de Création (recherche et rédaction) | Sonnet 5.5 | 10 000 / 2 500                                  | 0,045 $        |
 
+Chiffres réels d'un thème (capture du Budget, novembre 2026, tri encore sur Haiku 4.5) : 45 rédactions pour 1,31 $ (0,029 $ chacune), 110 tris pour 0,25 $ (0,0023 $), 12 recherches Exa pour 0,084 $ (0,007 $), 5 réécritures pour 0,028 $. L'estimation de la rédaction (0,023 $) est un peu basse : compter 0,03 $. Le Budget du thème et l'espace d'admin donnent maintenant le coût par jour et par post, pour recaler ces chiffres sur l'usage réel.
+
 ### Total par mois
 
 | Profil | IA (tri Haiku 4.5) | IA (tri Haiku 5.5) | Zernio (3 $ par compte) | Zernio (6 $ par compte) | Exa    | Total, de… à… |
@@ -96,17 +98,39 @@ Le paiement en ligne prend en plus environ 1,5 % et 0,25 € par paiement en Eur
 
 ## Ce que ça veut dire pour les offres
 
-1. **Clés personnelles, 2 € par mois, à l'année (24 €).** Moins cher que tout le marché, sans risque : la personne paie ses propres services. Les frais de paiement (environ 0,60 €) n'ont de sens que sur un paiement annuel.
-2. **Offre intermédiaire, autour de 19 € par mois (15 € à l'année).** Au niveau de Later Starter, ContentStudio Standard ou Metricool, mais avec la veille et les conversations, qui coûtent ailleurs 30 $ et plus. Couvre le profil léger avec de la marge, à condition de **limiter les comptes LinkedIn et Facebook** (2 ou 3) et de passer le tri sur Haiku 5.5.
-3. **Offre supérieure, autour de 49 € par mois (39 € à l'année).** Au niveau de Later Growth, ContentStudio Advanced et Syften Standard. Le profil actif y coûte de 22 à 44 $ : la marge dépend presque entièrement du prix des comptes Zernio. Limiter à 5 ou 6 comptes, et vendre le compte supplémentaire (environ 4 € par mois).
-4. **Entreprise : sur devis.** Les offres « équipe » du marché commencent autour de 45 à 300 $.
+| Offre             | Prix par mois                   | Thèmes | Comptes LinkedIn et Facebook           | IA                              |
+| ----------------- | ------------------------------- | ------ | -------------------------------------- | ------------------------------- |
+| Clés personnelles | 2 €, à l'année seulement (24 €) | 2      | ceux de la personne, sur sa clé Zernio | ses clés, son budget en dollars |
+| Intermédiaire     | environ 19 € (15 € à l'année)   | 3      | 2 ou 3                                 | fournie, quota en tokens        |
+| Supérieure        | environ 49 € (39 € à l'année)   | 5      | 5 ou 6, le compte de plus environ 4 €  | fournie, quota plus élevé       |
+| Sur mesure        | sur devis                       | plus   | plus                                   | négociée                        |
+
+1. **Clés personnelles.** Moins cher que tout le marché, sans risque : la personne paie ses propres services. Les frais de paiement (environ 0,60 €) n'ont de sens que sur un paiement annuel. Deux thèmes suffisent pour essayer Pann sérieusement ; au-delà, l'offre intermédiaire.
+2. **Intermédiaire.** Au niveau de Later Starter, ContentStudio Standard ou Metricool, mais avec la veille et les conversations, qui coûtent ailleurs 30 $ et plus. Couvre le profil léger avec de la marge, à condition de **limiter les comptes LinkedIn et Facebook**. Trois thèmes à l'usage léger restent sous 15 $ de coûts avec le tri sur Haiku 5.5.
+3. **Supérieure.** Au niveau de Later Growth, ContentStudio Advanced et Syften Standard. Le profil actif y coûte de 22 à 44 $ : la marge dépend presque entièrement du prix des comptes Zernio.
+4. **Sur mesure, au-delà de 5 thèmes.** Les offres « équipe » du marché commencent autour de 45 à 300 $.
+
+## Argument de la page de tarifs
+
+Idée de Geoffrey, à la façon d'Odoo : « sans Pann », les outils qu'il faudrait assembler et leur total ; « avec Pann », un seul prix, plus bas. Les concurrents sont nommés comme exemples, avec en petit « tarifs relevés en novembre 2026, à titre indicatif ».
+
+Pour une personne seule, à l'année (prix ramenés au mois) :
+
+| Besoin                             | Outil d'exemple | Prix par mois    |
+| ---------------------------------- | --------------- | ---------------- |
+| Publier sur 3 réseaux, avec IA     | Publer Business | 24 $ (3 × 8 $)   |
+| Veille avec IA                     | Feedly Pro+     | 12 $             |
+| Repérer des conversations, avec IA | Syften Standard | 49,95 $          |
+| **Total sans Pann**                |                 | **environ 86 $** |
+| **Avec Pann (intermédiaire)**      |                 | **15 €**         |
+
+Variante bon marché, sans IA pour les conversations : Buffer Essentials (3 × 5 $), Inoreader Pro (7,50 $), Syften Entry (29,95 $), soit environ 52 $. La newsletter (Brevo, SendFox) reste à part : Pann s'appuie dessus, il ne la remplace pas. À revérifier sur les pages des éditeurs juste avant de publier la page.
 
 ## Questions à trancher
 
 - **Que compte un « token » ?** Un token de Sonnet coûte 20 fois celui de Haiku 5.5 : additionner les deux donnerait un quota trompeur. Proposition : un token Pann pondéré par le prix du modèle (calé sur la rédaction), affiché aussi en équivalent parlant (« environ 150 éléments rédigés par mois »).
-- **Quelles limites par offre ?** Comptes LinkedIn et Facebook (le vrai coût), thèmes, membres de l'espace. Les réseaux publiés en direct (Bluesky, Mastodon, Discord) peuvent rester illimités : ils ne coûtent rien.
+- **Quelles limites par offre ?** Thèmes : 2, 3 et 5 (proposition de Geoffrey). Restent les comptes LinkedIn et Facebook (le vrai coût) et les membres de l'espace. Les réseaux publiés en direct (Bluesky, Mastodon, Discord) peuvent rester illimités : ils ne coûtent rien.
 - **Un essai gratuit ?** Le marché propose 7 à 14 jours, souvent sans carte. Avec l'IA fournie, il faut un plafond de tokens pendant l'essai.
-- **Passer le tri sur Haiku 5.5 ?** Divise le coût de l'IA par deux environ. À valider sur la qualité du tri avant de changer le modèle par défaut.
 - **Prix en euros, taxes comprises ou non ?** Le marché affiche des dollars hors taxes ; un public français attend des euros.
 
 ## Sources
