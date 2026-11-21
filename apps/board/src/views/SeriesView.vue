@@ -12,6 +12,7 @@ import { useRouter } from 'vue-router'
 import { api, type SeriesPost } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
+import Icon from '../components/Icon.vue'
 import { usePageDetail } from '../lib/page-title'
 
 const props = defineProps<{ topicId: string; seriesId: string }>()
@@ -173,92 +174,106 @@ usePageDetail(() => series.value?.subject)
     </p>
 
     <!-- New series -->
-    <form v-if="isNew" class="block" novalidate @submit.prevent="create">
-      <h1 tabindex="-1">{{ t('series.newTitle') }}</h1>
-      <p class="hint">{{ t('series.intro') }}</p>
-      <div class="form-row">
-        <label :for="`${id}-subject`">{{ t('series.subject') }}</label>
-        <input
-          :id="`${id}-subject`"
-          v-model="form.subject"
-          class="field"
-          type="text"
-          maxlength="300"
-          :aria-invalid="!!formError || undefined"
-          :aria-describedby="formError ? `${id}-error` : undefined"
-        />
+    <template v-if="isNew">
+      <div class="head">
+        <h1 tabindex="-1">{{ t('series.newTitle') }}</h1>
+        <p class="hint">{{ t('series.intro') }}</p>
       </div>
-      <div class="form-row">
-        <label :for="`${id}-notes`">{{ t('series.notes') }}</label>
-        <textarea
-          :id="`${id}-notes`"
-          v-model="form.notes"
-          class="field"
-          rows="5"
-          maxlength="10000"
-          :aria-describedby="`${id}-notes-hint`"
-        ></textarea>
-        <p :id="`${id}-notes-hint`" class="hint">{{ t('series.notesHint') }}</p>
-      </div>
-      <div class="pair">
+      <form class="section-card" novalidate @submit.prevent="create">
         <div class="form-row">
-          <label :for="`${id}-count`">{{ t('series.count') }}</label>
+          <label :for="`${id}-subject`">{{ t('series.subject') }}</label>
           <input
-            :id="`${id}-count`"
-            v-model.number="form.post_count"
-            class="field small"
-            type="number"
-            min="2"
-            max="8"
+            :id="`${id}-subject`"
+            v-model="form.subject"
+            class="field"
+            type="text"
+            maxlength="300"
+            :aria-invalid="!!formError || undefined"
+            :aria-describedby="formError ? `${id}-error` : undefined"
           />
         </div>
         <div class="form-row">
-          <label :for="`${id}-span`">{{ t('series.span') }}</label>
-          <input
-            :id="`${id}-span`"
-            v-model.number="form.span_days"
-            class="field small"
-            type="number"
-            min="1"
-            max="60"
-          />
+          <label :for="`${id}-notes`">{{ t('series.notes') }}</label>
+          <textarea
+            :id="`${id}-notes`"
+            v-model="form.notes"
+            class="field"
+            rows="5"
+            maxlength="10000"
+            :aria-describedby="`${id}-notes-hint`"
+          ></textarea>
+          <p :id="`${id}-notes-hint`" class="hint">{{ t('series.notesHint') }}</p>
         </div>
-      </div>
-      <p v-if="formError" :id="`${id}-error`" class="error" role="alert">{{ formError }}</p>
-      <div>
-        <button type="submit" class="button" data-variant="primary" :disabled="creating">
-          {{ t('series.plan') }}
-        </button>
-      </div>
-    </form>
+        <div class="pair">
+          <div class="form-row">
+            <label :for="`${id}-count`">{{ t('series.count') }}</label>
+            <input
+              :id="`${id}-count`"
+              v-model.number="form.post_count"
+              class="field small"
+              type="number"
+              min="2"
+              max="8"
+            />
+          </div>
+          <div class="form-row">
+            <label :for="`${id}-span`">{{ t('series.span') }}</label>
+            <input
+              :id="`${id}-span`"
+              v-model.number="form.span_days"
+              class="field small"
+              type="number"
+              min="1"
+              max="60"
+            />
+          </div>
+        </div>
+        <p v-if="formError" :id="`${id}-error`" class="error" role="alert">{{ formError }}</p>
+        <div class="section-actions">
+          <button type="submit" class="button" data-variant="primary" :disabled="creating">
+            {{ t('series.plan') }}
+          </button>
+        </div>
+      </form>
+    </template>
 
     <p v-else-if="loadError" role="alert">
       {{ t('board.loadError', { message: loadError.message }) }}
     </p>
 
     <template v-else-if="series">
-      <h1 tabindex="-1">{{ t('series.title', { subject: series.subject }) }}</h1>
-      <p class="hint">
-        {{ t('series.summary', { count: series.post_count, days: series.span_days }) }}
-      </p>
+      <div class="head">
+        <h1 tabindex="-1">{{ t('series.title', { subject: series.subject }) }}</h1>
+        <p class="hint">
+          {{ t('series.summary', { count: series.post_count, days: series.span_days }) }}
+        </p>
+      </div>
       <p v-if="series.status === 'pending'" role="status">{{ t('series.planning') }}</p>
-      <p v-else-if="series.status === 'failed'" class="error" role="alert">
-        {{ describeError(series.error ?? 'unexpected', t).text }}
+      <p
+        v-else-if="series.status === 'failed'"
+        class="notice notice-inline"
+        data-tone="danger"
+        role="alert"
+      >
+        <Icon name="alert-circle" />
+        <span>{{ describeError(series.error ?? 'unexpected', t).text }}</span>
       </p>
 
       <!-- Plan, editable until the drafts exist -->
       <form
         v-if="series.status === 'ready' && !compositions.length"
-        class="block"
+        class="section-card"
         novalidate
+        :aria-labelledby="`${id}-plan`"
         @submit.prevent="savePlan()"
       >
-        <h2>{{ t('series.planTitle') }}</h2>
+        <h2 :id="`${id}-plan`" class="section-title">{{ t('series.planTitle') }}</h2>
         <p class="hint">{{ t('series.planHint') }}</p>
         <ol class="plan">
           <li v-for="(post, index) in plan" :key="index">
-            <fieldset>
-              <legend>{{ t('series.post', { n: index + 1 }) }}</legend>
+            <!-- One post per group, split by a rule: no card inside the card. -->
+            <fieldset class="subsection">
+              <legend class="subsection-title">{{ t('series.post', { n: index + 1 }) }}</legend>
               <div class="form-row">
                 <label :for="`${id}-p${index}-subject`">{{ t('series.postSubject') }}</label>
                 <input
@@ -283,6 +298,8 @@ usePageDetail(() => series.value?.subject)
                 <button
                   type="button"
                   class="button"
+                  data-size="small"
+                  data-variant="danger"
                   :aria-label="t('series.removeLabel', { n: index + 1 })"
                   @click="removePost(index)"
                 >
@@ -292,13 +309,13 @@ usePageDetail(() => series.value?.subject)
             </fieldset>
           </li>
         </ol>
-        <div class="actions">
-          <button v-if="plan.length < 8" type="button" class="button" @click="addPost">
+        <div v-if="plan.length < 8" class="add">
+          <button type="button" class="button" data-size="small" @click="addPost">
+            <Icon name="plus" />
             {{ t('series.add') }}
           </button>
-          <button type="submit" class="button" :disabled="!planDirty">
-            {{ t('common.save') }}
-          </button>
+        </div>
+        <div class="section-actions">
           <button
             type="button"
             class="button"
@@ -308,13 +325,16 @@ usePageDetail(() => series.value?.subject)
           >
             {{ t('series.createDrafts') }}
           </button>
+          <button type="submit" class="button" :disabled="!planDirty">
+            {{ t('common.save') }}
+          </button>
+          <p role="status" :class="{ error: isError }">{{ message }}</p>
         </div>
-        <p role="status" :class="{ error: isError }">{{ message }}</p>
       </form>
 
       <!-- The posts of the series -->
-      <section v-if="compositions.length" class="block" :aria-labelledby="`${id}-posts`">
-        <h2 :id="`${id}-posts`">{{ t('series.posts') }}</h2>
+      <section v-if="compositions.length" class="section-card" :aria-labelledby="`${id}-posts`">
+        <h2 :id="`${id}-posts`" class="section-title">{{ t('series.posts') }}</h2>
         <ol class="posts">
           <li v-for="c in compositions" :key="c.id">
             <RouterLink :to="{ name: 'composition', params: { topicId, compositionId: c.id } }">
@@ -335,13 +355,14 @@ usePageDetail(() => series.value?.subject)
             <span v-if="results[c.id]" class="meta" role="status">{{ results[c.id] }}</span>
           </li>
         </ol>
-        <p class="hint">{{ t('series.scheduleHint') }}</p>
-        <div>
+        <p :id="`${id}-schedule-hint`" class="hint">{{ t('series.scheduleHint') }}</p>
+        <div class="section-actions">
           <button
             type="button"
             class="button"
             data-variant="primary"
             :disabled="!allDrafted || scheduling"
+            :aria-describedby="`${id}-schedule-hint`"
             @click="scheduleSeries"
           >
             {{ t('series.schedule') }}
@@ -355,22 +376,21 @@ usePageDetail(() => series.value?.subject)
 <style scoped>
 .series {
   display: grid;
-  gap: var(--space-5);
-  max-width: 48rem;
+  gap: var(--space-6);
+  max-width: var(--width-content);
 }
 
-.series h1,
-.series > p {
+.series p {
   margin: 0;
 }
 
-.block {
+/* Title and its summary, close together. */
+.head {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-2);
 }
 
-.block h1,
-.block h2 {
+.head h1 {
   margin: 0;
 }
 
@@ -383,9 +403,18 @@ usePageDetail(() => series.value?.subject)
   list-style: none;
 }
 
-.plan fieldset {
-  display: grid;
-  gap: var(--space-3);
+.plan .subsection .button {
+  justify-self: start;
+}
+
+.posts {
+  gap: var(--space-2);
+}
+
+/* Adding a post closes the list, under a rule like the posts above it. */
+.add {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .posts li {
@@ -393,7 +422,7 @@ usePageDetail(() => series.value?.subject)
   gap: var(--space-1);
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   background: var(--color-surface);
 }
 
@@ -420,9 +449,8 @@ textarea.field {
   gap: var(--space-4);
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
+/* The status beside the actions: an empty one takes no room. */
+.section-actions p:empty {
+  position: absolute;
 }
 </style>

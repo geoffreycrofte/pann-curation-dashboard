@@ -54,6 +54,11 @@ legend.bubble {
   margin-inline-start: clamp(0rem, 8%, 4rem);
 }
 
+/* A hint belongs to the field above it: closer to it than to the button below. */
+.compose > :is(input, textarea, select, .field) + .hint {
+  margin-top: calc(-1 * var(--space-3));
+}
+
 /*
  * After a topic is created, the board rebuilds around it: the creation page fades out,
  * the board fades in and its sidebar slides in from the side. Only with motion allowed

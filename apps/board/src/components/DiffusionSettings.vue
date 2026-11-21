@@ -15,6 +15,7 @@ import { describeError } from '../lib/errors'
 import { useWorkspace } from '../lib/workspace'
 import { toast } from '../lib/toast'
 import { contentLangName } from '../lib/langs'
+import Icon from './Icon.vue'
 
 const props = defineProps<{ topicId: string; config: TopicConfig }>()
 const { t } = useI18n()
@@ -216,52 +217,53 @@ function submit() {
 </script>
 
 <template>
-  <form class="form diffusion" :aria-labelledby="`${id}-title`" @submit.prevent="submit">
-    <h2 :id="`${id}-title`">{{ t('settings.diffusion') }}</h2>
-    <p class="hint">{{ t('settings.diffusionHint') }}</p>
+  <form class="section-stack diffusion" @submit.prevent="submit">
+    <section class="section-card" :aria-labelledby="`${id}-title`">
+      <h2 :id="`${id}-title`" class="section-title">{{ t('settings.diffusion') }}</h2>
+      <p class="hint">{{ t('settings.diffusionHint') }}</p>
+      <div class="schedule">
+        <div class="form-row per-day">
+          <label :for="`${id}-per-day`">{{ t('settings.postsPerDay') }}</label>
+          <input
+            :id="`${id}-per-day`"
+            v-model.number="postsPerDay"
+            class="field"
+            type="number"
+            min="0"
+            max="10"
+            step="1"
+            required
+            :aria-describedby="`${id}-per-day-hint`"
+          />
+          <p :id="`${id}-per-day-hint`" class="hint">{{ t('settings.postsPerDayHint') }}</p>
+        </div>
+        <div class="form-row slots">
+          <label :for="`${id}-slots`">{{ t('settings.slots') }}</label>
+          <input
+            :id="`${id}-slots`"
+            v-model="slotsText"
+            class="field"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            :aria-invalid="!slotsValid || undefined"
+            :aria-describedby="`${id}-slots-hint`"
+          />
+          <p :id="`${id}-slots-hint`" class="hint">{{ t('settings.slotsHint') }}</p>
+        </div>
+        <div class="form-row tz">
+          <label :for="`${id}-tz`">{{ t('settings.timezone') }}</label>
+          <select v-if="TIME_ZONES.length" :id="`${id}-tz`" v-model="timezone" class="field">
+            <option v-if="!TIME_ZONES.includes(timezone)" :value="timezone">{{ timezone }}</option>
+            <option v-for="zone in TIME_ZONES" :key="zone" :value="zone">{{ zone }}</option>
+          </select>
+          <input v-else :id="`${id}-tz`" v-model="timezone" class="field" type="text" required />
+        </div>
+      </div>
+    </section>
 
-    <div class="grid">
-      <div class="form-row">
-        <label :for="`${id}-per-day`">{{ t('settings.postsPerDay') }}</label>
-        <input
-          :id="`${id}-per-day`"
-          v-model.number="postsPerDay"
-          class="field small"
-          type="number"
-          min="0"
-          max="10"
-          step="1"
-          required
-          :aria-describedby="`${id}-per-day-hint`"
-        />
-        <p :id="`${id}-per-day-hint`" class="hint">{{ t('settings.postsPerDayHint') }}</p>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-slots`">{{ t('settings.slots') }}</label>
-        <input
-          :id="`${id}-slots`"
-          v-model="slotsText"
-          class="field"
-          type="text"
-          inputmode="numeric"
-          autocomplete="off"
-          :aria-invalid="!slotsValid || undefined"
-          :aria-describedby="`${id}-slots-hint`"
-        />
-        <p :id="`${id}-slots-hint`" class="hint">{{ t('settings.slotsHint') }}</p>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-tz`">{{ t('settings.timezone') }}</label>
-        <select v-if="TIME_ZONES.length" :id="`${id}-tz`" v-model="timezone" class="field">
-          <option v-if="!TIME_ZONES.includes(timezone)" :value="timezone">{{ timezone }}</option>
-          <option v-for="zone in TIME_ZONES" :key="zone" :value="zone">{{ zone }}</option>
-        </select>
-        <input v-else :id="`${id}-tz`" v-model="timezone" class="field" type="text" required />
-      </div>
-    </div>
-
-    <fieldset :aria-describedby="`${id}-accounts-hint`">
-      <legend>{{ t('settings.accounts') }}</legend>
+    <fieldset class="section-card" :aria-describedby="`${id}-accounts-hint`">
+      <legend class="section-title">{{ t('settings.accounts') }}</legend>
       <p :id="`${id}-accounts-hint`" class="hint">{{ t('settings.accountsHint') }}</p>
       <p v-if="!accounts.length">
         {{ t('settings.noAccounts') }}
@@ -270,7 +272,7 @@ function submit() {
       <ul v-else class="accounts">
         <li v-for="row in accounts" :key="row.key">
           <fieldset class="account">
-            <legend>
+            <legend class="account-name">
               {{
                 t('settings.accountLangs', {
                   account: t('connections.accountLine', {
@@ -280,8 +282,9 @@ function submit() {
                 })
               }}
             </legend>
-            <p v-if="row.missing" class="error">
-              {{ t('settings.accountMissing', { account: row.name }) }}
+            <p v-if="row.missing" class="notice notice-inline" data-tone="danger">
+              <Icon name="alert-circle" />
+              <span>{{ t('settings.accountMissing', { account: row.name }) }}</span>
             </p>
             <div class="langs">
               <label v-for="lang in accountLangs" :key="lang" class="check">
@@ -296,20 +299,33 @@ function submit() {
           </fieldset>
         </li>
       </ul>
-      <p v-for="[channel, lang] in conflicts" :key="`${channel}/${lang}`" class="error">
-        {{
-          t('settings.accountConflict', {
-            channel: t(`draft.channels.${channel}`),
-            lang: contentLangName(lang),
-          })
-        }}
+      <p
+        v-for="[channel, lang] in conflicts"
+        :key="`${channel}/${lang}`"
+        class="notice notice-inline"
+        data-tone="danger"
+      >
+        <Icon name="alert-circle" />
+        <span>
+          {{
+            t('settings.accountConflict', {
+              channel: t(`draft.channels.${channel}`),
+              lang: contentLangName(lang),
+            })
+          }}
+        </span>
       </p>
     </fieldset>
 
-    <fieldset v-if="hasLinkedin" class="linkedin" :aria-describedby="`${id}-linkedin-hint`">
-      <legend>{{ t('settings.linkedin.title') }}</legend>
+    <fieldset
+      v-if="hasLinkedin"
+      class="section-card linkedin"
+      :aria-describedby="`${id}-linkedin-hint`"
+    >
+      <legend class="section-title">{{ t('settings.linkedin.title') }}</legend>
       <p :id="`${id}-linkedin-hint`" class="hint">{{ t('settings.linkedin.hint') }}</p>
-      <div v-for="lang in linkedinLangs" :key="lang" class="linkedin-lang">
+      <!-- Per language: the signature, then the first comment, each with its help. -->
+      <div v-for="lang in linkedinLangs" :key="lang" class="subsection">
         <div class="form-row">
           <label :for="`${id}-signature-${lang}`">
             {{ t('settings.linkedin.signature', { lang: contentLangName(lang) }) }}
@@ -319,9 +335,13 @@ function submit() {
             v-model="signature[lang]"
             class="field"
             rows="3"
+            :lang="lang"
             :maxlength="LINKEDIN_SIGNATURE_MAX"
-            :aria-describedby="`${id}-signature-hint`"
+            :aria-describedby="`${id}-signature-hint-${lang}`"
           ></textarea>
+          <p :id="`${id}-signature-hint-${lang}`" class="hint">
+            {{ t('settings.linkedin.signatureHint') }}
+          </p>
         </div>
         <div class="form-row">
           <label :for="`${id}-comment-${lang}`">
@@ -332,86 +352,99 @@ function submit() {
             v-model="firstComment[lang]"
             class="field"
             rows="3"
+            :lang="lang"
             :maxlength="FIRST_COMMENT_MAX"
-            :aria-describedby="`${id}-comment-hint`"
+            :aria-describedby="`${id}-comment-hint-${lang}`"
           ></textarea>
+          <p :id="`${id}-comment-hint-${lang}`" class="hint">
+            {{ t('settings.linkedin.firstCommentHint') }}
+          </p>
         </div>
       </div>
-      <p :id="`${id}-signature-hint`" class="hint">{{ t('settings.linkedin.signatureHint') }}</p>
-      <p :id="`${id}-comment-hint`" class="hint">{{ t('settings.linkedin.firstCommentHint') }}</p>
     </fieldset>
 
-    <div>
+    <div class="section-actions">
       <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
         {{ isLoading ? t('common.saving') : t('common.save') }}
       </button>
+      <p role="status" :class="{ error: isError }">{{ message }}</p>
     </div>
-    <p role="status" :class="{ error: isError }">{{ message }}</p>
   </form>
 </template>
 
 <style scoped>
-.diffusion {
-  display: grid;
-  gap: var(--space-4);
-  max-width: 40rem;
-  margin-top: var(--space-8);
-}
-
-.diffusion h2,
-.diffusion p {
-  margin: 0;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(12rem, 100%), 1fr));
+/* Posts per day stays narrow; the slots and the time zone take the room left, and a
+ * long zone name ("America/Argentina/Buenos_Aires") is never cut. */
+.schedule {
+  display: flex;
+  flex-wrap: wrap;
   align-items: start;
   gap: var(--space-4);
 }
 
-.grid .field {
-  width: 100%;
-  min-width: 0;
+.per-day {
+  flex: 0 1 10rem;
 }
 
-.small {
+.slots {
+  flex: 1 1 12rem;
+}
+
+.tz {
+  flex: 1 1 16rem;
+}
+
+.schedule .field {
+  width: 100%;
+}
+
+.per-day .field {
   max-width: 8rem;
 }
 
-fieldset {
-  display: grid;
-  gap: var(--space-3);
-}
-
+/* Accounts as a bordered list: the account, then its languages, one row each. */
 .accounts {
-  display: grid;
-  gap: var(--space-3);
   margin: 0;
   padding: 0;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
   list-style: none;
 }
 
-.account {
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius);
+.accounts > li + li {
+  border-top: 1px solid var(--color-border-subtle);
 }
 
-.account legend {
-  padding: 0 var(--space-1);
+.account {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-3) var(--space-4) var(--space-1);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.account-name {
+  float: left;
+  width: 100%;
+  padding: 0;
+  font-family: inherit;
+  font-size: 1rem;
   font-weight: 650;
 }
 
 .langs {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-5);
+  gap: 0 var(--space-5);
 }
 
-.linkedin-lang {
-  display: grid;
-  gap: var(--space-3);
+.linkedin .subsection:first-of-type {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .linkedin textarea {

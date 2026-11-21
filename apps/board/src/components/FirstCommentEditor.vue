@@ -1,13 +1,14 @@
 <script setup lang="ts">
 /**
  * First comment of a LinkedIn post: the default of the topic, none, or its own text.
- * Stored as null (default), '' (none) or the text, like `posts.first_comment`.
+ * Stored as null (default), '' (none) or the text, like `posts.first_comment`. Saved by
+ * itself: a choice at once, a text a moment after typing.
  */
 import { FIRST_COMMENT_MAX } from '@pann/shared'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { describeError } from '../lib/errors'
-import { toast } from '../lib/toast'
+import { useAutosave } from '../lib/autosave'
+import AutosaveStatus from './AutosaveStatus.vue'
 
 const props = defineProps<{
   /** Current value of the post. */
@@ -28,43 +29,41 @@ const modeOf = (value: string | null): Mode =>
 
 const mode = ref<Mode>(modeOf(props.value))
 const own = ref(props.value ?? '')
-watch(
-  () => props.value,
-  (value) => {
-    mode.value = modeOf(value)
-    own.value = value ?? ''
-  },
-)
 
 const next = computed(() =>
   mode.value === 'default' ? null : mode.value === 'none' ? '' : own.value.trim(),
 )
-const dirty = computed(() => next.value !== props.value)
-
-const saving = ref(false)
-const message = ref('')
-async function submit() {
-  if (mode.value === 'own' && !own.value.trim()) {
-    message.value = t('firstComment.empty')
-    return
-  }
-  saving.value = true
-  message.value = ''
-  try {
-    await props.save(next.value)
-    toast(t('firstComment.saved'))
-  } catch (err) {
-    message.value = describeError((err as Error).message, t).text
-  } finally {
-    saving.value = false
-  }
-}
+const autosave = useAutosave({
+  value: () => next.value,
+  stored: () => props.value,
+  save: (value) => props.save(value),
+  // Choosing "own" waits for its text.
+  valid: () => mode.value !== 'own' || !!own.value.trim(),
+})
+watch(
+  () => props.value,
+  (value) => {
+    if (autosave.dirty.value || autosave.state.value === 'saving') return
+    mode.value = modeOf(value)
+    own.value = value ?? ''
+  },
+)
+// A choice is saved at once; a text, after the pause.
+watch(mode, () => {
+  if (mode.value !== 'own') void autosave.flush()
+})
 </script>
 
 <template>
-  <form class="first-comment" @submit.prevent="submit">
+  <form class="first-comment" @submit.prevent="autosave.flush()">
     <fieldset :disabled="readonly">
       <legend>{{ t('firstComment.title') }}</legend>
+      <AutosaveStatus
+        v-if="!readonly"
+        class="save-state"
+        :state="autosave.state.value"
+        :error="autosave.error.value"
+      />
       <label class="choice">
         <input v-model="mode" type="radio" :name="`${id}-mode`" value="default" />
         <span>
@@ -91,15 +90,13 @@ async function submit() {
           rows="3"
           :lang="lang"
           :maxlength="FIRST_COMMENT_MAX"
+          @blur="autosave.flush()"
         ></textarea>
-      </div>
-      <div v-if="!readonly">
-        <button type="submit" class="button" :disabled="!dirty || saving">
-          {{ saving ? t('common.saving') : t('firstComment.save') }}
-        </button>
+        <p v-if="autosave.state.value === 'invalid'" class="hint">
+          {{ t('firstComment.empty') }}
+        </p>
       </div>
     </fieldset>
-    <p role="status" class="error">{{ message }}</p>
   </form>
 </template>
 
@@ -113,9 +110,23 @@ async function submit() {
   border-radius: var(--radius);
 }
 
+/* The title inside the frame, not across its border (floated, the legend is laid out
+ * like the other children), its save state on the same line. */
 .first-comment legend {
-  padding: 0 var(--space-1);
+  float: left;
+  padding: 0;
   font-weight: 650;
+}
+
+/* The legend and its save state on one line, every other part on its own. */
+.first-comment fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.first-comment fieldset > :not(legend, .save-state) {
+  flex-basis: 100%;
 }
 
 .choice {

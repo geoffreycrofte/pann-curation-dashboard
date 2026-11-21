@@ -55,7 +55,7 @@ watch(
           {{ locale === 'fr' ? topic.name_fr : topic.name_en }}
         </RouterLink>
       </h2>
-      <TopicSummary :topic-id="topic.id" />
+      <TopicSummary :topic-id="topic.id" collapse-idle />
     </section>
   </template>
 </template>
@@ -75,6 +75,11 @@ watch(
   display: grid;
   gap: var(--space-3);
   margin-top: var(--space-6);
+}
+
+/* A topic with nothing waiting: its name and one line, close together. */
+.topic:has(.idle) {
+  gap: var(--space-1);
 }
 
 .topic h2 {

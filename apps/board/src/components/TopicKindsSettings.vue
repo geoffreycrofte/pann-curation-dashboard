@@ -38,6 +38,14 @@ const otherLangs = computed(() =>
 const name = (k: TopicKind) => (locale.value === 'fr' ? k.label_fr : k.label_en) || k.key
 const savedRows = computed(() => rows.value.filter((r) => !r.isNew))
 
+/** Kinds whose fields are shown. Each kind is one line until it is edited. */
+const open = ref(new Set<number>())
+function toggle(row: Row) {
+  if (open.value.has(row.uid)) open.value.delete(row.uid)
+  else open.value.add(row.uid)
+}
+const form = ref<HTMLFormElement>()
+
 async function addRow() {
   rows.value.push({
     key: '',
@@ -46,8 +54,9 @@ async function addRow() {
     labels: {},
     description: '',
     isNew: true,
-    uid: nextUid++,
+    uid: nextUid,
   })
+  open.value.add(nextUid++)
   await nextTick()
   document.getElementById(`${id}-${rows.value.at(-1)!.uid}-fr`)?.focus()
 }
@@ -62,7 +71,7 @@ async function removeRow(row: Row) {
   // The focused button is gone: move to the neighbour row, or to "Add a kind".
   await nextTick()
   const neighbour = rows.value[Math.min(index, rows.value.length - 1)]
-  document.getElementById(neighbour ? `${id}-${neighbour.uid}-fr` : `${id}-add`)?.focus()
+  document.getElementById(neighbour ? `${id}-${neighbour.uid}-edit` : `${id}-add`)?.focus()
 }
 
 function restore(entry: { kind: TopicKind }) {
@@ -83,6 +92,21 @@ function withKeys(): TopicKind[] {
   })
 }
 
+/** A kind without its names cannot be saved: open it, and let the browser point at it. */
+async function submit() {
+  const incomplete = rows.value.filter((r) => !r.label_fr.trim() || !r.label_en.trim())
+  if (incomplete.length) {
+    for (const row of incomplete) open.value.add(row.uid)
+    await nextTick()
+    if (form.value?.reportValidity() !== false) {
+      isError.value = true
+      message.value = t('kinds.incomplete')
+    }
+    return
+  }
+  mutate()
+}
+
 const { mutate, isLoading } = useMutation({
   mutation: () => {
     const kinds = withKeys()
@@ -95,6 +119,7 @@ const { mutate, isLoading } = useMutation({
     toast(t('kinds.saved'))
     rows.value = config.kinds.map((k) => ({ ...k, isNew: false, uid: nextUid++ }))
     removed.value = []
+    open.value.clear()
     await queryCache.invalidateQueries({ key: ['topic', props.topic.id] })
     await queryCache.invalidateQueries({ key: ['sources', props.topic.id] })
     await queryCache.invalidateQueries({ key: ['items', props.topic.id] })
@@ -107,85 +132,116 @@ const { mutate, isLoading } = useMutation({
 </script>
 
 <template>
-  <form class="form kinds" @submit.prevent="mutate()">
-    <h2 :id="`${id}-title`">{{ t('kinds.title') }}</h2>
+  <form
+    ref="form"
+    class="section-card kinds"
+    :aria-labelledby="`${id}-title`"
+    @submit.prevent="submit"
+  >
+    <h2 :id="`${id}-title`" class="section-title">{{ t('kinds.title') }}</h2>
     <p class="hint">{{ t('kinds.intro') }}</p>
 
-    <fieldset v-for="row in rows" :key="row.uid" class="kind">
-      <legend>{{ name(row) || t('kinds.newKind') }}</legend>
-      <div class="names">
-        <div class="form-row">
-          <label :for="`${id}-${row.uid}-fr`">{{ t('kinds.labelFr') }}</label>
-          <input
-            :id="`${id}-${row.uid}-fr`"
-            v-model="row.label_fr"
-            class="field"
-            type="text"
-            lang="fr"
-            required
-            maxlength="60"
-          />
+    <!-- One line per kind (its name and definition); its fields open with Edit. -->
+    <ul class="kind-list">
+      <li v-for="row in rows" :key="row.uid" class="kind">
+        <div class="kind-line">
+          <p class="kind-summary">
+            <strong>{{ name(row) || t('kinds.newKind') }}</strong>
+            <span class="hint kind-desc">{{ row.description || t('kinds.noDescription') }}</span>
+          </p>
+          <div class="kind-actions">
+            <button
+              :id="`${id}-${row.uid}-edit`"
+              type="button"
+              class="button"
+              data-size="small"
+              :aria-expanded="open.has(row.uid)"
+              :aria-controls="`${id}-${row.uid}-fields`"
+              :aria-label="t('kinds.editLabel', { kind: name(row) || t('kinds.newKind') })"
+              @click="toggle(row)"
+            >
+              {{ t('kinds.edit') }}
+            </button>
+            <button
+              v-if="rows.length > 1"
+              type="button"
+              class="button"
+              data-size="small"
+              data-variant="danger"
+              :aria-label="t('kinds.removeLabel', { kind: name(row) || t('kinds.newKind') })"
+              @click="removeRow(row)"
+            >
+              {{ t('kinds.remove') }}
+            </button>
+          </div>
         </div>
-        <div class="form-row">
-          <label :for="`${id}-${row.uid}-en`">{{ t('kinds.labelEn') }}</label>
-          <input
-            :id="`${id}-${row.uid}-en`"
-            v-model="row.label_en"
-            class="field"
-            type="text"
-            lang="en"
-            required
-            maxlength="60"
-          />
-        </div>
-        <!-- Other languages of the topic (newsletter groups); empty: the English name. -->
-        <div v-for="lang in otherLangs" :key="lang" class="form-row">
-          <label :for="`${id}-${row.uid}-${lang}`">
-            {{ t('kinds.labelIn', { lang: contentLangName(lang) }) }}
-          </label>
-          <input
-            :id="`${id}-${row.uid}-${lang}`"
-            v-model="row.labels[lang]"
-            class="field"
-            type="text"
-            :lang="lang"
-            maxlength="60"
-            :placeholder="row.label_en"
-          />
-        </div>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-${row.uid}-desc`">
-          {{ t('kinds.description') }} ({{ t('common.optional') }})
-        </label>
-        <textarea
-          :id="`${id}-${row.uid}-desc`"
-          v-model="row.description"
-          class="field"
-          rows="2"
-          maxlength="300"
-          :aria-describedby="`${id}-desc-hint`"
-        ></textarea>
-      </div>
-      <div>
-        <button
-          type="button"
-          class="button"
-          :disabled="rows.length <= 1"
-          :aria-label="t('kinds.removeLabel', { kind: name(row) || t('kinds.newKind') })"
-          @click="removeRow(row)"
-        >
-          {{ t('kinds.remove') }}
-        </button>
-      </div>
-    </fieldset>
-    <p :id="`${id}-desc-hint`" class="hint">{{ t('kinds.descriptionHint') }}</p>
+        <fieldset v-if="open.has(row.uid)" :id="`${id}-${row.uid}-fields`" class="kind-fields">
+          <legend class="visually-hidden">{{ name(row) || t('kinds.newKind') }}</legend>
+          <div class="names">
+            <div class="form-row">
+              <label :for="`${id}-${row.uid}-fr`">{{ t('kinds.labelFr') }}</label>
+              <input
+                :id="`${id}-${row.uid}-fr`"
+                v-model="row.label_fr"
+                class="field"
+                type="text"
+                lang="fr"
+                required
+                maxlength="60"
+              />
+            </div>
+            <div class="form-row">
+              <label :for="`${id}-${row.uid}-en`">{{ t('kinds.labelEn') }}</label>
+              <input
+                :id="`${id}-${row.uid}-en`"
+                v-model="row.label_en"
+                class="field"
+                type="text"
+                lang="en"
+                required
+                maxlength="60"
+              />
+            </div>
+            <!-- Other languages of the topic (newsletter groups); empty: the English name. -->
+            <div v-for="lang in otherLangs" :key="lang" class="form-row">
+              <label :for="`${id}-${row.uid}-${lang}`">
+                {{ t('kinds.labelIn', { lang: contentLangName(lang) }) }}
+              </label>
+              <input
+                :id="`${id}-${row.uid}-${lang}`"
+                v-model="row.labels[lang]"
+                class="field"
+                type="text"
+                :lang="lang"
+                maxlength="60"
+                :placeholder="row.label_en"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <label :for="`${id}-${row.uid}-desc`">
+              {{ t('kinds.description') }} ({{ t('common.optional') }})
+            </label>
+            <textarea
+              :id="`${id}-${row.uid}-desc`"
+              v-model="row.description"
+              class="field"
+              rows="2"
+              maxlength="300"
+              :aria-describedby="`${id}-${row.uid}-desc-hint`"
+            ></textarea>
+            <p :id="`${id}-${row.uid}-desc-hint`" class="hint">{{ t('kinds.descriptionHint') }}</p>
+          </div>
+        </fieldset>
+      </li>
+    </ul>
 
     <div>
       <button
         :id="`${id}-add`"
         type="button"
         class="button"
+        data-size="small"
         :disabled="rows.length >= 20"
         @click="addRow"
       >
@@ -204,41 +260,83 @@ const { mutate, isLoading } = useMutation({
           <option v-for="row in savedRows" :key="row.key" :value="row.key">{{ name(row) }}</option>
           <option :value="null">{{ t('kindSelect.none') }}</option>
         </select>
-        <button type="button" class="button" @click="restore(entry)">
+        <button type="button" class="button" data-size="small" @click="restore(entry)">
           {{ t('kinds.restore') }}
         </button>
       </div>
     </section>
 
-    <div>
+    <div class="section-actions">
       <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
         {{ isLoading ? t('common.saving') : t('common.save') }}
       </button>
+      <p role="status" :class="{ error: isError }">{{ message }}</p>
     </div>
-    <p role="status" :class="{ error: isError }">{{ message }}</p>
   </form>
 </template>
 
 <style scoped>
-.kinds {
-  max-width: 40rem;
-}
-
-.kinds h2,
 .kinds h3,
 .kinds p {
   margin: 0;
 }
 
+.kind-list {
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
+  list-style: none;
+}
+
 .kind {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
 }
 
-.kind legend {
-  padding: 0 var(--space-2);
-  font-size: 1.0625rem;
+.kind + .kind {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.kind-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  min-height: 2.75rem;
+}
+
+.kind-summary {
+  display: grid;
+  flex: 1 1 14rem;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+/* One line of the definition: the rest is in the field. */
+.kind-desc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kind-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.kind-fields {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 var(--space-2) var(--space-2) 0;
+  padding: var(--space-3) 0 0;
+  border: 0;
+  border-top: 1px dashed var(--color-border-subtle);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .names {

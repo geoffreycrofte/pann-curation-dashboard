@@ -60,7 +60,11 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ t('board.heading', { topic: topicName }) }}</h1>
+  <!-- Heading and the page's own action on one row; the form opens under them. -->
+  <div class="page-head">
+    <h1 tabindex="-1">{{ t('board.heading', { topic: topicName }) }}</h1>
+    <AddItemForm v-if="!curationOff" :topic-id="topicId" />
+  </div>
   <p v-if="curationOff" class="notice" role="note">
     {{ t('modules.curationOff') }}
     <RouterLink :to="{ name: 'settings', params: { topicId } }">
@@ -79,7 +83,6 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
       module="curation"
       :to-sort="counts?.new"
     />
-    <AddItemForm :topic-id="topicId" />
 
     <TabsRoot v-model="status" activation-mode="manual">
       <TabsList :aria-label="t('board.statusFilter')" v-scroll-active class="tabs tab-row">

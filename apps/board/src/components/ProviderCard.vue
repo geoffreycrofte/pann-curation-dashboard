@@ -17,6 +17,7 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
+import Icon from './Icon.vue'
 
 const props = defineProps<{
   provider: Provider
@@ -46,10 +47,14 @@ const accountLabel = computed(() => {
   return ''
 })
 
-// A checked key needs nothing more: the card shrinks to its name, status and purpose,
-// and opens on demand (to replace the key, see the accounts…).
-const expanded = ref(status.value !== 'ok' && !props.adding)
+// Every service folds to one row (name, status, purpose) and opens on demand: "Configure"
+// for a service not set up yet, "Manage" for the others. A refused key opens right away,
+// since it has to be replaced anyway.
+const expanded = ref(status.value === 'invalid' && !props.adding)
 const toggle = ref<HTMLButtonElement>()
+const statusTone = computed(
+  () => ({ ok: 'success', invalid: 'danger', unchecked: 'accent', none: undefined })[status.value],
+)
 watch(status, async (value, previous) => {
   if (value === 'ok' && previous !== 'ok') {
     const hadFocus = !!document.activeElement?.closest(`[data-card="${id}"]`)
@@ -62,34 +67,10 @@ watch(status, async (value, previous) => {
   } else if (value !== 'ok') expanded.value = true
 })
 
-// With a key in place the form stays hidden: "Replace the key" opens it. A refused key
-// shows it right away, since it has to be replaced anyway.
-const replacing = ref(false)
-const showForm = computed(
-  () => props.canEdit && (!props.credential || status.value === 'invalid' || replacing.value),
-)
+// With a working key in place, there is no form: changing a key is deleting it, then
+// giving the new one. A refused key shows the form right away, to replace it.
+const showForm = computed(() => props.canEdit && (!props.credential || status.value === 'invalid'))
 const secretInput = ref<HTMLInputElement>()
-const replaceButton = ref<HTMLButtonElement>()
-async function startReplace() {
-  replacing.value = true
-  await nextTick()
-  secretInput.value?.focus()
-}
-async function cancelReplace() {
-  replacing.value = false
-  secret.value = ''
-  await nextTick()
-  replaceButton.value?.focus()
-}
-
-// Header button (collapsed card) and footer button (open card) toggle the same thing:
-// focus follows to the button that is shown after the switch.
-const footerToggle = ref<HTMLButtonElement>()
-async function setExpanded(value: boolean) {
-  expanded.value = value
-  await nextTick()
-  ;(value ? footerToggle.value : toggle.value)?.focus()
-}
 
 const secret = ref('')
 const instance = ref(props.credential?.meta.instance?.replace(/^https:\/\//, '') ?? '')
@@ -110,8 +91,6 @@ const { mutate: save, isLoading: saving } = useMutation({
   async onSuccess(credential) {
     secret.value = ''
     isError.value = false
-    const wasReplacing = replacing.value
-    replacing.value = false
     const saved = t('connections.saved', {
       provider: name.value,
       status: t(`connections.status.${credential.status}`),
@@ -126,11 +105,6 @@ const { mutate: save, isLoading: saving } = useMutation({
     // The new account gets its own card: this one folds back for the next.
     if (props.adding) expanded.value = false
     await refresh()
-    // The form (and the focused save button) is gone: focus the replace button.
-    if (wasReplacing && expanded.value) {
-      await nextTick()
-      replaceButton.value?.focus()
-    }
   },
   onError(err) {
     isError.value = true
@@ -165,6 +139,9 @@ const { mutate: remove } = useMutation({
       }),
     )
     await refresh()
+    // The delete button is gone: focus goes to the field of the new key.
+    await nextTick()
+    secretInput.value?.focus()
   },
   onError(err) {
     isError.value = true
@@ -174,32 +151,37 @@ const { mutate: remove } = useMutation({
 </script>
 
 <template>
-  <section class="card" :data-card="id" :data-collapsed="!expanded" :aria-labelledby="`${id}-name`">
-    <header class="card-header">
+  <section
+    class="provider"
+    :data-card="id"
+    :data-expanded="expanded"
+    :aria-labelledby="`${id}-name`"
+  >
+    <div class="provider-title">
       <h3 :id="`${id}-name`">
         {{ adding ? t('connections.addAccountTitle', { provider: name }) : name }}
         <span v-if="accountLabel" class="account">{{ accountLabel }}</span>
       </h3>
-      <p v-if="expanded && !adding" class="need">{{ t(`connections.need.${info.need}`) }}</p>
-      <p v-else-if="!adding" class="status" :data-status="status">
-        <span class="status-label">{{ t(`connections.status.${status}`) }}</span>
-      </p>
-    </header>
-
-    <p v-if="!adding" class="purpose">{{ t(`connections.providers.${provider}.purpose`) }}</p>
-
+      <span v-if="!adding" class="badge" data-dot :data-tone="statusTone">
+        {{ t(`connections.status.${status}`) }}
+      </span>
+      <span v-if="!adding && status === 'none'" class="need">
+        {{ t(`connections.need.${info.need}`) }}
+      </span>
+    </div>
+    <!-- One disclosure button, kept in place: its state is aria-expanded, focus stays on it. -->
     <button
-      v-if="(status === 'ok' || adding) && !expanded"
       ref="toggle"
       type="button"
       class="button toggle"
-      aria-expanded="false"
+      data-size="small"
+      :aria-expanded="expanded"
       :aria-controls="`${id}-details`"
-      @click="setExpanded(true)"
+      @click="expanded = !expanded"
     >
       <template v-if="adding">{{ t('connections.addAccount') }}</template>
       <template v-else>
-        {{ t('connections.manage')
+        {{ status === 'none' ? t('connections.configure') : t('connections.manage')
         }}<span class="visually-hidden">&nbsp;{{ name }} {{ accountLabel }}</span>
       </template>
       <svg class="chevron" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
@@ -207,10 +189,43 @@ const { mutate: remove } = useMutation({
       </svg>
     </button>
 
+    <p v-if="!adding" class="purpose">{{ t(`connections.providers.${provider}.purpose`) }}</p>
+
     <div v-show="expanded" :id="`${id}-details`" class="details">
-      <p v-if="!adding" class="status" :data-status="status">
-        <span class="status-label">{{ t(`connections.status.${status}`) }}</span>
-        <span v-if="credential">{{ t('connections.hint', { hint: credential.hint }) }}</span>
+      <!-- The key in place, and its deletion at the end of its line. -->
+      <div v-if="credential" class="key-line">
+        <p class="hint">{{ t('connections.hint', { hint: credential.hint }) }}</p>
+        <AlertDialogRoot v-if="canEdit">
+          <AlertDialogTrigger as-child>
+            <button
+              type="button"
+              class="icon-button"
+              data-variant="danger"
+              :aria-label="t('connections.removeLabel', { provider: name })"
+            >
+              <Icon name="trash" :size="18" />
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogPortal>
+            <AlertDialogOverlay class="dialog-overlay" />
+            <AlertDialogContent class="dialog">
+              <AlertDialogTitle class="dialog-title">
+                {{ t('connections.confirmTitle', { provider: name }) }}
+              </AlertDialogTitle>
+              <AlertDialogDescription>{{ t('connections.confirmText') }}</AlertDialogDescription>
+              <div class="dialog-actions">
+                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                <AlertDialogAction class="button" data-variant="danger" @click="remove()">
+                  {{ t('common.delete') }}
+                </AlertDialogAction>
+              </div>
+            </AlertDialogContent>
+          </AlertDialogPortal>
+        </AlertDialogRoot>
+      </div>
+      <p v-if="status === 'invalid'" class="notice notice-inline" data-tone="danger">
+        <Icon name="alert-circle" />
+        <span>{{ t('connections.invalidNotice') }}</span>
       </p>
       <p v-if="credential?.status_detail" class="hint">
         {{ t(`connections.detail.${credential.status_detail}`) }}
@@ -231,7 +246,13 @@ const { mutate: remove } = useMutation({
         </ul>
         <p v-else>{{ t('connections.noAccounts') }}</p>
         <div>
-          <button type="button" class="button" :disabled="refreshing" @click="refreshAccounts()">
+          <button
+            type="button"
+            class="button"
+            data-size="small"
+            :disabled="refreshing"
+            @click="refreshAccounts()"
+          >
             {{ t('connections.refreshAccounts') }}
           </button>
         </div>
@@ -261,7 +282,13 @@ const { mutate: remove } = useMutation({
           <p v-else>{{ t('connections.noSenders') }}</p>
         </template>
         <div>
-          <button type="button" class="button" :disabled="refreshing" @click="refreshAccounts()">
+          <button
+            type="button"
+            class="button"
+            data-size="small"
+            :disabled="refreshing"
+            @click="refreshAccounts()"
+          >
             {{
               provider === 'brevo' ? t('connections.refreshBrevo') : t('connections.refreshLists')
             }}
@@ -351,86 +378,96 @@ const { mutate: remove } = useMutation({
         </div>
       </form>
 
-      <div v-if="canEdit || status === 'ok'" class="card-footer">
-        <template v-if="showForm">
-          <button
-            type="submit"
-            :form="`${id}-form`"
-            class="button"
-            data-variant="primary"
-            :disabled="saving"
-          >
-            {{ saving ? t('connections.saving') : t('connections.save') }}
-          </button>
-          <button v-if="replacing" type="button" class="button" @click="cancelReplace">
-            {{ t('common.cancel') }}
-          </button>
-        </template>
+      <div v-if="showForm" class="card-footer">
         <button
-          v-else-if="canEdit"
-          ref="replaceButton"
-          type="button"
+          type="submit"
+          :form="`${id}-form`"
           class="button"
-          @click="startReplace"
+          data-variant="primary"
+          :disabled="saving"
         >
-          {{ t('connections.replace') }}
-        </button>
-        <AlertDialogRoot v-if="credential">
-          <AlertDialogTrigger as-child>
-            <button
-              type="button"
-              class="button"
-              :aria-label="t('connections.removeLabel', { provider: name })"
-            >
-              {{ t('connections.remove') }}
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogPortal>
-            <AlertDialogOverlay class="dialog-overlay" />
-            <AlertDialogContent class="dialog">
-              <AlertDialogTitle class="dialog-title">
-                {{ t('connections.confirmTitle', { provider: name }) }}
-              </AlertDialogTitle>
-              <AlertDialogDescription>{{ t('connections.confirmText') }}</AlertDialogDescription>
-              <div class="dialog-actions">
-                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
-                <AlertDialogAction class="button" data-variant="danger" @click="remove()">
-                  {{ t('common.delete') }}
-                </AlertDialogAction>
-              </div>
-            </AlertDialogContent>
-          </AlertDialogPortal>
-        </AlertDialogRoot>
-        <button
-          v-if="status === 'ok' || adding"
-          ref="footerToggle"
-          type="button"
-          class="button footer-toggle"
-          aria-expanded="true"
-          :aria-controls="`${id}-details`"
-          @click="setExpanded(false)"
-        >
-          {{ t('connections.collapse') }}<span class="visually-hidden">&nbsp;{{ name }}</span>
-          <svg class="chevron" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-            <path d="M3.5 10l4.5-4.5L12.5 10" fill="none" stroke="currentColor" stroke-width="2" />
-          </svg>
+          {{ saving ? t('connections.saving') : t('connections.save') }}
         </button>
       </div>
     </div>
-    <p role="status" class="message" :class="{ error: isError }">{{ message }}</p>
+    <p v-if="isError && message" class="notice notice-inline" data-tone="danger" role="alert">
+      <Icon name="alert-circle" />
+      <span>{{ message }}</span>
+    </p>
+    <p role="status" class="message">{{ isError ? '' : message }}</p>
   </section>
 </template>
 
 <style scoped>
-.card {
+/* A row of its group: name and status, the purpose under them, the button on their right;
+ * the rest opens below, across the row. */
+.provider {
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-6);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  min-width: 0;
 }
 
-.card > p,
+.provider > p,
 .details > p {
   margin: 0;
+}
+
+.provider-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+}
+
+.provider-title h3 {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.toggle {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.purpose {
+  grid-column: 1;
+}
+
+.details,
+.provider > .notice,
+.provider > .message {
+  grid-column: 1 / -1;
+}
+
+.details {
+  margin-top: var(--space-3);
+}
+
+/* The account of a network with several accounts, after its name. */
+.account {
+  margin-inline-start: var(--space-1);
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.need {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.purpose {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+}
+
+.chevron {
+  transition: transform 0.15s;
+}
+
+.toggle[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
 }
 
 .details {
@@ -438,47 +475,20 @@ const { mutate: remove } = useMutation({
   gap: var(--space-3);
 }
 
-/* Checked key: one compact row (name and status, purpose, button to open it). */
-.card[data-collapsed='true'] {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-1) var(--space-4);
-  padding: var(--space-3) var(--space-6);
+.provider > .notice {
+  margin-top: var(--space-2);
 }
 
-.card[data-collapsed='true'] .card-header {
-  justify-content: flex-start;
-  gap: var(--space-2) var(--space-3);
-}
+/* Narrow: the button stays on the name's row, the purpose takes the full width. */
+@media (max-width: 40rem) {
+  .toggle {
+    grid-row: 1;
+    align-self: start;
+  }
 
-.card[data-collapsed='true'] .card-header h3 {
-  font-size: 1.0625rem;
-}
-
-/* The account of a network with several accounts, after its name. */
-.account {
-  margin-inline-start: var(--space-2);
-  color: var(--color-text-muted);
-  font-weight: 600;
-}
-
-.card[data-collapsed='true'] .purpose {
-  grid-column: 1;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-}
-
-.card[data-collapsed='true'] .toggle {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-}
-
-.card[data-collapsed='true'] .status {
-  font-size: 0.875rem;
-}
-
-.toggle {
-  justify-self: start;
+  .purpose {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Empty live region: kept in the page for announcements, out of the layout. */
@@ -486,66 +496,30 @@ const { mutate: remove } = useMutation({
   position: absolute;
 }
 
-.card[data-collapsed='true'] .message {
-  grid-column: 1 / -1;
-}
-
-.card-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.card-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-}
-
 .sub-title {
-  margin: 0;
+  margin: var(--space-1) 0 0;
   font-size: 1rem;
 }
 
-.card ul {
+.provider ul {
   margin: 0;
   padding-inline-start: var(--space-6);
 }
 
-.need {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
-}
-
-.status {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-}
-
-.status-label {
-  font-weight: 700;
-}
-
-/* Status is carried by the text; the color only reinforces it. */
-.status[data-status='ok'] .status-label {
-  color: var(--color-success);
-}
-
-.status[data-status='invalid'] .status-label {
-  color: var(--color-danger);
-}
-
+/* A disclosure, not a link to elsewhere: underlined like the inline links all the same. */
 .how-to summary {
-  cursor: pointer;
-  font-weight: 600;
+  width: fit-content;
+  min-height: 1.75rem;
   color: var(--color-accent-text);
-  min-height: 2.75rem;
-  display: flex;
-  align-items: center;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.how-to summary:hover {
+  text-decoration-thickness: 2px;
 }
 
 .how-to ol {
@@ -557,19 +531,36 @@ const { mutate: remove } = useMutation({
   margin-top: var(--space-1);
 }
 
+.how-to p {
+  margin: var(--space-2) 0 0;
+}
+
 .key-form {
   max-width: 32rem;
+  gap: var(--space-4);
 }
 
 .card-footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-2) var(--space-3);
 }
 
-/* Close the open card from its foot, at the far right of the action row. */
-.footer-toggle {
-  margin-inline-start: auto;
+.key-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.key-line .hint {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
 }
 </style>

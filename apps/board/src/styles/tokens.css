@@ -88,6 +88,8 @@
   --space-5: 1.25rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
+  /* Content width of the forms and settings pages (settings panels, Connexions, Profil). */
+  --width-content: 46rem;
   --font-sans: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display:
     'Bricolage Grotesque Variable', 'Plus Jakarta Sans Variable', system-ui, sans-serif;

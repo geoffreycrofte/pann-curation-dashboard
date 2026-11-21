@@ -5,6 +5,7 @@
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Icon from './Icon.vue'
 import StatTile from './StatTile.vue'
 import { useTopicSummary } from '../lib/topic-summary'
 
@@ -13,11 +14,24 @@ const props = withDefaults(
     topicId: string
     /** The date of the next post under its figure (off where the posts are listed). */
     showNext?: boolean
+    /** Nothing waiting: one quiet line instead of a row of zeros (Today). */
+    collapseIdle?: boolean
   }>(),
-  { showNext: true },
+  { showNext: true, collapseIdle: false },
 )
 const { t, d } = useI18n()
-const { topic, modules, toSort, toReview, upcoming, failed } = useTopicSummary(() => props.topicId)
+const { topic, modules, isReady, toSort, toReview, upcoming, failed } = useTopicSummary(
+  () => props.topicId,
+)
+const idle = computed(
+  () =>
+    props.collapseIdle &&
+    isReady.value &&
+    !toSort.value &&
+    !toReview.value &&
+    !upcoming.value.length &&
+    !failed.value.length,
+)
 
 const timeZone = computed(() => topic.value?.config.schedule.timezone)
 const next = computed(() => (props.showNext ? upcoming.value[0] : undefined))
@@ -26,7 +40,11 @@ const formatDate = (value: string) =>
 </script>
 
 <template>
-  <ul class="figures">
+  <p v-if="idle" class="idle">
+    <Icon name="circle-check" :size="18" />
+    {{ t('summary.idle') }}
+  </p>
+  <ul v-else class="figures">
     <li v-if="modules?.curation">
       <StatTile
         icon="inbox"
@@ -67,6 +85,14 @@ const formatDate = (value: string) =>
 </template>
 
 <style scoped>
+.idle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
 .figures {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));

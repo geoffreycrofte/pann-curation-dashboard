@@ -96,7 +96,7 @@ watch(
 </script>
 
 <template>
-  <section class="card platform" :aria-labelledby="`${id}-title`">
+  <section class="platform" :aria-labelledby="`${id}-title`">
     <h3 :id="`${id}-title`">{{ t('zernioPlatform.title') }}</h3>
     <p class="hint">{{ t('zernioPlatform.intro') }}</p>
 
@@ -119,15 +119,33 @@ watch(
     </p>
 
     <div class="actions">
-      <button type="button" class="button" :disabled="!!waitingFor" @click="connect('linkedin')">
+      <button
+        type="button"
+        class="button"
+        data-size="small"
+        :disabled="!!waitingFor"
+        @click="connect('linkedin')"
+      >
         <Icon name="linkedin" />
         {{ t('zernioPlatform.connectLinkedin') }}
       </button>
-      <button type="button" class="button" :disabled="!!waitingFor" @click="connect('facebook')">
+      <button
+        type="button"
+        class="button"
+        data-size="small"
+        :disabled="!!waitingFor"
+        @click="connect('facebook')"
+      >
         <Icon name="facebook" />
         {{ t('zernioPlatform.connectFacebook') }}
       </button>
-      <button type="button" class="button" :disabled="!!waitingFor" @click="refresh">
+      <button
+        type="button"
+        class="button"
+        data-size="small"
+        :disabled="!!waitingFor"
+        @click="refresh"
+      >
         <Icon name="refresh" />
         {{ t('zernioPlatform.refresh') }}
       </button>
@@ -135,19 +153,32 @@ watch(
     <p v-if="waitingFor" role="status">
       {{ waitingFor === 'connect' ? t('zernioPlatform.preparing') : t('zernioPlatform.listing') }}
     </p>
-    <p v-if="message" class="error" role="alert">{{ message }}</p>
+    <p v-if="message" class="notice notice-inline" data-tone="danger" role="alert">
+      <Icon name="alert-circle" />
+      <span>{{ message }}</span>
+    </p>
   </section>
 </template>
 
 <style scoped>
+/* A row of the Diffusion group, like the services around it. */
 .platform {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-5) var(--space-6);
+  min-width: 0;
 }
 
 .platform h3 {
   margin: 0;
+  font-size: 1.0625rem;
+}
+
+.platform > p {
+  margin: 0;
+}
+
+.platform > h3 + .hint {
+  margin-top: calc(-1 * var(--space-1));
 }
 
 .accounts {
@@ -168,6 +199,6 @@ watch(
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--space-2);
 }
 </style>

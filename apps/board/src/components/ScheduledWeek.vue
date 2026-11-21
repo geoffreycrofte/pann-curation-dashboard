@@ -4,7 +4,7 @@ import { useQuery } from '@pinia/colada'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { api, type QueueItem, type TopicWithConfig } from '../lib/api'
+import { api, type CompositionSummary, type QueueItem, type TopicWithConfig } from '../lib/api'
 import { middayOf, zonedTime } from '../lib/zoned'
 import ScheduledEntry from './ScheduledEntry.vue'
 
@@ -39,7 +39,18 @@ const { data, isPending, error } = useQuery({
     }),
 })
 
-type Slot = { kind: 'item'; time: string; entry: QueueItem } | { kind: 'free'; time: string }
+// Posts of Création, when the topic uses it: planned beside the news watch. They have
+// slots of their own, so they never take a free slot of the news watch.
+const { data: compositions } = useQuery({
+  key: () => ['compositions', props.topicId],
+  query: () => api.compositions(props.topicId),
+  enabled: () => props.topic.config.modules.compose,
+})
+
+type Slot =
+  | { kind: 'item'; time: string; entry: QueueItem }
+  | { kind: 'composition'; time: string; composition: CompositionSummary }
+  | { kind: 'free'; time: string }
 
 const slots = computed(() => dailySlots(props.topic.config.schedule))
 const nowTime = computed(() => zonedTime(new Date(), timeZone.value))
@@ -54,11 +65,24 @@ const planning = computed(() => {
       .get(zonedDay(new Date(entry.publish_at), timeZone.value))
       ?.push({ kind: 'item', time: zonedTime(entry.publish_at, timeZone.value), entry })
   }
+  const taken = new Map<string, Set<string>>(
+    [...byDay].map(([day, list]) => [day, new Set(list.map((s) => s.time))]),
+  )
+  if (props.topic.config.modules.compose)
+    for (const c of compositions.value ?? []) {
+      if (c.status !== 'scheduled' || !c.publish_at) continue
+      byDay.get(zonedDay(new Date(c.publish_at), timeZone.value))?.push({
+        kind: 'composition',
+        time: zonedTime(c.publish_at, timeZone.value),
+        composition: c,
+      })
+    }
   for (const [day, list] of byDay) {
+    list.sort((a, b) => a.time.localeCompare(b.time))
     if (day < today.value) continue
-    const taken = new Set(list.map((s) => s.time))
+    const used = taken.get(day)!
     for (const time of slots.value) {
-      if (taken.has(time) || (day === today.value && time <= nowTime.value)) continue
+      if (used.has(time) || (day === today.value && time <= nowTime.value)) continue
       list.push({ kind: 'free', time })
     }
     list.sort((a, b) => a.time.localeCompare(b.time))
@@ -89,23 +113,23 @@ const heading = computed(() =>
   <div class="week-head">
     <h2 id="scheduled-week" aria-live="polite">{{ heading }}</h2>
     <div class="week-nav">
-      <button type="button" class="button" @click="monday = addDays(monday, -7)">
+      <button type="button" class="button" data-size="small" @click="monday = addDays(monday, -7)">
         <span aria-hidden="true">←</span> {{ t('scheduled.previousWeek') }}
       </button>
       <button
         type="button"
         class="button"
+        data-size="small"
         :disabled="monday === thisWeek"
         @click="monday = thisWeek"
       >
         {{ t('scheduled.thisWeek') }}
       </button>
-      <button type="button" class="button" @click="monday = addDays(monday, 7)">
+      <button type="button" class="button" data-size="small" @click="monday = addDays(monday, 7)">
         {{ t('scheduled.nextWeek') }} <span aria-hidden="true">→</span>
       </button>
     </div>
   </div>
-  <p class="hint">{{ t('scheduled.timezone', { timezone: timeZone }) }}</p>
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
@@ -126,11 +150,27 @@ const heading = computed(() =>
           }}</span>
         </h3>
         <ol v-if="list.length" class="slots">
-          <li v-for="slot in list" :key="slot.kind === 'item' ? slot.entry.item_id : slot.time">
+          <li
+            v-for="slot in list"
+            :key="
+              slot.kind === 'item'
+                ? slot.entry.item_id
+                : slot.kind === 'composition'
+                  ? slot.composition.id
+                  : slot.time
+            "
+          >
             <ScheduledEntry
               v-if="slot.kind === 'item'"
               :topic-id="topicId"
               :entry="slot.entry"
+              :time="slot.time"
+              compact
+            />
+            <ScheduledEntry
+              v-else-if="slot.kind === 'composition'"
+              :topic-id="topicId"
+              :composition="slot.composition"
               :time="slot.time"
               compact
             />
@@ -163,10 +203,6 @@ const heading = computed(() =>
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-}
-
-.hint {
-  margin-top: var(--space-2);
 }
 
 .week-frame {

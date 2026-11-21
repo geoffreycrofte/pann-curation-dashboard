@@ -358,6 +358,12 @@ function quit() {
   margin: 0;
 }
 
+/* The intro reads with the title: only the title's own margin between them, not the
+ * column's gap as well. */
+h1 + .lead {
+  margin-top: calc(-1 * var(--space-6));
+}
+
 .notice {
   display: grid;
   gap: var(--space-3);

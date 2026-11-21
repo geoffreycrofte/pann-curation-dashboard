@@ -47,6 +47,20 @@ h2 {
   font-weight: 700;
 }
 
+/* Page header: the heading, and the page's own action on its right (wraps under it). */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.page-head h1 {
+  margin: 0;
+}
+
 h3 {
   font-size: 1.125rem;
   font-weight: 700;
@@ -278,6 +292,121 @@ legend {
   font-family: var(--font-display);
   font-size: 1.125rem;
   font-weight: 700;
+}
+
+/* ---------------------------------------------------------------------------
+ * Settings sections: a card whose title sits inside it, never across its border.
+ * The title is an h2 or, on a fieldset, its legend: floated, a legend leaves the
+ * border and is laid out like the other children (a grid item). The intro follows
+ * the title closely; groups inside a card are separated by a rule (.subsection).
+ * ------------------------------------------------------------------------- */
+.section-card {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.section-card > p,
+.subsection > p {
+  margin: 0;
+}
+
+.section-title {
+  float: left;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* The intro right under the title: closer than the fields below it. */
+.section-card > .section-title + .hint {
+  margin-top: calc(-1 * var(--space-2));
+}
+
+.subsection {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-4) 0 0;
+  border: 0;
+  border-top: 1px solid var(--color-border-subtle);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.subsection-title {
+  float: left;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Save and other actions of a section: one row at its foot, the status beside them. */
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.section-actions p {
+  margin: 0;
+}
+
+/* Several sections in a tab: more space between them than inside them. */
+.section-stack {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+@media (max-width: 40rem) {
+  .section-card {
+    padding: var(--space-4);
+  }
+}
+
+/* Error or warning about one thing (a source, an account): danger edge, an icon and
+ * the text. Never the color alone. */
+.notice[data-tone='danger'] {
+  border-inline-start-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.notice[data-tone='danger'] .icon,
+.notice[data-tone='danger'] svg {
+  color: var(--color-danger);
+}
+
+.notice-inline {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-inline-start-width: 4px;
+  font-size: 0.9375rem;
+}
+
+.notice-inline > svg {
+  flex: none;
+  margin-top: 0.2em;
 }
 
 /* ---------------------------------------------------------------------------
@@ -542,6 +671,42 @@ a.menu-item {
   font-weight: 750;
 }
 
+/* Segmented control: switches a view inside a tab (list or week). Compact pills in a
+ * frame, the current one filled (and bold): unlike the tabs of the page above it. */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+
+.segment {
+  min-height: 2.25rem;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segment:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.segment[data-state='active'],
+.segment[aria-pressed='true'] {
+  background: var(--color-text);
+  color: var(--color-surface);
+  font-weight: 750;
+}
+
 .subpanel:focus-visible {
   outline-offset: 4px;
 }
@@ -654,4 +819,39 @@ a.menu-item {
   .subtab[data-state='active'] {
     border-bottom-color: Highlight;
   }
+
+  .segment[data-state='active'] {
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
+/* A round button with an icon only (its name in aria-label), for an action at the end of
+ * a line. Danger: red icon on a light red disc (deleting a key). */
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.icon-button[data-variant='danger'] {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.icon-button:hover {
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }

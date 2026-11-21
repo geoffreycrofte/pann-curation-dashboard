@@ -45,6 +45,9 @@ const PAIRS = [
   ['color-text', 'color-neutral-soft', 4.5],
   ['color-text', 'color-success-soft', 4.5],
   ['color-text', 'color-danger-soft', 4.5],
+  // Danger notice (.notice[data-tone='danger']): its edge and icon, and a link in it.
+  ['color-danger', 'color-danger-soft', 3],
+  ['color-accent-text', 'color-danger-soft', 4.5],
   ['color-surface', 'color-text', 4.5],
   ['color-danger', 'color-surface-2', 4.5],
   ['color-on-ink', 'color-ink', 4.5],

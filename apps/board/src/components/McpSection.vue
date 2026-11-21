@@ -3,6 +3,7 @@ import type { OAuthGrant } from '@supabase/supabase-js'
 import { computed, onMounted, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { supabase } from '../lib/supabase'
+import Icon from './Icon.vue'
 
 const { t, tm, rt, d } = useI18n()
 const id = useId()
@@ -47,21 +48,25 @@ async function revoke(grant: OAuthGrant) {
 </script>
 
 <template>
-  <section class="mcp" :aria-labelledby="`${id}-title`">
-    <h2 :id="`${id}-title`" class="group-title">{{ t('connections.mcpTitle') }}</h2>
-    <div class="card body">
-      <p>{{ t('connections.mcpIntro') }}</p>
+  <section class="section-card mcp" :aria-labelledby="`${id}-title`">
+    <h2 :id="`${id}-title`" class="section-title">{{ t('connections.mcpTitle') }}</h2>
+    <p>{{ t('connections.mcpIntro') }}</p>
+    <div class="url-block">
       <div class="url-row">
         <span class="label">{{ t('connections.mcpUrl') }}</span>
         <code>{{ url }}</code>
-        <button type="button" class="button" @click="copy">{{ t('connections.mcpCopy') }}</button>
+        <button type="button" class="button" data-size="small" @click="copy">
+          {{ t('connections.mcpCopy') }}
+        </button>
       </div>
       <p v-if="local" class="hint">{{ t('connections.mcpPublic') }}</p>
-      <ol>
-        <li v-for="(step, index) in steps" :key="index">{{ step }}</li>
-      </ol>
+    </div>
+    <ol>
+      <li v-for="(step, index) in steps" :key="index">{{ step }}</li>
+    </ol>
 
-      <h3 :id="`${id}-grants`">{{ t('connections.grants') }}</h3>
+    <section class="subsection" :aria-labelledby="`${id}-grants`">
+      <h3 :id="`${id}-grants`" class="subsection-title">{{ t('connections.grants') }}</h3>
       <p v-if="!grants" role="status">{{ t('common.loading') }}</p>
       <p v-else-if="unavailable" class="hint">{{ t('connections.grantsUnavailable') }}</p>
       <p v-else-if="!grants.length">{{ t('connections.grantsEmpty') }}</p>
@@ -75,7 +80,9 @@ async function revoke(grant: OAuthGrant) {
           }}</span>
           <button
             type="button"
-            class="button"
+            class="button revoke"
+            data-size="small"
+            data-variant="danger"
             :aria-label="t('connections.revokeLabel', { client: grant.client.name })"
             @click="revoke(grant)"
           >
@@ -83,32 +90,25 @@ async function revoke(grant: OAuthGrant) {
           </button>
         </li>
       </ul>
-      <p role="status" :class="{ error: isError }">{{ message }}</p>
-    </div>
+    </section>
+    <p v-if="isError && message" class="notice notice-inline" data-tone="danger" role="alert">
+      <Icon name="alert-circle" />
+      <span>{{ message }}</span>
+    </p>
+    <p role="status" class="message">{{ isError ? '' : message }}</p>
   </section>
 </template>
 
 <style scoped>
-.group-title {
-  margin: var(--space-8) 0 var(--space-4);
-}
-
-.body {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-6);
-}
-
-.body p,
-.body h3,
-.body ol,
-.body ul {
+.mcp ol,
+.mcp ul,
+.url-block p {
   margin: 0;
 }
 
-.body h3 {
-  margin-top: var(--space-3);
-  font-size: 1.125rem;
+.url-block {
+  display: grid;
+  gap: var(--space-1);
 }
 
 .url-row {
@@ -133,21 +133,36 @@ ol {
   padding-inline-start: var(--space-6);
 }
 
+/* Each authorised app on a row of a bordered list, "Revoke" at its end. */
 .grants {
   display: grid;
-  gap: var(--space-2);
   padding: 0;
   list-style: none;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
 }
 
 .grants li {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-2) var(--space-4);
+}
+
+.grants li + li {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.revoke {
+  margin-inline-start: auto;
 }
 
 .client {
   font-weight: 650;
+}
+
+.message:empty {
+  position: absolute;
 }
 </style>

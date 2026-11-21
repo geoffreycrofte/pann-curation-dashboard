@@ -17,12 +17,14 @@ import {
 } from 'reka-ui'
 import { computed, nextTick, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { toast } from '../lib/toast'
+import { useAutosave } from '../lib/autosave'
+import AutosaveStatus from './AutosaveStatus.vue'
 
 export type RewritePreset = 'shorter' | 'longer' | 'formal' | 'casual' | 'custom'
 
 /**
- * A labelled textarea with its own save button, length counter and status message,
+ * A labelled textarea saved by itself (a moment after typing, on blur), with its length
+ * counter and save status,
  * an "edited by hand" mark and, when `rewrite` is given, AI rewrites of the text.
  */
 const props = defineProps<{
@@ -42,42 +44,33 @@ const props = defineProps<{
   save: (text: string) => Promise<unknown>
   /** Warnings about the text as it is typed (accessibility check of posts). */
   checks?: (text: string) => string[]
-  /** Returns a rewritten version of the text; nothing is saved until "Save". */
+  /** Returns a rewritten version of the text, saved like a change typed by hand. */
   rewrite?: (text: string, preset: RewritePreset, instruction?: string) => Promise<string>
 }>()
 const { t } = useI18n()
 const id = useId()
 
 const text = ref(props.value)
+const autosave = useAutosave({
+  value: () => text.value,
+  stored: () => props.value,
+  save: (value) => props.save(value),
+})
+const dirty = autosave.dirty
 watch(
   () => props.value,
   (value) => {
-    if (!dirty.value) text.value = value
+    if (!dirty.value && autosave.state.value !== 'saving') text.value = value
   },
 )
-const dirty = computed(() => text.value !== props.value)
 const length = computed(() => (props.measure ?? postLength)(text.value))
 const over = computed(() => (props.limit ? length.value - props.limit : 0))
 const warnings = computed(() => props.checks?.(text.value) ?? [])
 
-const saving = ref(false)
+const saving = computed(() => autosave.state.value === 'saving')
+/** Messages of the AI rewrite (running, done, undone, failed). */
 const message = ref('')
 const isError = ref(false)
-async function submit() {
-  saving.value = true
-  try {
-    await props.save(text.value)
-    isError.value = false
-    message.value = ''
-    toast(t('draft.saved'))
-    beforeRewrite.value = null
-  } catch (err) {
-    isError.value = true
-    message.value = t('common.error', { message: (err as Error).message })
-  } finally {
-    saving.value = false
-  }
-}
 
 // ---------------------------------------------------------------------------
 // AI rewrite: the proposal replaces the text in the field, "Undo" brings it back.
@@ -127,9 +120,14 @@ async function undoRewrite() {
 </script>
 
 <template>
-  <form class="text-saver" @submit.prevent="submit">
+  <form class="text-saver" @submit.prevent="autosave.flush()">
     <div class="head">
       <label :for="`${id}-text`" class="form-label">{{ label }}</label>
+      <AutosaveStatus
+        v-if="!readonly"
+        :state="autosave.state.value"
+        :error="autosave.error.value"
+      />
       <span v-if="edited && !dirty" class="badge" data-tone="accent">
         <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
           <path
@@ -142,7 +140,6 @@ async function undoRewrite() {
         </svg>
         {{ t('draft.editedBadge') }}
       </span>
-      <span v-if="dirty" class="badge" data-tone="accent" data-dot>{{ t('draft.unsaved') }}</span>
 
       <DropdownMenuRoot v-if="rewrite && !readonly">
         <span class="ai-halo rewrite-halo" data-shape="pill" :data-busy="rewriting">
@@ -194,6 +191,7 @@ async function undoRewrite() {
         :aria-describedby="`${description ? `${id}-desc ` : ''}${id}-meta${warnings.length ? ` ${id}-checks` : ''}`"
         :aria-invalid="over > 0 || undefined"
         :aria-busy="rewriting || undefined"
+        @blur="autosave.flush()"
       ></textarea>
     </div>
     <p :id="`${id}-meta`" class="hint">
@@ -209,14 +207,12 @@ async function undoRewrite() {
         <li v-for="warning in warnings" :key="warning">{{ warning }}</li>
       </ul>
     </div>
-    <div v-if="!readonly" class="row">
-      <button type="submit" class="button" :disabled="saving || rewriting || !dirty">
-        {{ t('draft.save') }}
-      </button>
+    <div v-if="!readonly && (beforeRewrite !== null || message)" class="row">
       <button
-        v-if="beforeRewrite !== null && dirty"
+        v-if="beforeRewrite !== null"
         type="button"
         class="button"
+        data-size="small"
         :disabled="rewriting"
         @click="undoRewrite"
       >

@@ -185,8 +185,8 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
   <h1 tabindex="-1">{{ t('admin.title') }}</h1>
   <p>{{ t('admin.intro') }}</p>
 
-  <section class="block" :aria-labelledby="`${id}-keys`">
-    <h2 :id="`${id}-keys`">{{ t('admin.keysTitle') }}</h2>
+  <section class="section-card block" :aria-labelledby="`${id}-keys`">
+    <h2 :id="`${id}-keys`" class="section-title">{{ t('admin.keysTitle') }}</h2>
     <p class="hint">{{ t('admin.keysIntro') }}</p>
     <p v-if="keysError" role="alert">{{ t('board.loadError', { message: keysError.message }) }}</p>
     <p v-else-if="isPending" role="status">{{ t('common.loading') }}</p>
@@ -195,10 +195,22 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
         <form class="key" @submit.prevent="saveKey(provider)">
           <h3 :id="`${id}-${provider}`">{{ t(`admin.providers.${provider}.name`) }}</h3>
           <p class="hint">{{ t(`admin.providers.${provider}.purpose`) }}</p>
+          <!-- Same status pattern as Connexions: a badge, then the key's details. -->
           <p v-if="keyOf(provider)" class="status">
-            {{ t(`connections.status.${keyOf(provider)!.status}`) }}.
-            {{ t('connections.hint', { hint: keyOf(provider)!.hint }) }}.
-            <span v-if="keyOf(provider)!.checked_at">
+            <span
+              class="badge"
+              data-dot
+              :data-tone="
+                keyOf(provider)!.status === 'ok'
+                  ? 'success'
+                  : keyOf(provider)!.status === 'invalid'
+                    ? 'danger'
+                    : 'accent'
+              "
+              >{{ t(`connections.status.${keyOf(provider)!.status}`) }}</span
+            >
+            <span class="hint">{{ t('connections.hint', { hint: keyOf(provider)!.hint }) }}</span>
+            <span v-if="keyOf(provider)!.checked_at" class="hint">
               {{
                 t('admin.checkedOn', {
                   date: d(new Date(keyOf(provider)!.checked_at!), { dateStyle: 'medium' }),
@@ -206,7 +218,9 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
               }}
             </span>
           </p>
-          <p v-else class="status">{{ t('connections.status.none') }}</p>
+          <p v-else class="status">
+            <span class="badge" data-dot>{{ t('connections.status.none') }}</span>
+          </p>
           <div class="form-row">
             <label :for="`${id}-${provider}-secret`">
               {{ keyOf(provider) ? t('admin.replaceKey') : t('admin.newKey') }}
@@ -237,7 +251,9 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
             <button
               v-if="keyOf(provider)"
               type="button"
-              class="button"
+              class="button remove"
+              data-size="small"
+              data-variant="danger"
               :disabled="busy === provider"
               :aria-describedby="`${id}-${provider}`"
               @click="removeKey(provider)"
@@ -250,8 +266,8 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
     </ul>
   </section>
 
-  <section class="block" :aria-labelledby="`${id}-requests`">
-    <h2 :id="`${id}-requests`">{{ t('admin.requestsTitle') }}</h2>
+  <section class="section-card block" :aria-labelledby="`${id}-requests`">
+    <h2 :id="`${id}-requests`" class="section-title">{{ t('admin.requestsTitle') }}</h2>
     <p class="hint">{{ t('admin.requestsIntro') }}</p>
     <p v-if="requestsError" role="alert">
       {{ t('board.loadError', { message: requestsError.message }) }}
@@ -281,6 +297,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
               v-if="request.status !== 'accepted'"
               type="button"
               class="button"
+              data-size="small"
               :disabled="handling === request.id"
               @click="handle(request, 'accepted')"
             >
@@ -290,6 +307,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
               v-if="request.status !== 'declined'"
               type="button"
               class="button"
+              data-size="small"
               :disabled="handling === request.id"
               @click="handle(request, 'declined')"
             >
@@ -299,6 +317,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
               v-if="request.status !== 'new'"
               type="button"
               class="button"
+              data-size="small"
               :disabled="handling === request.id"
               @click="handle(request, 'new')"
             >
@@ -313,8 +332,8 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
     </template>
   </section>
 
-  <section class="block" :aria-labelledby="`${id}-features`">
-    <h2 :id="`${id}-features`">{{ t('admin.featuresTitle') }}</h2>
+  <section class="section-card block" :aria-labelledby="`${id}-features`">
+    <h2 :id="`${id}-features`" class="section-title">{{ t('admin.featuresTitle') }}</h2>
     <p class="hint">{{ t('admin.featuresIntro') }}</p>
     <p v-if="!featureRequests?.length">{{ t('admin.noFeatures') }}</p>
     <div v-else class="table-wrap">
@@ -369,8 +388,8 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
     </div>
   </section>
 
-  <section class="block" :aria-labelledby="`${id}-workspaces`">
-    <h2 :id="`${id}-workspaces`">{{ t('admin.workspacesTitle') }}</h2>
+  <section class="section-card block" :aria-labelledby="`${id}-workspaces`">
+    <h2 :id="`${id}-workspaces`" class="section-title">{{ t('admin.workspacesTitle') }}</h2>
     <p class="hint">{{ t('admin.workspacesIntro') }}</p>
     <div v-if="workspaces?.length" class="table-wrap">
       <table>
@@ -409,8 +428,8 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
     </div>
   </section>
 
-  <section class="block" :aria-labelledby="`${id}-costs`">
-    <h2 :id="`${id}-costs`">{{ t('admin.costsTitle') }}</h2>
+  <section class="section-card block" :aria-labelledby="`${id}-costs`">
+    <h2 :id="`${id}-costs`" class="section-title">{{ t('admin.costsTitle') }}</h2>
     <p class="hint">{{ t('admin.costsIntro') }}</p>
 
     <form class="limits" @submit.prevent="saveSettings">
@@ -459,7 +478,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
         />
         <p :id="`${id}-from-hint`" class="hint">{{ t('admin.emailFromHint') }}</p>
       </div>
-      <div>
+      <div class="section-actions">
         <button type="submit" class="button" data-variant="primary" :disabled="savingSettings">
           {{ savingSettings ? t('common.saving') : t('common.save') }}
         </button>
@@ -467,67 +486,73 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
       <p v-if="settingsError" class="error" role="alert">{{ settingsError }}</p>
     </form>
 
-    <div class="form-row month">
-      <label :for="`${id}-month`">{{ t('admin.month') }}</label>
-      <input
-        :id="`${id}-month`"
-        v-model="month"
-        class="field small"
-        type="month"
-        :max="currentMonth"
-      />
-    </div>
-    <p v-if="usagePending" role="status">{{ t('common.loading') }}</p>
-    <template v-else>
-      <p>
-        {{ t('admin.total', { total: usd(total), cap: usd(cap) }) }}
-      </p>
-      <p v-if="!usage?.length">{{ t('admin.noUsage') }}</p>
-      <div v-else class="table-wrap">
-        <table>
-          <caption class="visually-hidden">
-            {{
-              t('admin.usageCaption', { month })
-            }}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">{{ t('admin.colWorkspace') }}</th>
-              <th scope="col">{{ t('admin.colService') }}</th>
-              <th scope="col">{{ t('admin.colOperation') }}</th>
-              <th scope="col" class="num">{{ t('admin.colCalls') }}</th>
-              <th scope="col" class="num">{{ t('admin.colCost') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in usage" :key="`${row.workspace_id}/${row.provider}/${row.operation}`">
-              <th scope="row">{{ row.workspace_name }}</th>
-              <td>{{ row.provider }}</td>
-              <td>{{ row.operation || '-' }}</td>
-              <td class="num">{{ n(Number(row.calls)) }}</td>
-              <td class="num">{{ usd(Number(row.cost_usd)) }}</td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- The month's spending: apart from the limits form, under a rule. -->
+    <div class="subsection spending">
+      <div class="form-row month">
+        <label :for="`${id}-month`">{{ t('admin.month') }}</label>
+        <input
+          :id="`${id}-month`"
+          v-model="month"
+          class="field small"
+          type="month"
+          :max="currentMonth"
+        />
       </div>
-    </template>
+      <p v-if="usagePending" role="status">{{ t('common.loading') }}</p>
+      <template v-else>
+        <p>
+          {{ t('admin.total', { total: usd(total), cap: usd(cap) }) }}
+        </p>
+        <p v-if="!usage?.length">{{ t('admin.noUsage') }}</p>
+        <div v-else class="table-wrap">
+          <table>
+            <caption class="visually-hidden">
+              {{
+                t('admin.usageCaption', { month })
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ t('admin.colWorkspace') }}</th>
+                <th scope="col">{{ t('admin.colService') }}</th>
+                <th scope="col">{{ t('admin.colOperation') }}</th>
+                <th scope="col" class="num">{{ t('admin.colCalls') }}</th>
+                <th scope="col" class="num">{{ t('admin.colCost') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in usage"
+                :key="`${row.workspace_id}/${row.provider}/${row.operation}`"
+              >
+                <th scope="row">{{ row.workspace_name }}</th>
+                <td>{{ row.provider }}</td>
+                <td>{{ row.operation || '-' }}</td>
+                <td class="num">{{ n(Number(row.calls)) }}</td>
+                <td class="num">{{ usd(Number(row.cost_usd)) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </div>
   </section>
 </template>
 
 <style scoped>
+/* One card per section, the title inside, at the width of the settings pages. */
 .block {
-  display: grid;
-  gap: var(--space-3);
-  max-width: 48rem;
-  margin-top: var(--space-8);
+  max-width: var(--width-content);
+  margin-top: var(--space-6);
 }
 
-.block h2,
 .block p {
   margin: 0;
 }
 
-.keys {
+/* Keys and requests: rows of their card, split by a rule (no card inside a card). */
+.keys,
+.requests {
   display: grid;
   gap: var(--space-4);
   margin: 0;
@@ -535,13 +560,27 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
   list-style: none;
 }
 
+/* The first key sits apart from the section's intro. */
+.keys {
+  margin-top: var(--space-2);
+}
+
+.keys > li + li,
+.requests > li + li {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
 .key {
   display: grid;
   gap: var(--space-2);
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
 }
 
 .key h3,
@@ -557,7 +596,16 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
 .actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
+}
+
+.actions .remove {
+  margin-inline-start: auto;
+}
+
+.spending {
+  gap: var(--space-3);
 }
 
 .limits {
@@ -577,21 +625,9 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
   max-width: 10rem;
 }
 
-.requests {
-  display: grid;
-  gap: var(--space-4);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 .request {
   display: grid;
   gap: var(--space-2);
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
 }
 
 .request h3,

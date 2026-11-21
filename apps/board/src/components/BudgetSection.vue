@@ -4,6 +4,7 @@ import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
+import Icon from './Icon.vue'
 
 const props = defineProps<{ topicId: string }>()
 const { t, n } = useI18n()
@@ -46,8 +47,8 @@ const { mutate: save, isLoading } = useMutation({
 </script>
 
 <template>
-  <section class="budget" :aria-labelledby="`${id}-title`">
-    <h2 :id="`${id}-title`">{{ t('settings.budget') }}</h2>
+  <section class="section-card budget" :aria-labelledby="`${id}-title`">
+    <h2 :id="`${id}-title`" class="section-title">{{ t('settings.budget') }}</h2>
     <template v-if="usage">
       <p class="spent">
         {{
@@ -88,10 +89,13 @@ const { mutate: save, isLoading } = useMutation({
           </tr>
         </tbody>
       </table>
-      <p v-if="ratio >= 1" class="error">{{ t('errors.budget_exceeded') }}</p>
+      <p v-if="ratio >= 1" class="notice notice-inline" data-tone="danger">
+        <Icon name="alert-circle" />
+        <span>{{ t('errors.budget_exceeded') }}</span>
+      </p>
     </template>
 
-    <form class="form" @submit.prevent="save()">
+    <form class="form subsection" @submit.prevent="save()">
       <div class="form-row">
         <label :for="`${id}-budget`">{{ t('settings.budgetLabel') }}</label>
         <input
@@ -107,23 +111,17 @@ const { mutate: save, isLoading } = useMutation({
         />
         <p :id="`${id}-budget-hint`" class="hint">{{ t('settings.budgetHint') }}</p>
       </div>
-      <div>
-        <button type="submit" class="button" :disabled="isLoading">{{ t('common.save') }}</button>
+      <div class="section-actions">
+        <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
+          {{ t('common.save') }}
+        </button>
+        <p role="status" :class="{ error: isError }">{{ message }}</p>
       </div>
     </form>
-    <p role="status" :class="{ error: isError }">{{ message }}</p>
   </section>
 </template>
 
 <style scoped>
-.budget {
-  display: grid;
-  gap: var(--space-3);
-  max-width: 40rem;
-  margin-top: var(--space-6);
-}
-
-.budget h2,
 .budget p {
   margin: 0;
 }

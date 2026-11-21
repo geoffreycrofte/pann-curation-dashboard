@@ -171,7 +171,7 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
 </script>
 
 <template>
-  <div class="head">
+  <div class="page-head">
     <h1 tabindex="-1">{{ t('settings.heading', { topic: topicName }) }}</h1>
     <RouterLink
       v-if="assistant?.available"
@@ -214,9 +214,11 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
       <ProductSettings :key="topic.id" :topic="topic" />
     </TabsContent>
 
-    <TabsContent value="sources" class="subpanel">
+    <TabsContent value="sources" class="subpanel source-groups">
       <section v-if="topic.config.modules.curation" :aria-labelledby="`${id}-curation-sources`">
-        <h2 :id="`${id}-curation-sources`">{{ t('settings.curationSources') }}</h2>
+        <h2 :id="`${id}-curation-sources`" class="group-title">
+          {{ t('settings.curationSources') }}
+        </h2>
         <SourcesPanel :topic-id="topicId" />
       </section>
       <!-- It has its own heading ("Conversation sources") and introduction. -->
@@ -224,11 +226,12 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
     </TabsContent>
 
     <!-- Triage: what the topic keeps, its kinds of content and how often each is collected. -->
-    <TabsContent value="triage" class="subpanel stack">
+    <TabsContent value="triage" class="subpanel section-stack">
       <TopicKindsSettings :key="topic.id" :topic="topic" />
-      <form class="form settings" @submit.prevent="mutate()">
-        <fieldset :aria-describedby="`${id}-hint`">
-          <legend>{{ t('settings.collection') }}</legend>
+      <!-- One form: collection and triage are saved together (same settings call). -->
+      <form class="section-stack" @submit.prevent="mutate()">
+        <fieldset class="section-card" :aria-describedby="`${id}-hint`">
+          <legend class="section-title">{{ t('settings.collection') }}</legend>
           <p :id="`${id}-hint`" class="hint">{{ t('settings.collectionHint') }}</p>
           <div class="grid">
             <div v-for="kind in topic.config.kinds" :key="kind.key" class="form-row">
@@ -252,18 +255,14 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
               />
             </div>
           </div>
-          <BacklogLimitField v-model="collection.pause_above" module="curation" />
+          <BacklogLimitField
+            v-model="collection.pause_above"
+            module="curation"
+            class="subsection"
+          />
         </fieldset>
-        <div>
-          <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
-            {{ isLoading ? t('common.saving') : t('common.save') }}
-          </button>
-        </div>
-        <p role="status" :class="{ error: isError }">{{ message }}</p>
-      </form>
-      <form class="form settings" @submit.prevent="mutate()">
-        <fieldset>
-          <legend>{{ t('settings.triage') }}</legend>
+        <fieldset class="section-card">
+          <legend class="section-title">{{ t('settings.triage') }}</legend>
           <div class="form-row">
             <label :for="`${id}-criteria`">{{ t('settings.criteria') }}</label>
             <textarea
@@ -293,20 +292,20 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
             <p :id="`${id}-threshold-hint`" class="hint">{{ t('settings.thresholdHint') }}</p>
           </div>
         </fieldset>
-        <div>
+        <div class="section-actions">
           <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
             {{ isLoading ? t('common.saving') : t('common.save') }}
           </button>
+          <p role="status" :class="{ error: isError }">{{ message }}</p>
         </div>
-        <p role="status" :class="{ error: isError }">{{ message }}</p>
       </form>
     </TabsContent>
 
-    <TabsContent value="voice" class="subpanel">
+    <TabsContent value="voice" class="subpanel section-stack">
       <VoiceFromPosts :topic-id="topicId" :current="ai" @apply="applyVoice" />
-      <form class="form settings" @submit.prevent="mutate()">
-        <fieldset :aria-describedby="`${id}-drafting-hint`">
-          <legend>{{ t('settings.drafting') }}</legend>
+      <form class="section-stack" @submit.prevent="mutate()">
+        <fieldset class="section-card" :aria-describedby="`${id}-drafting-hint`">
+          <legend class="section-title">{{ t('settings.drafting') }}</legend>
           <p :id="`${id}-drafting-hint`" class="hint">{{ t('settings.draftingHint') }}</p>
           <div class="form-row">
             <label :for="`${id}-draft-mode`">{{ t('settings.draftMode') }}</label>
@@ -328,7 +327,7 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
               :id="`${id}-${rule.field}`"
               v-model="ai[rule.field]"
               class="field"
-              rows="5"
+              rows="4"
               maxlength="4000"
               :placeholder="t(`settings.${rule.label}Placeholder`)"
               :aria-describedby="`${id}-${rule.field}-hint`"
@@ -345,15 +344,15 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
               :aria-describedby="`${id}-a11y-check-hint`"
             />
             <label :for="`${id}-a11y-check`">{{ t('postChecks.setting') }}</label>
+            <p :id="`${id}-a11y-check-hint`" class="hint">{{ t('postChecks.settingHint') }}</p>
           </div>
-          <p :id="`${id}-a11y-check-hint`" class="hint">{{ t('postChecks.settingHint') }}</p>
+          <div class="section-actions">
+            <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
+              {{ isLoading ? t('common.saving') : t('common.save') }}
+            </button>
+            <p role="status" :class="{ error: isError }">{{ message }}</p>
+          </div>
         </fieldset>
-        <div>
-          <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
-            {{ isLoading ? t('common.saving') : t('common.save') }}
-          </button>
-        </div>
-        <p role="status" :class="{ error: isError }">{{ message }}</p>
       </form>
     </TabsContent>
 
@@ -379,19 +378,6 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
 </template>
 
 <style scoped>
-.head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3) var(--space-5);
-  margin-bottom: var(--space-6);
-}
-
-.head h1 {
-  margin: 0;
-}
-
 .layout {
   display: grid;
   gap: var(--space-6);
@@ -457,41 +443,24 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
   max-width: 24rem;
 }
 
-/* Several forms in one tab (triage: kinds, collection, criteria). */
-.stack {
+/* Closed panels stay in the page, hidden: a display set on a panel must not show them. */
+.subpanel[hidden] {
+  display: none;
+}
+
+/* Two groups of sources (news watch, conversations): well apart, each with its title. */
+.source-groups {
   display: grid;
   gap: var(--space-8);
 }
 
-/* Each panel is one section: no card, the legend reads as the panel title. */
-.settings {
-  max-width: 40rem;
+.group-title {
+  margin: 0 0 var(--space-3);
 }
 
-.settings fieldset {
-  display: grid;
-  gap: var(--space-4);
-  padding: 0;
-  border: 0;
-  background: none;
-  box-shadow: none;
-}
-
-.settings legend {
-  margin-bottom: var(--space-2);
-  padding: 0;
-  font-size: 1.375rem;
-}
-
-.settings p[role='status'] {
-  margin: 0;
-}
-
-.subpanel :deep(.diffusion),
-.subpanel :deep(.newsletter),
-.subpanel :deep(.feed),
-.subpanel :deep(.budget) {
-  margin-top: 0;
+/* One width for every settings panel: the cards line up from one tab to the next. */
+.layout > .subpanel {
+  max-width: var(--width-content);
 }
 
 textarea.field {
@@ -506,7 +475,6 @@ textarea.field {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
-  gap: var(--space-4);
-  margin-top: var(--space-3);
+  gap: var(--space-3) var(--space-4);
 }
 </style>

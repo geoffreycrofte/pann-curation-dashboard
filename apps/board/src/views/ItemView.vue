@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   accountFor,
+  canTransition,
   DRAFT_CHANNELS,
   missingPosts,
   POST_LIMITS,
@@ -8,7 +9,9 @@ import {
   SOURCE_TEXT_MAX,
   SOURCE_TEXT_MIN,
   publishedLength,
+  siteOf,
   type DraftChannel,
+  type ItemTopicStatus,
   type Lang,
   type PostDraft,
 } from '@pann/shared'
@@ -28,6 +31,7 @@ import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FirstCommentEditor from '../components/FirstCommentEditor.vue'
 import ComposeFromIdea from '../components/compose/ComposeFromIdea.vue'
+import Icon from '../components/Icon.vue'
 import KindSelect from '../components/KindSelect.vue'
 import QuickPublish from '../components/QuickPublish.vue'
 import TextSaver, { type RewritePreset } from '../components/TextSaver.vue'
@@ -90,6 +94,36 @@ const excerpt = computed(() => detail.value?.summaries.find((s) => s.key_excerpt
 const nature = computed(() => detail.value?.summaries.find((s) => s.source_nature)?.source_nature)
 const model = computed(() => detail.value?.summaries[0]?.model)
 const canDraft = computed(() => ['validated', 'published'].includes(detail.value?.status ?? ''))
+/** Still to sort (or rejected): the page helps to judge the source, not to check texts. */
+const sorting = computed(() => ['new', 'rejected'].includes(detail.value?.status ?? ''))
+const site = computed(() => (detail.value ? siteOf(detail.value.item.canonical_url) : null))
+const paragraphs = computed(() =>
+  (detail.value?.item.excerpt ?? '')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean),
+)
+const decisions = computed(() =>
+  (
+    [
+      { to: 'validated', label: 'action.validate', variant: 'primary' },
+      { to: 'rejected', label: 'action.reject', variant: undefined },
+      { to: 'new', label: 'action.restore', variant: undefined },
+    ] as const
+  ).filter((a) => detail.value && canTransition(detail.value.status, a.to)),
+)
+const { mutate: decide, isLoading: deciding } = useMutation({
+  mutation: (status: ItemTopicStatus) => api.setStatus(props.topicId, props.itemId, status),
+  async onSuccess(_, status) {
+    toast(t(`decision.done.${status}`))
+    await queryCache.invalidateQueries({ key: key() })
+    await queryCache.invalidateQueries({ key: ['items', props.topicId] })
+  },
+  onError(err) {
+    decisionError.value = describeError(err.message, t).text
+  },
+})
+const decisionError = ref('')
 
 const message = ref('')
 const isError = ref(false)
@@ -367,6 +401,7 @@ usePageDetail(() => detail.value?.item.title)
       </RouterLink>
     </p>
     <h1 tabindex="-1" :lang="detail.item.source_lang ?? undefined">{{ detail.item.title }}</h1>
+    <!-- Where the item stands, at a glance: status, score, warnings, date. -->
     <ul class="meta">
       <li>
         <span
@@ -383,7 +418,49 @@ usePageDetail(() => detail.value?.item.title)
           {{ t(`statusOne.${detail.status}`) }}
         </span>
       </li>
-      <li class="kind-field">
+      <li v-if="detail.relevance_score !== null">
+        <span class="badge" data-tone="accent">
+          {{ t('board.relevance', { score: detail.relevance_score }) }}
+        </span>
+      </li>
+      <li v-if="detail.is_commercial">
+        <span class="badge" data-dot>{{ t('board.commercial') }}</span>
+      </li>
+      <li class="date">
+        {{
+          t('board.discovered', {
+            date: d(new Date(detail.item.discovered_at), { dateStyle: 'medium' }),
+          })
+        }}
+      </li>
+      <!-- Said once for the page; each text shows its own state beside its label. -->
+      <li v-if="detail.posts.length || detail.summaries.length" class="date">
+        {{ t('autosave.auto') }}
+      </li>
+    </ul>
+    <p v-if="detail.triage_reason" class="reason">
+      {{ t('board.reason', { reason: detail.triage_reason }) }}
+    </p>
+    <!-- What can be done with the item itself: read it, take it to Création, file it. -->
+    <div class="toolbar">
+      <a
+        class="source-link"
+        :href="detail.item.canonical_url"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ t('draft.source') }}
+        <Icon name="external-link" :size="16" />
+        <span class="visually-hidden">{{ t('common.newTab') }}</span>
+      </a>
+      <!-- Your own take on it, in Création (when the topic uses it). -->
+      <ComposeFromIdea
+        v-if="detail.status === 'validated' || detail.status === 'published'"
+        :topic-id="topicId"
+        :title="detail.item.title"
+        :url="detail.item.canonical_url"
+      />
+      <div class="kind-field">
         <!-- The kind of the item in this topic: set by the source, the triage or here. -->
         <label for="item-kind">{{ t('itemKind.label') }}</label>
         <KindSelect
@@ -393,36 +470,90 @@ usePageDetail(() => detail.value?.item.title)
           :disabled="savingKind"
           @update:model-value="(kind) => saveKind(kind)"
         />
-      </li>
-      <li v-if="detail.relevance_score !== null">
-        {{ t('board.relevance', { score: detail.relevance_score }) }}
-      </li>
-      <li v-if="detail.is_commercial">{{ t('board.commercial') }}</li>
-      <li>
-        {{
-          t('board.discovered', {
-            date: d(new Date(detail.item.discovered_at), { dateStyle: 'medium' }),
-          })
-        }}
-      </li>
-    </ul>
-    <p class="source-line">
-      <a :href="detail.item.canonical_url" target="_blank" rel="noopener noreferrer">{{
-        t('draft.source')
-      }}</a>
-      <!-- Your own take on it, in Création (when the topic uses it). -->
-      <ComposeFromIdea
-        v-if="detail.status === 'validated' || detail.status === 'published'"
-        :topic-id="topicId"
-        :title="detail.item.title"
-        :url="detail.item.canonical_url"
-      />
-    </p>
-    <p v-if="detail.triage_reason">{{ t('board.reason', { reason: detail.triage_reason }) }}</p>
+      </div>
+    </div>
 
-    <section class="block draft-state" :data-tone="draftTone" aria-labelledby="drafting-status">
+    <!--
+      Still to sort: what the source says, then the decision. Validating starts the
+      drafting, and the page turns into the one that checks the texts.
+    -->
+    <template v-if="sorting">
+      <section class="block source-preview" aria-labelledby="source-preview">
+        <h2 id="source-preview">{{ t('sourcePreview.title') }}</h2>
+        <div
+          v-if="paragraphs.length"
+          class="source-text-preview"
+          :lang="detail.item.source_lang ?? undefined"
+        >
+          <p v-for="(paragraph, index) in paragraphs" :key="index">
+            {{ paragraph
+            }}<template v-if="detail.item.excerpt_truncated && index === paragraphs.length - 1"
+              >…</template
+            >
+          </p>
+        </div>
+        <p v-else class="hint">{{ t('sourcePreview.none') }}</p>
+        <p class="hint source-meta">
+          <span v-if="detail.item.published_at">
+            {{
+              t('sourcePreview.published', {
+                date: d(new Date(detail.item.published_at), { dateStyle: 'long' }),
+              })
+            }}
+          </span>
+          <!-- "Read the source" is in the toolbar; here, only where the excerpt stops. -->
+          <a
+            v-if="site && detail.item.excerpt_truncated"
+            :href="detail.item.canonical_url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ t('sourcePreview.readMore', { site }) }}
+            <Icon name="external-link" :size="14" />
+            <span class="visually-hidden">{{ t('common.newTab') }}</span>
+          </a>
+        </p>
+      </section>
+
+      <section
+        v-if="decisions.length"
+        class="block decision next-step"
+        aria-labelledby="decision-title"
+      >
+        <div class="decision-text">
+          <h2 id="decision-title">
+            {{ t(detail.status === 'rejected' ? 'decision.rejectedTitle' : 'decision.title') }}
+          </h2>
+          <p id="decision-hint" class="hint">
+            {{ t(detail.status === 'rejected' ? 'decision.rejectedHint' : 'decision.hint') }}
+          </p>
+        </div>
+        <div class="decision-actions" role="group" aria-labelledby="decision-title">
+          <button
+            v-for="action in decisions"
+            :key="action.to"
+            type="button"
+            class="button"
+            :data-variant="action.variant"
+            :disabled="deciding"
+            aria-describedby="decision-hint"
+            @click="decide(action.to)"
+          >
+            {{ t(action.label) }}
+          </button>
+        </div>
+        <p v-if="decisionError" class="error" role="alert">{{ decisionError }}</p>
+      </section>
+    </template>
+
+    <section
+      v-else
+      class="block draft-state"
+      :data-tone="draftTone"
+      aria-labelledby="drafting-status"
+    >
       <span class="state-icon" aria-hidden="true">
-        <svg v-if="detail.draft_status === 'ready'" viewBox="0 0 24 24" width="22" height="22">
+        <svg v-if="detail.draft_status === 'ready'" viewBox="0 0 24 24" width="18" height="18">
           <path
             d="M5 12.5l4.5 4.5L19 7.5"
             fill="none"
@@ -436,8 +567,8 @@ usePageDetail(() => detail.value?.item.title)
           v-else-if="detail.draft_status === 'pending'"
           class="spin"
           viewBox="0 0 24 24"
-          width="22"
-          height="22"
+          width="18"
+          height="18"
         >
           <path
             d="M12 3a9 9 0 1 1-9 9"
@@ -450,8 +581,8 @@ usePageDetail(() => detail.value?.item.title)
         <svg
           v-else-if="detail.draft_status === 'failed'"
           viewBox="0 0 24 24"
-          width="22"
-          height="22"
+          width="18"
+          height="18"
         >
           <path
             d="M12 7v6M12 16.5v.5"
@@ -462,7 +593,7 @@ usePageDetail(() => detail.value?.item.title)
           />
           <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
         </svg>
-        <svg v-else viewBox="0 0 24 24" width="22" height="22">
+        <svg v-else viewBox="0 0 24 24" width="18" height="18">
           <path
             d="M6 18h12M8 14l7.5-7.5 2 2L10 16H8z"
             fill="none"
@@ -491,6 +622,7 @@ usePageDetail(() => detail.value?.item.title)
               class="button"
               :disabled="regenerating || detail.draft_status === 'pending'"
               aria-describedby="regenerate-hint"
+              data-size="small"
             >
               {{ t('draft.regenerate') }}
             </button>
@@ -515,33 +647,40 @@ usePageDetail(() => detail.value?.item.title)
             </AlertDialogContent>
           </AlertDialogPortal>
         </AlertDialogRoot>
-        <p id="regenerate-hint" class="hint">{{ t('draft.regenerateHint') }}</p>
       </div>
-      <details
-        v-if="canDraft && detail.draft_status !== 'pending'"
-        class="source-text"
-        :open="insufficient"
-      >
-        <summary>{{ t('draft.sourceText.toggle') }}</summary>
-        <form class="source-text-form" @submit.prevent="sendSourceText">
-          <p>{{ t('draft.sourceText.intro') }}</p>
-          <label :for="`${sourceTextId}-text`">{{ t('draft.sourceText.label') }}</label>
-          <textarea
-            :id="`${sourceTextId}-text`"
-            v-model="sourceText"
-            class="field"
-            rows="10"
-            :maxlength="SOURCE_TEXT_MAX"
-            :aria-describedby="`${sourceTextId}-hint`"
-          ></textarea>
-          <p :id="`${sourceTextId}-hint`" class="hint">
-            {{ t('draft.sourceText.hint', { count: sourceTextLength, min: SOURCE_TEXT_MIN }) }}
-          </p>
-          <button type="submit" class="button" data-variant="primary" :disabled="submittingSource">
-            {{ t('draft.sourceText.submit') }}
-          </button>
-        </form>
-      </details>
+      <!--
+        Second line: what a new drafting keeps. The source text is asked for only when the
+        drafting could not read enough of the page: otherwise it would read as a task.
+      -->
+      <div v-if="canDraft" class="state-more">
+        <p id="regenerate-hint" class="hint">{{ t('draft.regenerateHint') }}</p>
+        <details v-if="insufficient" class="source-text" open>
+          <summary>{{ t('draft.sourceText.toggle') }}</summary>
+          <form class="source-text-form" @submit.prevent="sendSourceText">
+            <p>{{ t('draft.sourceText.intro') }}</p>
+            <label :for="`${sourceTextId}-text`">{{ t('draft.sourceText.label') }}</label>
+            <textarea
+              :id="`${sourceTextId}-text`"
+              v-model="sourceText"
+              class="field"
+              rows="10"
+              :maxlength="SOURCE_TEXT_MAX"
+              :aria-describedby="`${sourceTextId}-hint`"
+            ></textarea>
+            <p :id="`${sourceTextId}-hint`" class="hint">
+              {{ t('draft.sourceText.hint', { count: sourceTextLength, min: SOURCE_TEXT_MIN }) }}
+            </p>
+            <button
+              type="submit"
+              class="button"
+              data-variant="primary"
+              :disabled="submittingSource"
+            >
+              {{ t('draft.sourceText.submit') }}
+            </button>
+          </form>
+        </details>
+      </div>
       <p
         role="status"
         class="state-message"
@@ -551,131 +690,10 @@ usePageDetail(() => detail.value?.item.title)
       </p>
     </section>
 
-    <section v-if="detail.summaries.length" class="block" aria-labelledby="summaries">
-      <h2 id="summaries">{{ t('draft.summaries') }}</h2>
-      <p v-if="nature">{{ t('draft.sourceNature', { nature: t(`draft.natures.${nature}`) }) }}</p>
-      <figure v-if="excerpt" class="excerpt">
-        <figcaption class="hint">{{ t('draft.excerpt') }}</figcaption>
-        <blockquote :lang="detail.item.source_lang ?? undefined">{{ excerpt }}</blockquote>
-      </figure>
-      <div class="pair">
-        <template v-for="lang in contentLangs" :key="lang">
-          <TextSaver
-            v-if="detail.summaries.find((s) => s.lang === lang)"
-            :label="t('draft.summaryLabel', { lang: contentLangName(lang) })"
-            :value="detail.summaries.find((s) => s.lang === lang)!.summary"
-            :lang="lang"
-            :edited="detail.summaries.find((s) => s.lang === lang)!.edited_by_human"
-            :description="t('draft.summaryUse')"
-            :save="(text) => saveSummary(lang, text)"
-            :rewrite="
-              (text, preset, instruction) =>
-                rewriteText({ kind: 'summary', lang }, text, preset, instruction)
-            "
-          />
-        </template>
-      </div>
-    </section>
-
-    <section v-if="missing.length" class="missing-posts" aria-labelledby="missing-posts-title">
-      <h2 id="missing-posts-title">{{ t('missingPosts.title') }}</h2>
-      <p>{{ t('missingPosts.text', { list: missingList }) }}</p>
-      <div>
-        <button type="button" class="button" :disabled="draftingMissing" @click="draftMissing()">
-          {{ t('missingPosts.action') }}
-        </button>
-      </div>
-      <p class="hint">{{ t('missingPosts.hint') }}</p>
-    </section>
-
-    <section v-if="detail.posts.length" class="block" aria-labelledby="posts">
-      <h2 id="posts">{{ t('draft.posts') }}</h2>
-      <section v-for="channel in postChannels" :key="channel" :aria-labelledby="`posts-${channel}`">
-        <h3 :id="`posts-${channel}`">{{ t(`draft.channels.${channel}`) }}</h3>
-        <div class="pair">
-          <div v-for="post in postsOf(channel)" :key="post.id" class="post">
-            <TextSaver
-              :label="
-                t('draft.postLabel', {
-                  channel: t(`draft.channels.${channel}`),
-                  lang: contentLangName(post.lang),
-                })
-              "
-              :value="post.body"
-              :lang="post.lang ?? undefined"
-              :limit="limitOf(channel)"
-              :limit-name="t(`draft.channels.${channel}`)"
-              :measure="(text) => publishedLength(channel, text, url, signatureOf(post))"
-              :length-key="
-                signatureOf(post) ? 'diffusion.lengthWithSignature' : 'diffusion.lengthWithLink'
-              "
-              :readonly="post.status === 'sent' || !!post.claimed_at"
-              :edited="post.edited_by_human"
-              :checks="postChecks"
-              :save="(text) => savePost(post.id, text)"
-              :rewrite="
-                post.lang
-                  ? (text, preset, instruction) =>
-                      rewriteText(
-                        { kind: 'post', lang: post.lang!, channel },
-                        text,
-                        preset,
-                        instruction,
-                      )
-                  : undefined
-              "
-            />
-            <p v-if="signatureOf(post)" class="hint signature" :lang="post.lang ?? undefined">
-              <span>{{ t('diffusion.signature') }}</span>
-              {{ signatureOf(post) }}
-            </p>
-            <FirstCommentEditor
-              v-if="channel === 'linkedin'"
-              :value="post.first_comment"
-              :default-text="defaultCommentOf(post)"
-              :lang="post.lang ?? undefined"
-              :readonly="post.status === 'sent' || !!post.claimed_at"
-              :save="(value) => saveFirstComment(post.id, value)"
-            />
-            <p class="post-status" :data-status="post.status">
-              <span class="badge" data-dot :data-tone="postTone(post)">{{
-                post.claimed_at ? t('diffusion.claimed') : t(`diffusion.postStatus.${post.status}`)
-              }}</span>
-              <span v-if="post.status === 'scheduled' && post.scheduled_at">
-                {{ t('diffusion.scheduledFor', { date: formatDate(post.scheduled_at) }) }}
-              </span>
-              <span v-if="post.status === 'sent' && post.sent_at">
-                {{ t('diffusion.sentOn', { date: formatDate(post.sent_at) }) }}
-              </span>
-              <a
-                v-if="post.published_url"
-                :href="post.published_url"
-                target="_blank"
-                rel="noopener noreferrer"
-                :aria-label="
-                  t('diffusion.viewLabel', {
-                    channel: t(`draft.channels.${channel}`),
-                    lang: contentLangName(post.lang),
-                  })
-                "
-                >{{ t('diffusion.view') }}</a
-              >
-            </p>
-            <p v-if="post.last_error && post.status !== 'sent'" class="error">
-              {{ describeError(post.last_error, t).text }}
-            </p>
-            <p v-if="topic && post.status !== 'sent' && !hasAccount(post)" class="hint">
-              {{ t('diffusion.noAccountFor') }}
-            </p>
-          </div>
-        </div>
-      </section>
-    </section>
-
     <section
       v-if="detail.posts.length"
       ref="diffusionSection"
-      class="block"
+      class="block next-step"
       aria-labelledby="diffusion"
     >
       <h2 id="diffusion" ref="diffusionHeading" tabindex="-1">{{ t('diffusion.title') }}</h2>
@@ -735,9 +753,136 @@ usePageDetail(() => detail.value?.item.title)
       </div>
       <p role="status" :class="{ error: diffusionError }">{{ diffusionMessage }}</p>
     </section>
-    <p v-else-if="detail.draft_status !== 'pending'" class="hint empty-note">
+    <p v-else-if="!sorting && detail.draft_status !== 'pending'" class="hint empty-note">
       {{ t('draft.empty') }}
     </p>
+
+    <section v-if="missing.length" class="missing-posts" aria-labelledby="missing-posts-title">
+      <h2 id="missing-posts-title">{{ t('missingPosts.title') }}</h2>
+      <p>{{ t('missingPosts.text', { list: missingList }) }}</p>
+      <div>
+        <button type="button" class="button" :disabled="draftingMissing" @click="draftMissing()">
+          {{ t('missingPosts.action') }}
+        </button>
+      </div>
+      <p class="hint">{{ t('missingPosts.hint') }}</p>
+    </section>
+
+    <section v-if="detail.posts.length" class="block" aria-labelledby="posts">
+      <h2 id="posts">{{ t('draft.posts') }}</h2>
+      <section
+        v-for="channel in postChannels"
+        :key="channel"
+        class="network"
+        :aria-labelledby="`posts-${channel}`"
+      >
+        <h3 :id="`posts-${channel}`">{{ t(`draft.channels.${channel}`) }}</h3>
+        <div class="pair">
+          <div v-for="post in postsOf(channel)" :key="post.id" class="post">
+            <!-- Where the post stands, before its text. -->
+            <p class="post-status" :data-status="post.status">
+              <span class="badge" data-dot :data-tone="postTone(post)">{{
+                post.claimed_at ? t('diffusion.claimed') : t(`diffusion.postStatus.${post.status}`)
+              }}</span>
+              <span v-if="post.status === 'scheduled' && post.scheduled_at">
+                {{ t('diffusion.scheduledFor', { date: formatDate(post.scheduled_at) }) }}
+              </span>
+              <span v-if="post.status === 'sent' && post.sent_at">
+                {{ t('diffusion.sentOn', { date: formatDate(post.sent_at) }) }}
+              </span>
+              <a
+                v-if="post.published_url"
+                :href="post.published_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                :aria-label="
+                  t('diffusion.viewLabel', {
+                    channel: t(`draft.channels.${channel}`),
+                    lang: contentLangName(post.lang),
+                  })
+                "
+                >{{ t('diffusion.view') }}</a
+              >
+            </p>
+            <p v-if="post.last_error && post.status !== 'sent'" class="error">
+              {{ describeError(post.last_error, t).text }}
+            </p>
+            <p v-if="topic && post.status !== 'sent' && !hasAccount(post)" class="hint">
+              {{ t('diffusion.noAccountFor') }}
+            </p>
+            <TextSaver
+              :label="
+                t('draft.postLabel', {
+                  channel: t(`draft.channels.${channel}`),
+                  lang: contentLangName(post.lang),
+                })
+              "
+              :value="post.body"
+              :lang="post.lang ?? undefined"
+              :limit="limitOf(channel)"
+              :limit-name="t(`draft.channels.${channel}`)"
+              :measure="(text) => publishedLength(channel, text, url, signatureOf(post))"
+              :length-key="
+                signatureOf(post) ? 'diffusion.lengthWithSignature' : 'diffusion.lengthWithLink'
+              "
+              :readonly="post.status === 'sent' || !!post.claimed_at"
+              :edited="post.edited_by_human"
+              :checks="postChecks"
+              :save="(text) => savePost(post.id, text)"
+              :rewrite="
+                post.lang
+                  ? (text, preset, instruction) =>
+                      rewriteText(
+                        { kind: 'post', lang: post.lang!, channel },
+                        text,
+                        preset,
+                        instruction,
+                      )
+                  : undefined
+              "
+            />
+            <p v-if="signatureOf(post)" class="hint signature" :lang="post.lang ?? undefined">
+              <span>{{ t('diffusion.signature') }}</span>
+              {{ signatureOf(post) }}
+            </p>
+            <FirstCommentEditor
+              v-if="channel === 'linkedin'"
+              :value="post.first_comment"
+              :default-text="defaultCommentOf(post)"
+              :lang="post.lang ?? undefined"
+              :readonly="post.status === 'sent' || !!post.claimed_at"
+              :save="(value) => saveFirstComment(post.id, value)"
+            />
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section v-if="detail.summaries.length" class="block" aria-labelledby="summaries">
+      <h2 id="summaries">{{ t('draft.summaries') }}</h2>
+      <p v-if="nature">{{ t('draft.sourceNature', { nature: t(`draft.natures.${nature}`) }) }}</p>
+      <figure v-if="excerpt" class="excerpt">
+        <figcaption class="hint">{{ t('draft.excerpt') }}</figcaption>
+        <blockquote :lang="detail.item.source_lang ?? undefined">{{ excerpt }}</blockquote>
+      </figure>
+      <div class="pair">
+        <template v-for="lang in contentLangs" :key="lang">
+          <TextSaver
+            v-if="detail.summaries.find((s) => s.lang === lang)"
+            :label="t('draft.summaryLabel', { lang: contentLangName(lang) })"
+            :value="detail.summaries.find((s) => s.lang === lang)!.summary"
+            :lang="lang"
+            :edited="detail.summaries.find((s) => s.lang === lang)!.edited_by_human"
+            :description="t('draft.summaryUse')"
+            :save="(text) => saveSummary(lang, text)"
+            :rewrite="
+              (text, preset, instruction) =>
+                rewriteText({ kind: 'summary', lang }, text, preset, instruction)
+            "
+          />
+        </template>
+      </div>
+    </section>
     <QuickPublish
       v-if="canDiffuse && hasChannels"
       :can-schedule="toSchedule.length > 0"
@@ -752,11 +897,111 @@ usePageDetail(() => detail.value?.item.title)
 </template>
 
 <style scoped>
-.source-line {
+/* Diffusion, the next step once the drafting is ready: the gold edge marks it. */
+.block.next-step {
+  border-inline-start: 6px solid var(--color-accent-fill);
+}
+
+/* Still to sort: the start of the source, read like a quote, then the decision. */
+.source-preview h2,
+.decision h2 {
+  margin: 0;
+}
+
+.source-text-preview {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 44rem;
+  padding-inline-start: var(--space-4);
+  border-inline-start: 3px solid var(--color-border-subtle);
+}
+
+.source-text-preview p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.source-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+}
+
+.source-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.block.decision {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+}
+
+.decision-text {
+  display: grid;
+  gap: var(--space-1);
+  flex: 1 1 18rem;
+}
+
+.decision-text p {
+  margin: 0;
+}
+
+.decision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.decision .error {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+/* .block comes later and resets the border, padding and gap: the status card keeps its own. */
+.block.draft-state {
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-inline-start-width: 6px;
+}
+
+/* Header: status line, the AI's reason, then the item's own tools on one row. */
+.reason {
+  max-width: 48rem;
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.25rem;
+  font-weight: 650;
+}
+
+/* The kind is filed away from the actions, at the end of the row (wide screens). */
+@media (min-width: 40rem) {
+  .toolbar .kind-field {
+    margin-inline-start: auto;
+  }
 }
 
 /* Drafting status: tone and icon follow the state (text first, color reinforces). */
@@ -764,7 +1009,7 @@ usePageDetail(() => detail.value?.item.title)
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: start;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-2) var(--space-3);
   padding: var(--space-4) var(--space-5);
   border: 1px solid var(--color-border-subtle);
   border-inline-start: 6px solid var(--color-border);
@@ -787,8 +1032,9 @@ usePageDetail(() => detail.value?.item.title)
 .state-icon {
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem;
+  height: 2rem;
+  margin-top: 0.125rem;
   border-radius: 50%;
   background: var(--color-neutral-soft);
   color: var(--color-text);
@@ -810,25 +1056,35 @@ usePageDetail(() => detail.value?.item.title)
 }
 
 .state-text h2 {
+  display: flex;
+  align-items: center;
+  /* As tall as the icon and the button: the three line up, whatever follows the title. */
+  min-height: 2.25rem;
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
+  line-height: 1.3;
 }
 
 .state-text p {
   margin: var(--space-1) 0 0;
 }
 
-/* "Draft again" at the far right, its help text under it. */
-.state-action {
-  display: grid;
-  justify-items: end;
-  gap: var(--space-1);
-  max-width: 16rem;
-  text-align: end;
+/* Second line, under the title: what is kept, then the source text to give. */
+.state-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-4);
+  grid-column: 2 / -1;
 }
 
-.state-action .hint {
+.state-more .hint {
   margin: 0;
+}
+
+/* Opened, the form takes the full width of the line. */
+.state-more details[open] {
+  flex-basis: 100%;
 }
 
 .state-message {
@@ -861,10 +1117,6 @@ usePageDetail(() => detail.value?.item.title)
 }
 
 /* Pasted source text: a full-width row under the status. */
-.source-text {
-  grid-column: 2 / -1;
-}
-
 .source-text summary {
   width: fit-content;
   min-height: 1.5rem;
@@ -895,20 +1147,15 @@ usePageDetail(() => detail.value?.item.title)
   justify-self: start;
 }
 
+/* Narrow: the button goes under the title, the second line under both. */
 @media (max-width: 40rem) {
-  .source-text {
-    grid-column: 1 / -1;
-  }
-
   .draft-state {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .state-action {
+  .state-action,
+  .state-more {
     grid-column: 1 / -1;
-    justify-items: start;
-    max-width: none;
-    text-align: start;
   }
 }
 
@@ -927,10 +1174,16 @@ usePageDetail(() => detail.value?.item.title)
 .meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) var(--space-4);
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
   padding: 0;
   list-style: none;
   color: var(--color-text-muted);
+}
+
+.meta .date {
+  font-size: 0.875rem;
 }
 
 .block {
@@ -977,7 +1230,18 @@ usePageDetail(() => detail.value?.item.title)
 
 .post {
   display: grid;
+  align-content: start;
   gap: var(--space-2);
+}
+
+/* One network after another: a rule and more space than between a network's posts. */
+.network + .network {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.network h3 {
+  font-size: 1.125rem;
 }
 
 /* Networks of the topic without a post for this item: a notice with its action. */

@@ -22,6 +22,8 @@ defineProps<{
     <span class="value">{{ value }}</span>
     <span class="label">{{ label }}</span>
     <span v-if="hint" class="hint">{{ hint }}</span>
+    <!-- Says the tile leads somewhere; the link itself carries the name. -->
+    <Icon name="arrow-right" :size="18" class="go" />
   </RouterLink>
 </template>
 
@@ -31,7 +33,9 @@ defineProps<{
   --tone-soft: var(--color-neutral-soft);
 
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
+  /* Figure and label stay together when a sibling tile is taller. */
+  align-content: center;
   align-items: center;
   gap: var(--space-1) var(--space-3);
   min-height: 2.75rem;
@@ -47,9 +51,24 @@ defineProps<{
   box-shadow: var(--shadow-raised);
 }
 
+.go {
+  grid-row: 1 / span 2;
+  grid-column: 3;
+  color: var(--color-text-muted);
+  transition: transform 0.15s;
+}
+
+.stat:hover .go {
+  color: var(--color-text);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .stat:hover {
     transform: translateY(-1px);
+  }
+
+  .stat:hover .go {
+    transform: translateX(2px);
   }
 }
 
@@ -95,6 +114,11 @@ defineProps<{
 
 .label {
   font-weight: 600;
+}
+
+.value,
+.label {
+  grid-column: 2;
 }
 
 .hint {

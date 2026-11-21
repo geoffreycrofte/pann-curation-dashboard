@@ -331,7 +331,11 @@ export interface PlatformUsageRow {
 }
 
 export type ItemDetail = Omit<BoardItem, ItemFields> & {
-  item: Pick<BoardItem, ItemFields>
+  item: Pick<BoardItem, ItemFields> & {
+    /** Start of the text read from the source at collection (null: none read). */
+    excerpt: string | null
+    excerpt_truncated: boolean
+  }
   drafted_at: string | null
   summaries: Summary[]
   posts: PostDraft[]

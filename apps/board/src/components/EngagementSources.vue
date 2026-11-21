@@ -16,6 +16,7 @@ import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
+import Icon from './Icon.vue'
 
 /** Where the engagement tool looks for conversations: Hacker News and Bluesky searches. */
 const props = defineProps<{ topicId: string }>()
@@ -150,8 +151,11 @@ const queryOf = (source: Source) =>
             })
           }}
         </p>
-        <p v-if="source.last_error" class="error">
-          {{ t('sources.lastError', { message: describeError(source.last_error, t).text }) }}
+        <p v-if="source.last_error" class="notice notice-inline" data-tone="danger">
+          <Icon name="alert-circle" />
+          <span>
+            {{ t('sources.lastError', { message: describeError(source.last_error, t).text }) }}
+          </span>
         </p>
         <div class="controls">
           <div class="form-check">
@@ -167,7 +171,7 @@ const queryOf = (source: Source) =>
           <button
             type="button"
             class="button"
-            data-variant="primary"
+            data-size="small"
             :disabled="!source.active"
             :aria-label="t('sources.collectLabel', { label: source.label })"
             @click="collectNow(source)"
@@ -179,6 +183,8 @@ const queryOf = (source: Source) =>
               <button
                 type="button"
                 class="button"
+                data-size="small"
+                data-variant="danger"
                 :aria-label="t('sources.deleteLabel', { label: source.label })"
               >
                 {{ t('common.delete') }}
@@ -206,7 +212,7 @@ const queryOf = (source: Source) =>
     <p role="status" :class="{ error: isError }">{{ message }}</p>
 
     <form class="card form add" :aria-labelledby="`${id}-add`" @submit.prevent="add()">
-      <h3 :id="`${id}-add`">{{ t('engagement.sources.add') }}</h3>
+      <h3 :id="`${id}-add`" class="section-title">{{ t('engagement.sources.add') }}</h3>
       <fieldset class="choice">
         <legend class="form-label">{{ t('addSource.type') }}</legend>
         <div v-for="value in ENGAGEMENT_SOURCE_TYPES" :key="value" class="form-check">
@@ -302,7 +308,6 @@ const queryOf = (source: Source) =>
 .engagement-sources {
   display: grid;
   gap: var(--space-4);
-  max-width: 44rem;
 }
 
 .engagement-sources h2,
@@ -358,6 +363,17 @@ const queryOf = (source: Source) =>
   padding: var(--space-5) var(--space-6);
 }
 
+@media (max-width: 40rem) {
+  .add {
+    padding: var(--space-4);
+  }
+}
+
+/* The checkbox, then the source's actions, Delete last. */
+.controls .form-check {
+  margin-inline-end: auto;
+}
+
 .choice {
   display: flex;
   flex-wrap: wrap;
@@ -379,7 +395,7 @@ const queryOf = (source: Source) =>
 
 .pair {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
   gap: var(--space-4);
 }
 

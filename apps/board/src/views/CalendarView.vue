@@ -45,8 +45,8 @@ usePageDetail(() => t(`calendar.tabs.${tab.value}`))
         {{ t(`calendar.tabs.${name}`) }}
       </TabsTrigger>
     </TabsList>
+    <!-- Scheduled posts of Création are in the same dated list (ScheduledPanel). -->
     <TabsContent value="scheduled" class="subpanel">
-      <ComposeQueue :topic-id="topicId" status="scheduled" />
       <ScheduledPanel :topic-id="topicId" />
     </TabsContent>
     <TabsContent value="history" class="subpanel">
