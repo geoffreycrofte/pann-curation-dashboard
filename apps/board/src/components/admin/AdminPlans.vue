@@ -17,8 +17,11 @@ const queryCache = useQueryCache()
 
 const { data: plans } = useQuery({ key: ['admin', 'plans'], query: api.adminPlans })
 
-/** Fields as typed, per plan; '' is no limit. */
-type Fields = Record<keyof PlanLimits, number | ''>
+/** Fields as typed, per plan; '' is no limit (or not sold that way, for prices). */
+type Fields = Record<
+  keyof PlanLimits | 'price_month_eur' | 'price_year_eur' | 'trial_tokens',
+  number | ''
+> & { stripe_price_month: string; stripe_price_year: string }
 const fields = reactive<Partial<Record<Plan, Fields>>>({})
 watch(
   plans,
@@ -28,6 +31,11 @@ watch(
         max_topics: p.max_topics ?? '',
         max_social_accounts: p.max_social_accounts ?? '',
         monthly_tokens: p.monthly_tokens ?? '',
+        price_month_eur: p.price_month_eur ?? '',
+        price_year_eur: p.price_year_eur ?? '',
+        trial_tokens: p.trial_tokens ?? '',
+        stripe_price_month: p.stripe_price_month,
+        stripe_price_year: p.stripe_price_year,
       }
     }
   },
@@ -46,6 +54,11 @@ async function save(key: Plan) {
       max_topics: value(f.max_topics),
       max_social_accounts: value(f.max_social_accounts),
       monthly_tokens: key === 'own_keys' ? null : value(f.monthly_tokens),
+      price_month_eur: value(f.price_month_eur),
+      price_year_eur: value(f.price_year_eur),
+      trial_tokens: key === 'own_keys' ? null : value(f.trial_tokens),
+      stripe_price_month: f.stripe_price_month.trim(),
+      stripe_price_year: f.stripe_price_year.trim(),
     })
     toast(t('admin.plans.saved', { plan: t(`plans.names.${key}`) }))
     await queryCache.invalidateQueries({ key: ['admin', 'plans'] })
@@ -102,6 +115,65 @@ async function save(key: Plan) {
                 required
               />
             </div>
+            <div v-if="p.key !== 'own_keys'" class="form-row">
+              <label :for="`${id}-${p.key}-trial`">{{ t('admin.plans.trialTokens') }}</label>
+              <input
+                :id="`${id}-${p.key}-trial`"
+                v-model.number="fields[p.key]!.trial_tokens"
+                class="field number wide"
+                type="number"
+                min="1"
+                step="100000"
+              />
+            </div>
+            <div class="form-row">
+              <label :for="`${id}-${p.key}-pm`">{{ t('admin.plans.priceMonth') }}</label>
+              <input
+                :id="`${id}-${p.key}-pm`"
+                v-model.number="fields[p.key]!.price_month_eur"
+                class="field number"
+                type="number"
+                min="0"
+                step="0.01"
+                :aria-describedby="`${id}-empty`"
+              />
+            </div>
+            <div class="form-row">
+              <label :for="`${id}-${p.key}-py`">{{ t('admin.plans.priceYear') }}</label>
+              <input
+                :id="`${id}-${p.key}-py`"
+                v-model.number="fields[p.key]!.price_year_eur"
+                class="field number"
+                type="number"
+                min="0"
+                step="0.01"
+                :aria-describedby="`${id}-empty`"
+              />
+            </div>
+            <div class="form-row">
+              <label :for="`${id}-${p.key}-spm`">{{ t('admin.plans.stripeMonth') }}</label>
+              <input
+                :id="`${id}-${p.key}-spm`"
+                v-model="fields[p.key]!.stripe_price_month"
+                class="field"
+                type="text"
+                pattern="price_[A-Za-z0-9]+"
+                placeholder="price_…"
+                :aria-describedby="`${id}-stripe`"
+              />
+            </div>
+            <div class="form-row">
+              <label :for="`${id}-${p.key}-spy`">{{ t('admin.plans.stripeYear') }}</label>
+              <input
+                :id="`${id}-${p.key}-spy`"
+                v-model="fields[p.key]!.stripe_price_year"
+                class="field"
+                type="text"
+                pattern="price_[A-Za-z0-9]+"
+                placeholder="price_…"
+                :aria-describedby="`${id}-stripe`"
+              />
+            </div>
           </div>
           <button
             type="submit"
@@ -117,6 +189,7 @@ async function save(key: Plan) {
       </li>
     </ul>
     <p :id="`${id}-empty`" class="hint">{{ t('admin.plans.emptyHint') }}</p>
+    <p :id="`${id}-stripe`" class="hint">{{ t('admin.plans.stripeHint') }}</p>
   </section>
 </template>
 

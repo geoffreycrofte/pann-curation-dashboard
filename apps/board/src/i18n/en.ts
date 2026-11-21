@@ -416,6 +416,76 @@ export default {
     tabsLabel: 'Calendar views',
     tabs: { scheduled: 'Scheduled', history: 'History', newsletter: 'Newsletter' },
   },
+  billing: {
+    trialing: 'Trial: {days} days left, until {date}.',
+    active: {
+      month: 'Monthly subscription, renews on {date}.',
+      year: 'Yearly subscription, renews on {date}.',
+    },
+    canceled: 'Subscription stopped: access until {date}.',
+    pastDue: 'The last payment failed: update your payment method so your topics go on.',
+    expired:
+      'The trial or the subscription has ended: your topics are paused. Choose an offer to resume.',
+    choose: 'Choose an offer and pay',
+    manage: 'Manage subscription',
+    opening: 'Opening the payment page…',
+    thanks: 'Thank you! Your subscription is saved.',
+    cancelled: 'Payment interrupted: nothing was charged.',
+    banner: {
+      trial: 'Free trial: one day left. | Free trial: {n} days left.',
+      inactive: 'Your trial or subscription has ended: your topics are paused.',
+      link: 'Choose an offer',
+    },
+  },
+  pricing: {
+    title: 'Pricing',
+    lead: 'News watch, conversations, creation and publishing in one tool. Choose who provides the AI: you, with your own keys, or Pann.',
+    trial: '14-day free trial on the offer you choose, no commitment.',
+    loadError: 'The offers could not be loaded. Try again in a moment.',
+    period: 'Payment',
+    yearly: 'Yearly',
+    yearlySaving: 'about 20% less',
+    monthly: 'Monthly',
+    perMonth: 'per month',
+    billedYearly: 'Billed {total} a year, taxes included.',
+    billedMonthly: 'Billed every month, taxes included.',
+    current: 'Your offer',
+    pitch: {
+      own_keys: 'You bring your keys (AI, search, publishing) and keep control of your spending.',
+      essential: 'Pann provides the AI and the search. For someone who wants to publish regularly.',
+      pro: 'More topics, more tokens, more accounts. For sustained use.',
+    },
+    topics: '{n} topic | {n} topics',
+    topicsUnlimited: 'Unlimited topics',
+    ownKeys: 'Your own keys: AI, search and publishing',
+    tokens: 'AI and search provided: {tokens} tokens a month',
+    accounts: '{n} LinkedIn or Facebook account | {n} LinkedIn or Facebook accounts',
+    everything: 'News watch, conversations, Création, calendar, newsletter and feeds',
+    ask: 'Ask for access',
+    fromProfile: 'Choose in my profile',
+    choose: 'Try this offer',
+    chosen: 'Offer chosen',
+    subscribe: 'Subscribe',
+    compare: {
+      title: 'Without Pann, with Pann',
+      intro: 'What one person would pay to do the same work with separate tools, yearly.',
+      caption: 'Prices of separate tools compared with Pann',
+      need: 'Need',
+      tool: 'Example tool',
+      price: 'Price per month',
+      needs: {
+        publish: 'Publish to 3 networks, with AI',
+        watch: 'News watch with AI',
+        listen: 'Find conversations, with AI',
+      },
+      without: 'Without Pann',
+      struck: 'Struck price:',
+      with: 'With Pann, Intermediate offer',
+      withPrice: '{price}',
+      source:
+        'Prices read in November 2026 on the vendors’ sites, yearly, in US dollars before tax: for guidance only. The names quoted belong to their owners.',
+    },
+  },
   plans: {
     label: 'Offer',
     names: {
@@ -430,7 +500,9 @@ export default {
     tokens: 'Tokens this month: {used} of {max}',
     tokensHint:
       'Pann provides the AI and the search. Drafting counts more than triage: it costs more. The counter resets on the 1st of the month.',
-    change: 'To change offer or get a custom one, contact Pann.',
+    change: 'For a custom offer (more topics, a team), contact Pann.',
+    trialTokensHint:
+      'During the trial, Pann provides a reduced number of tokens. The full quota comes with the subscription.',
   },
   profile: {
     title: 'Profile',
@@ -699,6 +771,10 @@ export default {
     provider_error: 'The AI service could not answer. It will retry automatically.',
     insufficient_content:
       'Not enough source content for a reliable summary (empty, paywalled or too short page). Read the source.',
+    billing_inactive:
+      'This workspace’s trial or subscription has ended: its topics are paused. Choose an offer to resume.',
+    billing_not_configured: 'Payment is not open yet. Try again later or contact Pann.',
+    subscribed: 'This workspace has a subscription: change offer from “Manage subscription”.',
     token_quota_reached:
       'This month’s tokens are used up: AI and search resume on the 1st of next month.',
     plan_topic_limit:
@@ -864,6 +940,16 @@ export default {
         purpose:
           'Web search for the offers where Pann provides the services (search sources, Création). Exa has no free check: the key is saved without a test.',
       },
+      stripe: {
+        name: 'Stripe',
+        purpose:
+          'Subscription payments. Secret key (sk_…), or a restricted key with Checkout, Billing portal, Customers and Subscriptions.',
+      },
+      stripe_webhook: {
+        name: 'Stripe, webhook',
+        purpose:
+          'Signing secret (whsec_…) of the endpoint …/api/stripe/webhook, with the events checkout.session.completed and customer.subscription.*. Checked on the first event.',
+      },
       zernio: {
         name: 'Zernio, platform mode',
         purpose:
@@ -936,6 +1022,13 @@ export default {
       maxTopics: 'Topics at most',
       maxAccounts: 'LinkedIn and Facebook accounts',
       monthlyTokens: 'Tokens per month',
+      trialTokens: 'Tokens during the trial',
+      priceMonth: 'Monthly price (€ incl. tax)',
+      priceYear: 'Yearly price (€ incl. tax)',
+      stripeMonth: 'Stripe monthly price',
+      stripeYear: 'Stripe yearly price',
+      stripeHint:
+        'Ids of the prices created in Stripe (price_…). Without them, the offer cannot be paid for that period.',
       emptyHint:
         'An empty field means no limit. LinkedIn and Facebook accounts are not limited by Pann yet. Custom, without tokens, the workspace uses its own keys.',
       saved: '{plan} offer saved.',
@@ -1207,6 +1300,7 @@ export default {
   landing: {
     title: 'Pann: wash the news, keep the nuggets',
     how: 'How it works',
+    pricing: 'Pricing',
     login: 'Sign in',
     otherLang: 'Français',
     otherLangLabel: 'Lire cette page en français',
@@ -1450,6 +1544,12 @@ export default {
     lastError: 'Last error: {message}',
   },
   onboarding: {
+    plan: {
+      title: 'Which offer to try?',
+      lead: 'Your free trial lasts 14 days. You can change offer when you subscribe; nothing is charged during the trial.',
+      chosen: '{plan} offer chosen for the trial.',
+    },
+    inactive: { title: 'Your trial has ended' },
     limit: {
       title: 'No room for a new topic',
       text: 'The {plan} offer allows {max} topics, and they are all created. To add one, you need a higher offer or a custom one; you can also delete a topic you no longer need.',

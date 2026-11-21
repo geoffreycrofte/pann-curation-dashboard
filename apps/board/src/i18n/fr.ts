@@ -416,6 +416,80 @@ export default {
     tabsLabel: 'Vues du calendrier',
     tabs: { scheduled: 'Programmés', history: 'Historique', newsletter: 'Newsletter' },
   },
+  billing: {
+    trialing: 'Essai : {days} jours restants, jusqu’au {date}.',
+    active: {
+      month: 'Abonnement mensuel, renouvelé le {date}.',
+      year: 'Abonnement annuel, renouvelé le {date}.',
+    },
+    canceled: 'Abonnement arrêté : accès jusqu’au {date}.',
+    pastDue:
+      'Le dernier paiement a échoué : mettez à jour votre moyen de paiement pour que vos thèmes continuent.',
+    expired:
+      'L’essai ou l’abonnement est terminé : vos thèmes sont en pause. Choisissez une offre pour reprendre.',
+    choose: 'Choisir une offre et payer',
+    manage: 'Gérer l’abonnement',
+    opening: 'Ouverture de la page de paiement…',
+    thanks: 'Merci ! Votre abonnement est enregistré.',
+    cancelled: 'Paiement interrompu : rien n’a été débité.',
+    banner: {
+      trial: 'Essai gratuit : plus qu’un jour. | Essai gratuit : {n} jours restants.',
+      inactive: 'Votre essai ou votre abonnement est terminé : vos thèmes sont en pause.',
+      link: 'Choisir une offre',
+    },
+  },
+  pricing: {
+    title: 'Tarifs',
+    lead: 'Veille, conversations, création et publication dans un seul outil. Choisissez qui fournit l’IA : vous, avec vos propres clés, ou Pann.',
+    trial: '14 jours d’essai gratuit sur l’offre de votre choix, sans engagement.',
+    loadError: 'Les offres n’ont pas pu être chargées. Réessayez dans un instant.',
+    period: 'Paiement',
+    yearly: 'À l’année',
+    yearlySaving: 'environ 20 % de moins',
+    monthly: 'Au mois',
+    perMonth: 'par mois',
+    billedYearly: 'Facturé {total} par an, taxes comprises.',
+    billedMonthly: 'Facturé chaque mois, taxes comprises.',
+    current: 'Votre offre',
+    pitch: {
+      own_keys:
+        'Vous apportez vos clés (IA, recherche, publication) et gardez la main sur vos dépenses.',
+      essential:
+        'Pann fournit l’IA et la recherche. Pour une personne qui veut publier régulièrement.',
+      pro: 'Plus de thèmes, plus de tokens, plus de comptes. Pour un usage soutenu.',
+    },
+    topics: '{n} thème | {n} thèmes',
+    topicsUnlimited: 'Thèmes sans limite',
+    ownKeys: 'Vos propres clés : IA, recherche et publication',
+    tokens: 'IA et recherche fournies : {tokens} tokens par mois',
+    accounts: '{n} compte LinkedIn ou Facebook | {n} comptes LinkedIn ou Facebook',
+    everything: 'Veille, conversations, Création, calendrier, newsletter et flux',
+    ask: 'Demander un accès',
+    fromProfile: 'Choisir dans mon profil',
+    choose: 'Essayer cette offre',
+    chosen: 'Offre choisie',
+    subscribe: 'S’abonner',
+    compare: {
+      title: 'Sans Pann, avec Pann',
+      intro:
+        'Ce qu’une personne seule paierait pour faire le même travail avec des outils séparés, à l’année.',
+      caption: 'Prix d’outils séparés comparés à Pann',
+      need: 'Besoin',
+      tool: 'Exemple d’outil',
+      price: 'Prix par mois',
+      needs: {
+        publish: 'Publier sur 3 réseaux, avec IA',
+        watch: 'Veille avec IA',
+        listen: 'Repérer des conversations, avec IA',
+      },
+      without: 'Sans Pann',
+      struck: 'Prix barré :',
+      with: 'Avec Pann, offre Intermédiaire',
+      withPrice: '{price}',
+      source:
+        'Tarifs relevés en novembre 2026 sur les sites des éditeurs, à l’année, en dollars hors taxes : à titre indicatif. Les noms cités appartiennent à leurs éditeurs.',
+    },
+  },
   plans: {
     label: 'Offre',
     names: {
@@ -430,7 +504,9 @@ export default {
     tokens: 'Tokens ce mois-ci : {used} sur {max}',
     tokensHint:
       'Pann fournit l’IA et la recherche. Une rédaction compte davantage qu’un tri : elle coûte plus. Le compteur repart le 1er du mois.',
-    change: 'Pour changer d’offre ou obtenir une offre sur mesure, contactez Pann.',
+    change: 'Pour une offre sur mesure (plus de thèmes, une équipe), contactez Pann.',
+    trialTokensHint:
+      'Pendant l’essai, Pann fournit un nombre réduit de tokens. Le quota complet arrive avec l’abonnement.',
   },
   profile: {
     title: 'Profil',
@@ -704,6 +780,11 @@ export default {
     provider_error: 'Le service d’IA n’a pas pu répondre. Nouvel essai automatique.',
     insufficient_content:
       'Contenu de la source insuffisant pour un résumé fiable (page vide, payante ou trop courte). Lisez la source.',
+    billing_inactive:
+      'L’essai ou l’abonnement de cet espace est terminé : les thèmes sont en pause. Choisissez une offre pour reprendre.',
+    billing_not_configured:
+      'Le paiement n’est pas encore ouvert. Réessayez plus tard ou contactez Pann.',
+    subscribed: 'Cet espace a un abonnement : changez d’offre depuis « Gérer l’abonnement ».',
     token_quota_reached:
       'Les tokens du mois sont épuisés : l’IA et la recherche reprennent le 1er du mois prochain.',
     plan_topic_limit:
@@ -872,6 +953,16 @@ export default {
         purpose:
           'Recherche web des offres où Pann fournit les services (sources de recherche, Création). Exa n’a pas de vérification gratuite : la clé est enregistrée sans être testée.',
       },
+      stripe: {
+        name: 'Stripe',
+        purpose:
+          'Paiement des abonnements. Clé secrète (sk_…), ou une clé restreinte avec Checkout, Billing portal, Customers et Subscriptions.',
+      },
+      stripe_webhook: {
+        name: 'Stripe, webhook',
+        purpose:
+          'Secret de signature (whsec_…) du point d’arrivée …/api/stripe/webhook, avec les évènements checkout.session.completed et customer.subscription.*. Vérifié au premier évènement.',
+      },
       zernio: {
         name: 'Zernio, mode plateforme',
         purpose:
@@ -949,6 +1040,13 @@ export default {
       maxTopics: 'Thèmes au maximum',
       maxAccounts: 'Comptes LinkedIn et Facebook',
       monthlyTokens: 'Tokens par mois',
+      trialTokens: 'Tokens pendant l’essai',
+      priceMonth: 'Prix au mois (€ TTC)',
+      priceYear: 'Prix à l’année (€ TTC)',
+      stripeMonth: 'Prix Stripe au mois',
+      stripeYear: 'Prix Stripe à l’année',
+      stripeHint:
+        'Identifiants des prix créés dans Stripe (price_…). Sans eux, l’offre ne peut pas être payée dans cette période.',
       emptyHint:
         'Un champ vide veut dire sans limite. Les comptes LinkedIn et Facebook ne sont pas encore limités par Pann. Sur mesure, sans tokens, l’espace utilise ses propres clés.',
       saved: 'Offre {plan} enregistrée.',
@@ -1224,6 +1322,7 @@ export default {
   landing: {
     title: 'Pann : la veille lavée, les pépites gardées',
     how: 'Comment ça marche',
+    pricing: 'Tarifs',
     login: 'Se connecter',
     otherLang: 'English',
     otherLangLabel: 'Read this page in English',
@@ -1470,6 +1569,12 @@ export default {
     lastError: 'Dernière erreur : {message}',
   },
   onboarding: {
+    plan: {
+      title: 'Quelle offre essayer ?',
+      lead: 'Votre essai gratuit dure 14 jours. Vous pourrez changer d’offre en vous abonnant ; rien n’est débité pendant l’essai.',
+      chosen: 'Offre {plan} choisie pour l’essai.',
+    },
+    inactive: { title: 'Votre essai est terminé' },
     limit: {
       title: 'Plus de place pour un nouveau thème',
       text: 'L’offre {plan} permet {max} thèmes, et ils sont tous créés. Pour en ajouter un, il faut une offre plus élevée ou une offre sur mesure ; vous pouvez aussi supprimer un thème dont vous n’avez plus besoin.',

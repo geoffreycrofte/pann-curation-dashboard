@@ -404,5 +404,5 @@ Modèle voulu par Geoffrey, prix et quotas à fixer après une analyse de la con
 
 Conséquences sur le produit : la règle « clés de services par espace, jamais en variables d'environnement » vaut pour la première offre ; les offres 2 et 3 supposent une IA et des services fournis par Pann, avec un compteur de tokens par espace. L'interface ne montre des dollars que dans l'offre « clés personnelles ».
 
-Mis en place le 2026-11-21 (`docs/DECISIONS.md`) : une offre par espace (`own_keys`, `essential`, `pro`, `custom`), limites réglées dans l'espace d'admin (thèmes 2, 3, 5 ; tokens 5 et 15 millions par mois pour les deux offres où Pann fournit l'IA, valeurs de départ), tokens pondérés par le prix du modèle. Prix et paiement à venir.
+Mis en place le 2026-11-21 (`docs/DECISIONS.md`) : une offre par espace (`own_keys`, `essential`, `pro`, `custom`), limites réglées dans l'espace d'admin (thèmes 2, 3, 5 ; tokens 5 et 15 millions par mois pour les deux offres où Pann fournit l'IA, valeurs de départ), tokens pondérés par le prix du modèle. Prix fixés et paiement par Stripe le 2026-11-22 : 2 € par mois à l'année ; 19 € ou 15 € à l'année ; 49 € ou 39 € à l'année ; essai de 14 jours.
 

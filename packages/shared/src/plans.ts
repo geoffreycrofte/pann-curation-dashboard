@@ -26,9 +26,49 @@ export interface PlanLimits {
   monthly_tokens: number | null
 }
 
-/** A workspace's plan, its limits and what it used this month. */
+export const BILLING_STATUSES = [
+  'legacy',
+  'trialing',
+  'active',
+  'past_due',
+  'canceled',
+  'expired',
+] as const
+export type BillingStatus = (typeof BILLING_STATUSES)[number]
+export type BillingInterval = 'month' | 'year'
+
+/** A workspace's plan, its limits, what it used this month and where its payment stands. */
 export interface WorkspacePlan extends PlanLimits {
   plan: Plan
   topics: number
   month_tokens: number
+  /** legacy: created before billing, keeps its access. */
+  billing_status: BillingStatus
+  trial_ends_at: string | null
+  /** When the owner chose the offer (null: not yet, the onboarding asks). */
+  plan_chosen_at: string | null
+  billing_interval: BillingInterval | null
+  current_period_end: string | null
+  /** Runs (collects, drafts, publishes): false once a trial or a subscription has ended. */
+  active: boolean
+  /** Pays through Stripe: the offer changes in the customer portal. */
+  subscribed: boolean
+}
+
+/** An offer as the pricing page shows it. */
+export interface PublicPlan extends PlanLimits {
+  key: Plan
+  /** Euros, taxes included; null: not sold that way. */
+  price_month_eur: number | null
+  price_year_eur: number | null
+  trial_tokens: number | null
+}
+
+/** Offers a person can pick (custom is negotiated with Pann). */
+export const SELF_SERVE_PLANS = ['own_keys', 'essential', 'pro'] as const satisfies readonly Plan[]
+
+/** Days left in a trial, rounded up (0 once over). */
+export function trialDaysLeft(trialEndsAt: string | null, now = new Date()): number {
+  if (!trialEndsAt) return 0
+  return Math.max(0, Math.ceil((Date.parse(trialEndsAt) - now.getTime()) / 86_400_000))
 }

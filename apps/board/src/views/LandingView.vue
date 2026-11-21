@@ -75,6 +75,9 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
               {{ t('landing.login') }}
             </RouterLink>
             <a href="#how" class="button big">{{ t('landing.how') }}</a>
+            <RouterLink :to="{ name: 'pricing' }" class="button big">
+              {{ t('landing.pricing') }}
+            </RouterLink>
           </div>
           <p class="invite">{{ t('landing.hero.invite') }}</p>
         </div>
