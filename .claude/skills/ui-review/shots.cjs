@@ -179,7 +179,81 @@ const sources = [
     last_run_stats: null,
   },
 ]
+const composition = {
+  id: 'c1',
+  topic_id: 't1',
+  subject: 'Notre audit RGAA en 5 étapes',
+  mode: 'notes',
+  status: 'draft',
+  publish_at: null,
+  draft_status: 'idle',
+  draft_error: null,
+  created_at: h(-30),
+  updated_at: h(-2),
+  notes:
+    "1. Cadrer l'échantillon de pages avec l'équipe.\n2. Tester au clavier et au lecteur d'écran.\n3. Passer les 106 critères.\n4. Rédiger la déclaration d'accessibilité.\n5. Planifier les corrections avec le schéma pluriannuel.",
+  link: 'https://example.org/audit-rgaa',
+  sources: [],
+  channels: ['linkedin', 'bluesky'],
+  research_status: 'idle',
+  research_error: null,
+  media: [
+    {
+      id: 'm1',
+      composition_id: 'c1',
+      storage_path: 'w1/c1/m1.webp',
+      mime: 'image/webp',
+      bytes: 84000,
+      width: 1200,
+      height: 675,
+      position: 0,
+      alt: {
+        fr: 'Schéma des cinq étapes d’un audit RGAA, de l’échantillon à la déclaration.',
+        en: '',
+      },
+      alt_proposed: ['fr'],
+      alt_status: 'idle',
+      alt_error: null,
+      preview_url:
+        'data:image/svg+xml,' +
+        encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675"><rect width="1200" height="675" fill="#f3e3b5"/><g fill="#7a5a00" font-family="sans-serif" font-size="56"><text x="80" y="200">1 Échantillon</text><text x="80" y="300">2 Tests</text><text x="80" y="400">3 Critères</text><text x="80" y="500">4 Déclaration</text><text x="80" y="600">5 Plan</text></g></svg>',
+        ),
+    },
+  ],
+  posts: [
+    post('cp1', 'linkedin', 'fr'),
+    post('cp2', 'linkedin', 'en'),
+    { ...post('cp3', 'bluesky', 'fr'), status: 'failed', last_error: 'invalid_credential:bluesky' },
+  ],
+}
+const series = {
+  id: 's1',
+  topic_id: 't1',
+  subject: 'Le RGAA expliqué en une semaine',
+  notes: 'Un post par jour, pour les équipes produit qui découvrent le référentiel.',
+  post_count: 4,
+  span_days: 7,
+  plan: [
+    {
+      subject: 'Pourquoi le RGAA existe',
+      angle: 'La loi de 2005 et ce qu’elle impose aux sites publics.',
+    },
+    { subject: 'Les 13 thématiques', angle: 'Un tour rapide, avec un exemple concret par thème.' },
+    { subject: 'Tester sans expert', angle: 'Trois tests à faire soi-même en dix minutes.' },
+    {
+      subject: 'La déclaration d’accessibilité',
+      angle: 'Ce qu’elle doit contenir et où la publier.',
+    },
+  ],
+  status: 'ready',
+  error: null,
+  created_at: h(-4),
+  compositions: [],
+}
 const routes = {
+  '/api/topics/t1/compositions/c1': composition,
+  '/api/topics/t1/series/s1': series,
   '/api/me': {
     user: { id: 'u1', email: 'g@example.org' },
     workspaces: [{ role: 'owner', workspace: { id: 'w1', name: 'Perso' } }],
@@ -207,9 +281,30 @@ const routes = {
     ],
   },
   '/api/workspaces/w1/credentials': [
-    { provider: 'anthropic', status: 'ok', meta: {} },
-    { provider: 'exa', status: 'invalid', meta: {} },
-    { provider: 'zernio', status: 'ok', meta: { accounts: [] } },
+    {
+      provider: 'anthropic',
+      account: '',
+      hint: 'x9Qa',
+      status: 'ok',
+      status_detail: null,
+      meta: {},
+    },
+    {
+      provider: 'exa',
+      account: '',
+      hint: '41f0',
+      status: 'invalid',
+      status_detail: null,
+      meta: {},
+    },
+    {
+      provider: 'zernio',
+      account: '',
+      hint: 'k2Lm',
+      status: 'ok',
+      status_detail: null,
+      meta: { accounts: [{ id: 'a1', platform: 'linkedin', username: 'Geoffrey', active: true }] },
+    },
   ],
 }
 async function shoot(page, name, path, opts = {}) {
@@ -243,6 +338,12 @@ async function shoot(page, name, path, opts = {}) {
     ['settings-budget', '/t/t1/settings?tab=budget'],
     ['connections', '/connections'],
     ['profile', '/profile'],
+    ['composition', '/t/t1/compose/c1'],
+    ['series', '/t/t1/series/s1'],
+    ['series-new', '/t/t1/series/new'],
+    ['admin', '/admin'],
+    ['new-topic', '/topics/new'],
+    ['adjust-topic', '/t/t1/adjust'],
   ].filter(([n]) => !only || only.split(',').includes(n))
   for (const [label, ctxOpts] of [
     ['desk', { viewport: { width: 1280, height: 860 }, deviceScaleFactor: 1 }],

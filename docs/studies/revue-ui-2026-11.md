@@ -26,7 +26,7 @@ Revue page par page des captures (ordinateur et mobile, données simulées), ave
 
 ## Par page (à reprendre)
 
-- **Connexions** : la page fait environ 3 900 px ; replier aussi les services non réglés, derrière « Configurer ».
+- Rien pour l’instant. Les écrans d’administration et la création d’un thème n’ont eu que des retouches légères (voir plus bas).
 
 ## Fait dans cette passe
 
@@ -90,3 +90,22 @@ Revue page par page des captures (ordinateur et mobile, données simulées), ave
   - chaque aide LinkedIn (signature, premier commentaire) est sous son champ, pour chaque langue.
 - **Premier commentaire** (fiche et réglages) : le titre est dans le cadre, plus à cheval sur la bordure ; son bouton est petit.
 - **Newsletter, Flux publics, Voix, Conversations, Création, Budget** : même motif de cartes ; les adresses des flux en liste bordée avec « Copier » petit, « Désactiver les flux » en rouge ; l’expéditeur n’est plus tronqué.
+- **Largeur** : un token `--width-content` (46 rem) donne la même largeur aux panneaux de réglages, aux Connexions, au Profil, à la série et à l’Administration.
+- **Connexions** :
+  - un groupe (Collecte et IA, Diffusion, Newsletter, MCP) = une carte, titre dedans ; les services sont des lignes séparées par un filet ;
+  - chaque service tient sur une ligne repliée : nom, état en badge (`data-tone` et point), à quoi il sert, et un bouton petit « Gérer » ou « Configurer » (`aria-expanded`, le même bouton replie) ; seule une clé refusée s’ouvre d’elle-même ;
+  - une clé refusée et les erreurs sont des `.notice` de ton danger avec icône ; « Se termine par » passe en aide ;
+  - « Où trouver cette clé ? » est souligné ; « Supprimer la clé » et « Retirer l’accès » sont petits, rouges, en fin de rangée ;
+  - la page passe d’environ 3 900 à 2 200 px.
+- **Profil** : même motif de cartes que les réglages ; le badge « Propriétaire » est sur la ligne du nom de l’espace, son aide sous le titre ; les messages vides ne laissent plus de blanc ; la zone de suppression reste rouge.
+- **Éditeur de Création** :
+  - en-tête : état en badge (Brouillon, Programmé, Publié), date de modification ;
+  - chaque étape est une carte : Sujet et matière, Images, une carte d’état compacte de la rédaction (comme sur la fiche), la Publication avec le liseré doré d’étape suivante, puis les posts ;
+  - « Rédiger les posts » est le bouton doré tant qu’il n’y a pas de posts, puis devient petit (« Rédiger à nouveau ») : un seul doré à la fois ;
+  - les posts sont groupés par réseau avec un filet, l’état de chaque post (badge) avant son texte, l’erreur en `.notice` avec le lien vers Connexions ;
+  - les réseaux tiennent sur une ligne, l’aide sous les cases ; les liens donnés forment une liste bordée, « Retirer » petit et rouge ;
+  - images : aperçu plus étroit, boutons petits, « Retirer » en fin de rangée, bouton de fichier au style du board, « Proposé par l’IA » en badge ;
+  - « Supprimer ce brouillon » est petit, en fin de page.
+- **Série** : le plan est une carte, chaque post un groupe séparé par un filet (plus de cartes dans la carte), « Retirer » petit et rouge, « Ajouter un post » petit sous la liste, « Créer et rédiger les brouillons » en premier au pied.
+- **Création d’un thème et ajustement** (retouches) : l’aide d’une réponse est collée à son champ ; l’introduction de l’ajustement suit son titre de près.
+- **Administration** (retouches) : sections en cartes, titre dedans ; les clés de Pann sont des lignes séparées par un filet, état en badge, « Supprimer la clé » petit et rouge ; les demandes d’accès en lignes, boutons petits ; les dépenses du mois séparées du formulaire de plafonds par un filet.
