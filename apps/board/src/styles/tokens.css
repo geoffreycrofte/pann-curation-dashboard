@@ -30,6 +30,12 @@
   --color-success-fill: light-dark(#1d6b34, #6fd08c);
   --color-on-success: light-dark(#ffffff, #0d2414);
   --color-danger: light-dark(#b42318, #ff8a80);
+  /* At risk (a limit reached, a key rejected): an orange fill (3:1), its icon on it (4.5:1). */
+  --color-warning: light-dark(#b45309, #ffad66);
+  --color-on-warning: light-dark(#ffffff, #241203);
+  /* Off or not set up: a grey fill, with its own icon color. */
+  --color-neutral-fill: light-dark(#6e695d, #8f897c);
+  --color-on-neutral: light-dark(#ffffff, #141414);
   /* AI at work: colors of the animated halo, with --color-accent-fill (3:1 on the backgrounds). */
   --color-ai-violet: light-dark(#6d4aff, #b3a1ff);
   --color-ai-teal: light-dark(#0b7f86, #4fd1c5);
