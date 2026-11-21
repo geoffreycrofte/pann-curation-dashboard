@@ -322,8 +322,14 @@ const routes = {
   ],
 }
 async function shoot(page, name, path, opts = {}) {
+  // A page left open: the clock moves on by this many minutes after loading.
+  if (opts.laterMinutes) await page.clock.install()
   await page.goto(base + path, { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
+  if (opts.laterMinutes) {
+    await page.clock.fastForward(opts.laterMinutes * 60_000)
+    await page.waitForTimeout(300)
+  }
   // Opens a folded part first (the first matching button), and shows it at the top.
   if (opts.click) {
     // A handle, not a locator: the selector stops matching once the button is open.
@@ -358,6 +364,7 @@ async function shoot(page, name, path, opts = {}) {
     ['compose', '/t/t1/compose'],
     ['calendar', '/t/t1/calendar'],
     ['calendar-week', '/t/t1/calendar?view=week'],
+    ['calendar-week-later', '/t/t1/calendar?view=week', { laterMinutes: 180 }],
     ['settings-general', '/t/t1/settings'],
     ['settings-sources', '/t/t1/settings?tab=sources'],
     ['settings-triage', '/t/t1/settings?tab=triage'],

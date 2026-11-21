@@ -6,6 +6,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { api, type CompositionSummary, type QueueItem } from '../lib/api'
+import { useNow } from '../lib/now'
 import { middayOf, zonedTime } from '../lib/zoned'
 import ScheduledEntry from './ScheduledEntry.vue'
 import ScheduledWeek from './ScheduledWeek.vue'
@@ -69,7 +70,8 @@ const days = computed(() => {
   }
   return [...groups]
 })
-const today = computed(() => zonedDay(new Date(), timeZone.value))
+const now = useNow()
+const today = computed(() => zonedDay(now.value, timeZone.value))
 const dayTitle = (day: string) => {
   const text = d(middayOf(day, timeZone.value), { dateStyle: 'full', timeZone: timeZone.value })
   return text.charAt(0).toUpperCase() + text.slice(1)

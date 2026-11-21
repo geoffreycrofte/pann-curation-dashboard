@@ -5,6 +5,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { api, type CompositionSummary, type QueueItem, type TopicWithConfig } from '../lib/api'
+import { useNow } from '../lib/now'
 import { middayOf, zonedTime } from '../lib/zoned'
 import ScheduledEntry from './ScheduledEntry.vue'
 
@@ -14,7 +15,8 @@ const route = useRoute()
 const router = useRouter()
 
 const timeZone = computed(() => props.topic.config.schedule.timezone)
-const today = computed(() => zonedDay(new Date(), timeZone.value))
+const now = useNow()
+const today = computed(() => zonedDay(now.value, timeZone.value))
 const thisWeek = computed(() => startOfWeek(today.value))
 
 // The week shown lives in the address: back, reload and sharing keep it.
@@ -53,7 +55,7 @@ type Slot =
   | { kind: 'free'; time: string }
 
 const slots = computed(() => dailySlots(props.topic.config.schedule))
-const nowTime = computed(() => zonedTime(new Date(), timeZone.value))
+const nowTime = computed(() => zonedTime(now.value, timeZone.value))
 
 /** Per day: its items and, from now on, the daily slots no item takes yet. */
 const planning = computed(() => {
@@ -289,7 +291,7 @@ const heading = computed(() =>
 .free {
   margin: 0;
   padding: var(--space-2) var(--space-3);
-  border: 1px dashed var(--color-border);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius);
   color: var(--color-text-muted);
   font-size: 0.875rem;
