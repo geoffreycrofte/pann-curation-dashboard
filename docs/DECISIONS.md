@@ -484,3 +484,11 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Où.** Les textes qu'on relit et retouche (posts, résumés, premier commentaire, textes alternatifs, « Sujet et matière » d'une Création) s'enregistrent seuls : une seconde après la dernière frappe, en quittant le champ, et en quittant la page (`lib/autosave.ts`). Les formulaires de réglages gardent un bouton : ils se valident ensemble et une valeur à moitié tapée n'y a pas de sens.
 
 **Comment.** Un seul enregistrement à la fois ; une frappe pendant l'envoi repart juste après. La valeur envoyée est une copie, et « modifié » compare à la fois à la valeur du serveur et au dernier envoi réussi, pour ne pas renvoyer un texte en attendant le rechargement. Fermer l'onglet avec un changement non enregistré fait demander le navigateur. Une ligne discrète dit l'état ; seule l'issue (enregistré, erreur) est annoncée aux lecteurs d'écran, pas chaque « Enregistrement… ».
+
+## 2026-11-21 : doublons
+
+**Même page.** `normalizeUrl` compte une seule fois les versions d'une même page : AMP (`/amp` en fin de chemin, `?amp=1`, `?outputType=amp`), hôte mobile (`m.`, `mobile.`) et `index.html` ou `index.php` en fin de chemin. L'adresse gardée est la version de bureau, qui sert aussi de lien dans les posts. Un élément déjà collecté sous une ancienne forme peut revenir une fois : pas de migration des adresses existantes, le cas est rare et sans perte.
+
+**Même sujet.** Le tri reçoit, après le contenu, les titres des 40 derniers éléments du thème (14 jours, triés, hors archives) et peut nommer celui qui raconte la même histoire (même nouvelle, autre site ou autres mots). L'élément garde son score et sa place : la carte dit « Même sujet que » avec un lien, la personne décide. Pas de rejet automatique : deux articles sur une même nouvelle n'apportent pas toujours la même chose. Colonne `item_topics.same_story_of`, écrite par le job seul, sans clé étrangère pour ne pas rendre ambiguës les jointures `item:items (...)` de l'API.
+
+**Pas retenu.** Lire la balise `<link rel="canonical">` de chaque page : il faudrait charger chaque page dès la collecte, alors qu'elle ne l'est qu'à la rédaction.

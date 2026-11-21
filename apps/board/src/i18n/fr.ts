@@ -1134,6 +1134,8 @@ export default {
     heading: 'Veille : {topic}',
     sourceLabel: '{site} : lire la source de « {title} » (nouvel onglet)',
     reason: 'Analyse : {reason}',
+    sameStory: 'Même sujet que',
+    sameStoryTitle: '« {title} »',
     commercial: 'Contenu promotionnel',
     triagePending: 'En attente du tri IA',
     noAnthropicKey:

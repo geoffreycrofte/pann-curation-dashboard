@@ -48,6 +48,10 @@ const item = (i, status) => {
     validated_at: status === 'validated' ? h(-5) : null,
     publish_at: null,
     kind,
+    same_story:
+      i === 4
+        ? { item_id: 'i1', title: 'WCAG 3.0 Working Draft: new conformance model explained' }
+        : null,
     item: {
       canonical_url: `https://example.org/${i}`,
       title,

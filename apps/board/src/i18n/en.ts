@@ -1117,6 +1117,8 @@ export default {
     heading: 'News watch: {topic}',
     sourceLabel: '{site}: read the source of “{title}” (new tab)',
     reason: 'Analysis: {reason}',
+    sameStory: 'Same story as',
+    sameStoryTitle: '“{title}”',
     commercial: 'Promotional content',
     triagePending: 'Waiting for AI triage',
     noAnthropicKey:

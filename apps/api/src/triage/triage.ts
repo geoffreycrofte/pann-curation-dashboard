@@ -29,6 +29,8 @@ export interface TriageDecision {
   language: string
   /** Below the topic threshold: archived, out of the board but still searchable. */
   archived: boolean
+  /** A recent item of the topic that reports the same story, if any. */
+  same_story_of: string | null
 }
 
 export interface TriageStore {
@@ -59,8 +61,10 @@ export function decide(
     reason: string
     kind: string
     language: string
+    same_story_as?: number
   },
   config: TopicConfig,
+  recent: { item_id: string }[] = [],
 ): TriageDecision {
   const relevance = Math.max(0, Math.min(100, Math.round(output.relevance)))
   return {
@@ -70,6 +74,8 @@ export function decide(
     kind: isTopicKind(config, output.kind) ? output.kind : null,
     language: output.language.trim().toLowerCase().slice(0, 8),
     archived: relevance < config.ai.relevance_threshold,
+    // A number outside the list (0 included) means no match.
+    same_story_of: recent[(output.same_story_as ?? 0) - 1]?.item_id ?? null,
   }
 }
 
@@ -122,7 +128,7 @@ export async function triage(deps: {
     }
 
     if (result.ok) {
-      const decision = decide(result.output, item.topic_config)
+      const decision = decide(result.output, item.topic_config, item.recent)
       await deps.store.saveDecision(item, decision)
       report.triaged++
       if (decision.archived) report.archived++

@@ -95,6 +95,8 @@ export interface BoardItem {
   validated_at: string | null
   /** Slot of the item in the diffusion queue. */
   publish_at: string | null
+  /** A recent item of the topic that reports the same story, found at triage (lists only). */
+  same_story?: { item_id: string; title: string } | null
 }
 
 /** A conversation of the engagement tool, as listed on its board. */

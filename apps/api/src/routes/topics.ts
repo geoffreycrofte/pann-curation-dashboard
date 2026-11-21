@@ -529,7 +529,7 @@ export const topics = new Hono<AppEnv>()
     let request = c.var.db
       .from('item_topics')
       .select(
-        'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, publish_at, kind, ' +
+        'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, publish_at, kind, same_story_of, ' +
           'item:items (canonical_url, title, source_lang, origin, published_at, discovered_at)',
       )
       .eq('topic_id', topicId)
@@ -548,7 +548,26 @@ export const topics = new Hono<AppEnv>()
       .order('item_id')
       .range(offset, offset + limit - 1)
     if (error) throw error
-    return c.json(data)
+    // The same story found at triage: its title, to name it on the card.
+    const ids = [...new Set(data.map((row) => row.same_story_of).filter((id) => id !== null))]
+    const titles = new Map<string, string>()
+    if (ids.length) {
+      const { data: rows, error: titleError } = await c.var.db
+        .from('items')
+        .select('id, title')
+        .in('id', ids)
+      if (titleError) throw titleError
+      for (const row of rows) titles.set(row.id, row.title)
+    }
+    return c.json(
+      data.map(({ same_story_of, ...row }) => ({
+        ...row,
+        same_story:
+          same_story_of && titles.has(same_story_of)
+            ? { item_id: same_story_of, title: titles.get(same_story_of)! }
+            : null,
+      })),
+    )
   })
 
   /**

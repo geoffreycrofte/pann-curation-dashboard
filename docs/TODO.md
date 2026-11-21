@@ -31,7 +31,6 @@ Décidée le 2026-11-16, arbitrée le 2026-11-17 : **tout d'un coup**, sans ver
 
 ## Déjà évoqué
 
-- **Doublons** : URL canonique de la page, normalisation (AMP, `m.`, `index.html`), regroupement par sujet au tri (branche prévue `feat/dedup`).
 - **Zernio en mode plateforme** pour un produit SaaS : une clé Pann, un profil Zernio par espace, boutons « Connecter » dans les réglages, facturation au compte connecté (voir zernio.com/use-cases/saas-platforms).
 - **Engagement** : rédaction d'une proposition de réponse, « marquer comme répondu », plafond de réponses par communauté et par semaine.
 - **Fiche source partagée** : les résumés d'une source réutilisés d'un thème à l'autre.
