@@ -174,7 +174,7 @@ export const topicConfigSchema = z.object({
     .default(['fr', 'en']),
   ai: z
     .object({
-      triage_model: z.string().default('claude-haiku-4-5'),
+      triage_model: z.string().default('claude-haiku-5-5'),
       draft_model: z.string().default('claude-sonnet-5-5'),
       draft_mode: z.enum(DRAFT_MODES).default('on_validate'),
       /** low: recommended starting point for content generation on Sonnet 5.5. */
