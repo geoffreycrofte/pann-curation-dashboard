@@ -433,6 +433,10 @@ usePageDetail(() => detail.value?.item.title)
           })
         }}
       </li>
+      <!-- Said once for the page; each text shows its own state beside its label. -->
+      <li v-if="detail.posts.length || detail.summaries.length" class="date">
+        {{ t('autosave.auto') }}
+      </li>
     </ul>
     <p v-if="detail.triage_reason" class="reason">
       {{ t('board.reason', { reason: detail.triage_reason }) }}

@@ -325,6 +325,8 @@ usePageDetail(() =>
             })
           }}
         </li>
+        <!-- Said once for the page; each field shows its own state beside its label. -->
+        <li v-if="!readonly" class="date">{{ t('autosave.auto') }}</li>
       </ul>
     </header>
 
@@ -337,7 +339,14 @@ usePageDetail(() =>
     >
       <!-- Once posts exist, the material folds to one line: the posts come first. -->
       <div class="material-head">
-        <h2 :id="`${id}-material`">{{ t('compose.material') }}</h2>
+        <div class="material-title">
+          <h2 :id="`${id}-material`">{{ t('compose.material') }}</h2>
+          <AutosaveStatus
+            v-if="!readonly"
+            :state="autosave.state.value"
+            :error="autosave.error.value"
+          />
+        </div>
         <button
           v-if="posts.length"
           type="button"
@@ -542,12 +551,6 @@ usePageDetail(() =>
           </div>
           <p :id="`${id}-networks-hint`" class="hint">{{ t('compose.networksHint') }}</p>
         </fieldset>
-
-        <AutosaveStatus
-          v-if="!readonly"
-          :state="autosave.state.value"
-          :error="autosave.error.value"
-        />
       </div>
     </form>
 
@@ -1157,6 +1160,13 @@ textarea.field {
 
 .material-head h2 {
   margin: 0;
+}
+
+.material-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .material-summary {

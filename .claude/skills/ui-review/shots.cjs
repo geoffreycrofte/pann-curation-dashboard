@@ -332,6 +332,16 @@ async function shoot(page, name, path, opts = {}) {
     await page.waitForTimeout(300)
     await target.evaluate((el) => el.closest('section')?.scrollIntoView())
   }
+  // Types into a field and leaves it, to show the automatic save.
+  if (opts.type) {
+    const field = page.locator(opts.type).first()
+    await field.click()
+    await field.press('End')
+    await field.pressSequentially(' Merci.')
+    await field.blur()
+    await page.waitForTimeout(600)
+    await field.evaluate((el) => el.closest('form, section')?.scrollIntoView())
+  }
   if (opts.scroll) await page.evaluate((y) => scrollTo(0, y), opts.scroll)
   await page.screenshot({ path: `${out}/${name}.png`, fullPage: !opts.viewport })
 }
@@ -367,6 +377,7 @@ async function shoot(page, name, path, opts = {}) {
     ],
     ['profile', '/profile'],
     ['composition', '/t/t1/compose/c1'],
+    ['composition-saved', '/t/t1/compose/c1', { type: 'textarea[lang="fr"]', viewport: true }],
     ['series', '/t/t1/series/s1'],
     ['series-new', '/t/t1/series/new'],
     ['admin', '/admin'],

@@ -58,6 +58,12 @@ watch(mode, () => {
   <form class="first-comment" @submit.prevent="autosave.flush()">
     <fieldset :disabled="readonly">
       <legend>{{ t('firstComment.title') }}</legend>
+      <AutosaveStatus
+        v-if="!readonly"
+        class="save-state"
+        :state="autosave.state.value"
+        :error="autosave.error.value"
+      />
       <label class="choice">
         <input v-model="mode" type="radio" :name="`${id}-mode`" value="default" />
         <span>
@@ -86,13 +92,10 @@ watch(mode, () => {
           :maxlength="FIRST_COMMENT_MAX"
           @blur="autosave.flush()"
         ></textarea>
+        <p v-if="autosave.state.value === 'invalid'" class="hint">
+          {{ t('firstComment.empty') }}
+        </p>
       </div>
-      <AutosaveStatus
-        v-if="!readonly"
-        :state="autosave.state.value"
-        :error="autosave.error.value"
-        :invalid-text="t('firstComment.empty')"
-      />
     </fieldset>
   </form>
 </template>
@@ -108,12 +111,22 @@ watch(mode, () => {
 }
 
 /* The title inside the frame, not across its border (floated, the legend is laid out
- * like the other children). */
+ * like the other children), its save state on the same line. */
 .first-comment legend {
   float: left;
-  width: 100%;
   padding: 0;
   font-weight: 650;
+}
+
+/* The legend and its save state on one line, every other part on its own. */
+.first-comment fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.first-comment fieldset > :not(legend, .save-state) {
+  flex-basis: 100%;
 }
 
 .choice {

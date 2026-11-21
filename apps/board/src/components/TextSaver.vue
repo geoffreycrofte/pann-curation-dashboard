@@ -123,6 +123,11 @@ async function undoRewrite() {
   <form class="text-saver" @submit.prevent="autosave.flush()">
     <div class="head">
       <label :for="`${id}-text`" class="form-label">{{ label }}</label>
+      <AutosaveStatus
+        v-if="!readonly"
+        :state="autosave.state.value"
+        :error="autosave.error.value"
+      />
       <span v-if="edited && !dirty" class="badge" data-tone="accent">
         <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
           <path
@@ -202,8 +207,7 @@ async function undoRewrite() {
         <li v-for="warning in warnings" :key="warning">{{ warning }}</li>
       </ul>
     </div>
-    <div v-if="!readonly" class="row">
-      <AutosaveStatus :state="autosave.state.value" :error="autosave.error.value" />
+    <div v-if="!readonly && (beforeRewrite !== null || message)" class="row">
       <button
         v-if="beforeRewrite !== null"
         type="button"

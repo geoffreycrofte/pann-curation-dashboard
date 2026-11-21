@@ -43,9 +43,9 @@ export default {
   },
   theme: { dark: 'Mode sombre' },
   autosave: {
-    auto: 'Enregistrement automatique.',
+    auto: 'Les textes s’enregistrent automatiquement.',
     saving: 'Enregistrement…',
-    saved: 'Enregistré.',
+    saved: 'Enregistré',
     error: 'Non enregistré : {message}',
   },
   common: {

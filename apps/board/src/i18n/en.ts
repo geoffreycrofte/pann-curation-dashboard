@@ -44,9 +44,9 @@ export default {
   },
   theme: { dark: 'Dark mode' },
   autosave: {
-    auto: 'Saved automatically.',
+    auto: 'Texts save automatically.',
     saving: 'Saving…',
-    saved: 'Saved.',
+    saved: 'Saved',
     error: 'Not saved: {message}',
   },
   common: {

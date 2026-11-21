@@ -125,6 +125,12 @@ async function remove(media: CompositionMedia) {
         <form class="alts" @submit.prevent="save(image)">
           <fieldset>
             <legend>{{ t('compose.images.altLegend', { n: index + 1 }) }}</legend>
+            <AutosaveStatus
+              v-if="!readonly"
+              class="save-state"
+              :state="saveState[image.id]?.state ?? 'idle'"
+              :error="saveState[image.id]?.error"
+            />
             <p v-if="image.alt_status === 'pending'" class="hint" role="status">
               {{ t('compose.images.proposing') }}
             </p>
@@ -162,11 +168,6 @@ async function remove(media: CompositionMedia) {
             </div>
             <p :id="`${id}-${image.id}-hint`" class="hint">{{ t('compose.images.altHint') }}</p>
           </fieldset>
-          <AutosaveStatus
-            v-if="!readonly"
-            :state="saveState[image.id]?.state ?? 'idle'"
-            :error="saveState[image.id]?.error"
-          />
           <div v-if="!readonly" class="actions">
             <button
               v-if="langs.some((l) => !textOf(image, l).trim())"
@@ -285,15 +286,25 @@ input[type='file']::file-selector-button:hover {
   background: var(--color-surface-2);
 }
 
-.alts,
-.alts fieldset {
+.alts {
   display: grid;
   gap: var(--space-3);
 }
 
+/* The legend and its save state on one line, every other part on its own. */
+.alts fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-2);
+}
+
+.alts fieldset > :not(legend, .save-state) {
+  flex-basis: 100%;
+}
+
 .alts legend {
   float: left;
-  width: 100%;
   padding: 0;
   font-size: 1rem;
 }

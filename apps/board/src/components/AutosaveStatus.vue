@@ -1,74 +1,49 @@
 <script setup lang="ts">
 /**
- * Where an automatic save stands, next to the field it saves. Only the outcome (saved,
- * error, why it waits) is announced; "Saving…" is shown, not read at every pause.
+ * Where the automatic save of a field stands, as a quiet badge beside its label. The page
+ * says once that texts save by themselves. Only the outcome (saved, error) is announced;
+ * "Saving…" is shown, not read at every pause.
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { describeError } from '../lib/errors'
 import type { AutosaveState } from '../lib/autosave'
-import Icon from './Icon.vue'
 
-const props = defineProps<{
-  state: AutosaveState
-  error?: unknown
-  /** Why a change waits (an empty required text). */
-  invalidText?: string
-}>()
+const props = defineProps<{ state: AutosaveState; error?: unknown }>()
 const { t } = useI18n()
 
-const announced = computed(() => {
-  if (props.state === 'saved') return t('autosave.saved')
-  if (props.state === 'invalid') return props.invalidText ?? ''
-  if (props.state === 'error')
-    return t('autosave.error', {
-      message: describeError((props.error as Error)?.message ?? 'unexpected', t).text,
-    })
-  return ''
-})
+const errorText = computed(() =>
+  t('autosave.error', {
+    message: describeError((props.error as Error)?.message ?? 'unexpected', t).text,
+  }),
+)
 </script>
 
 <template>
-  <p class="autosave" :data-state="state">
-    <span v-if="state === 'saving'" aria-hidden="true">{{ t('autosave.saving') }}</span>
-    <span v-else-if="state === 'idle' || state === 'pending'" aria-hidden="true">
-      {{ t('autosave.auto') }}
+  <span class="autosave">
+    <span v-if="state === 'saving'" class="badge" aria-hidden="true">
+      {{ t('autosave.saving') }}
     </span>
     <span role="status" class="outcome">
-      <Icon v-if="state === 'saved'" name="check" :size="14" />
-      <Icon v-else-if="state === 'error'" name="alert-circle" :size="14" />
-      {{ announced }}
+      <span v-if="state === 'saved'" class="badge" data-tone="success" data-dot>
+        {{ t('autosave.saved') }}
+      </span>
+      <span v-else-if="state === 'error'" class="badge error-badge" data-tone="danger" data-dot>
+        {{ errorText }}
+      </span>
     </span>
-  </p>
+  </span>
 </template>
 
 <style scoped>
-.autosave {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 1.5rem;
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-}
-
+.autosave,
 .outcome {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
 }
 
-.outcome:empty {
-  display: none;
-}
-
-.autosave[data-state='saved'] .outcome {
-  color: var(--color-success);
-}
-
-.autosave[data-state='error'] .outcome {
-  color: var(--color-danger);
-  font-weight: 600;
+/* An error can be long: it wraps instead of overflowing. */
+.error-badge {
+  white-space: normal;
 }
 </style>
