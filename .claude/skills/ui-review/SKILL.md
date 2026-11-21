@@ -33,6 +33,13 @@ Un champ vide ou une liste vide peut venir des données simulées : vérifier da
   - badges `.badge[data-tone][data-dot]` pour les états ;
   - `.notice` pour les avertissements ;
   - boutons pilule, `danger` pour supprimer.
+- **Espacement et rythme vertical** :
+  - espaces pris dans l'échelle `--space-*` ;
+  - plus d'espace entre deux groupes qu'à l'intérieur d'un groupe ;
+  - pas de grand vide dans une carte ;
+  - icône et texte alignés sur la même ligne ;
+  - une aide collée à ce qu'elle explique ;
+  - padding de carte constant (`.block`), resserré pour une carte d'état.
 - **Ergonomie** : nombre d'étapes et de défilement pour l'action principale. Les aides sont placées sous leur champ et reliées par `aria-describedby`. Pas de bouton désactivé sans explication.
 - **Accessibilité** :
   - contraste des tokens (`scripts/check-contrast.mjs`) ;

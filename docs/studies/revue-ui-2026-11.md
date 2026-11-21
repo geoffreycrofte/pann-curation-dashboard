@@ -68,3 +68,10 @@ Revue page par page des captures (ordinateur et mobile, données simulées), ave
   - la Diffusion remonte juste après l'état de la rédaction, avec un liseré doré d'étape suivante ;
   - les posts passent avant les résumés ;
   - le liseré de l'état de la rédaction était écrasé par `.block` : il est corrigé.
+- Carte « Rédaction prête » :
+  - deux lignes au lieu d'un grand bloc ;
+  - icône alignée sur le titre, bouton « Relancer » petit à droite ;
+  - sur la deuxième ligne, ce qui est conservé et « Fournir le texte de la source ».
+- Brouillons de posts :
+  - l'état du post (badge) passe au-dessus du texte au lieu de flotter sous le premier commentaire ;
+  - chaque réseau est séparé par un filet et plus d'espace.
