@@ -500,3 +500,9 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Marquer comme répondu.** Une conversation n'a pas de publication : `published` veut dire « répondue par la personne ». Transitions `validated → published` et retour, pour l'outil Conversations seulement (`status.ts` et le trigger SQL). `replied_at` date la réponse. Nouvel onglet « Répondues ».
 
 **Limite par communauté.** `engagement.weekly_replies` (3 par défaut, `null` pour aucune) : au-delà, sur 7 jours glissants, la carte rappelle qu'une réponse de plus risque de passer pour de la promotion. Un rappel, jamais un blocage. La communauté est la plateforme (Hacker News, Bluesky) tant qu'aucune source ne donne mieux (`communityOf`).
+
+## 2026-11-21 : tri sur Haiku 5.5, coûts par jour et par post
+
+**Haiku 5.5.** Le tri (veille et conversations) passe de Haiku 4.5 à Haiku 5.5 : dix fois moins cher (0,10 $ / 0,50 $ par million de tokens), qualité déjà vérifiée par Geoffrey sur un autre outil. Le modèle réfléchit avant de répondre et cette réflexion compte dans `max_tokens` : effort `low` et 2 048 tokens de marge. Les thèmes qui avaient l'ancien défaut enregistré passent au nouveau (migration) ; un autre choix est gardé.
+
+**Coûts lisibles.** Le Budget du thème donne le coût moyen par appel, par jour, par post rédigé et par post publié, et la projection du mois. L'espace d'admin liste chaque espace avec tout ce qu'il a dépensé (ses clés ou celles de Pann), la part payée par Pann, le coût par jour et par post publié (`platform_workspace_stats`) : de quoi fixer les quotas des offres sur l'usage réel.

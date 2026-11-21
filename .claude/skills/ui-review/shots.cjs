@@ -302,6 +302,10 @@ const routes = {
       { operation: 'triage', cost_usd: 1.2, calls: 140 },
       { operation: 'draft', cost_usd: 2.22, calls: 18 },
     ],
+    posts_drafted: 54,
+    posts_published: 31,
+    days_elapsed: 21,
+    days_in_month: 30,
   },
   '/api/workspaces/w1/credentials': [
     {

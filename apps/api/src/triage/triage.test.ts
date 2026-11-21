@@ -68,9 +68,9 @@ describe('triage', () => {
     expect(decisions.b?.archived).toBe(true)
     expect(logged[0]).toMatchObject({
       provider: 'anthropic',
-      model: 'claude-haiku-4-5',
+      model: 'claude-haiku-5-5',
       operation: 'triage',
-      cost_usd: 0.0018,
+      cost_usd: 0.00018,
     })
   })
 

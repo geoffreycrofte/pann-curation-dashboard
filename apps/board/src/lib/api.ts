@@ -393,6 +393,22 @@ export interface TopicUsage {
   budget_usd: number
   month_cost_usd: number
   by_operation: { operation: string; cost_usd: number; calls: number }[]
+  posts_drafted: number
+  posts_published: number
+  days_elapsed: number
+  days_in_month: number
+}
+
+/** Admin space: one workspace over a month. */
+export interface WorkspaceStats {
+  workspace_id: string
+  workspace_name: string
+  topics: number
+  calls: number
+  cost_usd: number
+  platform_cost_usd: number
+  posts_drafted: number
+  posts_published: number
 }
 
 export const api = {
@@ -424,6 +440,8 @@ export const api = {
     request<PlatformSettings>('/admin/settings', json('PATCH', patch)),
   /** month: YYYY-MM (UTC). */
   adminUsage: (month: string) => request<PlatformUsageRow[]>(`/admin/usage?month=${month}`),
+  adminWorkspaceStats: (month: string) =>
+    request<WorkspaceStats[]>(`/admin/workspace-stats?month=${month}`),
   renameWorkspace: (workspaceId: string, name: string) =>
     request<{ id: string; name: string }>(`/workspaces/${workspaceId}`, json('PATCH', { name })),
   /** Queues the deletion of the account; the email typed by the person confirms it. */

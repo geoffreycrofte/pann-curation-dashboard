@@ -28,10 +28,12 @@ export const claudeTriageModel: TriageModel = async ({ apiKey, model, system, us
   try {
     const response = await client.messages.parse({
       model,
-      max_tokens: 512,
+      // Haiku 5.5 thinks before answering, and thinking counts here: room for both.
+      max_tokens: 2048,
       system,
       messages: [{ role: 'user', content: user }],
-      output_config: { format: zodOutputFormat(triageOutputSchema(kindKeys)) },
+      // A short classification: little thinking needed.
+      output_config: { effort: 'low', format: zodOutputFormat(triageOutputSchema(kindKeys)) },
     })
     const usage = {
       input_tokens: response.usage.input_tokens,

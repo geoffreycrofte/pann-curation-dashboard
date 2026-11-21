@@ -31,9 +31,30 @@ const operations = [
   'rewrite',
   'engagement_triage',
   'engagement_reply',
+  'compose_search',
+  'series_plan',
+  'voice',
 ]
 const label = (operation: string) =>
   t(`settings.operations.${operations.includes(operation) ? operation : 'other'}`)
+/** Averages of the month: what a day and a post cost, and where the month is heading. */
+const perDay = computed(() =>
+  usage.value ? usage.value.month_cost_usd / Math.max(1, usage.value.days_elapsed) : 0,
+)
+const averages = computed(() => {
+  const u = usage.value
+  if (!u || !u.month_cost_usd) return []
+  return [
+    { key: 'perDay', value: usd(perDay.value) },
+    { key: 'projection', value: usd(perDay.value * u.days_in_month) },
+    ...(u.posts_drafted
+      ? [{ key: 'perDrafted', value: usd(u.month_cost_usd / u.posts_drafted) }]
+      : []),
+    ...(u.posts_published
+      ? [{ key: 'perPublished', value: usd(u.month_cost_usd / u.posts_published) }]
+      : []),
+  ]
+})
 const ratio = computed(() =>
   usage.value?.budget_usd ? usage.value.month_cost_usd / usage.value.budget_usd : 0,
 )
@@ -87,6 +108,7 @@ const { mutate: save, isLoading } = useMutation({
             <th scope="col">{{ t('settings.operation') }}</th>
             <th scope="col" class="num">{{ t('settings.calls') }}</th>
             <th scope="col" class="num">{{ t('settings.cost') }}</th>
+            <th scope="col" class="num">{{ t('settings.costPerCall') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -94,9 +116,25 @@ const { mutate: save, isLoading } = useMutation({
             <th scope="row">{{ label(row.operation) }}</th>
             <td class="num">{{ row.calls }}</td>
             <td class="num">{{ usd(row.cost_usd) }}</td>
+            <td class="num">{{ usd(row.calls ? row.cost_usd / row.calls : 0) }}</td>
           </tr>
         </tbody>
       </table>
+      <!-- Averages: what the topic costs per day and per post, and the month's projection. -->
+      <dl v-if="averages.length" class="averages">
+        <div v-for="a in averages" :key="a.key">
+          <dt>{{ t(`settings.averages.${a.key}`) }}</dt>
+          <dd>{{ a.value }}</dd>
+        </div>
+      </dl>
+      <p v-if="averages.length" class="hint">
+        {{
+          t('settings.averages.hint', {
+            drafted: usage.posts_drafted,
+            published: usage.posts_published,
+          })
+        }}
+      </p>
       <p v-if="ratio >= 1" class="notice notice-inline" data-tone="danger">
         <Icon name="alert-circle" />
         <span>{{ t('errors.budget_exceeded') }}</span>
@@ -152,6 +190,31 @@ td {
   padding: var(--space-1) var(--space-3);
   border-bottom: 1px solid var(--color-border);
   text-align: start;
+}
+
+.averages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(8.5rem, 100%), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.averages div {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
+}
+
+.averages dt {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.averages dd {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .num {

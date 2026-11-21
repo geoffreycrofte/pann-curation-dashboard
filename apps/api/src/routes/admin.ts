@@ -125,6 +125,19 @@ export const admin = new Hono<AppEnv>()
     return c.json(data)
   })
 
+  /** Per workspace over a calendar month (UTC): calls, costs and posts, for cost per post. */
+  .get('/workspace-stats', async (c) => {
+    const query = usageQuery.safeParse(c.req.query())
+    if (!query.success) throw new HTTPException(400, { message: 'invalid_config' })
+    const [year, month] = query.data.month.split('-').map(Number) as [number, number]
+    const { data, error } = await c.var.db.rpc('platform_workspace_stats', {
+      p_from: new Date(Date.UTC(year, month - 1, 1)).toISOString(),
+      p_to: new Date(Date.UTC(year, month, 1)).toISOString(),
+    })
+    if (error) throw error
+    return c.json(data)
+  })
+
   /** Access requests, newest first (the last 200). */
   .get('/access-requests', async (c) => {
     const { data, error } = await c.var.db

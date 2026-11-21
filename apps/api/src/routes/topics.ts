@@ -253,12 +253,33 @@ export const topics = new Hono<AppEnv>()
   /** Spending of the current month, by operation, against the topic budget. */
   .get('/:topicId/usage', async (c) => {
     const topicId = c.req.param('topicId')
-    const [{ data: topic, error: topicError }, { data: usage, error }] = await Promise.all([
+    const now = new Date()
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString()
+    // What the month produced, to give a cost per post.
+    const countPosts = (column: 'created_at' | 'sent_at', published: boolean) => {
+      let request = c.var.db
+        .from('posts')
+        .select('id', { count: 'exact', head: true })
+        .eq('topic_id', topicId)
+        .gte(column, monthStart)
+      if (published) request = request.eq('status', 'published')
+      return request
+    }
+    const [
+      { data: topic, error: topicError },
+      { data: usage, error },
+      { count: drafted, error: draftedError },
+      { count: published, error: publishedError },
+    ] = await Promise.all([
       c.var.db.from('topics').select('monthly_budget_usd').eq('id', topicId).maybeSingle(),
       c.var.db.rpc('topic_month_usage', { p_topic_id: topicId }),
+      countPosts('created_at', false),
+      countPosts('sent_at', true),
     ])
     if (topicError) throw topicError
     if (error) throw error
+    if (draftedError) throw draftedError
+    if (publishedError) throw publishedError
     if (!topic) throw new HTTPException(404, { message: 'Topic not found' })
     const rows = (usage ?? []) as { operation: string; cost_usd: number | string; calls: number }[]
     const byOperation = rows.map((r) => ({
@@ -270,6 +291,13 @@ export const topics = new Hono<AppEnv>()
       budget_usd: Number(topic.monthly_budget_usd),
       month_cost_usd: byOperation.reduce((sum, r) => sum + r.cost_usd, 0),
       by_operation: byOperation,
+      posts_drafted: drafted ?? 0,
+      posts_published: published ?? 0,
+      /** Days of the month so far (today included, UTC) and in the whole month. */
+      days_elapsed: now.getUTCDate(),
+      days_in_month: new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0),
+      ).getUTCDate(),
     })
   })
 
