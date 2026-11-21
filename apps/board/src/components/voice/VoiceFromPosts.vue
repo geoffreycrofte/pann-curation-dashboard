@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Icon from '../Icon.vue'
 /**
  * "Your voice from your posts": the person pastes a few posts they are happy with, the
  * AI proposes style and post rules from them. Each proposal is shown next to the current
@@ -93,7 +94,10 @@ const FIELDS = ['style_rules', 'post_rules'] as const
       </button>
     </div>
     <p v-if="status === 'pending'" role="status">{{ t('voice.analyzing') }}</p>
-    <p v-else-if="status === 'failed'" class="error" role="alert">{{ error }}</p>
+    <p v-else-if="status === 'failed'" class="notice notice-inline" data-tone="danger" role="alert">
+      <Icon name="alert-circle" />
+      <span>{{ error }}</span>
+    </p>
 
     <div v-if="result" class="proposals" role="region" :aria-label="t('voice.proposals')">
       <p class="hint">{{ t('voice.proposalsHint') }}</p>

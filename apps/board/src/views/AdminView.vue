@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Icon from '../components/Icon.vue'
 /**
  * Administration of Pann (platform admins only): the keys Pann pays for itself and the
  * cost centre of that spending. The API answers 404 to anyone else.
@@ -289,8 +290,11 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
             {{ d(new Date(request.created_at), { dateStyle: 'medium', timeStyle: 'short' }) }}
           </p>
           <p class="motivation" :lang="request.lang">{{ request.motivation }}</p>
-          <p v-if="request.notify_error" class="error">
-            {{ t('admin.notifyFailed', { reason: describeError(request.notify_error, t).text }) }}
+          <p v-if="request.notify_error" class="notice notice-inline" data-tone="danger">
+            <Icon name="alert-circle" />
+            <span>{{
+              t('admin.notifyFailed', { reason: describeError(request.notify_error, t).text })
+            }}</span>
           </p>
           <div class="actions">
             <button
@@ -324,8 +328,14 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
               {{ t('admin.reopen') }}<span class="visually-hidden"> {{ request.name }}</span>
             </button>
           </div>
-          <p v-if="requestErrors[request.id]" class="error" role="alert">
-            {{ requestErrors[request.id] }}
+          <p
+            v-if="requestErrors[request.id]"
+            class="notice notice-inline"
+            data-tone="danger"
+            role="alert"
+          >
+            <Icon name="alert-circle" />
+            <span>{{ requestErrors[request.id] }}</span>
           </p>
         </li>
       </ul>
@@ -483,7 +493,10 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
           {{ savingSettings ? t('common.saving') : t('common.save') }}
         </button>
       </div>
-      <p v-if="settingsError" class="error" role="alert">{{ settingsError }}</p>
+      <p v-if="settingsError" class="notice notice-inline" data-tone="danger" role="alert">
+        <Icon name="alert-circle" />
+        <span>{{ settingsError }}</span>
+      </p>
     </form>
 
     <!-- The month's spending: apart from the limits form, under a rule. -->
@@ -617,7 +630,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
 
 .limits > .wide,
 .limits > div:last-of-type,
-.limits > .error {
+.limits > .notice {
   grid-column: 1 / -1;
 }
 

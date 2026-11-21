@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Icon from './Icon.vue'
 import {
   SEARCH_SOURCE_TYPES,
   type ItemKind,
@@ -93,7 +94,10 @@ const { mutate, isLoading } = useMutation({
         {{ t('common.cancel') }}
       </button>
     </div>
-    <p v-if="error" role="alert" class="error">{{ error }}</p>
+    <p v-if="error" role="alert" class="notice notice-inline" data-tone="danger">
+      <Icon name="alert-circle" />
+      <span>{{ error }}</span>
+    </p>
   </form>
 </template>
 
@@ -119,9 +123,5 @@ const { mutate, isLoading } = useMutation({
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-}
-
-.error {
-  margin: 0;
 }
 </style>

@@ -115,11 +115,6 @@ const ICON: Record<ContentKind, string> = {
   overflow-wrap: anywhere;
 }
 
-.title a {
-  color: var(--color-text);
-  text-decoration-color: var(--kind);
-}
-
 .meta {
   color: var(--color-text-muted);
   font-size: 0.875rem;

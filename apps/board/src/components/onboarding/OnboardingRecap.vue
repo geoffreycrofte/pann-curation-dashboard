@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Icon from '../Icon.vue'
 /**
  * Summary of the topic being created, full screen like the conversation: every setting
  * on one page, editable in place; nothing is saved before "Create the topic". Also the
@@ -509,7 +510,10 @@ async function create() {
         {{ t('onboarding.review.restart') }}
       </button>
     </div>
-    <p v-if="createError" class="error" role="alert">{{ createError }}</p>
+    <p v-if="createError" class="notice notice-inline" data-tone="danger" role="alert">
+      <Icon name="alert-circle" />
+      <span>{{ createError }}</span>
+    </p>
   </form>
 </template>
 

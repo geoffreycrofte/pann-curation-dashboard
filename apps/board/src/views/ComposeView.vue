@@ -129,7 +129,10 @@ async function create() {
     </div>
   </div>
   <p class="hint intro">{{ t('compose.intro') }}</p>
-  <p v-if="createError" class="error" role="alert">{{ createError }}</p>
+  <p v-if="createError" class="notice notice-inline" data-tone="danger" role="alert">
+    <Icon name="alert-circle" />
+    <span>{{ createError }}</span>
+  </p>
 
   <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
   <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>

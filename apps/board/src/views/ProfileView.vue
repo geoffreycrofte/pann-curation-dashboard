@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Icon from '../components/Icon.vue'
 import { UI_LANGS, type UiLang } from '@pann/shared'
 import {
   AlertDialogAction,
@@ -332,7 +333,15 @@ async function signOutEverywhere() {
                     required
                   />
                 </div>
-                <p v-if="deleteMessage" role="alert" class="error">{{ deleteMessage }}</p>
+                <p
+                  v-if="deleteMessage"
+                  role="alert"
+                  class="notice notice-inline"
+                  data-tone="danger"
+                >
+                  <Icon name="alert-circle" />
+                  <span>{{ deleteMessage }}</span>
+                </p>
                 <div class="dialog-actions">
                   <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
                   <button
@@ -438,9 +447,5 @@ async function signOutEverywhere() {
 
 .confirm {
   margin-top: var(--space-4);
-}
-
-.confirm .error {
-  margin: 0;
 }
 </style>

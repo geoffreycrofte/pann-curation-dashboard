@@ -271,18 +271,6 @@ const actions = computed(() =>
   line-height: 1.3;
 }
 
-.title a {
-  color: var(--color-text);
-  text-decoration: underline;
-  text-decoration-color: var(--color-border-subtle);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.2em;
-}
-
-.title a:hover {
-  text-decoration-color: currentColor;
-}
-
 /* The AI's reason supports the title: quieter, still fully readable. */
 .reason {
   margin: 0;

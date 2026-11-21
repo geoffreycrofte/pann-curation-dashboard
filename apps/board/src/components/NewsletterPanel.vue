@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Icon from './Icon.vue'
 import type { Lang } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import {
@@ -103,8 +104,9 @@ const { mutate: send, isLoading: sending } = useMutation({
           }}
         </p>
         <p :lang="preview.lang">{{ t('newsletter.subject', { subject: preview.subject }) }}</p>
-        <p v-if="!preview.configured" class="error">
-          {{ t('newsletter.notConfigured', { lang: langName(preview.lang) }) }}
+        <p v-if="!preview.configured" class="notice notice-inline" data-tone="danger">
+          <Icon name="alert-circle" />
+          <span>{{ t('newsletter.notConfigured', { lang: langName(preview.lang) }) }}</span>
         </p>
         <iframe
           class="frame"
