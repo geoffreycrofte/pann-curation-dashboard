@@ -5,6 +5,26 @@ import type { AppEnv } from '../env'
 import { parseJson } from '../lib/validation'
 
 const renameBody = z.object({ name: z.string().trim().min(1).max(100) })
+const planChoiceBody = z.object({ plan: z.enum(['own_keys', 'essential', 'pro']) })
+const billingBody = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('checkout'),
+    plan: z.enum(['own_keys', 'essential', 'pro']),
+    interval: z.enum(['month', 'year']),
+    /** Board page to come back to, from the root ("/profile"). */
+    return_path: z
+      .string()
+      .regex(/^\/[^/\\]/)
+      .max(300),
+  }),
+  z.object({
+    kind: z.literal('portal'),
+    return_path: z
+      .string()
+      .regex(/^\/[^/\\]/)
+      .max(300),
+  }),
+])
 
 /** Mounted under /workspaces. RLS: only an owner can update a workspace. */
 export const workspaces = new Hono<AppEnv>()
@@ -25,7 +45,64 @@ export const workspaces = new Hono<AppEnv>()
       monthly_tokens: num(row.monthly_tokens),
       topics: Number(row.topics),
       month_tokens: Number(row.month_tokens),
+      billing_status: row.billing_status,
+      trial_ends_at: row.trial_ends_at,
+      plan_chosen_at: row.plan_chosen_at,
+      billing_interval: row.billing_interval,
+      current_period_end: row.current_period_end,
+      active: row.active,
+      subscribed: row.subscribed,
     })
+  })
+
+  /** The owner picks the offer of the trial (before paying). */
+  .put('/:workspaceId/plan-choice', async (c) => {
+    const { plan } = await parseJson(planChoiceBody, c.req.raw)
+    const { error } = await c.var.db.rpc('choose_trial_plan', {
+      p_workspace_id: c.req.param('workspaceId'),
+      p_plan: plan,
+    })
+    if (error?.code === '42501') throw new HTTPException(403, { message: 'owner_only' })
+    if (error?.message === 'subscribed') throw new HTTPException(409, { message: 'subscribed' })
+    if (error) throw error
+    return c.json({ plan })
+  })
+
+  /**
+   * Payment: the owner asks for the Stripe page (subscribe, or manage the subscription). The
+   * request is recorded with RLS (owners only), then a job opens the page with Pann's key.
+   */
+  .post('/:workspaceId/billing', async (c) => {
+    const body = await parseJson(billingBody, c.req.raw)
+    const origin = new URL(c.req.url).origin
+    const { data, error } = await c.var.db
+      .from('billing_requests')
+      .insert({
+        workspace_id: c.req.param('workspaceId'),
+        kind: body.kind,
+        plan: body.kind === 'checkout' ? body.plan : null,
+        billing_interval: body.kind === 'checkout' ? body.interval : null,
+        // The board's own address: Stripe never sends the person elsewhere.
+        return_url: `${origin}${body.return_path}`,
+      })
+      .select('id')
+      .single()
+    if (error?.code === '42501') throw new HTTPException(403, { message: 'owner_only' })
+    if (error) throw error
+    await c.env.JOBS.send({ type: 'billing', requestId: data.id })
+    return c.json({ id: data.id, status: 'pending' }, 202)
+  })
+
+  .get('/:workspaceId/billing/:requestId', async (c) => {
+    const { data, error } = await c.var.db
+      .from('billing_requests')
+      .select('id, status, url, error')
+      .eq('id', c.req.param('requestId'))
+      .eq('workspace_id', c.req.param('workspaceId'))
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Not found' })
+    return c.json(data)
   })
   .patch('/:workspaceId', async (c) => {
     const { name } = await parseJson(renameBody, c.req.raw)

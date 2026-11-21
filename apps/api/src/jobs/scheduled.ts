@@ -32,6 +32,10 @@ export async function runScheduled(controller: ScheduledController, env: Env): P
   switch (controller.cron) {
     case COLLECT_CRON: {
       const db = jobClient(env)
+      // Trials that ended unpaid and stopped subscriptions pause their topics first.
+      const { error: billingError } = await db.rpc('sync_billing_pauses_for_jobs')
+      if (billingError)
+        console.warn(JSON.stringify({ job: 'billing', error: billingError.message }))
       const reports = await collect({ store: supabaseCollectStore(db), adapters })
       console.log(JSON.stringify({ job: 'collect', reports }))
       const triaged = await triage({ store: supabaseTriageStore(db), model: claudeTriageModel })
