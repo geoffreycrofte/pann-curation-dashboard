@@ -451,6 +451,7 @@ export default {
     billedYearly: 'Facturé {total} par an, taxes comprises.',
     billedMonthly: 'Facturé chaque mois, taxes comprises.',
     current: 'Votre offre',
+    recommended: 'Recommandée',
     pitch: {
       own_keys:
         'Vous apportez vos clés (IA, recherche, publication) et gardez la main sur vos dépenses.',
@@ -473,19 +474,31 @@ export default {
       title: 'Sans Pann, avec Pann',
       intro:
         'Ce qu’une personne seule paierait pour faire le même travail avec des outils séparés, à l’année.',
-      caption: 'Prix d’outils séparés comparés à Pann',
-      need: 'Besoin',
-      tool: 'Exemple d’outil',
-      price: 'Prix par mois',
+      without: 'Sans Pann',
+      withoutSub: '3 abonnements, 3 outils à apprendre',
       needs: {
-        publish: 'Publier sur 3 réseaux, avec IA',
+        publish: 'Publier sur 3 réseaux, avec IA',
         watch: 'Veille avec IA',
         listen: 'Repérer des conversations, avec IA',
       },
-      without: 'Sans Pann',
+      total: 'Total',
+      drawbacks: {
+        bills: '3 factures, 3 identifiants, 3 outils à prendre en main',
+        silos: 'Vos sources, vos posts et vos conversations ne se parlent pas',
+        ai: 'Une IA différente dans chaque outil, sans votre voix ni vos règles',
+      },
       struck: 'Prix barré :',
-      with: 'Avec Pann, offre Intermédiaire',
-      withPrice: '{price}',
+      versus: 'ou',
+      with: 'Avec Pann',
+      withSub: 'Un seul outil, tout est relié',
+      withNote: 'Offre Intermédiaire, facturée à l’année, taxes comprises.',
+      included: {
+        publish: 'Publication sur LinkedIn, Bluesky, Mastodon, Facebook et Discord',
+        watch: 'Veille triée par IA, posts rédigés depuis vos sources',
+        listen: 'Conversations où aider, avec une réponse proposée',
+        create: 'Création, calendrier, newsletter et flux publics',
+      },
+      cta: 'Essayer gratuitement',
       source:
         'Tarifs relevés en novembre 2026 sur les sites des éditeurs, à l’année, en dollars hors taxes : à titre indicatif. Les noms cités appartiennent à leurs éditeurs.',
     },
