@@ -7,6 +7,7 @@ import { supabaseDraftStore } from '../draft/store'
 import { draft } from '../draft/draft'
 import { claudeEngagementModel } from '../engagement/model'
 import { supabaseEngagementStore } from '../engagement/store'
+import { runReplyDraft } from '../engagement/reply'
 import { triageConversations } from '../engagement/triage'
 import type { Lang } from '@pann/shared'
 import { sendDigests } from '../newsletter/digest'
@@ -68,6 +69,8 @@ export type JobMessage =
   | { type: 'analyze-voice'; analysisId: string }
   /** Plan of a series of posts (Création). */
   | { type: 'plan-series'; seriesId: string }
+  /** Reply to a conversation, drafted on request (the person posts it themself). */
+  | { type: 'engagement-reply'; topicId: string; itemId: string }
   /** Zernio in platform mode: a connection link, or the accounts listed again. */
   | { type: 'zernio-platform'; workspaceId: string }
 
@@ -193,6 +196,10 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     }
     case 'rewrite': {
       await runRewrite(db, message.rewriteId, claudeRewriteModel)
+      return
+    }
+    case 'engagement-reply': {
+      await runReplyDraft(db, message.topicId, message.itemId, claudeRewriteModel)
       return
     }
     case 'send-digest': {

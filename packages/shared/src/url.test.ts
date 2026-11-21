@@ -29,4 +29,23 @@ describe('normalizeUrl', () => {
   it('rejects non-web protocols', () => {
     expect(() => normalizeUrl('mailto:someone@example.com')).toThrow()
   })
+
+  it('counts the AMP, mobile and index versions of a page once', () => {
+    const page = 'https://example.com/news/post'
+    expect(normalizeUrl('https://example.com/news/post/amp/')).toBe(page)
+    expect(normalizeUrl('https://example.com/news/post?amp=1')).toBe(page)
+    expect(normalizeUrl('https://example.com/news/post?outputType=amp')).toBe(page)
+    expect(normalizeUrl('https://m.example.com/news/post')).toBe(page)
+    expect(normalizeUrl('https://mobile.example.com/news/post/')).toBe(page)
+    expect(normalizeUrl('https://example.com/news/post/index.html')).toBe(page)
+    expect(normalizeUrl('https://example.com/index.php')).toBe('https://example.com')
+  })
+
+  it('keeps paths and parameters that only look like AMP', () => {
+    expect(normalizeUrl('https://example.com/amplifier')).toBe('https://example.com/amplifier')
+    expect(normalizeUrl('https://example.com/a?outputType=json')).toBe(
+      'https://example.com/a?outputType=json',
+    )
+    expect(normalizeUrl('https://mail.example.com/x')).toBe('https://mail.example.com/x')
+  })
 })

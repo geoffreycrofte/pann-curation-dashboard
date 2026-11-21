@@ -86,6 +86,17 @@ const actions = computed(() =>
       <p v-if="item.triage_reason" class="reason">
         {{ t('board.reason', { reason: item.triage_reason }) }}
       </p>
+      <!-- Found at triage: the same news from another site. The person decides. -->
+      <p v-if="item.same_story" class="same-story">
+        {{ t('board.sameStory') }}
+        <RouterLink
+          :to="{
+            name: 'item',
+            params: { topicId: item.topic_id, itemId: item.same_story.item_id },
+          }"
+          >{{ t('board.sameStoryTitle', { title: item.same_story.title }) }}</RouterLink
+        >
+      </p>
 
       <div class="footer">
         <ul class="meta">
@@ -271,23 +282,16 @@ const actions = computed(() =>
   line-height: 1.3;
 }
 
-.title a {
-  color: var(--color-text);
-  text-decoration: underline;
-  text-decoration-color: var(--color-border-subtle);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.2em;
-}
-
-.title a:hover {
-  text-decoration-color: currentColor;
-}
-
 /* The AI's reason supports the title: quieter, still fully readable. */
-.reason {
+.reason,
+.same-story {
   margin: 0;
   font-size: 0.9375rem;
   color: var(--color-text-muted);
+}
+
+.same-story {
+  overflow-wrap: anywhere;
 }
 
 .meta {

@@ -37,23 +37,34 @@ export interface EngagementTopic {
  * respect: docs/engagement/brief.md). What the product is and what makes a
  * conversation worth joining are topic settings written by the user.
  */
-export function engagementSystemPrompt(topic: EngagementTopic): string {
-  const { product, engagement } = topic.config
-  const lang = topic.config.output_langs[0] ?? 'en'
+/** The product as the team describes it (topic settings), one field per line. */
+export function productBlock(
+  topic: EngagementTopic,
+  extra: { proofPoints?: boolean; disclosure?: boolean } = {},
+): string {
+  const { product } = topic.config
   const field = (label: string, value: string) =>
     value.trim() ? `\n${label}: ${value.trim()}` : ''
-  const productBlock =
+  return (
     [
       field('Name', product.name || topic.name_en),
       field('Website', product.url),
       field('What it is', product.description),
       field('Audience', product.audience),
       field('Messages', product.messages),
+      extra.proofPoints ? field('Verifiable facts', product.proof_points) : '',
       field('Never claim', product.claims_to_avoid),
+      extra.disclosure ? field('Disclosure sentence', product.disclosure) : '',
     ].join('') || `\nName: ${topic.name_en}`
+  )
+}
+
+export function engagementSystemPrompt(topic: EngagementTopic): string {
+  const { engagement } = topic.config
+  const lang = topic.config.output_langs[0] ?? 'en'
   return `You review public conversations (Hacker News, Bluesky) for the team behind a product. The team wants to join only the conversations where a reply from them would genuinely help the people in it. Nothing is ever posted automatically: a person reads your assessment, writes a reply and posts it themselves.
 
-# The product (set by the team)${productBlock}${engagement.criteria.trim() ? `\n\n# Conversations worth joining (set by the team)\n${engagement.criteria.trim()}` : ''}
+# The product (set by the team)${productBlock(topic)}${engagement.criteria.trim() ? `\n\n# Conversations worth joining (set by the team)\n${engagement.criteria.trim()}` : ''}
 
 # For each conversation, return
 - language: Language tag (ISO 639-1 code, region if useful) of the conversation.

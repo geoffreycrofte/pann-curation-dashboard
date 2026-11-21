@@ -41,6 +41,11 @@ export interface ConversationMeta {
   comments?: number
 }
 
+/** Community of a conversation, for the weekly limit of replies: its platform for now. */
+export function communityOf(meta: ConversationMeta): string {
+  return meta.platform ?? 'other'
+}
+
 /** What the engagement triage proposes for a conversation. */
 export const ENGAGEMENT_DECISIONS = ['reply', 'watch', 'skip'] as const
 export type EngagementDecision = (typeof ENGAGEMENT_DECISIONS)[number]
@@ -95,6 +100,8 @@ export interface BoardItem {
   validated_at: string | null
   /** Slot of the item in the diffusion queue. */
   publish_at: string | null
+  /** A recent item of the topic that reports the same story, found at triage (lists only). */
+  same_story?: { item_id: string; title: string } | null
 }
 
 /** A conversation of the engagement tool, as listed on its board. */
@@ -116,6 +123,12 @@ export interface Conversation {
   engagement_decision: EngagementDecision | null
   engagement_angle: string | null
   engagement_risk: EngagementRisk | null
+  /** Reply drafted by the AI on request; the person posts it themself. */
+  reply_draft: string | null
+  reply_status: 'none' | 'pending' | 'ready' | 'failed'
+  reply_error: string | null
+  /** When the person marked it as replied. */
+  replied_at: string | null
 }
 
 export interface Source {

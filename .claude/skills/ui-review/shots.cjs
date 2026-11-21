@@ -10,6 +10,7 @@ const config = {
   output_langs: ['fr', 'en'],
   modules: { curation: true, engagement: true, compose: true },
   compose: { mode: 'notes', posts_per_day: 1, slots: ['12:00'] },
+  engagement: { ...raw.engagement, weekly_replies: 3 },
   channels: [
     { channel: 'linkedin', account_id: 'li', langs: ['fr', 'en'] },
     { channel: 'bluesky', account_id: 'bs', langs: ['fr'] },
@@ -48,6 +49,10 @@ const item = (i, status) => {
     validated_at: status === 'validated' ? h(-5) : null,
     publish_at: null,
     kind,
+    same_story:
+      i === 4
+        ? { item_id: 'i1', title: 'WCAG 3.0 Working Draft: new conformance model explained' }
+        : null,
     item: {
       canonical_url: `https://example.org/${i}`,
       title,
@@ -84,6 +89,10 @@ const conv = (i) => ({
   engagement_decision: 'reply',
   engagement_angle: 'Partager une méthode de test en CI avec axe et Playwright.',
   engagement_risk: ['low', 'medium', 'high'][i % 3],
+  reply_draft: null,
+  reply_status: 'none',
+  reply_error: null,
+  replied_at: null,
 })
 const post = (id, channel, lang, status = 'draft') => ({
   id,
@@ -334,6 +343,8 @@ async function shoot(page, name, path, opts = {}) {
   if (opts.click) {
     // A handle, not a locator: the selector stops matching once the button is open.
     const target = await page.locator(opts.click).first().elementHandle()
+    // Instant scroll: a smooth one moves the button while the click is aimed at it.
+    await target.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }))
     await target.click()
     await page.waitForTimeout(300)
     await target.evaluate((el) => el.closest('section')?.scrollIntoView())
@@ -361,12 +372,20 @@ async function shoot(page, name, path, opts = {}) {
     ['item', '/t/t1/items/i1'],
     ['item-new', '/t/t1/items/i0'],
     ['engagement', '/t/t1/engagement'],
+    ['engagement-validated', '/t/t1/engagement?status=validated'],
+    ['engagement-published', '/t/t1/engagement?status=published'],
     ['compose', '/t/t1/compose'],
     ['calendar', '/t/t1/calendar'],
     ['calendar-week', '/t/t1/calendar?view=week'],
     ['calendar-week-later', '/t/t1/calendar?view=week', { laterMinutes: 180 }],
     ['settings-general', '/t/t1/settings'],
     ['settings-sources', '/t/t1/settings?tab=sources'],
+    ['settings-sources-conversations', '/t/t1/settings?tab=sources&sub=conversations'],
+    [
+      'settings-sources-help',
+      '/t/t1/settings?tab=sources&sub=conversations',
+      { click: 'button.help-tip', viewport: true },
+    ],
     ['settings-triage', '/t/t1/settings?tab=triage'],
     ['settings-publishing', '/t/t1/settings?tab=publishing'],
     ['settings-product', '/t/t1/settings?tab=product'],
@@ -437,12 +456,31 @@ async function shoot(page, name, path, opts = {}) {
               ? [6, 7].map((i) => item(i, 'validated'))
               : []
       }
-      if (p === '/api/topics/t1/conversations')
-        body = url.searchParams.get('status') === 'new' ? [0, 1, 2].map(conv) : []
+      if (p === '/api/topics/t1/conversations') {
+        const st = url.searchParams.get('status')
+        body =
+          st === 'new'
+            ? [0, 1, 2].map(conv)
+            : st === 'validated'
+              ? [
+                  {
+                    ...conv(0),
+                    status: 'validated',
+                    reply_status: 'ready',
+                    reply_draft:
+                      'Dans notre équipe, on lance axe-core dans Playwright à chaque PR : un test par parcours critique (connexion, panier, paiement), et on bloque la fusion sur les violations sérieuses. Le reste (clavier, lecteur d’écran) se vérifie à la main avant chaque version. Je travaille sur un outil d’audit, mais cette recette marche sans lui.',
+                  },
+                  { ...conv(1), status: 'validated' },
+                ]
+              : st === 'published'
+                ? [{ ...conv(2), status: 'published', replied_at: h(-26) }]
+                : []
+      }
+      if (p === '/api/topics/t1/conversations/replies-week') body = { hackernews: 3, bluesky: 1 }
       if (p === '/api/topics/t1/counts')
         body =
           url.searchParams.get('module') === 'engagement'
-            ? { new: 3, validated: 1, rejected: 2, archived: 0 }
+            ? { new: 3, validated: 2, published: 1, rejected: 2, archived: 0 }
             : { new: 6, validated: 2, rejected: 14, published: 9, archived: 3, scheduled: 2 }
       if (p === '/api/topics/t1/sources')
         body = url.searchParams.get('module') === 'engagement' ? [] : sources

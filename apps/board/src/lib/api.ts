@@ -622,6 +622,15 @@ export const api = {
   /** Conversations of the engagement tool with this status. */
   conversations: (topicId: string, status: ItemTopicStatus) =>
     request<Conversation[]>(`/topics/${topicId}/conversations?status=${status}`),
+  /** Replies marked in the last 7 days, per community (weekly limit). */
+  repliesThisWeek: (topicId: string) =>
+    request<Record<string, number>>(`/topics/${topicId}/conversations/replies-week`),
+  requestReply: (topicId: string, itemId: string) =>
+    request<{ reply_status: string }>(`/topics/${topicId}/conversations/${itemId}/reply`, {
+      method: 'POST',
+    }),
+  saveReply: (topicId: string, itemId: string, text: string) =>
+    request(`/topics/${topicId}/conversations/${itemId}/reply`, json('PATCH', { text })),
   addItem: (topicId: string, input: AddItemInput) =>
     request<AddItemResult>(`/topics/${topicId}/items`, json('POST', input)),
   setItemKind: (topicId: string, itemId: string, kind: string | null) =>

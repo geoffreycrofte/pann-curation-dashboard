@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Icon from '../components/Icon.vue'
 /**
  * "Adjust with the assistant": the same assistant as at creation, on an existing topic.
  * It knows the current settings and proposes changes; the person then sees each change
@@ -336,8 +337,16 @@ function quit() {
           </button>
           <button type="button" class="button" @click="restart">{{ t('adjust.restart') }}</button>
         </div>
-        <p v-if="applyError" :id="`${id}-apply-error`" class="error" role="alert" tabindex="-1">
-          {{ applyError }}
+        <p
+          v-if="applyError"
+          :id="`${id}-apply-error`"
+          class="notice notice-inline"
+          data-tone="danger"
+          role="alert"
+          tabindex="-1"
+        >
+          <Icon name="alert-circle" />
+          <span>{{ applyError }}</span>
         </p>
       </template>
       <template v-else>

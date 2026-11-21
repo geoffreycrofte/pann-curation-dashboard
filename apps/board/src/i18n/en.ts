@@ -50,6 +50,7 @@ export default {
     error: 'Not saved: {message}',
   },
   common: {
+    helpFor: 'Help: {label}',
     newTab: '(new tab)',
     save: 'Save',
     saving: 'Saving…',
@@ -1117,6 +1118,8 @@ export default {
     heading: 'News watch: {topic}',
     sourceLabel: '{site}: read the source of “{title}” (new tab)',
     reason: 'Analysis: {reason}',
+    sameStory: 'Same story as',
+    sameStoryTitle: '“{title}”',
     commercial: 'Promotional content',
     triagePending: 'Waiting for AI triage',
     noAnthropicKey:
@@ -1352,7 +1355,12 @@ export default {
   },
   sources: {
     tabsLabel: 'Source sections',
-    tabs: { sources: 'Sources', exclusions: 'Exclusions' },
+    tabs: {
+      sources: 'Sources',
+      curation: 'News watch sources',
+      conversations: 'Conversation sources',
+      exclusions: 'Exclusions',
+    },
     edit: 'Edit',
     editLabel: 'Edit “{label}”',
     query: 'Search',
@@ -1579,6 +1587,7 @@ export default {
     status: {
       new: 'To review',
       validated: 'To reply',
+      published: 'Replied',
       rejected: 'Dismissed',
       archived: 'Archived',
     },
@@ -1596,7 +1605,29 @@ export default {
       archived: 'No conversation archived by the triage.',
       published: 'No replied conversation.',
     },
-    actions: { toReply: 'To reply', dismiss: 'Dismiss', restore: 'Back to review' },
+    actions: {
+      toReply: 'To reply',
+      dismiss: 'Dismiss',
+      restore: 'Back to review',
+      markReplied: 'Mark as replied',
+      unmarkReplied: 'Back to reply',
+    },
+    reply: {
+      title: 'Suggested reply',
+      hint: 'Read it and adapt it: you are the one replying, from the conversation. Pann posts nothing.',
+      request: 'Suggest a reply',
+      again: 'Suggest another reply',
+      againConfirm: 'The current suggestion will be replaced.',
+      pending: 'Writing the reply…',
+      failed: 'The suggested reply failed: {message}',
+      copy: 'Copy the reply',
+      copied: 'Reply copied.',
+      copyFailed: 'Copy failed: select the text and copy it.',
+      length: '{count} of {limit} characters',
+    },
+    weekly: {
+      over: 'Already {count} replies on {platform} in the last 7 days, for a limit of {limit}. One more may look like promotion.',
+    },
     platforms: { hackernews: 'Hacker News', bluesky: 'Bluesky' },
     decisions: { reply: 'Reply', watch: 'Watch', skip: 'Skip' },
     risks: { low: 'Low risk', medium: 'Medium risk', high: 'High risk' },
@@ -1607,6 +1638,7 @@ export default {
     by: 'by {author}',
     points: '{n} point | {n} points',
     replies: '{n} reply | {n} replies',
+    repliedOn: 'Replied on {date}',
     sources: {
       title: 'Conversation sources',
       intro:
@@ -1621,7 +1653,9 @@ export default {
       },
       scope: 'Search in',
       scopes: { all: 'Stories and comments', stories: 'Stories only', comments: 'Comments only' },
-      minPoints: 'Minimum points of stories',
+      minPoints: 'Minimum points of a story',
+      minPointsHint:
+        'On Hacker News, points are the votes a story receives. At 0, Pann keeps every story; at 10, only those other readers have already noticed. Comments have no points: they are always kept.',
       lang: 'Language of the posts',
       langHint: 'Two-letter code, for example fr or en.',
       lastRun: 'Last collection: {date}',
@@ -1641,6 +1675,10 @@ export default {
       thresholdHint: 'Conversations rated below this threshold are archived.',
       maxAge: 'Maximum age (days)',
       maxAgeHint: 'Older discussions are not collected: a late reply rarely helps.',
+      weeklyLimit: 'Warn me past a number of replies per community',
+      weeklyLimitCount: 'Replies per community over 7 days',
+      weeklyLimitHint:
+        'A team that replies everywhere looks like advertising. Past this number, the conversation reminds you. Nothing is blocked.',
     },
   },
   addSource: {
@@ -1711,7 +1749,6 @@ export default {
       compose: 'Create',
       budget: 'Budget',
     },
-    curationSources: 'News watch sources',
     criteria: 'Relevance criteria',
     criteriaHint:
       'Describe what makes an item useful for this topic: subjects, standards, audiences, what to leave out. The AI uses it to score each item.',
@@ -1740,6 +1777,7 @@ export default {
     cost: 'Cost',
     operations: {
       engagement_triage: 'Conversation triage',
+      engagement_reply: 'Conversation replies',
       rewrite: 'AI rewrite',
       triage: 'AI triage',
       draft: 'AI drafting',

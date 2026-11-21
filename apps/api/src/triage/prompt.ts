@@ -2,7 +2,10 @@ import { langName, type TopicConfig } from '@pann/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes, to compare and re-run. Stored with each triage. */
-export const TRIAGE_PROMPT_VERSION = 'triage-v3'
+export const TRIAGE_PROMPT_VERSION = 'triage-v4'
+
+/** Recent items of the topic shown to the model, to spot the same story told twice. */
+export const TRIAGE_RECENT_ITEMS = 40
 
 /** Characters of content sent to the model: triage does not need the whole article. */
 export const TRIAGE_CONTENT_CHARS = 6000
@@ -19,6 +22,10 @@ export function triageOutputSchema(kindKeys: readonly string[]) {
     relevance: z.number().int().describe('0 to 100'),
     commercial: z.boolean(),
     reason: z.string().describe('One short sentence explaining the score'),
+    same_story_as: z
+      .number()
+      .int()
+      .describe('Number of the recent item that reports the same story, or 0 when none'),
   })
 }
 export type TriageOutput = z.infer<ReturnType<typeof triageOutputSchema>>
@@ -52,6 +59,7 @@ ${kinds}
   0-19: unrelated, empty, or spam.
 - commercial: true when the item mainly promotes its author's product or service (sales page, advertorial, webinar pitch); false for neutral news, documentation or open-source tools.
 - reason: one short sentence explaining the score.
+- same_story_as: the number of a recent item of the topic (listed after the content) that reports the same story: the same news, release or event, told by another site or in other words. A different article on the same general subject is not the same story. 0 when none, or when no recent item is listed.
 
 Judge only from the content provided, never from memory. If the content is missing or too short, judge from the title and URL and lower the relevance. Lower the relevance of commercial items unless they announce a substantial new tool or fact.
 Write the reason in ${langName(lang, 'en')}.`
@@ -62,6 +70,8 @@ export interface TriageItem {
   canonical_url: string
   published_at: string | null
   fetched_content: string | null
+  /** Recent items of the same topic, numbered from 1 in the message. */
+  recent?: { item_id: string; title: string }[]
 }
 
 export function triageUserMessage(item: TriageItem): string {
@@ -73,6 +83,9 @@ export function triageUserMessage(item: TriageItem): string {
     '',
     'Content:',
     content || '(no content available)',
+    ...(item.recent?.length
+      ? ['', 'Recent items of the topic:', ...item.recent.map((r, i) => `${i + 1}. ${r.title}`)]
+      : []),
   ]
     .filter((line) => line !== null)
     .join('\n')

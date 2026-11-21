@@ -23,7 +23,15 @@ watch(usage, (value) => {
 
 const usd = (value: number) =>
   n(value, { style: 'currency', currency: 'USD', maximumFractionDigits: value < 1 ? 4 : 2 })
-const operations = ['triage', 'draft', 'search', 'other', 'rewrite', 'engagement_triage']
+const operations = [
+  'triage',
+  'draft',
+  'search',
+  'other',
+  'rewrite',
+  'engagement_triage',
+  'engagement_reply',
+]
 const label = (operation: string) =>
   t(`settings.operations.${operations.includes(operation) ? operation : 'other'}`)
 const ratio = computed(() =>

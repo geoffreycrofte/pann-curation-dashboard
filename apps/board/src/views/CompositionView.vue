@@ -633,8 +633,14 @@ usePageDetail(() =>
         </button>
       </div>
       <div class="state-more">
-        <p v-if="composition.draft_status === 'failed'" class="error" role="alert">
-          {{ describeError(composition.draft_error ?? 'unexpected', t).text }}
+        <p
+          v-if="composition.draft_status === 'failed'"
+          class="notice notice-inline"
+          data-tone="danger"
+          role="alert"
+        >
+          <Icon name="alert-circle" />
+          <span>{{ describeError(composition.draft_error ?? 'unexpected', t).text }}</span>
         </p>
         <p v-if="!readonly" :id="`${id}-drafting-hint`" class="hint">
           {{ posts.length ? t('compose.posts.redraftHint') : t('compose.posts.firstHint') }}

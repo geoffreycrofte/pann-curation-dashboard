@@ -22,3 +22,13 @@ describe('canTransition', () => {
     expect(canTransition('validated', 'published')).toBe(false)
   })
 })
+
+describe('conversations', () => {
+  it('can be marked as replied, and taken back, only in the engagement tool', () => {
+    expect(canTransition('validated', 'published', 'engagement')).toBe(true)
+    expect(canTransition('published', 'validated', 'engagement')).toBe(true)
+    expect(canTransition('new', 'published', 'engagement')).toBe(false)
+    expect(canTransition('validated', 'published')).toBe(false)
+    expect(canTransition('published', 'validated', 'curation')).toBe(false)
+  })
+})

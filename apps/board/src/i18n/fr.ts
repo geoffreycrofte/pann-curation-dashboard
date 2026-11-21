@@ -49,6 +49,7 @@ export default {
     error: 'Non enregistré : {message}',
   },
   common: {
+    helpFor: 'Aide : {label}',
     newTab: '(nouvel onglet)',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
@@ -1134,6 +1135,8 @@ export default {
     heading: 'Veille : {topic}',
     sourceLabel: '{site} : lire la source de « {title} » (nouvel onglet)',
     reason: 'Analyse : {reason}',
+    sameStory: 'Même sujet que',
+    sameStoryTitle: '« {title} »',
     commercial: 'Contenu promotionnel',
     triagePending: 'En attente du tri IA',
     noAnthropicKey:
@@ -1370,7 +1373,12 @@ export default {
   },
   sources: {
     tabsLabel: 'Sections des sources',
-    tabs: { sources: 'Sources', exclusions: 'Exclusions' },
+    tabs: {
+      sources: 'Sources',
+      curation: 'Sources de la veille',
+      conversations: 'Sources des conversations',
+      exclusions: 'Exclusions',
+    },
     edit: 'Modifier',
     editLabel: 'Modifier « {label} »',
     query: 'Recherche',
@@ -1601,6 +1609,7 @@ export default {
     status: {
       new: 'À examiner',
       validated: 'À répondre',
+      published: 'Répondues',
       rejected: 'Écartées',
       archived: 'Archivées',
     },
@@ -1618,7 +1627,29 @@ export default {
       archived: 'Aucune conversation archivée par le tri.',
       published: 'Aucune conversation répondue.',
     },
-    actions: { toReply: 'À répondre', dismiss: 'Écarter', restore: 'Remettre à examiner' },
+    actions: {
+      toReply: 'À répondre',
+      dismiss: 'Écarter',
+      restore: 'Remettre à examiner',
+      markReplied: 'Marquer comme répondu',
+      unmarkReplied: 'Remettre à répondre',
+    },
+    reply: {
+      title: 'Proposition de réponse',
+      hint: 'Relisez-la et adaptez-la : c’est vous qui répondez, depuis la conversation. Pann ne publie rien.',
+      request: 'Proposer une réponse',
+      again: 'Proposer une autre réponse',
+      againConfirm: 'La proposition actuelle sera remplacée.',
+      pending: 'Rédaction de la réponse en cours…',
+      failed: 'La proposition de réponse a échoué : {message}',
+      copy: 'Copier la réponse',
+      copied: 'Réponse copiée.',
+      copyFailed: 'La copie a échoué : sélectionnez le texte et copiez-le.',
+      length: '{count} sur {limit} caractères',
+    },
+    weekly: {
+      over: 'Déjà {count} réponses sur {platform} ces 7 derniers jours, pour une limite de {limit}. Une réponse de plus risque de passer pour de la promotion.',
+    },
     platforms: { hackernews: 'Hacker News', bluesky: 'Bluesky' },
     decisions: { reply: 'Répondre', watch: 'Surveiller', skip: 'Passer' },
     risks: { low: 'Risque faible', medium: 'Risque moyen', high: 'Risque élevé' },
@@ -1629,6 +1660,7 @@ export default {
     by: 'par {author}',
     points: '{n} point | {n} points',
     replies: '{n} réponse | {n} réponses',
+    repliedOn: 'Répondu le {date}',
     sources: {
       title: 'Sources de conversations',
       intro:
@@ -1647,7 +1679,9 @@ export default {
         stories: 'Sujets seulement',
         comments: 'Commentaires seulement',
       },
-      minPoints: 'Points minimum des sujets',
+      minPoints: 'Points minimum d’un sujet',
+      minPointsHint:
+        'Sur Hacker News, les points sont les votes reçus par un sujet. À 0, Pann garde tous les sujets ; à 10, seulement ceux que d’autres lecteurs ont déjà remarqués. Les commentaires n’ont pas de points : ils sont toujours gardés.',
       lang: 'Langue des posts',
       langHint: 'Code à deux lettres, par exemple fr ou en.',
       lastRun: 'Dernière collecte : {date}',
@@ -1670,6 +1704,10 @@ export default {
       maxAge: 'Ancienneté maximale (jours)',
       maxAgeHint:
         'Les discussions plus anciennes ne sont pas collectées : une réponse tardive aide rarement.',
+      weeklyLimit: 'Me prévenir au-delà d’un nombre de réponses par communauté',
+      weeklyLimitCount: 'Réponses par communauté sur 7 jours',
+      weeklyLimitHint:
+        'Une équipe qui répond partout passe pour de la publicité. Au-delà de ce nombre, la conversation vous le rappelle. Rien n’est bloqué.',
     },
   },
   addSource: {
@@ -1740,7 +1778,6 @@ export default {
       compose: 'Création',
       budget: 'Budget',
     },
-    curationSources: 'Sources de la veille',
     criteria: 'Critères de pertinence',
     criteriaHint:
       'Décrivez ce qui rend un élément utile pour ce thème : sujets, normes, publics, ce qu’il faut écarter. L’IA s’en sert pour noter chaque élément.',
@@ -1770,6 +1807,7 @@ export default {
     cost: 'Coût',
     operations: {
       engagement_triage: 'Tri des conversations',
+      engagement_reply: 'Réponses aux conversations',
       rewrite: 'Réécriture par IA',
       triage: 'Tri par IA',
       draft: 'Rédaction par IA',

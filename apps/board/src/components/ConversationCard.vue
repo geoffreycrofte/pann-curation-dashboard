@@ -3,9 +3,17 @@ import { canTransition, type Conversation, type ItemTopicStatus } from '@pann/sh
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ComposeFromIdea from './compose/ComposeFromIdea.vue'
+import Icon from './Icon.vue'
+import ReplyDraft from './ReplyDraft.vue'
 
 /** A conversation to join (or not). Pann never posts: the link opens it to reply. */
-const props = defineProps<{ conversation: Conversation; busy: boolean }>()
+const props = defineProps<{
+  conversation: Conversation
+  busy: boolean
+  /** Replies marked in its community over 7 days, and the topic limit (null: none). */
+  weekCount?: number
+  weekLimit?: number | null
+}>()
 const emit = defineEmits<{ setStatus: [status: ItemTopicStatus] }>()
 const { t, d } = useI18n()
 
@@ -26,11 +34,26 @@ const level = computed(() => {
 const actions = computed(() =>
   (
     [
+      { to: 'published', label: 'engagement.actions.markReplied', variant: 'primary' },
       { to: 'validated', label: 'engagement.actions.toReply', variant: 'primary' },
       { to: 'rejected', label: 'engagement.actions.dismiss', variant: undefined },
       { to: 'new', label: 'engagement.actions.restore', variant: undefined },
+      { to: 'validated', label: 'engagement.actions.unmarkReplied', variant: undefined },
     ] as const
-  ).filter((a) => canTransition(c.value.status, a.to)),
+  )
+    // "To reply" from a replied conversation is "Back to reply", said once.
+    .filter((a) => !(c.value.status === 'published' && a.label === 'engagement.actions.toReply'))
+    .filter(
+      (a) => !(c.value.status !== 'published' && a.label === 'engagement.actions.unmarkReplied'),
+    )
+    .filter((a) => canTransition(c.value.status, a.to, 'engagement')),
+)
+/** Past the weekly limit of its community: a reminder before replying again. */
+const overLimit = computed(
+  () =>
+    c.value.status !== 'published' &&
+    props.weekLimit != null &&
+    (props.weekCount ?? 0) >= props.weekLimit,
 )
 </script>
 
@@ -96,6 +119,19 @@ const actions = computed(() =>
       <p v-if="c.triage_reason" class="reason">
         {{ t('board.reason', { reason: c.triage_reason }) }}
       </p>
+      <p v-if="overLimit" class="notice notice-inline">
+        <Icon name="alert-circle" />
+        <span>{{
+          t('engagement.weekly.over', {
+            count: weekCount,
+            limit: weekLimit,
+            platform: c.meta.platform ? t(`engagement.platforms.${c.meta.platform}`) : '',
+          })
+        }}</span>
+      </p>
+
+      <!-- Once the person chose to reply: a suggestion to adapt, never posted by Pann. -->
+      <ReplyDraft v-if="c.status === 'validated'" :conversation="c" />
 
       <div class="footer">
         <ul class="meta">
@@ -112,6 +148,13 @@ const actions = computed(() =>
           </li>
           <li v-if="c.meta.points != null">{{ t('engagement.points', c.meta.points) }}</li>
           <li v-if="c.meta.comments != null">{{ t('engagement.replies', c.meta.comments) }}</li>
+          <li v-if="c.replied_at">
+            {{
+              t('engagement.repliedOn', {
+                date: d(new Date(c.replied_at), { dateStyle: 'medium' }),
+              })
+            }}
+          </li>
         </ul>
 
         <div
@@ -224,18 +267,6 @@ const actions = computed(() =>
   margin: 0;
   font-size: 1.1875rem;
   line-height: 1.3;
-}
-
-.title a {
-  color: var(--color-text);
-  text-decoration: underline;
-  text-decoration-color: var(--color-border-subtle);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.2em;
-}
-
-.title a:hover {
-  text-decoration-color: currentColor;
 }
 
 .angle,

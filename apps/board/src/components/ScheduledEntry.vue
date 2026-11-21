@@ -88,8 +88,9 @@ const at = computed(() => props.entry?.publish_at ?? props.composition?.publish_
         >
       </li>
     </ul>
-    <p v-for="post in failed" :key="post.id" class="error">
-      {{ describeError(post.last_error ?? '', t).text }}
+    <p v-for="post in failed" :key="post.id" class="notice notice-inline" data-tone="danger">
+      <Icon name="alert-circle" />
+      <span>{{ describeError(post.last_error ?? '', t).text }}</span>
     </p>
   </article>
 </template>
@@ -148,7 +149,7 @@ const at = computed(() => props.entry?.publish_at ?? props.composition?.publish_
   max-width: 100%;
 }
 
-.entry[data-compact] .error {
+.entry[data-compact] .notice {
   font-size: 0.8125rem;
   overflow-wrap: anywhere;
 }
@@ -170,9 +171,5 @@ const at = computed(() => props.entry?.publish_at ?? props.composition?.publish_
 
 .badge abbr {
   text-decoration: none;
-}
-
-.error {
-  font-size: 0.875rem;
 }
 </style>

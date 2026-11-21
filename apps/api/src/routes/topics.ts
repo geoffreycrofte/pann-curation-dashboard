@@ -13,10 +13,13 @@ import {
   kindSchema,
   topicConfigSchema,
   TOPIC_MODULES,
+  type TopicModule,
   SOURCE_TEXT_MAX,
   FIRST_COMMENT_MAX,
   SOURCE_TEXT_MIN,
   type ItemTopicStatus,
+  communityOf,
+  type ConversationMeta,
 } from '@pann/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -25,6 +28,7 @@ import type { AppEnv } from '../env'
 import { fetchText } from '../lib/fetch-text'
 import { checkKind, kindKey } from '../lib/kinds'
 import { rewriteRequestSchema } from '../rewrite/prompt'
+import { REPLY_MAX_CHARS } from '../engagement/reply'
 import { parseJson } from '../lib/validation'
 
 const TOPIC_COLUMNS = 'id, workspace_id, slug, name_fr, name_en, active, monthly_budget_usd'
@@ -46,6 +50,10 @@ interface ConversationRow {
   engagement_decision: string | null
   engagement_angle: string | null
   engagement_risk: string | null
+  reply_draft: string | null
+  reply_status: string
+  reply_error: string | null
+  replied_at: string | null
   item: {
     canonical_url: string
     title: string
@@ -489,15 +497,19 @@ export const topics = new Hono<AppEnv>()
     const query = listQuery.safeParse(c.req.query())
     if (!query.success) throw new HTTPException(400, { message: z.prettifyError(query.error) })
     const { status, limit, offset } = query.data
-    const { data, error } = await c.var.db
+    let request = c.var.db
       .from('item_topics')
       .select(
         'item_id, topic_id, status, relevance_score, triage_reason, engagement_decision, engagement_angle, engagement_risk, ' +
+          'reply_draft, reply_status, reply_error, replied_at, ' +
           'item:items (canonical_url, title, fetched_content, source_lang, published_at, discovered_at, meta)',
       )
       .eq('topic_id', c.req.param('topicId'))
       .eq('module', 'engagement')
       .eq('status', status)
+    // Replied: the latest reply first.
+    if (status === 'published') request = request.order('replied_at', { ascending: false })
+    const { data, error } = await request
       .order('relevance_score', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       // Items of one collection share created_at (one transaction): a unique last key keeps
@@ -520,6 +532,61 @@ export const topics = new Hono<AppEnv>()
     )
   })
 
+  /** Replies marked in the last 7 days, per community: the board warns past the limit. */
+  .get('/:topicId/conversations/replies-week', async (c) => {
+    const since = new Date(Date.now() - 7 * 86400_000).toISOString()
+    const { data, error } = await c.var.db
+      .from('item_topics')
+      .select('item:items (meta)')
+      .eq('topic_id', c.req.param('topicId'))
+      .eq('module', 'engagement')
+      .eq('status', 'published')
+      .gte('replied_at', since)
+      .returns<{ item: { meta: ConversationMeta | null } }[]>()
+    if (error) throw error
+    const counts: Record<string, number> = {}
+    for (const row of data) {
+      const community = communityOf(row.item.meta ?? {})
+      counts[community] = (counts[community] ?? 0) + 1
+    }
+    return c.json(counts)
+  })
+
+  /**
+   * A reply drafted by the AI. The function checks access (RLS helper) and marks it
+   * pending; the job writes it with the secret key.
+   */
+  .post('/:topicId/conversations/:itemId/reply', async (c) => {
+    const { topicId, itemId } = c.req.param()
+    const { error } = await c.var.db.rpc('request_reply_draft', {
+      p_topic_id: topicId,
+      p_item_id: itemId,
+    })
+    if (error) {
+      if (error.code === 'P0002' || error.code === '42501')
+        throw new HTTPException(404, { message: 'Conversation not found' })
+      throw error
+    }
+    await c.env.JOBS.send({ type: 'engagement-reply', topicId, itemId })
+    return c.json({ reply_status: 'pending' }, 202)
+  })
+
+  /** The person's changes to the drafted reply (saved as they type). */
+  .patch('/:topicId/conversations/:itemId/reply', async (c) => {
+    const body = await parseJson(z.object({ text: z.string().max(REPLY_MAX_CHARS) }), c.req.raw)
+    const { data, error } = await c.var.db
+      .from('item_topics')
+      .update({ reply_draft: body.text })
+      .eq('topic_id', c.req.param('topicId'))
+      .eq('item_id', c.req.param('itemId'))
+      .eq('module', 'engagement')
+      .select('item_id, reply_draft')
+      .maybeSingle()
+    if (error) throw error
+    if (!data) throw new HTTPException(404, { message: 'Conversation not found' })
+    return c.json(data)
+  })
+
   .get('/:topicId/items', async (c) => {
     const query = listQuery.safeParse(c.req.query())
     if (!query.success) throw new HTTPException(400, { message: z.prettifyError(query.error) })
@@ -529,7 +596,7 @@ export const topics = new Hono<AppEnv>()
     let request = c.var.db
       .from('item_topics')
       .select(
-        'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, publish_at, kind, ' +
+        'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, status, validated_at, publish_at, kind, same_story_of, ' +
           'item:items (canonical_url, title, source_lang, origin, published_at, discovered_at)',
       )
       .eq('topic_id', topicId)
@@ -547,8 +614,28 @@ export const topics = new Hono<AppEnv>()
       // ties in a stable order, across refreshes and pages.
       .order('item_id')
       .range(offset, offset + limit - 1)
+      .returns<({ same_story_of: string | null } & Record<string, unknown>)[]>()
     if (error) throw error
-    return c.json(data)
+    // The same story found at triage: its title, to name it on the card.
+    const ids = [...new Set(data.map((row) => row.same_story_of).filter((id) => id !== null))]
+    const titles = new Map<string, string>()
+    if (ids.length) {
+      const { data: rows, error: titleError } = await c.var.db
+        .from('items')
+        .select('id, title')
+        .in('id', ids)
+      if (titleError) throw titleError
+      for (const row of rows) titles.set(row.id, row.title)
+    }
+    return c.json(
+      data.map(({ same_story_of, ...row }) => ({
+        ...row,
+        same_story:
+          same_story_of && titles.has(same_story_of)
+            ? { item_id: same_story_of, title: titles.get(same_story_of)! }
+            : null,
+      })),
+    )
   })
 
   /**
@@ -763,7 +850,7 @@ export const topics = new Hono<AppEnv>()
       .maybeSingle<{ status: ItemTopicStatus; module: string }>()
     if (readError) throw readError
     if (!current) throw new HTTPException(404, { message: 'Item not found in this topic' })
-    if (!canTransition(current.status, target)) {
+    if (!canTransition(current.status, target, current.module as TopicModule)) {
       throw new HTTPException(409, { message: `Cannot go from ${current.status} to ${target}` })
     }
 

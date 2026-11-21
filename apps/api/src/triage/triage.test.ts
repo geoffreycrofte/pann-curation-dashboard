@@ -59,6 +59,7 @@ describe('triage', () => {
         relevance: user.includes('/a') ? 87 : 12,
         commercial: false,
         reason: 'Reason',
+        same_story_as: 0,
       },
     })
     const report = await triage({ store, model })
@@ -83,7 +84,14 @@ describe('triage', () => {
       return {
         ok: true,
         usage,
-        output: { language: 'en', kind: 'news', relevance: 70, commercial: false, reason: 'r' },
+        output: {
+          language: 'en',
+          kind: 'news',
+          relevance: 70,
+          commercial: false,
+          reason: 'r',
+          same_story_as: 0,
+        },
       }
     }
     const report = await triage({ store, model })
@@ -130,7 +138,16 @@ describe('decide', () => {
       kind: null,
       language: 'fr',
       archived: false,
+      same_story_of: null,
     })
+  })
+
+  it('links the same story to the recent item it names, and nothing else', () => {
+    const recent = [{ item_id: 'x' }, { item_id: 'y' }]
+    const output = { relevance: 60, commercial: false, reason: 'r', kind: 'news', language: 'en' }
+    expect(decide({ ...output, same_story_as: 2 }, config, recent).same_story_of).toBe('y')
+    expect(decide({ ...output, same_story_as: 0 }, config, recent).same_story_of).toBeNull()
+    expect(decide({ ...output, same_story_as: 3 }, config, recent).same_story_of).toBeNull()
   })
 })
 
@@ -164,5 +181,16 @@ describe('prompt', () => {
     const message = triageUserMessage(item('a'))
     expect(message).toContain('URL: https://example.org/a')
     expect(message.length).toBeLessThan(6200)
+  })
+
+  it('numbers the recent items of the topic after the content', () => {
+    const message = triageUserMessage({
+      ...item('a'),
+      recent: [
+        { item_id: 'x', title: 'First story' },
+        { item_id: 'y', title: 'Second story' },
+      ],
+    })
+    expect(message).toContain('Recent items of the topic:\n1. First story\n2. Second story')
   })
 })

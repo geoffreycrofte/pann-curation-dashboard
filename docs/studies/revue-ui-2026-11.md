@@ -1,6 +1,6 @@
 # Revue d'ergonomie et de style du board (2026-11-21)
 
-Revue page par page des captures (ordinateur et mobile, données simulées), avec le skill `.claude/skills/ui-review`. Fait dans la même passe : Veille (liste) et fiche d'un élément. Le reste est à reprendre vue par vue.
+Revue page par page des captures (ordinateur et mobile, données simulées), avec le skill `.claude/skills/ui-review`. Toutes les vues ont été reprises (détail plus bas) ; les constats transverses sont réglés.
 
 ## Ce qui marche
 
@@ -12,17 +12,17 @@ Revue page par page des captures (ordinateur et mobile, données simulées), ave
 
 ## Constats transverses
 
-| Sévérité | Constat                                                                                                                     | Correction                                                                                   |
-| -------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Haute    | Trop de boutons dorés : un par carte dans les listes, par section dans les réglages. Plus rien ne ressort.                  | Un `primary` par vue ou par formulaire. Dans les listes, `data-size="small"`.                |
-| Haute    | Tuiles de score et liserés de carte différents entre Veille, Conversations et Création.                                     | Un même motif de carte (liseré du type de contenu) et un seul style de score.                |
-| Haute    | Aides éloignées de leur champ (Diffusion > LinkedIn, Tri > types).                                                          | Une `.hint` sous chaque champ, reliée par `aria-describedby`.                                |
-| Moyenne  | Titres de section construits de trois façons (`legend` à cheval sur la bordure, `h2` dans la carte, `h2` hors de la carte). | Titre visible dans la carte, `legend` masquée visuellement.                                  |
-| Moyenne  | « Supprimer », « Retirer ce type », « Supprimer la clé » ont l'air de boutons neutres.                                      | `data-variant="danger"`, en fin de rangée.                                                   |
-| Moyenne  | Erreurs et états de clé affichés de façons différentes (texte rouge gras ou maigre, lien vert, texte seul).                 | Badges `data-tone` avec point pour les états. Pour les erreurs, une `.notice` de ton danger. |
-| Moyenne  | Liens pas toujours soulignés (« Où trouver cette clé ? »). Titres de carte soulignés sur certaines pages, pas sur d'autres. | Souligner tout lien en ligne. Une règle unique pour les titres de carte.                     |
-| Basse    | Boutons « Enregistrer » grisés tant que rien n'a changé : peu lisibles, sans explication.                                   | Tranché : enregistrement automatique des textes, avec « Enregistré ». Fait.                  |
-| Basse    | Largeurs de page variables (Profil, Connexions, le reste).                                                                  | Une ou deux largeurs de contenu, en tokens.                                                  |
+| Sévérité | Constat                                                                                                                     | Correction                                                                                         |
+| -------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Haute    | Trop de boutons dorés : un par carte dans les listes, par section dans les réglages. Plus rien ne ressort.                  | Un `primary` par vue ou par formulaire. Dans les listes, `data-size="small"`. Fait.                |
+| Haute    | Tuiles de score et liserés de carte différents entre Veille, Conversations et Création.                                     | Un même motif de carte (liseré du type de contenu) et un seul style de score. Fait.                |
+| Haute    | Aides éloignées de leur champ (Diffusion > LinkedIn, Tri > types).                                                          | Une `.hint` sous chaque champ, reliée par `aria-describedby`. Fait.                                |
+| Moyenne  | Titres de section construits de trois façons (`legend` à cheval sur la bordure, `h2` dans la carte, `h2` hors de la carte). | Titre visible dans la carte, `legend` masquée visuellement. Fait.                                  |
+| Moyenne  | « Supprimer », « Retirer ce type », « Supprimer la clé » ont l'air de boutons neutres.                                      | `data-variant="danger"`, en fin de rangée. Fait.                                                   |
+| Moyenne  | Erreurs et états de clé affichés de façons différentes (texte rouge gras ou maigre, lien vert, texte seul).                 | Badges `data-tone` avec point pour les états. Pour les erreurs, une `.notice` de ton danger. Fait. |
+| Moyenne  | Liens pas toujours soulignés (« Où trouver cette clé ? »). Titres de carte soulignés sur certaines pages, pas sur d'autres. | Souligner tout lien en ligne. Une règle unique pour les titres de carte. Fait.                     |
+| Basse    | Boutons « Enregistrer » grisés tant que rien n'a changé : peu lisibles, sans explication.                                   | Tranché : enregistrement automatique des textes, avec « Enregistré ». Fait.                        |
+| Basse    | Largeurs de page variables (Profil, Connexions, le reste).                                                                  | Une ou deux largeurs de contenu, en tokens. Fait.                                                  |
 
 ## Par page (à reprendre)
 
@@ -116,3 +116,6 @@ Revue page par page des captures (ordinateur et mobile, données simulées), ave
 - **Sous-formulaires** : leur « Enregistrer » est petit et doré (renommage de l’espace, éditeur de source).
 - **Connexions** : plus de « Remplacer la clé » ; changer de clé, c’est la supprimer puis en donner une nouvelle (le champ prend le focus). La suppression est un bouton icône rond (disque rouge clair, corbeille rouge) au bout de la ligne « Se termine par », motif `.icon-button` dans `base.css`.
 - **Éditeur de Création** : « Sujet et matière » se replie une fois les posts rédigés, en une ligne (sujet, point de départ, réseaux) avec « Modifier ».
+- **Titres de carte** : une seule règle (`.title > a` dans `base.css`) pour la Veille, les Conversations, Création, le Calendrier et l’historique : souligné discret, plein au survol.
+- **Erreurs d’action** (échec d’une rédaction, d’un envoi, d’un enregistrement) : `.notice` de ton danger avec icône partout ; le texte rouge seul reste réservé aux erreurs d’un champ, sous ce champ.
+- **Sources** (remarques de Geoffrey) : trois sous-onglets, « Sources de la veille », « Sources des conversations », « Exclusions » (`?sub=`) ; les sources des conversations ne s’affichent plus sous celles de la veille. « Ajouter des sources » depuis Conversations mène à leur onglet. « Points minimum d’un sujet » a un bouton d’aide (?) à côté de son libellé (`HelpTip`) : l’explication, trop longue pour rester sous le champ, s’ouvre dans une bulle au clic, au toucher ou au clavier, se ferme avec Échap. Sur mobile, la rangée de sous-onglets défile au lieu d’élargir la page.

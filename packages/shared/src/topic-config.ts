@@ -148,6 +148,11 @@ export const topicConfigSchema = z.object({
       max_age_days: z.number().int().min(1).max(90).default(14),
       /** Same as `collection.pause_above`, for the conversations to sort. */
       pause_above: backlogLimit,
+      /**
+       * Replies per community and per rolling week before the board warns: a team that
+       * answers everywhere looks like spam. Null: no limit. Only a warning, never a block.
+       */
+      weekly_replies: z.number().int().min(1).max(50).nullable().default(3),
     })
     .prefault({}),
   kinds: z

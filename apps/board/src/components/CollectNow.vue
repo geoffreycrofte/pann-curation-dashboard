@@ -29,6 +29,12 @@ const { data: sources, isPending } = useQuery({
   query: () => api.sources(props.topicId, props.module),
 })
 const active = computed(() => (sources.value ?? []).filter((s) => s.active))
+/** The sources of this tool: its own sub-tab in the settings (conversations apart). */
+const sourcesLink = computed(() => ({
+  name: 'settings',
+  params: { topicId: props.topicId },
+  query: { tab: 'sources', ...(props.module === 'engagement' ? { sub: 'conversations' } : {}) },
+}))
 const paused = computed(() => topic.value?.active === false)
 
 function pending(source: Source): boolean {
@@ -138,11 +144,7 @@ watch(
     </template>
     <template v-else-if="!active.length">
       <p>{{ t(`collect.noSources.${module}`) }}</p>
-      <RouterLink
-        class="button"
-        data-size="small"
-        :to="{ name: 'settings', params: { topicId }, query: { tab: 'sources' } }"
-      >
+      <RouterLink class="button" data-size="small" :to="sourcesLink">
         <Icon name="plus" :size="16" />
         {{ t('collect.addSources') }}
       </RouterLink>
@@ -160,9 +162,7 @@ watch(
           <Icon name="refresh" :size="16" />
           {{ running ? t('collect.running') : t('collect.run') }}
         </button>
-        <RouterLink :to="{ name: 'settings', params: { topicId }, query: { tab: 'sources' } }">{{
-          t('collect.manageSources')
-        }}</RouterLink>
+        <RouterLink :to="sourcesLink">{{ t('collect.manageSources') }}</RouterLink>
       </div>
       <!-- Announced by the list (live region); shown here for everyone. -->
       <p v-if="message && !running" class="hint">{{ message }}</p>

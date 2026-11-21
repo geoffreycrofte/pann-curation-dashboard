@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Conversation, ItemTopicStatus } from '@pann/shared'
+import { communityOf, type Conversation, type ItemTopicStatus } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
-import { nextTick, ref } from 'vue'
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
 import CollectNow from './CollectNow.vue'
@@ -21,6 +21,34 @@ const {
   key: () => ['conversations', props.topicId, props.status],
   query: () => api.conversations(props.topicId, props.status),
 })
+
+// Same query as the page: the weekly limit of replies per community.
+const { data: topic } = useQuery({
+  key: () => ['topic', props.topicId],
+  query: () => api.topic(props.topicId),
+})
+// Under the 'conversations' key: marking a reply refreshes it.
+const { data: week } = useQuery({
+  key: () => ['conversations', props.topicId, 'week'],
+  query: () => api.repliesThisWeek(props.topicId),
+  enabled: () => props.status === 'new' || props.status === 'validated',
+})
+
+// A reply is drafted in the background: refresh while one of the list is being written.
+let poller: ReturnType<typeof setInterval> | undefined
+watch(conversations, (list) => {
+  const drafting = list?.some((c) => c.reply_status === 'pending')
+  if (drafting && !poller) {
+    poller = setInterval(
+      () => queryCache.invalidateQueries({ key: ['conversations', props.topicId, props.status] }),
+      3000,
+    )
+  } else if (!drafting && poller) {
+    clearInterval(poller)
+    poller = undefined
+  }
+})
+onBeforeUnmount(() => poller && clearInterval(poller))
 
 const { mutate, isLoading } = useMutation({
   mutation: (vars: { conversation: Conversation; to: ItemTopicStatus }) =>
@@ -66,6 +94,8 @@ const { mutate, isLoading } = useMutation({
         <ConversationCard
           :conversation="conversation"
           :busy="isLoading"
+          :week-count="week?.[communityOf(conversation.meta)] ?? 0"
+          :week-limit="topic?.config.engagement.weekly_replies ?? null"
           @set-status="(to) => mutate({ conversation, to })"
         />
       </li>

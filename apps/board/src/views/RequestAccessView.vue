@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Icon from '../components/Icon.vue'
 /**
  * Access request (sign-up stays on invitation): a person without an account says who
  * they are and why they want Pann; the admins receive it by email.
@@ -99,8 +100,9 @@ async function submit() {
           {{ state === 'sending' ? t('access.sending') : t('access.submit') }}
         </button>
       </div>
-      <p v-if="state === 'error'" role="alert" class="error">
-        {{ t('access.error', { message: errorMessage }) }}
+      <p v-if="state === 'error'" role="alert" class="notice notice-inline" data-tone="danger">
+        <Icon name="alert-circle" />
+        <span>{{ t('access.error', { message: errorMessage }) }}</span>
       </p>
     </form>
 
