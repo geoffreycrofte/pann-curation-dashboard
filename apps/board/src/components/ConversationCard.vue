@@ -15,6 +15,14 @@ const decisionTone = computed(
   () =>
     ({ reply: 'success', watch: 'accent', skip: undefined })[c.value.engagement_decision ?? 'skip'],
 )
+/** Visual level of the score tile, as on the news watch cards; the score is also text. */
+const level = computed(() => {
+  const score = c.value.relevance_score
+  if (score === null) return 'pending'
+  if (score >= 80) return 'high'
+  if (score >= 50) return 'mid'
+  return 'low'
+})
 const actions = computed(() =>
   (
     [
@@ -33,7 +41,7 @@ const actions = computed(() =>
     tabindex="-1"
     :data-item-id="c.item_id"
   >
-    <div class="score" aria-hidden="true">
+    <div class="score" :data-level="level" aria-hidden="true">
       <span class="score-value">{{ c.relevance_score ?? '…' }}</span>
       <span class="score-unit">{{ c.relevance_score === null ? 'IA' : '/100' }}</span>
     </div>
@@ -42,12 +50,20 @@ const actions = computed(() =>
         <li v-if="c.meta.platform" class="badge">
           {{ t(`engagement.platforms.${c.meta.platform}`) }}
         </li>
-        <li v-if="c.engagement_decision" class="badge" data-dot :data-tone="decisionTone">
+        <!-- "Reply" is what every conversation on show is for, and what the button says:
+             only the other advice (watch, skip) gets a badge. -->
+        <li
+          v-if="c.engagement_decision && c.engagement_decision !== 'reply'"
+          class="badge"
+          data-dot
+          :data-tone="decisionTone"
+        >
           {{ t(`engagement.decisions.${c.engagement_decision}`) }}
         </li>
         <li
           v-if="c.engagement_risk && c.engagement_risk !== 'low'"
           class="badge"
+          data-dot
           :data-tone="c.engagement_risk === 'high' ? 'danger' : 'accent'"
         >
           {{ t(`engagement.risks.${c.engagement_risk}`) }}
@@ -65,6 +81,11 @@ const actions = computed(() =>
           <span class="visually-hidden">{{ t('engagement.opensNewTab') }}</span>
         </a>
       </h2>
+
+      <!-- How to help leads; the start of the discussion follows, quieter and short. -->
+      <p v-if="c.engagement_angle" class="angle">
+        <strong>{{ t('engagement.angle') }}</strong> {{ c.engagement_angle }}
+      </p>
       <p
         v-if="c.excerpt && c.excerpt !== c.title"
         class="excerpt"
@@ -72,131 +93,214 @@ const actions = computed(() =>
       >
         {{ c.excerpt }}
       </p>
-
-      <p v-if="c.engagement_angle" class="angle">
-        <strong>{{ t('engagement.angle') }}</strong> {{ c.engagement_angle }}
-      </p>
       <p v-if="c.triage_reason" class="reason">
         {{ t('board.reason', { reason: c.triage_reason }) }}
       </p>
 
-      <ul class="meta">
-        <li :class="{ 'visually-hidden': c.relevance_score !== null }">
-          {{
-            c.relevance_score === null
-              ? t('engagement.pending')
-              : t('engagement.opportunity', { score: c.relevance_score })
-          }}
-        </li>
-        <li v-if="c.meta.author">{{ t('engagement.by', { author: c.meta.author }) }}</li>
-        <li v-if="c.published_at">
-          {{ d(new Date(c.published_at), { dateStyle: 'medium', timeStyle: 'short' }) }}
-        </li>
-        <li v-if="c.meta.points != null">{{ t('engagement.points', c.meta.points) }}</li>
-        <li v-if="c.meta.comments != null">{{ t('engagement.replies', c.meta.comments) }}</li>
-      </ul>
+      <div class="footer">
+        <ul class="meta">
+          <li :class="{ 'visually-hidden': c.relevance_score !== null }">
+            {{
+              c.relevance_score === null
+                ? t('engagement.pending')
+                : t('engagement.opportunity', { score: c.relevance_score })
+            }}
+          </li>
+          <li v-if="c.meta.author">{{ t('engagement.by', { author: c.meta.author }) }}</li>
+          <li v-if="c.published_at">
+            {{ d(new Date(c.published_at), { dateStyle: 'medium', timeStyle: 'short' }) }}
+          </li>
+          <li v-if="c.meta.points != null">{{ t('engagement.points', c.meta.points) }}</li>
+          <li v-if="c.meta.comments != null">{{ t('engagement.replies', c.meta.comments) }}</li>
+        </ul>
 
-      <div
-        v-if="actions.length || c.status === 'validated'"
-        class="actions"
-        role="group"
-        :aria-label="t('board.actions', { title: c.title })"
-      >
-        <button
-          v-for="action in actions"
-          :key="action.to"
-          type="button"
-          class="button"
-          :data-variant="action.variant"
-          :disabled="busy"
-          @click="emit('setStatus', action.to)"
+        <div
+          v-if="actions.length || c.status === 'validated'"
+          class="actions"
+          role="group"
+          :aria-label="t('board.actions', { title: c.title })"
         >
-          {{ t(action.label) }}
-        </button>
-        <!-- A question worth answering is often worth a post of its own. -->
-        <ComposeFromIdea
-          v-if="c.status === 'validated'"
-          :topic-id="c.topic_id"
-          :title="c.title"
-          :url="c.canonical_url"
-          :notes="c.engagement_angle ?? ''"
-        />
+          <button
+            v-for="action in actions"
+            :key="action.to"
+            type="button"
+            class="button"
+            data-size="small"
+            :data-variant="action.variant"
+            :disabled="busy"
+            @click="emit('setStatus', action.to)"
+          >
+            {{ t(action.label) }}
+          </button>
+          <!-- A question worth answering is often worth a post of its own. -->
+          <ComposeFromIdea
+            v-if="c.status === 'validated'"
+            :topic-id="c.topic_id"
+            :title="c.title"
+            :url="c.canonical_url"
+            :notes="c.engagement_angle ?? ''"
+          />
+        </div>
       </div>
     </div>
   </article>
 </template>
 
 <style scoped>
+/* A conversation: the teal edge of its content type, laid out like the news watch cards. */
 .conversation {
-  border-inline-start: 4px solid var(--color-kind-conversation);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--space-4);
-  padding: var(--space-5);
+  gap: var(--space-2) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border-inline-start: 4px solid var(--color-kind-conversation);
 }
 
+.conversation:focus-visible {
+  outline-offset: 3px;
+}
+
+/* Score tile: same levels as on the news watch cards. */
 .score {
-  display: grid;
-  place-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 4rem;
   height: 4rem;
-  border-radius: var(--radius);
-  background: var(--color-neutral-soft);
-  text-align: center;
-  line-height: 1.1;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-2);
+  color: var(--color-text);
 }
 
 .score-value {
   font-family: var(--font-display);
-  font-size: 1.375rem;
+  font-size: 1.5rem;
   font-weight: 800;
+  line-height: 1;
 }
 
 .score-unit {
   font-size: 0.75rem;
+  font-weight: 600;
   color: var(--color-text-muted);
+}
+
+.score[data-level='high'] {
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+}
+
+.score[data-level='high'] .score-unit {
+  color: var(--color-on-accent);
+}
+
+.score[data-level='mid'] {
+  background: var(--color-accent-soft);
+}
+
+.score[data-level='pending'] {
+  border: 1.5px dashed var(--color-border);
+  background: transparent;
 }
 
 .body {
   display: grid;
   gap: var(--space-2);
+  min-width: 0;
+}
+
+.badges,
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .title {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 1.1875rem;
+  line-height: 1.3;
 }
 
 .title a {
   color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-subtle);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
 }
 
-.excerpt,
+.title a:hover {
+  text-decoration-color: currentColor;
+}
+
 .angle,
+.excerpt,
 .reason {
   margin: 0;
 }
 
+/* The discussion as a short quote: two lines, the rest on the site. */
 .excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--color-border-subtle);
+  font-size: 0.9375rem;
   color: var(--color-text-muted);
   overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.reason {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
 }
 
 .meta {
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--space-1) var(--space-4);
-  margin: 0;
-  padding: 0;
-  list-style: none;
   font-size: 0.875rem;
   color: var(--color-text-muted);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-1);
+}
+
+@media (max-width: 36rem) {
+  .conversation {
+    grid-template-columns: 1fr;
+  }
+
+  .score {
+    flex-direction: row;
+    gap: var(--space-1);
+    width: auto;
+    height: auto;
+    padding: var(--space-1) var(--space-3);
+    justify-self: start;
+    border-radius: var(--radius-pill);
+  }
+
+  .score-value {
+    font-size: 1.125rem;
+  }
 }
 </style>
