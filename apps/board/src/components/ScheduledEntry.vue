@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { QueueItem } from '../lib/api'
+import type { CompositionSummary, QueueItem } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { contentLangName } from '../lib/langs'
 import Icon from './Icon.vue'
 
+/**
+ * One scheduled post in the Calendar: an item of the news watch (gold edge, its posts per
+ * network) or a post of Création (violet edge). The tool is also written next to the time.
+ */
 const props = defineProps<{
   topicId: string
-  entry: QueueItem
+  /** An item of the news watch, or else… */
+  entry?: QueueItem
+  /** …a post of Création. */
+  composition?: CompositionSummary
   /** Time of the slot, in the time zone of the topic (HH:MM). */
   time: string
   /** Compact: in a column of the week planning. */
@@ -17,16 +24,27 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const TONES = { scheduled: 'accent', sent: 'success', failed: 'danger' } as const
-const failed = computed(() => props.entry.posts.filter((p) => p.status === 'failed'))
+const failed = computed(() => props.entry?.posts.filter((p) => p.status === 'failed') ?? [])
+const at = computed(() => props.entry?.publish_at ?? props.composition?.publish_at ?? '')
 </script>
 
 <template>
-  <article class="card entry" :data-compact="compact || undefined">
+  <article
+    class="card entry"
+    :data-kind="composition ? 'creation' : 'publication'"
+    :data-compact="compact || undefined"
+  >
     <p class="time">
-      <Icon name="news" :size="16" class="kind" />
-      <time :datetime="entry.publish_at">{{ time }}</time>
+      <Icon :name="composition ? 'writing' : 'news'" :size="16" class="kind" />
+      <time :datetime="at">{{ time }}</time>
+      <span class="tool">{{ composition ? t('nav.compose') : t('nav.curation') }}</span>
     </p>
-    <h4 class="title">
+    <h4 v-if="composition" class="title">
+      <RouterLink :to="{ name: 'composition', params: { topicId, compositionId: composition.id } }">
+        {{ composition.subject || t('compose.untitled') }}
+      </RouterLink>
+    </h4>
+    <h4 v-else-if="entry" class="title">
       <RouterLink
         :to="{ name: 'item', params: { topicId, itemId: entry.item_id } }"
         :lang="entry.item.source_lang ?? undefined"
@@ -35,7 +53,7 @@ const failed = computed(() => props.entry.posts.filter((p) => p.status === 'fail
       </RouterLink>
     </h4>
     <ul
-      v-if="entry.posts.length"
+      v-if="entry?.posts.length"
       class="badges"
       :aria-label="t('diffusion.postsLabel', { title: entry.item.title })"
     >
@@ -93,6 +111,10 @@ const failed = computed(() => props.entry.posts.filter((p) => p.status === 'fail
   border-inline-start: 4px solid var(--color-kind-publication);
 }
 
+.entry[data-kind='creation'] {
+  border-inline-start-color: var(--color-kind-creation);
+}
+
 .time {
   display: flex;
   align-items: center;
@@ -133,6 +155,17 @@ const failed = computed(() => props.entry.posts.filter((p) => p.status === 'fail
 
 .kind {
   color: var(--color-kind-publication);
+}
+
+.entry[data-kind='creation'] .kind {
+  color: var(--color-kind-creation);
+}
+
+/* The tool, quiet after the time: the edge color is never the only sign. */
+.tool {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .badge abbr {

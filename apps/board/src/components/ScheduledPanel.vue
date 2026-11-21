@@ -5,7 +5,7 @@ import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { api, type QueueItem } from '../lib/api'
+import { api, type CompositionSummary, type QueueItem } from '../lib/api'
 import { middayOf, zonedTime } from '../lib/zoned'
 import ScheduledEntry from './ScheduledEntry.vue'
 import ScheduledWeek from './ScheduledWeek.vue'
@@ -40,12 +40,31 @@ const {
   query: () => api.queue(props.topicId),
 })
 
-/** Items with a post still waiting for its slot, grouped by day (time zone of the topic). */
+// Posts of Création, when the topic uses it: in the same dated list as the news watch.
+const { data: compositions } = useQuery({
+  key: () => ['compositions', props.topicId],
+  query: () => api.compositions(props.topicId),
+  enabled: () => !!topic.value?.config.modules.compose,
+})
+
+type Entry =
+  | { key: string; at: string; entry: QueueItem }
+  | { key: string; at: string; composition: CompositionSummary }
+
+/** Items with a post still waiting for its slot, and scheduled posts of Création,
+ * grouped by day (time zone of the topic), in time order. */
 const days = computed(() => {
-  const groups = new Map<string, QueueItem[]>()
-  for (const entry of queue.value ?? []) {
-    if (!entry.posts.some((p) => p.status === 'scheduled')) continue
-    const day = zonedDay(new Date(entry.publish_at), timeZone.value)
+  const all: Entry[] = [
+    ...(queue.value ?? [])
+      .filter((entry) => entry.posts.some((p) => p.status === 'scheduled'))
+      .map((entry) => ({ key: `i-${entry.item_id}`, at: entry.publish_at, entry })),
+    ...(topic.value?.config.modules.compose ? (compositions.value ?? []) : [])
+      .filter((c) => c.status === 'scheduled' && c.publish_at)
+      .map((c) => ({ key: `c-${c.id}`, at: c.publish_at!, composition: c })),
+  ].sort((a, b) => a.at.localeCompare(b.at))
+  const groups = new Map<string, Entry[]>()
+  for (const entry of all) {
+    const day = zonedDay(new Date(entry.at), timeZone.value)
     groups.set(day, [...(groups.get(day) ?? []), entry])
   }
   return [...groups]
@@ -59,18 +78,21 @@ const dayTitle = (day: string) => {
 
 <template>
   <TabsRoot v-model="view" activation-mode="manual">
-    <TabsList :aria-label="t('scheduled.views')" v-scroll-active class="subtabs tab-row">
-      <TabsTrigger v-for="v in VIEWS" :key="v" :value="v" class="subtab">
-        {{ t(`scheduled.${v}`) }}
-      </TabsTrigger>
-    </TabsList>
+    <!-- The view switch: a compact segmented control, unlike the page's tabs above it. -->
+    <div class="view-bar">
+      <TabsList :aria-label="t('scheduled.views')" class="segmented">
+        <TabsTrigger v-for="v in VIEWS" :key="v" :value="v" class="segment">
+          {{ t(`scheduled.${v}`) }}
+        </TabsTrigger>
+      </TabsList>
+      <p v-if="topic" class="hint">{{ t('scheduled.timezone', { timezone: timeZone }) }}</p>
+    </div>
 
     <TabsContent value="list" class="subpanel">
       <p v-if="isPending" role="status">{{ t('common.loading') }}</p>
       <p v-else-if="error" role="alert">{{ t('board.loadError', { message: error.message }) }}</p>
       <p v-else-if="!days.length">{{ t('scheduled.empty') }}</p>
       <template v-else>
-        <p class="hint">{{ t('scheduled.timezone', { timezone: timeZone }) }}</p>
         <section
           v-for="[day, entries] in days"
           :key="day"
@@ -84,11 +106,12 @@ const dayTitle = (day: string) => {
             }}</span>
           </h2>
           <ol class="entries">
-            <li v-for="entry in entries" :key="entry.item_id">
+            <li v-for="item in entries" :key="item.key">
               <ScheduledEntry
                 :topic-id="topicId"
-                :entry="entry"
-                :time="zonedTime(entry.publish_at, timeZone)"
+                :entry="'entry' in item ? item.entry : undefined"
+                :composition="'composition' in item ? item.composition : undefined"
+                :time="zonedTime(item.at, timeZone)"
               />
             </li>
           </ol>
@@ -104,8 +127,20 @@ const dayTitle = (day: string) => {
 </template>
 
 <style scoped>
-.day {
-  margin-top: var(--space-5);
+.view-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.view-bar .hint {
+  margin: 0;
+}
+
+.day + .day {
+  margin-top: var(--space-6);
 }
 
 .day-title {
