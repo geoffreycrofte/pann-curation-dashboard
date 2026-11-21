@@ -56,66 +56,88 @@ const accountsOf = (provider: Provider) =>
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ t('connections.title') }}</h1>
-  <p>{{ t('connections.intro') }}</p>
-  <p class="hint">{{ t('connections.security') }}</p>
-  <p v-if="workspaceId && !isOwner" class="hint">{{ t('connections.ownerOnly') }}</p>
+  <div class="connections">
+    <h1 tabindex="-1">{{ t('connections.title') }}</h1>
+    <p class="intro">{{ t('connections.intro') }}</p>
+    <p class="hint">{{ t('connections.security') }}</p>
+    <p v-if="workspaceId && !isOwner" class="hint">{{ t('connections.ownerOnly') }}</p>
 
-  <p v-if="workspaceError || error" role="alert">
-    {{ t('board.loadError', { message: (workspaceError ?? error)?.message }) }}
-  </p>
-  <p v-else-if="!workspaceId || isPending" role="status">{{ t('common.loading') }}</p>
-  <template v-else>
-    <section v-for="group in groups" :key="group.key" :aria-labelledby="`group-${group.key}`">
-      <h2 :id="`group-${group.key}`" class="group-title">{{ t(group.label) }}</h2>
-      <div class="providers">
-        <template v-for="provider in group.providers" :key="provider">
-          <!-- Networks with several accounts: one card per account, then one to add another. -->
-          <template v-if="isMultiAccount(provider)">
-            <ProviderCard
-              v-for="credential in accountsOf(provider)"
-              :key="`${provider}/${credential.account}`"
-              :provider="provider"
+    <p v-if="workspaceError || error" role="alert">
+      {{ t('board.loadError', { message: (workspaceError ?? error)?.message }) }}
+    </p>
+    <p v-else-if="!workspaceId || isPending" role="status">{{ t('common.loading') }}</p>
+    <div v-else class="section-stack groups">
+      <!-- One card per group, its title inside; the services are rows split by a rule. -->
+      <section
+        v-for="group in groups"
+        :key="group.key"
+        class="section-card"
+        :aria-labelledby="`group-${group.key}`"
+      >
+        <h2 :id="`group-${group.key}`" class="section-title">{{ t(group.label) }}</h2>
+        <div class="providers">
+          <template v-for="provider in group.providers" :key="provider">
+            <!-- Networks with several accounts: one row per account, then one to add another. -->
+            <template v-if="isMultiAccount(provider)">
+              <ProviderCard
+                v-for="credential in accountsOf(provider)"
+                :key="`${provider}/${credential.account}`"
+                :provider="provider"
+                :workspace-id="workspaceId"
+                :credential="credential"
+                :can-edit="isOwner"
+              />
+              <ProviderCard
+                v-if="isOwner || !accountsOf(provider).length"
+                :key="`${provider}/new`"
+                :provider="provider"
+                :workspace-id="workspaceId"
+                :can-edit="isOwner"
+                :adding="accountsOf(provider).length > 0"
+              />
+            </template>
+            <ZernioPlatformCard
+              v-else-if="viaPann(provider) && platform"
               :workspace-id="workspaceId"
-              :credential="credential"
-              :can-edit="isOwner"
+              :link="platform"
             />
             <ProviderCard
-              v-if="isOwner || !accountsOf(provider).length"
-              :key="`${provider}/new`"
+              v-else
               :provider="provider"
               :workspace-id="workspaceId"
+              :credential="credentials?.find((c) => c.provider === provider)"
               :can-edit="isOwner"
-              :adding="accountsOf(provider).length > 0"
             />
           </template>
-          <ZernioPlatformCard
-            v-else-if="viaPann(provider) && platform"
-            :workspace-id="workspaceId"
-            :link="platform"
-          />
-          <ProviderCard
-            v-else
-            :provider="provider"
-            :workspace-id="workspaceId"
-            :credential="credentials?.find((c) => c.provider === provider)"
-            :can-edit="isOwner"
-          />
-        </template>
-      </div>
-    </section>
-    <McpSection />
-  </template>
+        </div>
+      </section>
+      <McpSection />
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.group-title {
-  margin: var(--space-8) 0 0;
+/* The same width as the settings panels. */
+.connections {
+  max-width: var(--width-content);
 }
 
+.intro {
+  margin-bottom: var(--space-2);
+}
+
+.groups {
+  margin-top: var(--space-6);
+}
+
+/* Services of a group: rows split by a rule, more space around the rule than inside a row. */
 .providers {
   display: grid;
   gap: var(--space-4);
-  margin-top: var(--space-4);
+}
+
+.providers > * + * {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
 }
 </style>

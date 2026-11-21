@@ -460,7 +460,7 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
 
 /* One width for every settings panel: the cards line up from one tab to the next. */
 .layout > .subpanel {
-  max-width: 46rem;
+  max-width: var(--width-content);
 }
 
 textarea.field {

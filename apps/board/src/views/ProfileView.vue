@@ -132,11 +132,11 @@ async function signOutEverywhere() {
 
   <div class="sections">
     <form
-      class="card section form"
+      class="section-card section"
       :aria-labelledby="`${id}-identity`"
       @submit.prevent="saveIdentity"
     >
-      <h2 :id="`${id}-identity`">{{ t('profile.identity') }}</h2>
+      <h2 :id="`${id}-identity`" class="section-title">{{ t('profile.identity') }}</h2>
       <div class="form-row">
         <label :for="`${id}-name`">{{ t('profile.name') }}</label>
         <input
@@ -164,16 +164,16 @@ async function signOutEverywhere() {
         />
         <p :id="`${id}-email-hint`" class="hint">{{ t('profile.emailHint') }}</p>
       </div>
-      <div>
+      <div class="section-actions">
         <button type="submit" class="button" data-variant="primary" :disabled="savingIdentity">
           {{ savingIdentity ? t('common.saving') : t('common.save') }}
         </button>
+        <p role="status" :class="{ error: identityError }">{{ identityMessage }}</p>
       </div>
-      <p role="status" :class="{ error: identityError }">{{ identityMessage }}</p>
     </form>
 
-    <section class="card section" :aria-labelledby="`${id}-prefs`">
-      <h2 :id="`${id}-prefs`">{{ t('profile.preferences') }}</h2>
+    <section class="section-card section" :aria-labelledby="`${id}-prefs`">
+      <h2 :id="`${id}-prefs`" class="section-title">{{ t('profile.preferences') }}</h2>
       <p class="hint">{{ t('profile.preferencesHint') }}</p>
       <fieldset class="choices">
         <legend class="form-label">{{ t('lang.label') }}</legend>
@@ -205,8 +205,9 @@ async function signOutEverywhere() {
       </fieldset>
     </section>
 
-    <section class="card section" :aria-labelledby="`${id}-workspace`">
-      <h2 :id="`${id}-workspace`">{{ t('profile.workspace') }}</h2>
+    <section class="section-card section" :aria-labelledby="`${id}-workspace`">
+      <h2 :id="`${id}-workspace`" class="section-title">{{ t('profile.workspace') }}</h2>
+      <p class="hint">{{ t('profile.workspaceHint') }}</p>
       <div v-for="membership in workspaces" :key="membership.workspace.id" class="workspace">
         <form
           v-if="membership.role === 'owner'"
@@ -214,9 +215,13 @@ async function signOutEverywhere() {
           @submit.prevent="rename(membership.workspace.id)"
         >
           <div class="form-row">
-            <label :for="`${id}-ws-${membership.workspace.id}`">
-              {{ t('profile.workspaceName') }}
-            </label>
+            <!-- The role sits on the label's line: it qualifies this workspace. -->
+            <div class="label-row">
+              <label :for="`${id}-ws-${membership.workspace.id}`">
+                {{ t('profile.workspaceName') }}
+              </label>
+              <span class="badge" data-tone="accent">{{ t('profile.roles.owner') }}</span>
+            </div>
             <div class="inline">
               <input
                 :id="`${id}-ws-${membership.workspace.id}`"
@@ -233,19 +238,18 @@ async function signOutEverywhere() {
             </div>
           </div>
         </form>
-        <p v-else class="workspace-name">{{ membership.workspace.name }}</p>
-        <p>
-          <span class="badge" :data-tone="membership.role === 'owner' ? 'accent' : undefined">
-            {{ t(`profile.roles.${membership.role}`) }}
-          </span>
+        <p v-else class="label-row">
+          <span class="workspace-name">{{ membership.workspace.name }}</span>
+          <span class="badge">{{ t(`profile.roles.${membership.role}`) }}</span>
         </p>
       </div>
-      <p role="status" :class="{ error: workspaceError }">{{ workspaceMessage }}</p>
-      <p class="hint">{{ t('profile.workspaceHint') }}</p>
+      <p role="status" class="message" :class="{ error: workspaceError }">
+        {{ workspaceMessage }}
+      </p>
     </section>
 
-    <section class="card section" :aria-labelledby="`${id}-security`">
-      <h2 :id="`${id}-security`">{{ t('profile.security') }}</h2>
+    <section class="section-card section" :aria-labelledby="`${id}-security`">
+      <h2 :id="`${id}-security`" class="section-title">{{ t('profile.security') }}</h2>
       <p>{{ t('profile.magicLink') }}</p>
       <p v-if="user?.last_sign_in_at" class="hint">
         {{
@@ -283,8 +287,8 @@ async function signOutEverywhere() {
       </div>
     </section>
 
-    <section class="card section danger" :aria-labelledby="`${id}-delete`">
-      <h2 :id="`${id}-delete`">{{ t('profile.deleteTitle') }}</h2>
+    <section class="section-card section danger" :aria-labelledby="`${id}-delete`">
+      <h2 :id="`${id}-delete`" class="section-title">{{ t('profile.deleteTitle') }}</h2>
       <p>{{ t('profile.deleteIntro') }}</p>
       <ul class="consequences">
         <li>{{ t('profile.deleteWorkspaces') }}</li>
@@ -344,25 +348,36 @@ async function signOutEverywhere() {
 </template>
 
 <style scoped>
-.intro {
-  max-width: 40rem;
+/* The same width as the settings panels and Connexions. */
+.intro,
+.sections {
+  max-width: var(--width-content);
 }
 
 .sections {
   display: grid;
-  gap: var(--space-5);
-  max-width: 40rem;
+  gap: var(--space-6);
 }
 
-.section {
-  display: grid;
-  gap: var(--space-4);
-  padding: var(--space-5) var(--space-6);
-}
-
-.section h2,
 .section p {
   margin: 0;
+}
+
+/* Empty live regions: kept for announcements, out of the layout (no blank under a card). */
+.section-actions p:empty,
+.message:empty {
+  position: absolute;
+}
+
+.label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+}
+
+.label-row label {
+  font-weight: 650;
 }
 
 .choices {
@@ -384,9 +399,9 @@ async function signOutEverywhere() {
   font-size: 1rem;
 }
 
-.workspace {
-  display: grid;
-  gap: var(--space-2);
+.workspace + .workspace {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .workspace-name {
@@ -421,28 +436,5 @@ async function signOutEverywhere() {
 
 .confirm .error {
   margin: 0;
-}
-
-.facts {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
-  margin: 0;
-}
-
-.facts dt {
-  font-weight: 650;
-  overflow-wrap: anywhere;
-}
-
-.facts dd {
-  margin: 0;
-}
-
-@media (max-width: 40rem) {
-  .section {
-    padding: var(--space-4);
-  }
 }
 </style>

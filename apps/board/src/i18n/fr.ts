@@ -207,10 +207,19 @@ export default {
       draft: 'Rédiger les posts',
       redraft: 'Rédiger à nouveau',
       redraftHint: 'Les posts programmés ou publiés ne changent pas.',
+      firstHint: 'Un post par réseau et par langue, à partir du sujet et de la matière ci-dessus.',
+      status: {
+        none: 'Pas encore de posts',
+        pending: 'Rédaction en cours…',
+        ready: 'Posts rédigés',
+        failed: 'Rédaction impossible',
+      },
       drafting: 'Rédaction en cours…',
     },
     publish: {
       title: 'Publication',
+      intro:
+        'Tous les posts partent ensemble, au prochain créneau de la Création ou tout de suite.',
       nextSlot: 'Programmer au prochain créneau',
       now: 'Publier maintenant',
       unschedule: 'Retirer de la file',
@@ -221,6 +230,8 @@ export default {
       altMissing: 'Il manque un texte alternatif en : {langs}.',
     },
     delete: 'Supprimer ce brouillon',
+    state: { draft: 'Brouillon', scheduled: 'Programmé', published: 'Publié' },
+    updatedOn: 'Modifié le {date}',
     deleteConfirm: 'Supprimer ce brouillon et ses images ?',
     deleted: 'Brouillon supprimé',
     list: {
@@ -489,7 +500,8 @@ export default {
     },
     manage: 'Gérer',
     replace: 'Remplacer la clé',
-    collapse: 'Replier',
+    configure: 'Configurer',
+    invalidNotice: 'Le service refuse cette clé : il faut la remplacer.',
     howTo: 'Où trouver cette clé ?',
     keyLabel: 'Clé {provider}',
     keyLabelReplace: 'Nouvelle clé {provider}',
