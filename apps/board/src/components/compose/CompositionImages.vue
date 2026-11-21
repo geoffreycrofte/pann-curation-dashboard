@@ -12,6 +12,7 @@ import { describeError } from '../../lib/errors'
 import { ImageError, prepareImage } from '../../lib/image'
 import { contentLangName } from '../../lib/langs'
 import { toast } from '../../lib/toast'
+import Icon from '../Icon.vue'
 
 const props = defineProps<{
   topicId: string
@@ -122,15 +123,21 @@ async function remove(media: CompositionMedia) {
             <p v-if="image.alt_status === 'pending'" class="hint" role="status">
               {{ t('compose.images.proposing') }}
             </p>
-            <p v-else-if="image.alt_status === 'failed' && image.alt_error" class="error">
-              {{ describeError(image.alt_error, t).text }}
+            <p
+              v-else-if="image.alt_status === 'failed' && image.alt_error"
+              class="notice notice-inline"
+              data-tone="danger"
+            >
+              <Icon name="alert-circle" />
+              <span>{{ describeError(image.alt_error, t).text }}</span>
             </p>
             <div v-for="lang in langs" :key="lang" class="form-row">
               <label :for="`${id}-${image.id}-${lang}`">
                 {{ t('compose.images.altLabel', { lang: contentLangName(lang) }) }}
                 <span
                   v-if="image.alt_proposed.includes(lang) && !drafts[image.id]?.[lang]"
-                  class="proposed"
+                  class="badge proposed"
+                  data-tone="accent"
                   >{{ t('compose.images.proposed') }}</span
                 >
               </label>
@@ -150,13 +157,14 @@ async function remove(media: CompositionMedia) {
             <p :id="`${id}-${image.id}-hint`" class="hint">{{ t('compose.images.altHint') }}</p>
           </fieldset>
           <div v-if="!readonly" class="actions">
-            <button type="submit" class="button" :disabled="!dirty(image)">
+            <button type="submit" class="button" data-size="small" :disabled="!dirty(image)">
               {{ t('compose.images.saveAlt') }}
             </button>
             <button
               v-if="langs.some((l) => !textOf(image, l).trim())"
               type="button"
               class="button"
+              data-size="small"
               :disabled="image.alt_status === 'pending'"
               @click="propose(image)"
             >
@@ -164,7 +172,8 @@ async function remove(media: CompositionMedia) {
             </button>
             <button
               type="button"
-              class="button"
+              class="button remove"
+              data-size="small"
               data-variant="danger"
               :aria-label="t('compose.images.removeLabel', { n: index + 1 })"
               @click="remove(image)"
@@ -191,7 +200,7 @@ async function remove(media: CompositionMedia) {
       <p :id="`${id}-file-hint`" class="hint">{{ t('compose.images.addHint') }}</p>
     </div>
     <p v-if="uploading" role="status">{{ t('compose.images.uploading') }}</p>
-    <p role="status" :class="{ error: isError }">{{ message }}</p>
+    <p role="status" class="message" :class="{ error: isError }">{{ message }}</p>
   </section>
 </template>
 
@@ -201,8 +210,41 @@ async function remove(media: CompositionMedia) {
   gap: var(--space-4);
 }
 
-.images h2 {
+.images h2,
+.images p {
   margin: 0;
+}
+
+/* The intro right under the title. */
+.images > h2 + .hint {
+  margin-top: calc(-1 * var(--space-2));
+}
+
+.message:empty {
+  position: absolute;
+}
+
+/* The native file button, drawn like a small secondary button. */
+input[type='file'] {
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+input[type='file']::file-selector-button {
+  min-height: 2.25rem;
+  margin-inline-end: var(--space-3);
+  padding: var(--space-1) var(--space-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+input[type='file']::file-selector-button:hover {
+  border-color: var(--color-text);
 }
 
 .list {
@@ -215,9 +257,15 @@ async function remove(media: CompositionMedia) {
 
 .image {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
   gap: var(--space-4);
   align-items: start;
+}
+
+/* Wide: a narrower preview, the texts and their actions get the room. */
+@media (min-width: 40rem) {
+  .image {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  }
 }
 
 .preview {
@@ -235,6 +283,13 @@ async function remove(media: CompositionMedia) {
   gap: var(--space-3);
 }
 
+.alts legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+  font-size: 1rem;
+}
+
 .alts fieldset {
   margin: 0;
   padding: 0;
@@ -249,19 +304,18 @@ async function remove(media: CompositionMedia) {
 }
 
 .proposed {
-  display: inline-block;
   margin-inline-start: var(--space-2);
-  padding: 0 var(--space-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  color: var(--color-text-muted);
-  font-size: 0.8125rem;
-  font-weight: 500;
+  vertical-align: 0.1em;
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--space-2);
+}
+
+/* Removing the image comes last, apart from the text actions. */
+.actions .remove {
+  margin-inline-start: auto;
 }
 </style>
