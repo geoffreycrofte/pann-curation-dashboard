@@ -4,6 +4,7 @@
  * and the switch to pause it or resume it. Paused: nothing is collected, sorted, drafted
  * by itself or published; scheduled posts wait and go out once the topic is resumed.
  */
+import { backlogLimitOf, isBacklogFull } from '@pann/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -40,52 +41,89 @@ const { data: engagementSources } = useQuery({
   enabled: () => !!modules.value?.engagement,
 })
 
+// Same keys as the lists: one fetch, refreshed together.
+const { data: curationCounts } = useQuery({
+  key: () => ['items', props.topicId, 'counts'],
+  query: () => api.counts(props.topicId),
+  enabled: () => !!modules.value?.curation,
+})
+const { data: engagementCounts } = useQuery({
+  key: () => ['conversations', props.topicId, 'counts'],
+  query: () => api.counts(props.topicId, 'engagement'),
+  enabled: () => !!modules.value?.engagement,
+})
+/** Collection of a tool waiting, as too much is left to sort (`pause_above`). */
+function waiting(module: 'curation' | 'engagement') {
+  const config = topic.value?.config
+  const toSort = (module === 'curation' ? curationCounts : engagementCounts).value?.new
+  if (!config || toSort === undefined) return null
+  const limit = backlogLimitOf(config, module)
+  return isBacklogFull(toSort, limit) ? { count: toSort, limit } : null
+}
+
 const active = computed(() => topic.value?.active !== false)
-const hasAi = computed(
-  () => !!credentials.value?.some((c) => c.provider === 'anthropic' && c.status !== 'invalid'),
-)
+const aiKey = computed(() => credentials.value?.find((c) => c.provider === 'anthropic'))
+const hasAi = computed(() => !!aiKey.value && aiKey.value.status !== 'invalid')
 const publishes = computed(() => !!modules.value?.curation || !!modules.value?.compose)
 
+/** ok: runs; off: not set up, so not running; warn: runs, but at risk or held back. */
+type Tone = 'ok' | 'off' | 'warn'
 interface Line {
   key: string
   icon: string
-  ok: boolean
+  tone: Tone
   text: string
 }
+const TONE_ICON: Record<Tone, string> = { ok: 'check', off: 'minus', warn: 'exclamation' }
 const lines = computed<Line[]>(() => {
   const config = topic.value?.config
   if (!config) return []
   const list: Line[] = []
   if (config.modules.curation) {
     const n = (curationSources.value ?? []).filter((s) => s.active).length
+    const wait = n ? waiting('curation') : null
     list.push({
       key: 'collect',
       icon: 'rss',
-      ok: n > 0,
-      text: n ? t('topicStatus.collect', n) : t('topicStatus.noSources'),
+      tone: wait ? 'warn' : n > 0 ? 'ok' : 'off',
+      text: wait
+        ? t('topicStatus.collectWaiting', wait)
+        : n
+          ? t('topicStatus.collect', n)
+          : t('topicStatus.noSources'),
     })
   }
   if (config.modules.engagement) {
     const n = (engagementSources.value ?? []).filter((s) => s.active).length
+    const wait = n ? waiting('engagement') : null
     list.push({
       key: 'listen',
       icon: 'messages',
-      ok: n > 0,
-      text: n ? t('topicStatus.listen', n) : t('topicStatus.noSearches'),
+      tone: wait ? 'warn' : n > 0 ? 'ok' : 'off',
+      text: wait
+        ? t('topicStatus.listenWaiting', wait)
+        : n
+          ? t('topicStatus.listen', n)
+          : t('topicStatus.noSearches'),
     })
   }
   list.push({
     key: 'ai',
     icon: 'sparkles',
-    ok: hasAi.value,
-    text: hasAi.value ? t('topicStatus.ai') : t('topicStatus.noAi'),
+    // A key the provider rejected: set up, but nothing is sorted any more.
+    tone: hasAi.value ? 'ok' : aiKey.value ? 'warn' : 'off',
+    text: hasAi.value
+      ? t('topicStatus.ai')
+      : aiKey.value
+        ? t('topicStatus.aiInvalid')
+        : t('topicStatus.noAi'),
   })
   if (publishes.value) {
     const n = config.channels.length
     list.push({
       key: 'publish',
       icon: 'send',
-      ok: n > 0,
+      tone: n > 0 ? 'ok' : 'off',
       text: n ? t('topicStatus.publish', n) : t('topicStatus.noAccounts'),
     })
   }
@@ -132,11 +170,12 @@ const { mutate, isLoading } = useMutation({
       {{ active ? t('topicStatus.pauseEffect') : t('topicStatus.resumeEffect') }}
     </p>
     <ul v-if="active" class="lines">
-      <li v-for="line in lines" :key="line.key" :data-ok="line.ok || undefined">
-        <Icon :name="line.ok ? 'circle-check' : 'alert-circle'" class="state" />
-        <span class="visually-hidden">{{
-          line.ok ? t('topicStatus.okLabel') : t('topicStatus.todoLabel')
-        }}</span>
+      <li v-for="line in lines" :key="line.key" :data-tone="line.tone">
+        <!-- Colour and shape both say the state; the hidden label says it in words. -->
+        <span class="state" aria-hidden="true">
+          <Icon :name="TONE_ICON[line.tone]" :size="14" />
+        </span>
+        <span class="visually-hidden">{{ t(`topicStatus.${line.tone}Label`) }}</span>
         <Icon :name="line.icon" class="kind" />
         <span>{{ line.text }}</span>
       </li>
@@ -198,12 +237,43 @@ const { mutate, isLoading } = useMutation({
   gap: var(--space-2);
 }
 
+/* A filled disc per state: green runs, grey is off, orange needs a look. */
 .state {
-  color: var(--color-text-muted);
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
 }
 
-[data-ok] .state {
-  color: var(--color-success);
+.state :deep(svg) {
+  stroke-width: 3;
+}
+
+[data-tone='ok'] .state {
+  background: var(--color-success-fill);
+  color: var(--color-on-success);
+}
+
+[data-tone='off'] .state {
+  background: var(--color-neutral-fill);
+  color: var(--color-on-neutral);
+}
+
+[data-tone='warn'] .state {
+  background: var(--color-warning);
+  color: var(--color-on-warning);
+}
+
+[data-tone='warn'] {
+  font-weight: 600;
+}
+
+@media (forced-colors: active) {
+  .state {
+    border: 1px solid CanvasText;
+  }
 }
 
 .kind {

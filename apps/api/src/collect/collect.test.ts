@@ -31,7 +31,7 @@ function source(overrides: Partial<CollectSource>): CollectSource {
   }
 }
 
-function memoryStore(sources: CollectSource[]) {
+function memoryStore(sources: CollectSource[], toSort = 0) {
   const ingested: Record<string, IngestRow[]> = {}
   const runs: Record<string, string | null> = {}
   const usage: unknown[] = []
@@ -40,6 +40,7 @@ function memoryStore(sources: CollectSource[]) {
   const ok: string[] = []
   const store: CollectStore = {
     activeSources: async () => sources,
+    toSort: async () => toSort,
     credentials: async (workspaceId) => (workspaceId === 'w' ? { exa: 'key' } : {}),
     markCredentialInvalid: async (workspaceId, provider) => {
       invalid.push(`${workspaceId}/${provider}`)
@@ -161,6 +162,22 @@ describe('collect', () => {
     await collect({ store: busy.store, adapters: { hackernews: conversations }, now })
     expect(busy.modules).toEqual(['engagement'])
     expect(busy.ingested.t?.[0]?.meta).toEqual({ points: 3 })
+  })
+
+  it('waits while too much is left to sort, unless asked to collect now', async () => {
+    const config = parseTopicConfig({ collection: { pause_above: 50 } })
+    const rss: Adapter = async () => ({ items: [{ url: 'https://example.org/a', title: 'A' }] })
+    const full = memoryStore([source({ id: 'a', topic_config: config })], 50)
+    await collect({ store: full.store, adapters: { rss }, now })
+    expect(full.runs).toEqual({})
+
+    const asked = memoryStore([source({ id: 'a', topic_config: config })], 50)
+    await collect({ store: asked.store, adapters: { rss }, now, onlySourceIds: ['a'] })
+    expect(asked.runs).toEqual({ a: null })
+
+    const below = memoryStore([source({ id: 'a', topic_config: config })], 49)
+    await collect({ store: below.store, adapters: { rss }, now })
+    expect(below.runs).toEqual({ a: null })
   })
 
   it('reads conversations over the engagement window, not the curation one', () => {

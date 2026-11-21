@@ -10,6 +10,7 @@ import ItemList from '../components/ItemList.vue'
 import { api } from '../lib/api'
 import { useTopicName } from '../lib/topic-name'
 import { useWorkspace } from '../lib/workspace'
+import BacklogNotice from '../components/BacklogNotice.vue'
 
 const props = defineProps<{ topicId: string }>()
 const { t } = useI18n()
@@ -71,6 +72,13 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
       {{ t('board.noAnthropicKey') }}
       <RouterLink to="/connections">{{ t('errors.fixInConnections') }}</RouterLink>
     </p>
+    <BacklogNotice
+      v-if="topic"
+      :topic-id="topicId"
+      :config="topic.config"
+      module="curation"
+      :to-sort="counts?.new"
+    />
     <AddItemForm :topic-id="topicId" />
 
     <TabsRoot v-model="status" activation-mode="manual">

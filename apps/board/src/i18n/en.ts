@@ -335,13 +335,19 @@ export default {
       'Nothing is collected or published. On resume, the posts whose slot has passed go out right away.',
     paused: 'Topic paused',
     resumed: 'Topic resumed',
+    collectWaiting:
+      'News watch: collection paused, {count} items are waiting to be sorted (limit of {limit})',
+    listenWaiting:
+      'Conversations: collection paused, {count} conversations are waiting to be sorted (limit of {limit})',
+    offLabel: 'Off:',
+    warnLabel: 'Warning:',
     okLabel: 'Ready:',
-    todoLabel: 'To do:',
     collect: 'No source | News watch: one source collected | News watch: {n} sources collected',
     noSources: 'News watch: no source, nothing is collected',
     listen: 'No search | Conversations: one search | Conversations: {n} searches',
     noSearches: 'Conversations: no search, nothing is looked for',
     ai: 'AI connected: sorting and drafting on',
+    aiInvalid: 'AI: key rejected by Anthropic, no more sorting or drafting',
     noAi: 'AI not connected: no sorting, no drafting',
     publish: 'No account | Publishing: one account set | Publishing: {n} accounts set',
     noAccounts: 'Publishing: no account set, posts stay drafts',
@@ -1042,6 +1048,26 @@ export default {
       'Added each time the product is mentioned in a reply, so that your link with it is clear.',
   },
   /** Empty state of the lists to sort: collect now, add sources, or resume the topic. */
+  backlog: {
+    setting: {
+      curation: 'Pause collection when too many items are waiting to be sorted',
+      engagement: 'Pause collection when too many conversations are waiting to be sorted',
+    },
+    limit: 'From',
+    hint: {
+      curation:
+        'From this many items in “To sort”, scheduled collections wait, and so does the AI triage they would pay for. They resume by themselves below this limit. “Collect now”, in the sources, still works.',
+      engagement:
+        'From this many conversations in “To sort”, scheduled collections wait, and so does the AI triage they would pay for. They resume by themselves below this limit. “Collect now”, in the sources, still works.',
+    },
+    notice: {
+      curation:
+        'Collection paused: {count} items are waiting to be sorted, for a limit of {limit}. It resumes by itself below this limit.',
+      engagement:
+        'Collection paused: {count} conversations are waiting to be sorted, for a limit of {limit}. It resumes by itself below this limit.',
+    },
+    change: 'Change the limit',
+  },
   collect: {
     run: 'Collect now',
     running: 'Collecting…',

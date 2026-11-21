@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { effectiveIntervalHours, isSourceDue } from './schedule'
+import { backlogLimitOf, effectiveIntervalHours, isBacklogFull, isSourceDue } from './schedule'
 import { parseTopicConfig } from './topic-config'
 
 const config = parseTopicConfig({})
@@ -45,5 +45,20 @@ describe('isSourceDue', () => {
 
   it('never runs an inactive source', () => {
     expect(isSourceDue({ ...legal, active: false, last_run_at: null }, config, now)).toBe(false)
+  })
+})
+
+describe('backlog pause', () => {
+  it('reads the limit of each tool and waits from the limit on', () => {
+    const config = parseTopicConfig({
+      collection: { pause_above: 100 },
+      engagement: { pause_above: 20 },
+    })
+    expect(backlogLimitOf(config, 'curation')).toBe(100)
+    expect(backlogLimitOf(config, 'engagement')).toBe(20)
+    expect(backlogLimitOf(parseTopicConfig({}), 'curation')).toBeNull()
+    expect(isBacklogFull(99, 100)).toBe(false)
+    expect(isBacklogFull(100, 100)).toBe(true)
+    expect(isBacklogFull(10_000, null)).toBe(false)
   })
 })

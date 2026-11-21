@@ -14,6 +14,7 @@ import ProductSettings from '../components/ProductSettings.vue'
 import TopicGeneralSettings from '../components/TopicGeneralSettings.vue'
 import TopicKindsSettings from '../components/TopicKindsSettings.vue'
 import IntervalSelect from '../components/IntervalSelect.vue'
+import BacklogLimitField from '../components/BacklogLimitField.vue'
 import EngagementSettings from '../components/EngagementSettings.vue'
 import EngagementSources from '../components/EngagementSources.vue'
 import ComposeSettings from '../components/compose/ComposeSettings.vue'
@@ -251,6 +252,7 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
               />
             </div>
           </div>
+          <BacklogLimitField v-model="collection.pause_above" module="curation" />
         </fieldset>
         <div>
           <button type="submit" class="button" data-variant="primary" :disabled="isLoading">

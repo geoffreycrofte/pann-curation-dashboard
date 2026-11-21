@@ -65,6 +65,17 @@ export function supabaseCollectStore(db: SupabaseClient): CollectStore {
       if (error) throw error
     },
 
+    async toSort(topicId, module) {
+      const { count, error } = await db
+        .from('item_topics')
+        .select('item_id', { count: 'exact', head: true })
+        .eq('topic_id', topicId)
+        .eq('module', module)
+        .eq('status', 'new')
+      if (error) throw error
+      return count ?? 0
+    },
+
     async ingest(topicId, rows, module) {
       const { data, error } = await db.rpc('ingest_items', {
         p_topic_id: topicId,

@@ -334,13 +334,19 @@ export default {
       'Rien n’est collecté ni publié. À la reprise, les posts dont le créneau est passé partent aussitôt.',
     paused: 'Thème en pause',
     resumed: 'Thème repris',
+    collectWaiting:
+      'Veille : collecte en pause, {count} éléments attendent le tri (seuil de {limit})',
+    listenWaiting:
+      'Conversations : collecte en pause, {count} conversations attendent le tri (seuil de {limit})',
+    offLabel: 'Inactif :',
+    warnLabel: 'Attention :',
     okLabel: 'Prêt :',
-    todoLabel: 'À faire :',
     collect: 'Aucune source | Veille : une source collectée | Veille : {n} sources collectées',
     noSources: 'Veille : aucune source, rien n’est collecté',
     listen: 'Aucune recherche | Conversations : une recherche | Conversations : {n} recherches',
     noSearches: 'Conversations : aucune recherche, rien n’est cherché',
     ai: 'IA reliée : tri et rédaction en marche',
+    aiInvalid: 'IA : clé refusée par Anthropic, plus de tri ni de rédaction',
     noAi: 'IA non reliée : ni tri ni rédaction',
     publish: 'Aucun compte | Publication : un compte relié | Publication : {n} comptes reliés',
     noAccounts: 'Publication : aucun compte relié, les posts restent en brouillon',
@@ -1056,6 +1062,26 @@ export default {
       'Ajoutée chaque fois que le produit est cité dans une réponse, pour que votre lien avec lui soit clair.',
   },
   /** Empty state of the lists to sort: collect now, add sources, or resume the topic. */
+  backlog: {
+    setting: {
+      curation: 'Mettre la collecte en pause quand trop d’éléments attendent le tri',
+      engagement: 'Mettre la collecte en pause quand trop de conversations attendent le tri',
+    },
+    limit: 'À partir de',
+    hint: {
+      curation:
+        'À partir de ce nombre d’éléments dans « À trier », les collectes programmées attendent, et le tri par IA qu’elles paieraient aussi. Elles reprennent d’elles-mêmes sous ce seuil. « Collecter maintenant », dans les sources, reste possible.',
+      engagement:
+        'À partir de ce nombre de conversations dans « À trier », les collectes programmées attendent, et le tri par IA qu’elles paieraient aussi. Elles reprennent d’elles-mêmes sous ce seuil. « Collecter maintenant », dans les sources, reste possible.',
+    },
+    notice: {
+      curation:
+        'Collecte en pause : {count} éléments attendent le tri, pour un seuil de {limit}. Elle reprend d’elle-même sous ce seuil.',
+      engagement:
+        'Collecte en pause : {count} conversations attendent le tri, pour un seuil de {limit}. Elle reprend d’elle-même sous ce seuil.',
+    },
+    change: 'Changer le seuil',
+  },
   collect: {
     run: 'Lancer une collecte',
     running: 'Collecte en cours…',

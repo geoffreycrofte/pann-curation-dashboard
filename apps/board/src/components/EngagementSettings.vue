@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { api, type TopicWithConfig } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
+import BacklogLimitField from './BacklogLimitField.vue'
 
 /** How the engagement triage judges conversations: user settings of the topic. */
 const props = defineProps<{ topic: TopicWithConfig }>()
@@ -15,6 +16,7 @@ const queryCache = useQueryCache()
 const criteria = ref(props.topic.config.engagement.criteria)
 const threshold = ref(props.topic.config.engagement.threshold)
 const maxAge = ref(props.topic.config.engagement.max_age_days)
+const pauseAbove = ref(props.topic.config.engagement.pause_above)
 const message = ref('')
 const isError = ref(false)
 
@@ -25,6 +27,7 @@ const { mutate, isLoading } = useMutation({
         criteria: criteria.value,
         threshold: threshold.value,
         max_age_days: maxAge.value,
+        pause_above: pauseAbove.value,
       },
     }),
   async onSuccess() {
@@ -99,6 +102,7 @@ const { mutate, isLoading } = useMutation({
         <p :id="`${id}-age-hint`" class="hint">{{ t('engagement.settings.maxAgeHint') }}</p>
       </div>
     </div>
+    <BacklogLimitField v-model="pauseAbove" module="engagement" />
     <div>
       <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
         {{ isLoading ? t('common.saving') : t('common.save') }}
