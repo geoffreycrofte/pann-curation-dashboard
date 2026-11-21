@@ -15,11 +15,23 @@ import {
   type PostDraft,
 } from '@pann/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogRoot,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from 'reka-ui'
 import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import FirstCommentEditor from '../components/FirstCommentEditor.vue'
 import Icon from '../components/Icon.vue'
+import QuickPublish from '../components/QuickPublish.vue'
 import TextSaver from '../components/TextSaver.vue'
 import CompositionImages from '../components/compose/CompositionImages.vue'
 import { api, type ComposeModeName, type ComposeSource, type Composition } from '../lib/api'
@@ -212,8 +224,13 @@ const altMissing = computed(() =>
 )
 const publishMessage = ref('')
 const publishError = ref(false)
-async function schedule(when: 'next_slot' | 'now') {
+const publishing = ref(false)
+/** Publication section and its heading: the floating island hides over the one, focuses the other. */
+const publishSection = ref<HTMLElement | null>(null)
+const publishHeading = ref<HTMLElement | null>(null)
+async function schedule(when: 'next_slot' | 'now', fromIsland = false) {
   publishMessage.value = ''
+  publishing.value = true
   try {
     const result = await api.scheduleComposition(props.topicId, props.compositionId, when)
     publishError.value = false
@@ -221,11 +238,17 @@ async function schedule(when: 'next_slot' | 'now') {
       when === 'now'
         ? t('compose.publish.publishing')
         : t('compose.publish.scheduled', { date: formatDate(result.publish_at) })
+    // Asked from the floating island: the outcome is far below, a toast shows it too.
+    if (fromIsland) toast(publishMessage.value)
     await refetch()
     await queryCache.invalidateQueries({ key: ['compositions', props.topicId] })
   } catch (err) {
     publishError.value = true
     publishMessage.value = describeError((err as Error).message, t).text
+    // From the island: bring the error into view, with its context.
+    if (fromIsland) publishHeading.value?.scrollIntoView({ block: 'start' })
+  } finally {
+    publishing.value = false
   }
 }
 async function unschedule() {
@@ -516,8 +539,15 @@ usePageDetail(() =>
     </section>
 
     <!-- 4. Publication -->
-    <section v-if="posts.length" class="block" :aria-labelledby="`${id}-publish`">
-      <h2 :id="`${id}-publish`">{{ t('compose.publish.title') }}</h2>
+    <section
+      v-if="posts.length"
+      ref="publishSection"
+      class="block"
+      :aria-labelledby="`${id}-publish`"
+    >
+      <h2 :id="`${id}-publish`" ref="publishHeading" tabindex="-1">
+        {{ t('compose.publish.title') }}
+      </h2>
       <p v-if="composition.status === 'scheduled' && composition.publish_at">
         {{ t('compose.publish.scheduled', { date: formatDate(composition.publish_at) }) }}
       </p>
@@ -536,15 +566,30 @@ usePageDetail(() =>
           <Icon name="clock" />
           {{ t('compose.publish.nextSlot') }}
         </button>
-        <button
-          type="button"
-          class="button"
-          :disabled="altMissing.length > 0"
-          @click="schedule('now')"
-        >
-          <Icon name="send" />
-          {{ t('compose.publish.now') }}
-        </button>
+        <!-- Cannot be undone from Pann: confirmed first, as in the item page. -->
+        <AlertDialogRoot>
+          <AlertDialogTrigger as-child>
+            <button type="button" class="button" :disabled="altMissing.length > 0 || publishing">
+              <Icon name="send" />
+              {{ t('compose.publish.now') }}
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogPortal>
+            <AlertDialogOverlay class="dialog-overlay" />
+            <AlertDialogContent class="dialog">
+              <AlertDialogTitle class="dialog-title">
+                {{ t('diffusion.confirmNowTitle') }}
+              </AlertDialogTitle>
+              <AlertDialogDescription>{{ t('diffusion.confirmNowText') }}</AlertDialogDescription>
+              <div class="dialog-actions">
+                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                <AlertDialogAction class="button" data-variant="primary" @click="schedule('now')">
+                  {{ t('compose.publish.now') }}
+                </AlertDialogAction>
+              </div>
+            </AlertDialogContent>
+          </AlertDialogPortal>
+        </AlertDialogRoot>
         <button
           v-if="composition.status === 'scheduled'"
           type="button"
@@ -556,6 +601,17 @@ usePageDetail(() =>
       </div>
       <p role="status" :class="{ error: publishError }">{{ publishMessage }}</p>
     </section>
+
+    <QuickPublish
+      v-if="posts.length && !readonly && !altMissing.length"
+      :can-schedule="composition.status !== 'scheduled'"
+      :retry="false"
+      :can-publish-now="true"
+      :busy="publishing"
+      :target="publishSection"
+      :fallback-focus="publishHeading"
+      @confirm="(when) => schedule(when, true)"
+    />
 
     <div v-if="composition.status === 'draft'" class="block">
       <button type="button" class="button" data-variant="danger" @click="remove">
