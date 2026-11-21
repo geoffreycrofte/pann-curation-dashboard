@@ -8,6 +8,7 @@ import { useRoute, useRouter } from 'vue-router'
 import ConversationList from '../components/ConversationList.vue'
 import { api } from '../lib/api'
 import { useTopicName } from '../lib/topic-name'
+import BacklogNotice from '../components/BacklogNotice.vue'
 
 const props = defineProps<{ topicId: string }>()
 const { t } = useI18n()
@@ -61,6 +62,12 @@ const announcement = ref('')
     <div>
       <!-- The rule of the tool, always in view: Pann never posts a reply. -->
       <p class="notice" role="note">{{ t('engagement.neverPosted') }}</p>
+      <BacklogNotice
+        :topic-id="topicId"
+        :config="topic.config"
+        module="engagement"
+        :to-sort="counts?.new"
+      />
       <TabsRoot v-model="status" activation-mode="manual">
         <TabsList :aria-label="t('engagement.statusFilter')" v-scroll-active class="tabs tab-row">
           <TabsTrigger v-for="s in STATUSES" :key="s" :value="s" class="button tab">

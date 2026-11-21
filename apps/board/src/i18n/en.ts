@@ -1042,6 +1042,26 @@ export default {
       'Added each time the product is mentioned in a reply, so that your link with it is clear.',
   },
   /** Empty state of the lists to sort: collect now, add sources, or resume the topic. */
+  backlog: {
+    setting: {
+      curation: 'Pause collection when too many items are waiting to be sorted',
+      engagement: 'Pause collection when too many conversations are waiting to be sorted',
+    },
+    limit: 'From',
+    hint: {
+      curation:
+        'From this many items in “To sort”, scheduled collections wait, and so does the AI triage they would pay for. They resume by themselves below this limit. “Collect now”, in the sources, still works.',
+      engagement:
+        'From this many conversations in “To sort”, scheduled collections wait, and so does the AI triage they would pay for. They resume by themselves below this limit. “Collect now”, in the sources, still works.',
+    },
+    notice: {
+      curation:
+        'Collection paused: {count} items are waiting to be sorted, for a limit of {limit}. It resumes by itself below this limit.',
+      engagement:
+        'Collection paused: {count} conversations are waiting to be sorted, for a limit of {limit}. It resumes by itself below this limit.',
+    },
+    change: 'Change the limit',
+  },
   collect: {
     run: 'Collect now',
     running: 'Collecting…',

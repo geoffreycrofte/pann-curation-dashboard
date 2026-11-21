@@ -28,7 +28,6 @@ Décidée le 2026-11-16, arbitrée le 2026-11-17 : **tout d'un coup**, sans ver
   - À prévoir : facturation (Stripe), compteur de tokens par espace, IA fournie par Pann, mode « comptes gérés par Pann » pour Zernio (fait le 2026-11-19, activé par espace dans l'admin ; reste à le relier aux offres), choix de l'offre dans l'onboarding.
   - **Assistant au-delà du crédit** (décidé le 2026-11-18) : une fois l'espace sous une offre, « Ajuster avec l'assistant » passe sur la clé de l'espace (offre « clés personnelles ») ou sur le budget du thème (offres où Pann fournit l'IA) quand le crédit de l'assistant est épuisé. Aujourd'hui, le bouton disparaît.
 - **Streak de publication** : compter les semaines d'affilée avec au moins une publication, l'afficher, et prévenir quand la semaine en cours n'a encore rien de programmé (« vous êtes sur le point de casser votre streak, choisissez des éléments à publier »). Préciser le canal de la notification (dans le board, par e-mail).
-- **Pause de la collecte** : réglage « au-delà de N éléments dans À trier, Pann se met en pause », pour ne pas accumuler plus qu'on ne peut trier (et ne pas payer le tri par IA pour rien). Reprise automatique sous le seuil.
 
 ## Déjà évoqué
 

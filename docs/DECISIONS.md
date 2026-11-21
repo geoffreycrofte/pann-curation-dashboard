@@ -470,3 +470,11 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Ordre stable.** Les listes de la veille et des conversations se trient par pertinence, puis date d'entrée dans le thème, puis `item_id`. Les éléments d'une même collecte partagent leur `created_at` (une seule transaction) : sans clé unique en dernier, Postgres rendait les ex æquo dans un ordre libre, qui changeait après une action ou d'une page à l'autre.
 
 **Onglets qui défilent.** Plus de barre de défilement : un fondu à gauche ou à droite (masque CSS) signale les onglets cachés, posé par la directive `v-scroll-active`, qui garde aussi l'onglet courant en vue. La molette verticale fait défiler la rangée tant qu'elle le peut, puis la page reprend. Au clavier, `scroll-padding-inline` garde l'onglet atteint hors des fondus.
+
+## 2026-11-21 : pause de la collecte au-delà d'un nombre d'éléments à trier
+
+**Réglage par outil.** `collection.pause_above` (veille) et `engagement.pause_above` (conversations), entre 10 et 5 000, `null` par défaut (pas de pause) : une collecte programmée attend tant que l'outil a au moins ce nombre d'éléments en `new` pour le thème. Rien ne change pour les thèmes existants tant que la personne ne coche pas la case (Réglages, Tri pour la veille ; Réglages, Conversations).
+
+**Reprise d'elle-même.** Les sources concernées restent « dues » : le cron les compte à chaque passage (une requête `count` par thème et par outil, seulement pour ceux qui ont un seuil) et elles repartent dès que le tri passe sous le seuil, sans état à tenir. Elles ne prennent pas de place dans le lot de 10 sources par passage pendant l'attente. « Collecter maintenant » passe outre : c'est une demande explicite.
+
+**Visible.** Au-dessus de la liste À trier, un avertissement dit combien d'éléments attendent, le seuil, et mène au réglage.
