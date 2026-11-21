@@ -1354,7 +1354,12 @@ export default {
   },
   sources: {
     tabsLabel: 'Source sections',
-    tabs: { sources: 'Sources', exclusions: 'Exclusions' },
+    tabs: {
+      sources: 'Sources',
+      curation: 'News watch sources',
+      conversations: 'Conversation sources',
+      exclusions: 'Exclusions',
+    },
     edit: 'Edit',
     editLabel: 'Edit “{label}”',
     query: 'Search',
@@ -1647,7 +1652,9 @@ export default {
       },
       scope: 'Search in',
       scopes: { all: 'Stories and comments', stories: 'Stories only', comments: 'Comments only' },
-      minPoints: 'Minimum points of stories',
+      minPoints: 'Minimum points of a story',
+      minPointsHint:
+        'On Hacker News, points are the votes a story receives. At 0, Pann keeps every story; at 10, only those other readers have already noticed. Comments have no points: they are always kept.',
       lang: 'Language of the posts',
       langHint: 'Two-letter code, for example fr or en.',
       lastRun: 'Last collection: {date}',
@@ -1741,7 +1748,6 @@ export default {
       compose: 'Create',
       budget: 'Budget',
     },
-    curationSources: 'News watch sources',
     criteria: 'Relevance criteria',
     criteriaHint:
       'Describe what makes an item useful for this topic: subjects, standards, audiences, what to leave out. The AI uses it to score each item.',

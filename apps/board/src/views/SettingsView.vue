@@ -214,15 +214,14 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
       <ProductSettings :key="topic.id" :topic="topic" />
     </TabsContent>
 
-    <TabsContent value="sources" class="subpanel source-groups">
-      <section v-if="topic.config.modules.curation" :aria-labelledby="`${id}-curation-sources`">
-        <h2 :id="`${id}-curation-sources`" class="group-title">
-          {{ t('settings.curationSources') }}
-        </h2>
-        <SourcesPanel :topic-id="topicId" />
-      </section>
-      <!-- It has its own heading ("Conversation sources") and introduction. -->
-      <EngagementSources v-if="topic.config.modules.engagement" :topic-id="topicId" />
+    <!-- One sub-tab per tool (news watch, conversations), then the excluded sites. -->
+    <TabsContent value="sources" class="subpanel">
+      <SourcesPanel v-if="topic.config.modules.curation" :topic-id="topicId">
+        <template v-if="topic.config.modules.engagement" #conversations>
+          <EngagementSources :topic-id="topicId" />
+        </template>
+      </SourcesPanel>
+      <EngagementSources v-else-if="topic.config.modules.engagement" :topic-id="topicId" />
     </TabsContent>
 
     <!-- Triage: what the topic keeps, its kinds of content and how often each is collected. -->
@@ -449,15 +448,6 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
 }
 
 /* Two groups of sources (news watch, conversations): well apart, each with its title. */
-.source-groups {
-  display: grid;
-  gap: var(--space-8);
-}
-
-.group-title {
-  margin: 0 0 var(--space-3);
-}
-
 /* One width for every settings panel: the cards line up from one tab to the next. */
 .layout > .subpanel {
   max-width: var(--width-content);

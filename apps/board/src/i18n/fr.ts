@@ -1372,7 +1372,12 @@ export default {
   },
   sources: {
     tabsLabel: 'Sections des sources',
-    tabs: { sources: 'Sources', exclusions: 'Exclusions' },
+    tabs: {
+      sources: 'Sources',
+      curation: 'Sources de la veille',
+      conversations: 'Sources des conversations',
+      exclusions: 'Exclusions',
+    },
     edit: 'Modifier',
     editLabel: 'Modifier « {label} »',
     query: 'Recherche',
@@ -1673,7 +1678,9 @@ export default {
         stories: 'Sujets seulement',
         comments: 'Commentaires seulement',
       },
-      minPoints: 'Points minimum des sujets',
+      minPoints: 'Points minimum d’un sujet',
+      minPointsHint:
+        'Sur Hacker News, les points sont les votes reçus par un sujet. À 0, Pann garde tous les sujets ; à 10, seulement ceux que d’autres lecteurs ont déjà remarqués. Les commentaires n’ont pas de points : ils sont toujours gardés.',
       lang: 'Langue des posts',
       langHint: 'Code à deux lettres, par exemple fr ou en.',
       lastRun: 'Dernière collecte : {date}',
@@ -1770,7 +1777,6 @@ export default {
       compose: 'Création',
       budget: 'Budget',
     },
-    curationSources: 'Sources de la veille',
     criteria: 'Critères de pertinence',
     criteriaHint:
       'Décrivez ce qui rend un élément utile pour ce thème : sujets, normes, publics, ce qu’il faut écarter. L’IA s’en sert pour noter chaque élément.',

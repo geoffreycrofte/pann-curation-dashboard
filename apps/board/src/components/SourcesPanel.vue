@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from 'reka-ui'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, useSlots, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AddSourceSection from '../components/AddSourceSection.vue'
@@ -59,8 +59,17 @@ const route = useRoute()
 const router = useRouter()
 // Sub-tabs, kept in the address (?tab=exclusions) like the settings.
 // Inside the settings page (whose own tab is ?tab=…): this sub-tab is ?sub=….
-const tab = computed<'sources' | 'exclusions'>({
-  get: () => (route.query.sub === 'exclusions' ? 'exclusions' : 'sources'),
+// The sources of the conversations, when the topic uses that tool, get a tab of their own
+// (slot "conversations"): each tool's sources apart, never one under the other.
+const slots = useSlots()
+const SUBTABS = ['sources', 'conversations', 'exclusions'] as const
+type Subtab = (typeof SUBTABS)[number]
+const tab = computed<Subtab>({
+  get: () => {
+    const sub = route.query.sub
+    if (sub === 'conversations' && !slots.conversations) return 'sources'
+    return (SUBTABS as readonly unknown[]).includes(sub) ? (sub as Subtab) : 'sources'
+  },
   set: (value) =>
     void router.replace({
       query: { ...route.query, sub: value === 'sources' ? undefined : value },
@@ -220,7 +229,12 @@ function feedUrl(source: Source): string | undefined {
 <template>
   <TabsRoot v-model="tab" activation-mode="manual">
     <TabsList :aria-label="t('sources.tabsLabel')" v-scroll-active class="subtabs tab-row">
-      <TabsTrigger value="sources" class="subtab">{{ t('sources.tabs.sources') }}</TabsTrigger>
+      <TabsTrigger value="sources" class="subtab">{{
+        slots.conversations ? t('sources.tabs.curation') : t('sources.tabs.sources')
+      }}</TabsTrigger>
+      <TabsTrigger v-if="slots.conversations" value="conversations" class="subtab">
+        {{ t('sources.tabs.conversations') }}
+      </TabsTrigger>
       <TabsTrigger value="exclusions" class="subtab">
         {{ t('sources.tabs.exclusions') }}
         <span v-if="topic?.config.collection.excluded_domains.length" class="count">
@@ -426,6 +440,10 @@ function feedUrl(source: Source): string | undefined {
       <p role="status" :class="{ error: isError }">{{ message }}</p>
 
       <AddSourceSection v-if="topic" :topic-id="topicId" :config="topic.config" />
+    </TabsContent>
+
+    <TabsContent v-if="slots.conversations" value="conversations" class="subpanel">
+      <slot name="conversations" />
     </TabsContent>
 
     <TabsContent value="exclusions" class="subpanel">

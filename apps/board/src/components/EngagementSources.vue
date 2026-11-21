@@ -263,7 +263,11 @@ const queryOf = (source: Source) =>
             type="number"
             min="0"
             step="1"
+            :aria-describedby="`${id}-points-hint`"
           />
+          <p :id="`${id}-points-hint`" class="hint">
+            {{ t('engagement.sources.minPointsHint') }}
+          </p>
         </div>
         <div v-if="type === 'bluesky'" class="form-row">
           <label :for="`${id}-lang`"
@@ -396,7 +400,13 @@ const queryOf = (source: Source) =>
 .pair {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  align-items: start;
   gap: var(--space-4);
+}
+
+/* A field keeps its own height when the one beside it has a long help text. */
+.pair > .form-row {
+  align-content: start;
 }
 
 .pair .field {

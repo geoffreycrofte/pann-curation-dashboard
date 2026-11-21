@@ -378,6 +378,7 @@ async function shoot(page, name, path, opts = {}) {
     ['calendar-week-later', '/t/t1/calendar?view=week', { laterMinutes: 180 }],
     ['settings-general', '/t/t1/settings'],
     ['settings-sources', '/t/t1/settings?tab=sources'],
+    ['settings-sources-conversations', '/t/t1/settings?tab=sources&sub=conversations'],
     ['settings-triage', '/t/t1/settings?tab=triage'],
     ['settings-publishing', '/t/t1/settings?tab=publishing'],
     ['settings-product', '/t/t1/settings?tab=product'],
