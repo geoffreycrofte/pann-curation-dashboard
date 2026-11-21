@@ -478,3 +478,9 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Reprise d'elle-même.** Les sources concernées restent « dues » : le cron les compte à chaque passage (une requête `count` par thème et par outil, seulement pour ceux qui ont un seuil) et elles repartent dès que le tri passe sous le seuil, sans état à tenir. Elles ne prennent pas de place dans le lot de 10 sources par passage pendant l'attente. « Collecter maintenant » passe outre : c'est une demande explicite.
 
 **Visible.** Au-dessus de la liste À trier, un avertissement dit combien d'éléments attendent, le seuil, et mène au réglage. Dans l'Aperçu, la ligne de l'outil passe « à faire » avec les mêmes chiffres.
+
+## 2026-11-21 : enregistrement automatique des textes
+
+**Où.** Les textes qu'on relit et retouche (posts, résumés, premier commentaire, textes alternatifs, « Sujet et matière » d'une Création) s'enregistrent seuls : une seconde après la dernière frappe, en quittant le champ, et en quittant la page (`lib/autosave.ts`). Les formulaires de réglages gardent un bouton : ils se valident ensemble et une valeur à moitié tapée n'y a pas de sens.
+
+**Comment.** Un seul enregistrement à la fois ; une frappe pendant l'envoi repart juste après. La valeur envoyée est une copie, et « modifié » compare à la fois à la valeur du serveur et au dernier envoi réussi, pour ne pas renvoyer un texte en attendant le rechargement. Fermer l'onglet avec un changement non enregistré fait demander le navigateur. Une ligne discrète dit l'état ; seule l'issue (enregistré, erreur) est annoncée aux lecteurs d'écran, pas chaque « Enregistrement… ».

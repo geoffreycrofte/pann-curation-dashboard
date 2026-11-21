@@ -121,6 +121,19 @@ const detail = {
   ],
   posts: [post('p1', 'linkedin', 'fr'), post('p2', 'linkedin', 'en'), post('p3', 'bluesky', 'fr')],
 }
+// An item still to sort: no drafting yet, the start of its source text to judge it.
+const detailNew = {
+  ...item(0, 'new'),
+  drafted_at: null,
+  item: {
+    ...item(0, 'new').item,
+    excerpt:
+      "La direction interministérielle du numérique publie la version 5 du référentiel général d'amélioration de l'accessibilité. Cette version s'aligne sur les WCAG 2.2 et ajoute neuf critères, dont la taille des cibles et l'aide à la saisie.\n\nLa méthode de test est revue : chaque critère indique désormais les outils et les combinaisons d'assistance à utiliser. Les documents bureautiques font l'objet d'un chapitre à part.\n\nLes administrations ont dix-huit mois pour mettre à jour leur déclaration d'accessibilité et publier un schéma pluriannuel qui",
+    excerpt_truncated: true,
+  },
+  summaries: [],
+  posts: [],
+}
 const queue = [
   {
     item_id: 'i1',
@@ -272,6 +285,7 @@ const routes = {
     feed_key: null,
   },
   '/api/topics/t1/items/i1': detail,
+  '/api/topics/t1/items/i0': detailNew,
   '/api/topics/t1/usage': {
     budget_usd: 10,
     month_cost_usd: 3.42,
@@ -310,6 +324,14 @@ const routes = {
 async function shoot(page, name, path, opts = {}) {
   await page.goto(base + path, { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
+  // Opens a folded part first (the first matching button), and shows it at the top.
+  if (opts.click) {
+    // A handle, not a locator: the selector stops matching once the button is open.
+    const target = await page.locator(opts.click).first().elementHandle()
+    await target.click()
+    await page.waitForTimeout(300)
+    await target.evaluate((el) => el.closest('section')?.scrollIntoView())
+  }
   if (opts.scroll) await page.evaluate((y) => scrollTo(0, y), opts.scroll)
   await page.screenshot({ path: `${out}/${name}.png`, fullPage: !opts.viewport })
 }
@@ -321,6 +343,7 @@ async function shoot(page, name, path, opts = {}) {
     ['curation', '/t/t1/curation'],
     ['curation-validated', '/t/t1/curation?status=validated'],
     ['item', '/t/t1/items/i1'],
+    ['item-new', '/t/t1/items/i0'],
     ['engagement', '/t/t1/engagement'],
     ['compose', '/t/t1/compose'],
     ['calendar', '/t/t1/calendar'],
@@ -337,6 +360,11 @@ async function shoot(page, name, path, opts = {}) {
     ['settings-compose', '/t/t1/settings?tab=compose'],
     ['settings-budget', '/t/t1/settings?tab=budget'],
     ['connections', '/connections'],
+    [
+      'connections-open',
+      '/connections',
+      { click: 'button.toggle[aria-expanded="false"]:has-text("Gérer")', viewport: true },
+    ],
     ['profile', '/profile'],
     ['composition', '/t/t1/compose/c1'],
     ['series', '/t/t1/series/s1'],
@@ -427,7 +455,7 @@ async function shoot(page, name, path, opts = {}) {
         body = p.includes('newsletter') ? { next_at: null, previews: [], issues: [] } : []
       r.fulfill({ status: 200, body: JSON.stringify(body), contentType: 'application/json' })
     })
-    for (const [name, path] of pages) await shoot(page, `${name}-${label}`, path)
+    for (const [name, path, opts] of pages) await shoot(page, `${name}-${label}`, path, opts)
     if (errors.length)
       console.log(label, 'errors', JSON.stringify([...new Set(errors)].slice(0, 5)))
     await ctx.close()

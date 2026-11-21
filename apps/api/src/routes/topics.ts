@@ -119,7 +119,10 @@ const textBody = (max: number) => z.object({ text: z.string().trim().min(1).max(
 
 const DETAIL_COLUMNS =
   'item_id, topic_id, relevance_score, is_commercial, triage_reason, draft_status, draft_error, drafted_at, status, validated_at, publish_at, kind, ' +
-  'item:items (canonical_url, title, source_lang, origin, published_at, discovered_at)'
+  'item:items (canonical_url, title, source_lang, origin, published_at, discovered_at, fetched_content)'
+
+/** Start of the source text shown on an item's page, to judge it before validating. */
+const DETAIL_EXCERPT_CHARS = 1200
 
 const POST_COLUMNS =
   'id, channel, lang, body, first_comment, status, edited_by_human, scheduled_at, sent_at, published_url, last_error, claimed_at'
@@ -607,7 +610,21 @@ export const topics = new Hono<AppEnv>()
     ])
     if (sError) throw sError
     if (pError) throw pError
-    return c.json({ ...(row as unknown as Record<string, unknown>), summaries, posts })
+    // The stored text is long: the page gets its start only.
+    const { fetched_content: content, ...item } = (
+      row as unknown as { item: { fetched_content: string | null } }
+    ).item
+    const excerpt = content?.trim().slice(0, DETAIL_EXCERPT_CHARS).trim() || null
+    return c.json({
+      ...(row as unknown as Record<string, unknown>),
+      item: {
+        ...item,
+        excerpt,
+        excerpt_truncated: (content?.trim().length ?? 0) > DETAIL_EXCERPT_CHARS,
+      },
+      summaries,
+      posts,
+    })
   })
 
   /** Queue a new drafting (validated or published items). Edited texts are kept. */

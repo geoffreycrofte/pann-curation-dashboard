@@ -67,25 +67,10 @@ watch(status, async (value, previous) => {
   } else if (value !== 'ok') expanded.value = true
 })
 
-// With a key in place the form stays hidden: "Replace the key" opens it. A refused key
-// shows it right away, since it has to be replaced anyway.
-const replacing = ref(false)
-const showForm = computed(
-  () => props.canEdit && (!props.credential || status.value === 'invalid' || replacing.value),
-)
+// With a working key in place, there is no form: changing a key is deleting it, then
+// giving the new one. A refused key shows the form right away, to replace it.
+const showForm = computed(() => props.canEdit && (!props.credential || status.value === 'invalid'))
 const secretInput = ref<HTMLInputElement>()
-const replaceButton = ref<HTMLButtonElement>()
-async function startReplace() {
-  replacing.value = true
-  await nextTick()
-  secretInput.value?.focus()
-}
-async function cancelReplace() {
-  replacing.value = false
-  secret.value = ''
-  await nextTick()
-  replaceButton.value?.focus()
-}
 
 const secret = ref('')
 const instance = ref(props.credential?.meta.instance?.replace(/^https:\/\//, '') ?? '')
@@ -106,8 +91,6 @@ const { mutate: save, isLoading: saving } = useMutation({
   async onSuccess(credential) {
     secret.value = ''
     isError.value = false
-    const wasReplacing = replacing.value
-    replacing.value = false
     const saved = t('connections.saved', {
       provider: name.value,
       status: t(`connections.status.${credential.status}`),
@@ -122,11 +105,6 @@ const { mutate: save, isLoading: saving } = useMutation({
     // The new account gets its own card: this one folds back for the next.
     if (props.adding) expanded.value = false
     await refresh()
-    // The form (and the focused save button) is gone: focus the replace button.
-    if (wasReplacing && expanded.value) {
-      await nextTick()
-      replaceButton.value?.focus()
-    }
   },
   onError(err) {
     isError.value = true
@@ -161,6 +139,9 @@ const { mutate: remove } = useMutation({
       }),
     )
     await refresh()
+    // The delete button is gone: focus goes to the field of the new key.
+    await nextTick()
+    secretInput.value?.focus()
   },
   onError(err) {
     isError.value = true
@@ -211,7 +192,37 @@ const { mutate: remove } = useMutation({
     <p v-if="!adding" class="purpose">{{ t(`connections.providers.${provider}.purpose`) }}</p>
 
     <div v-show="expanded" :id="`${id}-details`" class="details">
-      <p v-if="credential" class="hint">{{ t('connections.hint', { hint: credential.hint }) }}</p>
+      <!-- The key in place, and its deletion at the end of its line. -->
+      <div v-if="credential" class="key-line">
+        <p class="hint">{{ t('connections.hint', { hint: credential.hint }) }}</p>
+        <AlertDialogRoot v-if="canEdit">
+          <AlertDialogTrigger as-child>
+            <button
+              type="button"
+              class="icon-button"
+              data-variant="danger"
+              :aria-label="t('connections.removeLabel', { provider: name })"
+            >
+              <Icon name="trash" :size="18" />
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogPortal>
+            <AlertDialogOverlay class="dialog-overlay" />
+            <AlertDialogContent class="dialog">
+              <AlertDialogTitle class="dialog-title">
+                {{ t('connections.confirmTitle', { provider: name }) }}
+              </AlertDialogTitle>
+              <AlertDialogDescription>{{ t('connections.confirmText') }}</AlertDialogDescription>
+              <div class="dialog-actions">
+                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                <AlertDialogAction class="button" data-variant="danger" @click="remove()">
+                  {{ t('common.delete') }}
+                </AlertDialogAction>
+              </div>
+            </AlertDialogContent>
+          </AlertDialogPortal>
+        </AlertDialogRoot>
+      </div>
       <p v-if="status === 'invalid'" class="notice notice-inline" data-tone="danger">
         <Icon name="alert-circle" />
         <span>{{ t('connections.invalidNotice') }}</span>
@@ -367,66 +378,16 @@ const { mutate: remove } = useMutation({
         </div>
       </form>
 
-      <div v-if="canEdit" class="card-footer">
-        <template v-if="showForm">
-          <button
-            type="submit"
-            :form="`${id}-form`"
-            class="button"
-            data-variant="primary"
-            :disabled="saving"
-          >
-            {{ saving ? t('connections.saving') : t('connections.save') }}
-          </button>
-          <button
-            v-if="replacing"
-            type="button"
-            class="button"
-            data-size="small"
-            @click="cancelReplace"
-          >
-            {{ t('common.cancel') }}
-          </button>
-        </template>
+      <div v-if="showForm" class="card-footer">
         <button
-          v-else
-          ref="replaceButton"
-          type="button"
+          type="submit"
+          :form="`${id}-form`"
           class="button"
-          data-size="small"
-          @click="startReplace"
+          data-variant="primary"
+          :disabled="saving"
         >
-          {{ t('connections.replace') }}
+          {{ saving ? t('connections.saving') : t('connections.save') }}
         </button>
-        <!-- Deleting comes last, set apart at the end of the row. -->
-        <AlertDialogRoot v-if="credential">
-          <AlertDialogTrigger as-child>
-            <button
-              type="button"
-              class="button remove"
-              data-size="small"
-              data-variant="danger"
-              :aria-label="t('connections.removeLabel', { provider: name })"
-            >
-              {{ t('connections.remove') }}
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogPortal>
-            <AlertDialogOverlay class="dialog-overlay" />
-            <AlertDialogContent class="dialog">
-              <AlertDialogTitle class="dialog-title">
-                {{ t('connections.confirmTitle', { provider: name }) }}
-              </AlertDialogTitle>
-              <AlertDialogDescription>{{ t('connections.confirmText') }}</AlertDialogDescription>
-              <div class="dialog-actions">
-                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
-                <AlertDialogAction class="button" data-variant="danger" @click="remove()">
-                  {{ t('common.delete') }}
-                </AlertDialogAction>
-              </div>
-            </AlertDialogContent>
-          </AlertDialogPortal>
-        </AlertDialogRoot>
       </div>
     </div>
     <p v-if="isError && message" class="notice notice-inline" data-tone="danger" role="alert">
@@ -586,8 +547,15 @@ const { mutate: remove } = useMutation({
   gap: var(--space-2) var(--space-3);
 }
 
-.card-footer .remove {
-  margin-inline-start: auto;
+.key-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.key-line .hint {
+  margin: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

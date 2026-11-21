@@ -12,6 +12,8 @@ import { describeError } from '../../lib/errors'
 import { ImageError, prepareImage } from '../../lib/image'
 import { contentLangName } from '../../lib/langs'
 import { toast } from '../../lib/toast'
+import type { AutosaveState } from '../../lib/autosave'
+import AutosaveStatus from '../AutosaveStatus.vue'
 import Icon from '../Icon.vue'
 
 const props = defineProps<{
@@ -29,7 +31,7 @@ const input = ref<HTMLInputElement>()
 const uploading = ref(false)
 const message = ref('')
 const isError = ref(false)
-/** Texts being edited, per image and language (saved with the image's button). */
+/** Texts being edited, per image and language (saved when the field is left). */
 const drafts = ref<Record<string, Record<string, string>>>({})
 
 const textOf = (media: CompositionMedia, lang: string) =>
@@ -77,10 +79,14 @@ async function add(event: Event) {
   }
 }
 
+/** Where the automatic save of each image's texts stands. */
+const saveState = ref<Record<string, { state: AutosaveState; error?: unknown }>>({})
 async function save(media: CompositionMedia) {
+  if (!dirty(media)) return
   const alt = { ...media.alt, ...drafts.value[media.id] }
   // An edited text is the person's own: it is no longer marked as proposed.
   const edited = Object.keys(drafts.value[media.id] ?? {})
+  saveState.value = { ...saveState.value, [media.id]: { state: 'saving' } }
   try {
     await api.updateCompositionMedia(props.topicId, props.compositionId, media.id, {
       alt,
@@ -88,11 +94,10 @@ async function save(media: CompositionMedia) {
     })
     const { [media.id]: _, ...rest } = drafts.value
     drafts.value = rest
-    toast(t('common.saved'))
+    saveState.value = { ...saveState.value, [media.id]: { state: 'saved' } }
     emit('changed')
-  } catch (err) {
-    isError.value = true
-    message.value = describeError((err as Error).message, t).text
+  } catch (error) {
+    saveState.value = { ...saveState.value, [media.id]: { state: 'error', error } }
   }
 }
 
@@ -152,14 +157,17 @@ async function remove(media: CompositionMedia) {
                 :aria-describedby="`${id}-${image.id}-hint`"
                 :value="textOf(image, lang)"
                 @input="edit(image, lang, ($event.target as HTMLTextAreaElement).value)"
+                @change="save(image)"
               ></textarea>
             </div>
             <p :id="`${id}-${image.id}-hint`" class="hint">{{ t('compose.images.altHint') }}</p>
           </fieldset>
+          <AutosaveStatus
+            v-if="!readonly"
+            :state="saveState[image.id]?.state ?? 'idle'"
+            :error="saveState[image.id]?.error"
+          />
           <div v-if="!readonly" class="actions">
-            <button type="submit" class="button" data-size="small" :disabled="!dirty(image)">
-              {{ t('compose.images.saveAlt') }}
-            </button>
             <button
               v-if="langs.some((l) => !textOf(image, l).trim())"
               type="button"

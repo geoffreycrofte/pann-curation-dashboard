@@ -166,12 +166,13 @@ const { mutate, isLoading } = useMutation({
       </li>
     </ul>
     <!-- The switch comes after the state it changes, its effect beside it: quiet while
-         the topic runs, the main thing to read once it is paused. -->
+         the topic runs, the page's main action once it is paused. -->
     <div class="switch">
       <button
         type="button"
         class="button"
-        data-size="small"
+        :data-size="active ? 'small' : undefined"
+        :data-variant="active ? undefined : 'primary'"
         :disabled="isLoading"
         :aria-describedby="`${id}-effect`"
         @click="mutate(!active)"

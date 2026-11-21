@@ -50,10 +50,10 @@ const actions = computed(() =>
         <li v-if="c.meta.platform" class="badge">
           {{ t(`engagement.platforms.${c.meta.platform}`) }}
         </li>
-        <!-- "Reply" is what every conversation on show is for, and what the button says:
-             only the other advice (watch, skip) gets a badge. -->
+        <!-- The AI's advice helps to sort: "Reply" is what the button says, so only the
+             other advice (watch, skip) gets a badge, and none once the person has chosen. -->
         <li
-          v-if="c.engagement_decision && c.engagement_decision !== 'reply'"
+          v-if="c.status === 'new' && c.engagement_decision && c.engagement_decision !== 'reply'"
           class="badge"
           data-dot
           :data-tone="decisionTone"

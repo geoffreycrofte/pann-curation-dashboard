@@ -43,6 +43,12 @@ export default {
     removed: 'Language removed: {lang}.',
   },
   theme: { dark: 'Dark mode' },
+  autosave: {
+    auto: 'Saved automatically.',
+    saving: 'Saving…',
+    saved: 'Saved.',
+    error: 'Not saved: {message}',
+  },
   common: {
     newTab: '(new tab)',
     save: 'Save',
@@ -137,6 +143,7 @@ export default {
     untitled: 'Untitled',
     back: 'Back to Create',
     material: 'Subject and material',
+    editMaterial: 'Edit',
     subject: 'What is this post about?',
     subjectHint: 'One sentence is enough. It is also the search in “Search” mode.',
     mode: 'Write from',
@@ -194,7 +201,6 @@ export default {
       proposed: 'Proposed by the AI',
       proposing: 'The AI is proposing the text alternatives…',
       propose: 'Propose the missing texts',
-      saveAlt: 'Save the texts',
       remove: 'Remove',
       removeLabel: 'Remove image {n}',
       errors: {
@@ -498,7 +504,6 @@ export default {
       newsletter: 'Needed to send the newsletter',
     },
     manage: 'Manage',
-    replace: 'Replace the key',
     configure: 'Set up',
     invalidNotice: 'The service refuses this key: it needs replacing.',
     howTo: 'Where do I find this key?',
@@ -506,7 +511,6 @@ export default {
     keyLabelReplace: 'New {provider} key',
     save: 'Check and save',
     saving: 'Checking…',
-    remove: 'Delete the key',
     removeLabel: 'Delete the {provider} key',
     confirmTitle: 'Delete the {provider} key?',
     confirmText: 'Sources that depend on it will no longer be collected.',
@@ -722,7 +726,7 @@ export default {
     button: 'Rewrite',
     label: 'Rewrite: {field}',
     running: 'Rewriting…',
-    done: 'Proposal inserted in the field. Save to keep it, or undo the rewrite.',
+    done: 'Proposal inserted and saved. “Undo the rewrite” brings back the previous text.',
     undone: 'Previous text restored.',
     undo: 'Undo the rewrite',
     timeout: 'The rewrite is taking too long. Try again in a moment.',
@@ -742,7 +746,6 @@ export default {
   },
   draft: {
     editedBadge: 'Edited by hand',
-    unsaved: 'Not saved',
     summaryUse: 'This summary is used in the newsletter and in the public feeds, in its language.',
     confirmTitle: 'Draft again?',
     confirmReplaced:
@@ -771,8 +774,6 @@ export default {
     },
     summaryLabel: 'Summary in {lang}',
     edited: 'Edited by hand: kept if drafting runs again.',
-    save: 'Save',
-    saved: 'Saved.',
     posts: 'Post drafts',
     postLabel: '{channel}, in {lang}',
     channels: {
@@ -808,8 +809,6 @@ export default {
     none: 'No comment',
     own: 'A comment for this post only',
     ownLabel: 'Comment text',
-    save: 'Save the comment',
-    saved: 'Comment saved.',
     empty: 'Write the comment, or pick another option.',
   },
   missingPosts: {
@@ -1291,6 +1290,23 @@ export default {
     validate: 'Validate',
     reject: 'Reject',
     restore: 'Back to sorting',
+  },
+  sourcePreview: {
+    title: 'What the source says',
+    none: 'Pann could not read the text of this page when collecting it. Open the source to judge it.',
+    published: 'Published on {date}',
+    readMore: 'Read more on {site}',
+  },
+  decision: {
+    title: 'Keep this item?',
+    hint: 'Validating starts drafting the summaries and posts, in your languages and for your networks.',
+    rejectedTitle: 'Item rejected',
+    rejectedHint: 'It no longer shows in sorting. Putting it back offers it again.',
+    done: {
+      validated: 'Item validated. Drafting starts.',
+      rejected: 'Item rejected.',
+      new: 'Item back to sort.',
+    },
   },
   itemKind: {
     label: 'Content kind',

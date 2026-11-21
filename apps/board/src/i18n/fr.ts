@@ -42,6 +42,12 @@ export default {
     removed: 'Langue retirée : {lang}.',
   },
   theme: { dark: 'Mode sombre' },
+  autosave: {
+    auto: 'Enregistrement automatique.',
+    saving: 'Enregistrement…',
+    saved: 'Enregistré.',
+    error: 'Non enregistré : {message}',
+  },
   common: {
     newTab: '(nouvel onglet)',
     save: 'Enregistrer',
@@ -136,6 +142,7 @@ export default {
     untitled: 'Sans titre',
     back: 'Retour à la Création',
     material: 'Sujet et matière',
+    editMaterial: 'Modifier',
     subject: 'De quoi parle ce post ?',
     subjectHint: 'Une phrase suffit. Elle sert aussi de recherche en mode « Recherche ».',
     mode: 'À partir de quoi écrire',
@@ -193,7 +200,6 @@ export default {
       proposed: 'Proposé par l’IA',
       proposing: 'L’IA propose les textes alternatifs…',
       propose: 'Proposer les textes manquants',
-      saveAlt: 'Enregistrer les textes',
       remove: 'Retirer',
       removeLabel: 'Retirer l’image {n}',
       errors: {
@@ -499,7 +505,6 @@ export default {
       newsletter: 'Nécessaire pour envoyer la newsletter',
     },
     manage: 'Gérer',
-    replace: 'Remplacer la clé',
     configure: 'Configurer',
     invalidNotice: 'Le service refuse cette clé : il faut la remplacer.',
     howTo: 'Où trouver cette clé ?',
@@ -507,7 +512,6 @@ export default {
     keyLabelReplace: 'Nouvelle clé {provider}',
     save: 'Vérifier et enregistrer',
     saving: 'Vérification…',
-    remove: 'Supprimer la clé',
     removeLabel: 'Supprimer la clé {provider}',
     confirmTitle: 'Supprimer la clé {provider} ?',
     confirmText: 'Les sources qui en dépendent ne pourront plus être collectées.',
@@ -729,7 +733,7 @@ export default {
     button: 'Réécrire',
     label: 'Réécrire : {field}',
     running: 'Réécriture…',
-    done: 'Proposition insérée dans le champ. Enregistrez pour la garder, ou annulez la réécriture.',
+    done: 'Proposition insérée et enregistrée. « Annuler la réécriture » rétablit le texte précédent.',
     undone: 'Texte précédent rétabli.',
     undo: 'Annuler la réécriture',
     timeout: 'La réécriture prend trop de temps. Réessayez dans un moment.',
@@ -749,7 +753,6 @@ export default {
   },
   draft: {
     editedBadge: 'Modifié à la main',
-    unsaved: 'Non enregistré',
     summaryUse: 'Ce résumé est repris dans la newsletter et dans les flux publics, dans sa langue.',
     confirmTitle: 'Relancer la rédaction ?',
     confirmReplaced:
@@ -779,8 +782,6 @@ export default {
     },
     summaryLabel: 'Résumé en {lang}',
     edited: 'Modifié à la main : conservé si la rédaction est relancée.',
-    save: 'Enregistrer',
-    saved: 'Enregistré.',
     posts: 'Brouillons de posts',
     postLabel: '{channel}, en {lang}',
     channels: {
@@ -816,8 +817,6 @@ export default {
     none: 'Pas de commentaire',
     own: 'Un commentaire propre à ce post',
     ownLabel: 'Texte du commentaire',
-    save: 'Enregistrer le commentaire',
-    saved: 'Commentaire enregistré.',
     empty: 'Écrivez le commentaire, ou choisissez une autre option.',
   },
   missingPosts: {
@@ -1309,6 +1308,23 @@ export default {
     validate: 'Valider',
     reject: 'Rejeter',
     restore: 'Remettre à trier',
+  },
+  sourcePreview: {
+    title: 'Ce que dit la source',
+    none: 'Pann n’a pas pu lire le texte de cette page à la collecte. Ouvrez la source pour en juger.',
+    published: 'Publié le {date}',
+    readMore: 'Lire la suite sur {site}',
+  },
+  decision: {
+    title: 'Garder cet élément ?',
+    hint: 'Valider lance la rédaction des résumés et des posts, dans vos langues et pour vos réseaux.',
+    rejectedTitle: 'Élément rejeté',
+    rejectedHint: 'Il n’apparaît plus dans le tri. Le remettre à trier le propose de nouveau.',
+    done: {
+      validated: 'Élément validé. La rédaction commence.',
+      rejected: 'Élément rejeté.',
+      new: 'Élément remis à trier.',
+    },
   },
   itemKind: {
     label: 'Type de contenu',

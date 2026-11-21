@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   accountFor,
+  canTransition,
   DRAFT_CHANNELS,
   missingPosts,
   POST_LIMITS,
@@ -8,7 +9,9 @@ import {
   SOURCE_TEXT_MAX,
   SOURCE_TEXT_MIN,
   publishedLength,
+  siteOf,
   type DraftChannel,
+  type ItemTopicStatus,
   type Lang,
   type PostDraft,
 } from '@pann/shared'
@@ -91,6 +94,36 @@ const excerpt = computed(() => detail.value?.summaries.find((s) => s.key_excerpt
 const nature = computed(() => detail.value?.summaries.find((s) => s.source_nature)?.source_nature)
 const model = computed(() => detail.value?.summaries[0]?.model)
 const canDraft = computed(() => ['validated', 'published'].includes(detail.value?.status ?? ''))
+/** Still to sort (or rejected): the page helps to judge the source, not to check texts. */
+const sorting = computed(() => ['new', 'rejected'].includes(detail.value?.status ?? ''))
+const site = computed(() => (detail.value ? siteOf(detail.value.item.canonical_url) : null))
+const paragraphs = computed(() =>
+  (detail.value?.item.excerpt ?? '')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean),
+)
+const decisions = computed(() =>
+  (
+    [
+      { to: 'validated', label: 'action.validate', variant: 'primary' },
+      { to: 'rejected', label: 'action.reject', variant: undefined },
+      { to: 'new', label: 'action.restore', variant: undefined },
+    ] as const
+  ).filter((a) => detail.value && canTransition(detail.value.status, a.to)),
+)
+const { mutate: decide, isLoading: deciding } = useMutation({
+  mutation: (status: ItemTopicStatus) => api.setStatus(props.topicId, props.itemId, status),
+  async onSuccess(_, status) {
+    toast(t(`decision.done.${status}`))
+    await queryCache.invalidateQueries({ key: key() })
+    await queryCache.invalidateQueries({ key: ['items', props.topicId] })
+  },
+  onError(err) {
+    decisionError.value = describeError(err.message, t).text
+  },
+})
+const decisionError = ref('')
 
 const message = ref('')
 const isError = ref(false)
@@ -436,7 +469,85 @@ usePageDetail(() => detail.value?.item.title)
       </div>
     </div>
 
-    <section class="block draft-state" :data-tone="draftTone" aria-labelledby="drafting-status">
+    <!--
+      Still to sort: what the source says, then the decision. Validating starts the
+      drafting, and the page turns into the one that checks the texts.
+    -->
+    <template v-if="sorting">
+      <section class="block source-preview" aria-labelledby="source-preview">
+        <h2 id="source-preview">{{ t('sourcePreview.title') }}</h2>
+        <div
+          v-if="paragraphs.length"
+          class="source-text-preview"
+          :lang="detail.item.source_lang ?? undefined"
+        >
+          <p v-for="(paragraph, index) in paragraphs" :key="index">
+            {{ paragraph
+            }}<template v-if="detail.item.excerpt_truncated && index === paragraphs.length - 1"
+              >…</template
+            >
+          </p>
+        </div>
+        <p v-else class="hint">{{ t('sourcePreview.none') }}</p>
+        <p class="hint source-meta">
+          <span v-if="detail.item.published_at">
+            {{
+              t('sourcePreview.published', {
+                date: d(new Date(detail.item.published_at), { dateStyle: 'long' }),
+              })
+            }}
+          </span>
+          <!-- "Read the source" is in the toolbar; here, only where the excerpt stops. -->
+          <a
+            v-if="site && detail.item.excerpt_truncated"
+            :href="detail.item.canonical_url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ t('sourcePreview.readMore', { site }) }}
+            <Icon name="external-link" :size="14" />
+            <span class="visually-hidden">{{ t('common.newTab') }}</span>
+          </a>
+        </p>
+      </section>
+
+      <section
+        v-if="decisions.length"
+        class="block decision next-step"
+        aria-labelledby="decision-title"
+      >
+        <div class="decision-text">
+          <h2 id="decision-title">
+            {{ t(detail.status === 'rejected' ? 'decision.rejectedTitle' : 'decision.title') }}
+          </h2>
+          <p id="decision-hint" class="hint">
+            {{ t(detail.status === 'rejected' ? 'decision.rejectedHint' : 'decision.hint') }}
+          </p>
+        </div>
+        <div class="decision-actions" role="group" aria-labelledby="decision-title">
+          <button
+            v-for="action in decisions"
+            :key="action.to"
+            type="button"
+            class="button"
+            :data-variant="action.variant"
+            :disabled="deciding"
+            aria-describedby="decision-hint"
+            @click="decide(action.to)"
+          >
+            {{ t(action.label) }}
+          </button>
+        </div>
+        <p v-if="decisionError" class="error" role="alert">{{ decisionError }}</p>
+      </section>
+    </template>
+
+    <section
+      v-else
+      class="block draft-state"
+      :data-tone="draftTone"
+      aria-labelledby="drafting-status"
+    >
       <span class="state-icon" aria-hidden="true">
         <svg v-if="detail.draft_status === 'ready'" viewBox="0 0 24 24" width="18" height="18">
           <path
@@ -638,7 +749,7 @@ usePageDetail(() => detail.value?.item.title)
       </div>
       <p role="status" :class="{ error: diffusionError }">{{ diffusionMessage }}</p>
     </section>
-    <p v-else-if="detail.draft_status !== 'pending'" class="hint empty-note">
+    <p v-else-if="!sorting && detail.draft_status !== 'pending'" class="hint empty-note">
       {{ t('draft.empty') }}
     </p>
 
@@ -785,6 +896,69 @@ usePageDetail(() => detail.value?.item.title)
 /* Diffusion, the next step once the drafting is ready: the gold edge marks it. */
 .block.next-step {
   border-inline-start: 6px solid var(--color-accent-fill);
+}
+
+/* Still to sort: the start of the source, read like a quote, then the decision. */
+.source-preview h2,
+.decision h2 {
+  margin: 0;
+}
+
+.source-text-preview {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 44rem;
+  padding-inline-start: var(--space-4);
+  border-inline-start: 3px solid var(--color-border-subtle);
+}
+
+.source-text-preview p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.source-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+}
+
+.source-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.block.decision {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+}
+
+.decision-text {
+  display: grid;
+  gap: var(--space-1);
+  flex: 1 1 18rem;
+}
+
+.decision-text p {
+  margin: 0;
+}
+
+.decision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.decision .error {
+  flex-basis: 100%;
+  margin: 0;
 }
 
 /* .block comes later and resets the border, padding and gap: the status card keeps its own. */

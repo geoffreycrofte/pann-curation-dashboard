@@ -825,3 +825,33 @@ a.menu-item {
     color: HighlightText;
   }
 }
+
+/* A round button with an icon only (its name in aria-label), for an action at the end of
+ * a line. Danger: red icon on a light red disc (deleting a key). */
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.icon-button[data-variant='danger'] {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.icon-button:hover {
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

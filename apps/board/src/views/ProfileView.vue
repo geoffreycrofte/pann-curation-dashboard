@@ -232,7 +232,13 @@ async function signOutEverywhere() {
                 maxlength="100"
                 @input="names[membership.workspace.id] = ($event.target as HTMLInputElement).value"
               />
-              <button type="submit" class="button" :disabled="renaming">
+              <button
+                type="submit"
+                class="button"
+                data-variant="primary"
+                data-size="small"
+                :disabled="renaming"
+              >
                 {{ t('profile.rename') }}
               </button>
             </div>

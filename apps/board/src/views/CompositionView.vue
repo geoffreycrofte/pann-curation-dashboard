@@ -29,11 +29,13 @@ import {
 import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import AutosaveStatus from '../components/AutosaveStatus.vue'
 import FirstCommentEditor from '../components/FirstCommentEditor.vue'
 import Icon from '../components/Icon.vue'
 import QuickPublish from '../components/QuickPublish.vue'
 import TextSaver from '../components/TextSaver.vue'
 import CompositionImages from '../components/compose/CompositionImages.vue'
+import { useAutosave } from '../lib/autosave'
 import { api, type ComposeModeName, type ComposeSource, type Composition } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { postWarnings } from '../lib/post-checks'
@@ -87,7 +89,7 @@ watch(
 )
 onBeforeUnmount(() => clearTimeout(poll))
 
-// Content edited here, saved with "Save" (and before a search or a drafting) --------------
+// Content edited here, saved by itself (and before a search or a drafting) ----------------
 interface Form {
   subject: string
   mode: ComposeModeName
@@ -105,12 +107,17 @@ const fromServer = (c: Composition): Form => ({
   sources: c.sources.map((s) => ({ ...s })),
   channels: [...c.channels],
 })
-const dirty = computed(
-  () =>
-    !!form.value &&
-    !!composition.value &&
-    JSON.stringify(form.value) !== JSON.stringify(fromServer(composition.value)),
-)
+const autosave = useAutosave({
+  value: () => form.value,
+  stored: () => (composition.value ? fromServer(composition.value) : null),
+  valid: () => !!form.value && !!composition.value,
+  save: async (value) => {
+    // Search results keep their text in the composition; only what changed is sent.
+    await api.updateComposition(props.topicId, props.compositionId, value!)
+    await refetch()
+  },
+})
+const dirty = autosave.dirty
 watch(
   composition,
   (value) => {
@@ -127,26 +134,10 @@ const channels = computed<DraftChannel[]>(() =>
 const langs = computed(() => topic.value?.config.output_langs ?? [])
 const chosen = computed(() => form.value?.sources.filter((s) => s.selected) ?? [])
 
-const saving = ref(false)
-const message = ref('')
-const isError = ref(false)
-async function save(silent = false) {
-  if (!form.value) return
-  saving.value = true
-  try {
-    // Search results keep their text in the composition; only what changed is sent.
-    await api.updateComposition(props.topicId, props.compositionId, form.value)
-    await refetch()
-    if (!silent) toast(t('common.saved'))
-    isError.value = false
-    message.value = ''
-  } catch (err) {
-    isError.value = true
-    message.value = describeError((err as Error).message, t).text
-    throw err
-  } finally {
-    saving.value = false
-  }
+/** Saves what is being edited now; fails when the save fails. */
+async function save() {
+  await autosave.flush()
+  if (autosave.state.value === 'error') throw autosave.error.value
 }
 
 // Links (mode "links") --------------------------------------------------------------------
@@ -174,19 +165,28 @@ function removeSource(url: string) {
 }
 
 async function research() {
-  await save(true)
+  await save()
   await api.researchComposition(props.topicId, props.compositionId)
   await refetch()
 }
 
 async function draft() {
-  if (dirty.value) await save(true)
+  await save()
   await api.draftComposition(props.topicId, props.compositionId)
   await refetch()
 }
 
 // Posts -----------------------------------------------------------------------------------
 const posts = computed(() => composition.value?.posts ?? [])
+/** The material is open until posts exist, then folds (the person can open it again). */
+const materialOpen = ref(true)
+watch(
+  () => posts.value.length > 0,
+  (hasPosts) => {
+    materialOpen.value = !hasPosts
+  },
+  { immediate: true },
+)
 const postChannels = computed(() => [...new Set(posts.value.map((p) => p.channel))])
 const postsOf = (channel: DraftChannel) => posts.value.filter((p) => p.channel === channel)
 const mastodonLimit = computed(
@@ -329,188 +329,225 @@ usePageDetail(() =>
     </header>
 
     <!-- 1. What it is about, and where the content comes from -->
-    <form class="block" novalidate :aria-labelledby="`${id}-material`" @submit.prevent="save()">
-      <h2 :id="`${id}-material`">{{ t('compose.material') }}</h2>
-      <div class="form-row">
-        <label :for="`${id}-subject`">{{ t('compose.subject') }}</label>
-        <input
-          :id="`${id}-subject`"
-          v-model="form.subject"
-          class="field"
-          type="text"
-          maxlength="300"
-          :readonly="readonly"
-          :aria-describedby="`${id}-subject-hint`"
-        />
-        <p :id="`${id}-subject-hint`" class="hint">{{ t('compose.subjectHint') }}</p>
+    <form
+      class="block"
+      novalidate
+      :aria-labelledby="`${id}-material`"
+      @submit.prevent="autosave.flush()"
+    >
+      <!-- Once posts exist, the material folds to one line: the posts come first. -->
+      <div class="material-head">
+        <h2 :id="`${id}-material`">{{ t('compose.material') }}</h2>
+        <button
+          v-if="posts.length"
+          type="button"
+          class="button toggle"
+          data-size="small"
+          :aria-expanded="materialOpen"
+          :aria-controls="`${id}-material-fields`"
+          @click="materialOpen = !materialOpen"
+        >
+          {{ t('compose.editMaterial') }}
+          <svg class="chevron" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="2" />
+          </svg>
+        </button>
       </div>
+      <p v-if="!materialOpen" class="hint material-summary">
+        <span>{{ form.subject || t('compose.untitled') }}</span>
+        <span>{{ t(`compose.modes.${form.mode}`) }}</span>
+        <span v-if="form.channels.length">
+          {{ form.channels.map((c) => t(`draft.channels.${c}`)).join(', ') }}
+        </span>
+      </p>
+      <div v-show="materialOpen" :id="`${id}-material-fields`" class="material-fields">
+        <div class="form-row">
+          <label :for="`${id}-subject`">{{ t('compose.subject') }}</label>
+          <input
+            :id="`${id}-subject`"
+            v-model="form.subject"
+            class="field"
+            type="text"
+            maxlength="300"
+            :readonly="readonly"
+            :aria-describedby="`${id}-subject-hint`"
+          />
+          <p :id="`${id}-subject-hint`" class="hint">{{ t('compose.subjectHint') }}</p>
+        </div>
 
-      <fieldset class="modes">
-        <legend class="form-label">{{ t('compose.mode') }}</legend>
-        <label v-for="mode in ['notes', 'links', 'search'] as const" :key="mode" class="choice">
-          <input v-model="form.mode" type="radio" :value="mode" :disabled="readonly" />
-          <span>
-            <strong>{{ t(`compose.modes.${mode}`) }}</strong>
-            <span class="hint">{{ t(`compose.modes.${mode}Hint`) }}</span>
-          </span>
-        </label>
-      </fieldset>
-
-      <div class="form-row">
-        <label :for="`${id}-notes`">
-          {{ form.mode === 'notes' ? t('compose.notes') : t('compose.notesOptional') }}
-        </label>
-        <textarea
-          :id="`${id}-notes`"
-          v-model="form.notes"
-          class="field"
-          rows="6"
-          maxlength="10000"
-          :readonly="readonly"
-          :aria-describedby="`${id}-notes-hint`"
-        ></textarea>
-        <p :id="`${id}-notes-hint`" class="hint">{{ t(`compose.notesHint.${form.mode}`) }}</p>
-      </div>
-
-      <!-- Links given by the person -->
-      <section v-if="form.mode === 'links'" class="sources" :aria-labelledby="`${id}-links`">
-        <h3 :id="`${id}-links`" class="form-label">{{ t('compose.links.title') }}</h3>
-        <ul v-if="form.sources.length" class="source-list">
-          <li v-for="source in form.sources" :key="source.url">
-            <span class="source-text">
-              <a :href="source.url" target="_blank" rel="noopener noreferrer">{{ source.title }}</a>
-              <span class="url">{{ source.url }}</span>
+        <fieldset class="modes">
+          <legend class="form-label">{{ t('compose.mode') }}</legend>
+          <label v-for="mode in ['notes', 'links', 'search'] as const" :key="mode" class="choice">
+            <input v-model="form.mode" type="radio" :value="mode" :disabled="readonly" />
+            <span>
+              <strong>{{ t(`compose.modes.${mode}`) }}</strong>
+              <span class="hint">{{ t(`compose.modes.${mode}Hint`) }}</span>
             </span>
+          </label>
+        </fieldset>
+
+        <div class="form-row">
+          <label :for="`${id}-notes`">
+            {{ form.mode === 'notes' ? t('compose.notes') : t('compose.notesOptional') }}
+          </label>
+          <textarea
+            :id="`${id}-notes`"
+            v-model="form.notes"
+            class="field"
+            rows="6"
+            maxlength="10000"
+            :readonly="readonly"
+            :aria-describedby="`${id}-notes-hint`"
+          ></textarea>
+          <p :id="`${id}-notes-hint`" class="hint">{{ t(`compose.notesHint.${form.mode}`) }}</p>
+        </div>
+
+        <!-- Links given by the person -->
+        <section v-if="form.mode === 'links'" class="sources" :aria-labelledby="`${id}-links`">
+          <h3 :id="`${id}-links`" class="form-label">{{ t('compose.links.title') }}</h3>
+          <ul v-if="form.sources.length" class="source-list">
+            <li v-for="source in form.sources" :key="source.url">
+              <span class="source-text">
+                <a :href="source.url" target="_blank" rel="noopener noreferrer">{{
+                  source.title
+                }}</a>
+                <span class="url">{{ source.url }}</span>
+              </span>
+              <button
+                v-if="!readonly"
+                type="button"
+                class="button"
+                data-size="small"
+                data-variant="danger"
+                :aria-label="t('compose.links.removeLabel', { title: source.title })"
+                @click="removeSource(source.url)"
+              >
+                {{ t('compose.links.remove') }}
+              </button>
+            </li>
+          </ul>
+          <div v-if="!readonly" class="form-row">
+            <label :for="`${id}-new-link`">{{ t('compose.links.add') }}</label>
+            <div class="inline">
+              <input
+                :id="`${id}-new-link`"
+                v-model="newLink"
+                class="field"
+                type="url"
+                inputmode="url"
+                placeholder="https://"
+                :aria-invalid="!!linkError || undefined"
+                :aria-describedby="linkError ? `${id}-link-error` : undefined"
+                @keydown.enter.prevent="addLink"
+              />
+              <button type="button" class="button" @click="addLink">
+                {{ t('compose.links.addButton') }}
+              </button>
+            </div>
+            <p v-if="linkError" :id="`${id}-link-error`" class="error" role="alert">
+              {{ linkError }}
+            </p>
+          </div>
+        </section>
+
+        <!-- Sources found by a search, to choose from -->
+        <section v-if="form.mode === 'search'" class="sources" :aria-labelledby="`${id}-search`">
+          <h3 :id="`${id}-search`" class="form-label">{{ t('compose.search.title') }}</h3>
+          <p class="hint">{{ t('compose.search.hint') }}</p>
+          <div v-if="!readonly">
             <button
-              v-if="!readonly"
               type="button"
               class="button"
               data-size="small"
-              data-variant="danger"
-              :aria-label="t('compose.links.removeLabel', { title: source.title })"
-              @click="removeSource(source.url)"
+              :disabled="composition.research_status === 'pending' || !form.subject.trim()"
+              @click="research"
             >
-              {{ t('compose.links.remove') }}
-            </button>
-          </li>
-        </ul>
-        <div v-if="!readonly" class="form-row">
-          <label :for="`${id}-new-link`">{{ t('compose.links.add') }}</label>
-          <div class="inline">
-            <input
-              :id="`${id}-new-link`"
-              v-model="newLink"
-              class="field"
-              type="url"
-              inputmode="url"
-              placeholder="https://"
-              :aria-invalid="!!linkError || undefined"
-              :aria-describedby="linkError ? `${id}-link-error` : undefined"
-              @keydown.enter.prevent="addLink"
-            />
-            <button type="button" class="button" @click="addLink">
-              {{ t('compose.links.addButton') }}
+              <Icon name="search" />
+              {{ form.sources.length ? t('compose.search.again') : t('compose.search.run') }}
             </button>
           </div>
-          <p v-if="linkError" :id="`${id}-link-error`" class="error" role="alert">
-            {{ linkError }}
+          <p v-if="composition.research_status === 'pending'" role="status">
+            {{ t('compose.search.running') }}
           </p>
-        </div>
-      </section>
-
-      <!-- Sources found by a search, to choose from -->
-      <section v-if="form.mode === 'search'" class="sources" :aria-labelledby="`${id}-search`">
-        <h3 :id="`${id}-search`" class="form-label">{{ t('compose.search.title') }}</h3>
-        <p class="hint">{{ t('compose.search.hint') }}</p>
-        <div v-if="!readonly">
-          <button
-            type="button"
-            class="button"
-            data-size="small"
-            :disabled="composition.research_status === 'pending' || !form.subject.trim()"
-            @click="research"
+          <p
+            v-else-if="composition.research_status === 'failed'"
+            class="notice notice-inline"
+            data-tone="danger"
+            role="alert"
           >
-            <Icon name="search" />
-            {{ form.sources.length ? t('compose.search.again') : t('compose.search.run') }}
-          </button>
-        </div>
-        <p v-if="composition.research_status === 'pending'" role="status">
-          {{ t('compose.search.running') }}
-        </p>
-        <p
-          v-else-if="composition.research_status === 'failed'"
-          class="notice notice-inline"
-          data-tone="danger"
-          role="alert"
-        >
-          <Icon name="alert-circle" />
-          <span>{{ describeError(composition.research_error ?? 'unexpected', t).text }}</span>
-        </p>
-        <fieldset v-if="form.sources.length" class="results">
-          <legend class="visually-hidden">{{ t('compose.search.choose') }}</legend>
-          <div v-for="(source, index) in form.sources" :key="source.url" class="result">
-            <input
-              :id="`${id}-source-${index}`"
-              v-model="source.selected"
-              type="checkbox"
-              :disabled="readonly"
-              :aria-describedby="`${id}-source-${index}-excerpt`"
-            />
-            <div>
-              <label :for="`${id}-source-${index}`">{{ source.title }}</label>
-              <p :id="`${id}-source-${index}-excerpt`" class="hint">
-                {{ source.excerpt }}
-              </p>
-              <a :href="source.url" target="_blank" rel="noopener noreferrer" class="url">
-                {{ t('compose.search.open') }}
-                <span class="visually-hidden">{{ source.title }}</span>
-              </a>
+            <Icon name="alert-circle" />
+            <span>{{ describeError(composition.research_error ?? 'unexpected', t).text }}</span>
+          </p>
+          <fieldset v-if="form.sources.length" class="results">
+            <legend class="visually-hidden">{{ t('compose.search.choose') }}</legend>
+            <div v-for="(source, index) in form.sources" :key="source.url" class="result">
+              <input
+                :id="`${id}-source-${index}`"
+                v-model="source.selected"
+                type="checkbox"
+                :disabled="readonly"
+                :aria-describedby="`${id}-source-${index}-excerpt`"
+              />
+              <div>
+                <label :for="`${id}-source-${index}`">{{ source.title }}</label>
+                <p :id="`${id}-source-${index}-excerpt`" class="hint">
+                  {{ source.excerpt }}
+                </p>
+                <a :href="source.url" target="_blank" rel="noopener noreferrer" class="url">
+                  {{ t('compose.search.open') }}
+                  <span class="visually-hidden">{{ source.title }}</span>
+                </a>
+              </div>
             </div>
+          </fieldset>
+        </section>
+
+        <div class="form-row">
+          <label :for="`${id}-link`">{{ t('compose.link') }}</label>
+          <input
+            :id="`${id}-link`"
+            v-model="form.link"
+            class="field"
+            type="url"
+            inputmode="url"
+            placeholder="https://"
+            :readonly="readonly"
+            :aria-describedby="`${id}-link-hint`"
+          />
+          <p :id="`${id}-link-hint`" class="hint">{{ t('compose.linkHint') }}</p>
+          <div v-if="!readonly && chosen.length && form.link !== chosen[0]!.url">
+            <button
+              type="button"
+              class="button"
+              data-size="small"
+              @click="form.link = chosen[0]!.url"
+            >
+              {{ t('compose.useFirstSource') }}
+            </button>
           </div>
+        </div>
+
+        <fieldset class="networks" :aria-describedby="`${id}-networks-hint`">
+          <legend class="form-label">{{ t('compose.networks') }}</legend>
+          <div class="network-choices">
+            <label v-for="channel in channels" :key="channel" class="choice">
+              <input
+                v-model="form.channels"
+                type="checkbox"
+                :value="channel"
+                :disabled="readonly"
+              />
+              <span>{{ t(`draft.channels.${channel}`) }}</span>
+            </label>
+          </div>
+          <p :id="`${id}-networks-hint`" class="hint">{{ t('compose.networksHint') }}</p>
         </fieldset>
-      </section>
 
-      <div class="form-row">
-        <label :for="`${id}-link`">{{ t('compose.link') }}</label>
-        <input
-          :id="`${id}-link`"
-          v-model="form.link"
-          class="field"
-          type="url"
-          inputmode="url"
-          placeholder="https://"
-          :readonly="readonly"
-          :aria-describedby="`${id}-link-hint`"
+        <AutosaveStatus
+          v-if="!readonly"
+          :state="autosave.state.value"
+          :error="autosave.error.value"
         />
-        <p :id="`${id}-link-hint`" class="hint">{{ t('compose.linkHint') }}</p>
-        <div v-if="!readonly && chosen.length && form.link !== chosen[0]!.url">
-          <button
-            type="button"
-            class="button"
-            data-size="small"
-            @click="form.link = chosen[0]!.url"
-          >
-            {{ t('compose.useFirstSource') }}
-          </button>
-        </div>
-      </div>
-
-      <fieldset class="networks" :aria-describedby="`${id}-networks-hint`">
-        <legend class="form-label">{{ t('compose.networks') }}</legend>
-        <div class="network-choices">
-          <label v-for="channel in channels" :key="channel" class="choice">
-            <input v-model="form.channels" type="checkbox" :value="channel" :disabled="readonly" />
-            <span>{{ t(`draft.channels.${channel}`) }}</span>
-          </label>
-        </div>
-        <p :id="`${id}-networks-hint`" class="hint">{{ t('compose.networksHint') }}</p>
-      </fieldset>
-
-      <div v-if="!readonly" class="section-actions">
-        <button type="submit" class="button" :disabled="saving || !dirty">
-          {{ saving ? t('common.saving') : t('common.save') }}
-        </button>
-        <p role="status" :class="{ error: isError }">{{ message }}</p>
       </div>
     </form>
 
@@ -1107,6 +1144,50 @@ textarea.field {
   .state-action,
   .state-more {
     grid-column: 1 / -1;
+  }
+}
+/* The material: title and its fold button on one row, the summary right under. */
+.material-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.material-head h2 {
+  margin: 0;
+}
+
+.material-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+}
+
+/* Separators only between parts, silent for screen readers. */
+.material-summary span + span::before {
+  content: '•' / '';
+  margin-inline-end: var(--space-4);
+}
+
+.material-fields {
+  display: grid;
+  gap: inherit;
+}
+
+.toggle .chevron {
+  transition: transform 0.15s ease;
+}
+
+.toggle[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle .chevron {
+    transition: none;
   }
 }
 </style>
