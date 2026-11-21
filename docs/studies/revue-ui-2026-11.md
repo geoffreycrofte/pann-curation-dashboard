@@ -26,20 +26,6 @@ Revue page par page des captures (ordinateur et mobile, données simulées), ave
 
 ## Par page (à reprendre)
 
-- **Calendrier** :
-  - deux niveaux d'onglets au même style ;
-  - les posts de Création sont à part de la liste des dates ;
-  - Liste/Semaine gagnerait à devenir un sélecteur segmenté.
-- **Réglages, Général** :
-  - les boutons « Retirer » sont plus grands que les langues ;
-  - les descriptions des outils sont décollées de leurs cases.
-- **Réglages, Sources** :
-  - pas d'espace avant « Sources de conversations » ;
-  - trois boutons de même poids par source.
-- **Réglages, Tri** : la page fait environ 2 900 px ; présenter chaque type sur une ligne, avec une modification dépliable.
-- **Réglages, Publication** :
-  - le fuseau horaire est tronqué ;
-  - les erreurs de compte n'ont pas d'icône.
 - **Connexions** : la page fait environ 3 900 px ; replier aussi les services non réglés, derrière « Configurer ».
 
 ## Fait dans cette passe
@@ -79,3 +65,28 @@ Revue page par page des captures (ordinateur et mobile, données simulées), ave
 - **Création** :
   - le titre et les actions sont dans un `.page-head`, « Nouveau post » en premier, « Planifier une série » en petit ;
   - chaque groupe (Idées, Brouillons, Programmés, Publiés) a une ligne d'explication, même espacement.
+- **Calendrier** :
+  - « Liste / Semaine » devient un sélecteur segmenté compact (onglets Reka, pilule pleine pour la vue choisie), avec le fuseau horaire sur la même ligne ;
+  - les posts programmés de Création rejoignent la liste datée et la semaine, avec leur liseré violet ; chaque carte dit son outil (« Veille », « Création ») à côté de l’heure ;
+  - les boutons de navigation de la semaine sont petits.
+- **Réglages, tous les onglets** :
+  - un seul motif de section : une carte (`.section-card`) avec son titre dedans, `legend` flottante ou `h2` (`.section-title`), l’aide juste dessous ; les groupes internes sont séparés par un filet (`.subsection`) au lieu de cartes imbriquées ;
+  - un formulaire d’une seule carte a son « Enregistrer » au pied de la carte ; un formulaire sur plusieurs cartes, sous la dernière, avec le message d’état à côté ;
+  - une même largeur pour tous les onglets ; sur mobile, les panneaux fermés ne laissent plus d’espace vide.
+- **Réglages, Général** :
+  - les langues forment une liste bordée, « Retirer » petit et en rouge en fin de ligne (absent quand il ne reste qu’une langue) ; « Ajouter » sur la ligne du menu ;
+  - la description de chaque outil est sous sa case, dans la même grille.
+- **Réglages, Sources** :
+  - par source : « Modifier » et « Collecter maintenant » petits et neutres, « Supprimer » petit, rouge, en dernier ;
+  - la dernière erreur est une `.notice` de ton danger avec icône ;
+  - « Sources de conversations » est séparé des sources de la veille par plus d’espace.
+- **Réglages, Tri** :
+  - chaque type tient sur une ligne (nom, définition sur une ligne, « Modifier » et « Retirer ») ; « Modifier » déplie ses champs (`aria-expanded`), un nouveau type s’ouvre déjà ; l’aide de la définition est sous son champ ;
+  - collecte et tri par IA, qui s’enregistraient déjà ensemble, forment un seul formulaire avec un seul bouton ;
+  - la page passe d’environ 2 900 à 1 800 px.
+- **Réglages, Publication** :
+  - le fuseau horaire n’est plus tronqué ;
+  - les erreurs de compte et de conflit sont des `.notice` de ton danger avec icône ; les comptes forment une liste bordée ;
+  - chaque aide LinkedIn (signature, premier commentaire) est sous son champ, pour chaque langue.
+- **Premier commentaire** (fiche et réglages) : le titre est dans le cadre, plus à cheval sur la bordure ; son bouton est petit.
+- **Newsletter, Flux publics, Voix, Conversations, Création, Budget** : même motif de cartes ; les adresses des flux en liste bordée avec « Copier » petit, « Désactiver les flux » en rouge ; l’expéditeur n’est plus tronqué.
