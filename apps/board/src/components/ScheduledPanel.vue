@@ -59,7 +59,7 @@ const dayTitle = (day: string) => {
 
 <template>
   <TabsRoot v-model="view" activation-mode="manual">
-    <TabsList :aria-label="t('scheduled.views')" class="subtabs tab-row">
+    <TabsList :aria-label="t('scheduled.views')" v-scroll-active class="subtabs tab-row">
       <TabsTrigger v-for="v in VIEWS" :key="v" :value="v" class="subtab">
         {{ t(`scheduled.${v}`) }}
       </TabsTrigger>

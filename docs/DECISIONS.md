@@ -464,3 +464,9 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Profondeur.** Deux niveaux d'ombre (`--shadow-card`, `--shadow-raised` au survol) ; les boutons n'ont plus de soulignement et gagnent une taille `small`.
 
 **Icônes.** Tabler Icons (`@tabler/icons-vue`, version figée) via `components/Icon.vue`, qui n'expose qu'une liste choisie (taille du paquet, cohérence). Toujours décoratives (`aria-hidden`) : le texte du bouton reste le nom accessible.
+
+## 2026-11-20 : ordre stable des listes, onglets qui défilent
+
+**Ordre stable.** Les listes de la veille et des conversations se trient par pertinence, puis date d'entrée dans le thème, puis `item_id`. Les éléments d'une même collecte partagent leur `created_at` (une seule transaction) : sans clé unique en dernier, Postgres rendait les ex æquo dans un ordre libre, qui changeait après une action ou d'une page à l'autre.
+
+**Onglets qui défilent.** Plus de barre de défilement : un fondu à gauche ou à droite (masque CSS) signale les onglets cachés, posé par la directive `v-scroll-active`, qui garde aussi l'onglet courant en vue. La molette verticale fait défiler la rangée tant qu'elle le peut, puis la page reprend. Au clavier, `scroll-padding-inline` garde l'onglet atteint hors des fondus.
