@@ -1603,6 +1603,7 @@ export default {
     status: {
       new: 'À examiner',
       validated: 'À répondre',
+      published: 'Répondues',
       rejected: 'Écartées',
       archived: 'Archivées',
     },
@@ -1620,7 +1621,29 @@ export default {
       archived: 'Aucune conversation archivée par le tri.',
       published: 'Aucune conversation répondue.',
     },
-    actions: { toReply: 'À répondre', dismiss: 'Écarter', restore: 'Remettre à examiner' },
+    actions: {
+      toReply: 'À répondre',
+      dismiss: 'Écarter',
+      restore: 'Remettre à examiner',
+      markReplied: 'Marquer comme répondu',
+      unmarkReplied: 'Remettre à répondre',
+    },
+    reply: {
+      title: 'Proposition de réponse',
+      hint: 'Relisez-la et adaptez-la : c’est vous qui répondez, depuis la conversation. Pann ne publie rien.',
+      request: 'Proposer une réponse',
+      again: 'Proposer une autre réponse',
+      againConfirm: 'La proposition actuelle sera remplacée.',
+      pending: 'Rédaction de la réponse en cours…',
+      failed: 'La proposition de réponse a échoué : {message}',
+      copy: 'Copier la réponse',
+      copied: 'Réponse copiée.',
+      copyFailed: 'La copie a échoué : sélectionnez le texte et copiez-le.',
+      length: '{count} sur {limit} caractères',
+    },
+    weekly: {
+      over: 'Déjà {count} réponses sur {platform} ces 7 derniers jours, pour une limite de {limit}. Une réponse de plus risque de passer pour de la promotion.',
+    },
     platforms: { hackernews: 'Hacker News', bluesky: 'Bluesky' },
     decisions: { reply: 'Répondre', watch: 'Surveiller', skip: 'Passer' },
     risks: { low: 'Risque faible', medium: 'Risque moyen', high: 'Risque élevé' },
@@ -1631,6 +1654,7 @@ export default {
     by: 'par {author}',
     points: '{n} point | {n} points',
     replies: '{n} réponse | {n} réponses',
+    repliedOn: 'Répondu le {date}',
     sources: {
       title: 'Sources de conversations',
       intro:
@@ -1672,6 +1696,10 @@ export default {
       maxAge: 'Ancienneté maximale (jours)',
       maxAgeHint:
         'Les discussions plus anciennes ne sont pas collectées : une réponse tardive aide rarement.',
+      weeklyLimit: 'Me prévenir au-delà d’un nombre de réponses par communauté',
+      weeklyLimitCount: 'Réponses par communauté sur 7 jours',
+      weeklyLimitHint:
+        'Une équipe qui répond partout passe pour de la publicité. Au-delà de ce nombre, la conversation vous le rappelle. Rien n’est bloqué.',
     },
   },
   addSource: {
@@ -1772,6 +1800,7 @@ export default {
     cost: 'Coût',
     operations: {
       engagement_triage: 'Tri des conversations',
+      engagement_reply: 'Réponses aux conversations',
       rewrite: 'Réécriture par IA',
       triage: 'Tri par IA',
       draft: 'Rédaction par IA',

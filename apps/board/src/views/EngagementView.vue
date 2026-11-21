@@ -23,10 +23,11 @@ const { data: topic } = useQuery({
 })
 const engagementOff = computed(() => topic.value?.config.modules.engagement === false)
 
-/** Statuses of a conversation: to review, to reply, dismissed, archived by the triage. */
+/** Statuses of a conversation: to review, to reply, replied, dismissed, archived by the triage. */
 const STATUSES = [
   'new',
   'validated',
+  'published',
   'rejected',
   'archived',
 ] as const satisfies readonly ItemTopicStatus[]

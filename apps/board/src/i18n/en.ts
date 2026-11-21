@@ -1581,6 +1581,7 @@ export default {
     status: {
       new: 'To review',
       validated: 'To reply',
+      published: 'Replied',
       rejected: 'Dismissed',
       archived: 'Archived',
     },
@@ -1598,7 +1599,29 @@ export default {
       archived: 'No conversation archived by the triage.',
       published: 'No replied conversation.',
     },
-    actions: { toReply: 'To reply', dismiss: 'Dismiss', restore: 'Back to review' },
+    actions: {
+      toReply: 'To reply',
+      dismiss: 'Dismiss',
+      restore: 'Back to review',
+      markReplied: 'Mark as replied',
+      unmarkReplied: 'Back to reply',
+    },
+    reply: {
+      title: 'Suggested reply',
+      hint: 'Read it and adapt it: you are the one replying, from the conversation. Pann posts nothing.',
+      request: 'Suggest a reply',
+      again: 'Suggest another reply',
+      againConfirm: 'The current suggestion will be replaced.',
+      pending: 'Writing the reply…',
+      failed: 'The suggested reply failed: {message}',
+      copy: 'Copy the reply',
+      copied: 'Reply copied.',
+      copyFailed: 'Copy failed: select the text and copy it.',
+      length: '{count} of {limit} characters',
+    },
+    weekly: {
+      over: 'Already {count} replies on {platform} in the last 7 days, for a limit of {limit}. One more may look like promotion.',
+    },
     platforms: { hackernews: 'Hacker News', bluesky: 'Bluesky' },
     decisions: { reply: 'Reply', watch: 'Watch', skip: 'Skip' },
     risks: { low: 'Low risk', medium: 'Medium risk', high: 'High risk' },
@@ -1609,6 +1632,7 @@ export default {
     by: 'by {author}',
     points: '{n} point | {n} points',
     replies: '{n} reply | {n} replies',
+    repliedOn: 'Replied on {date}',
     sources: {
       title: 'Conversation sources',
       intro:
@@ -1643,6 +1667,10 @@ export default {
       thresholdHint: 'Conversations rated below this threshold are archived.',
       maxAge: 'Maximum age (days)',
       maxAgeHint: 'Older discussions are not collected: a late reply rarely helps.',
+      weeklyLimit: 'Warn me past a number of replies per community',
+      weeklyLimitCount: 'Replies per community over 7 days',
+      weeklyLimitHint:
+        'A team that replies everywhere looks like advertising. Past this number, the conversation reminds you. Nothing is blocked.',
     },
   },
   addSource: {
@@ -1742,6 +1770,7 @@ export default {
     cost: 'Cost',
     operations: {
       engagement_triage: 'Conversation triage',
+      engagement_reply: 'Conversation replies',
       rewrite: 'AI rewrite',
       triage: 'AI triage',
       draft: 'AI drafting',

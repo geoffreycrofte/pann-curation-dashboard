@@ -492,3 +492,11 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Même sujet.** Le tri reçoit, après le contenu, les titres des 40 derniers éléments du thème (14 jours, triés, hors archives) et peut nommer celui qui raconte la même histoire (même nouvelle, autre site ou autres mots). L'élément garde son score et sa place : la carte dit « Même sujet que » avec un lien, la personne décide. Pas de rejet automatique : deux articles sur une même nouvelle n'apportent pas toujours la même chose. Colonne `item_topics.same_story_of`, écrite par le job seul, sans clé étrangère pour ne pas rendre ambiguës les jointures `item:items (...)` de l'API.
 
 **Pas retenu.** Lire la balise `<link rel="canonical">` de chaque page : il faudrait charger chaque page dès la collecte, alors qu'elle ne l'est qu'à la rédaction.
+
+## 2026-11-21 : réponses aux conversations
+
+**Proposition de réponse.** Sur une conversation « À répondre », « Proposer une réponse » fait rédiger une réponse par l'IA (job `engagement-reply`, clé Anthropic de l'espace, budget du thème, modèle de rédaction). La requête passe par la fonction `request_reply_draft`, qui vérifie l'accès (`private.can_access_topic`) avant de marquer la demande ; le job écrit avec la clé secrète. Le prompt ne contient que le fonctionnement de l'outil : aider d'abord, s'en tenir à la conversation et à la fiche produit, dire son lien avec le produit quand on le cite (avec la phrase de la fiche si elle existe), la limite de la plateforme (300 caractères sur Bluesky). Le style vient de `ai.style_rules`. La réponse se retouche avec l'enregistrement automatique et se copie : Pann ne publie jamais.
+
+**Marquer comme répondu.** Une conversation n'a pas de publication : `published` veut dire « répondue par la personne ». Transitions `validated → published` et retour, pour l'outil Conversations seulement (`status.ts` et le trigger SQL). `replied_at` date la réponse. Nouvel onglet « Répondues ».
+
+**Limite par communauté.** `engagement.weekly_replies` (3 par défaut, `null` pour aucune) : au-delà, sur 7 jours glissants, la carte rappelle qu'une réponse de plus risque de passer pour de la promotion. Un rappel, jamais un blocage. La communauté est la plateforme (Hacker News, Bluesky) tant qu'aucune source ne donne mieux (`communityOf`).

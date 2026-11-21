@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMutation, useQueryCache } from '@pinia/colada'
-import { ref, useId } from 'vue'
+import { ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api, type TopicWithConfig } from '../lib/api'
 import { describeError } from '../lib/errors'
@@ -17,6 +17,10 @@ const criteria = ref(props.topic.config.engagement.criteria)
 const threshold = ref(props.topic.config.engagement.threshold)
 const maxAge = ref(props.topic.config.engagement.max_age_days)
 const pauseAbove = ref(props.topic.config.engagement.pause_above)
+// Weekly limit of replies per community: a box, then the number (null: no reminder).
+const weeklyOn = ref(props.topic.config.engagement.weekly_replies !== null)
+const weeklyCount = ref(props.topic.config.engagement.weekly_replies ?? 3)
+watch(weeklyOn, (on) => on && !weeklyCount.value && (weeklyCount.value = 3))
 const message = ref('')
 const isError = ref(false)
 
@@ -28,6 +32,7 @@ const { mutate, isLoading } = useMutation({
         threshold: threshold.value,
         max_age_days: maxAge.value,
         pause_above: pauseAbove.value,
+        weekly_replies: weeklyOn.value ? weeklyCount.value : null,
       },
     }),
   async onSuccess() {
@@ -103,6 +108,32 @@ const { mutate, isLoading } = useMutation({
           <p :id="`${id}-age-hint`" class="hint">{{ t('engagement.settings.maxAgeHint') }}</p>
         </div>
       </div>
+      <div class="subsection weekly">
+        <div class="form-check">
+          <input
+            :id="`${id}-weekly-on`"
+            v-model="weeklyOn"
+            type="checkbox"
+            :aria-describedby="`${id}-weekly-hint`"
+          />
+          <label :for="`${id}-weekly-on`">{{ t('engagement.settings.weeklyLimit') }}</label>
+        </div>
+        <div v-if="weeklyOn" class="form-row">
+          <label :for="`${id}-weekly`">{{ t('engagement.settings.weeklyLimitCount') }}</label>
+          <input
+            :id="`${id}-weekly`"
+            v-model.number="weeklyCount"
+            class="field number"
+            type="number"
+            min="1"
+            max="50"
+            step="1"
+            required
+            :aria-describedby="`${id}-weekly-hint`"
+          />
+        </div>
+        <p :id="`${id}-weekly-hint`" class="hint">{{ t('engagement.settings.weeklyLimitHint') }}</p>
+      </div>
       <BacklogLimitField v-model="pauseAbove" module="engagement" class="subsection" />
       <div class="section-actions">
         <button type="submit" class="button" data-variant="primary" :disabled="isLoading">
@@ -132,5 +163,10 @@ textarea.field {
 
 .number {
   max-width: 8rem;
+}
+
+.weekly {
+  display: grid;
+  gap: var(--space-2);
 }
 </style>
