@@ -42,3 +42,16 @@ export function isSourceDue(
   const toleranceMs = 5 * 60 * 1000
   return elapsedMs + toleranceMs >= effectiveIntervalHours(source, config) * 3600 * 1000
 }
+
+/** Items left to sort beyond which a tool's scheduled collection waits (null: never). */
+export function backlogLimitOf(
+  config: TopicConfig,
+  module: 'curation' | 'engagement',
+): number | null {
+  return module === 'engagement' ? config.engagement.pause_above : config.collection.pause_above
+}
+
+/** Too much left to sort: scheduled collection waits until the backlog drops below it. */
+export function isBacklogFull(toSort: number, limit: number | null): boolean {
+  return limit !== null && toSort >= limit
+}

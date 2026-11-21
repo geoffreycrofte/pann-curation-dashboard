@@ -8,6 +8,17 @@ import { domainSchema } from './source-config'
 /** Interval bounds, in hours: 1 hour to 90 days. */
 export const MIN_INTERVAL_HOURS = 1
 export const MAX_INTERVAL_HOURS = 2160
+/** Items left to sort beyond which scheduled collection waits; null: no limit. */
+export const BACKLOG_LIMIT_MIN = 10
+export const BACKLOG_LIMIT_MAX = 5000
+const backlogLimit = z
+  .number()
+  .int()
+  .min(BACKLOG_LIMIT_MIN)
+  .max(BACKLOG_LIMIT_MAX)
+  .nullable()
+  .default(null)
+
 const intervalHours = z.number().int().min(MIN_INTERVAL_HOURS).max(MAX_INTERVAL_HOURS)
 
 function isTimeZone(value: string): boolean {
@@ -135,6 +146,8 @@ export const topicConfigSchema = z.object({
       threshold: z.number().int().min(0).max(100).default(60),
       /** Older conversations are not collected: a late reply rarely helps. */
       max_age_days: z.number().int().min(1).max(90).default(14),
+      /** Same as `collection.pause_above`, for the conversations to sort. */
+      pause_above: backlogLimit,
     })
     .prefault({}),
   kinds: z
@@ -193,6 +206,11 @@ export const topicConfigSchema = z.object({
        * at collection, passed to Exa as excluded domains. Subdomains included.
        */
       excluded_domains: z.array(domainSchema).max(500).default([]),
+      /**
+       * Beyond this many items to sort, scheduled collection waits (and so does the AI
+       * triage it would pay for), then resumes by itself below it. null: never waits.
+       */
+      pause_above: backlogLimit,
     })
     .prefault({}),
   schedule: z

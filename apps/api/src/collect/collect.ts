@@ -1,4 +1,6 @@
 import {
+  backlogLimitOf,
+  isBacklogFull,
   isExcludedUrl,
   isSourceDue,
   normalizeUrl,
@@ -48,6 +50,8 @@ export interface CollectStore {
    * when the key is saved: this is how its key becomes "checked".
    */
   markCredentialOk(workspaceId: string, provider: Provider): Promise<void>
+  /** Items (or conversations) of a topic's tool still to sort (status `new`). */
+  toSort(topicId: string, module: CollectSource['module']): Promise<number>
   /** Links the rows to the topic for the tool of their source. */
   ingest(topicId: string, rows: IngestRow[], module: CollectSource['module']): Promise<IngestStats>
   finishRun(
@@ -126,10 +130,27 @@ export async function collect(deps: {
 }): Promise<SourceReport[]> {
   const now = deps.now ?? new Date()
   const only = deps.onlySourceIds
-  const due = (await deps.store.activeSources())
+  const candidates = (await deps.store.activeSources())
     // A source runs only while the tool it feeds is on for its topic.
     .filter((s) => s.topic_config.modules[s.module])
     .filter((s) => (only ? only.includes(s.id) : isSourceDue(s, s.topic_config, now)))
+  // Too much left to sort: the scheduled runs of that tool wait (they stay due, so they
+  // resume by themselves below the limit). "Collect now" is asked for: it always runs.
+  const full = new Map<string, Promise<boolean>>()
+  const waits = (s: CollectSource) => {
+    const limit = backlogLimitOf(s.topic_config, s.module)
+    if (only || limit === null) return Promise.resolve(false)
+    const key = `${s.topic_id}/${s.module}`
+    let answer = full.get(key)
+    if (!answer) {
+      answer = deps.store.toSort(s.topic_id, s.module).then((n) => isBacklogFull(n, limit))
+      full.set(key, answer)
+    }
+    return answer
+  }
+  const waiting = await Promise.all(candidates.map(waits))
+  const due = candidates
+    .filter((_, i) => !waiting[i])
     .sort((a, b) => (a.last_run_at ?? '').localeCompare(b.last_run_at ?? ''))
     .slice(0, deps.maxSources ?? MAX_SOURCES_PER_RUN)
 
