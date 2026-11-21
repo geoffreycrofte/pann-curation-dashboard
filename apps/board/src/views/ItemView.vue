@@ -533,10 +533,13 @@ usePageDetail(() => detail.value?.item.title)
           </AlertDialogPortal>
         </AlertDialogRoot>
       </div>
-      <!-- Second line: what a new drafting keeps, and the source text to give it. -->
+      <!--
+        Second line: what a new drafting keeps. The source text is asked for only when the
+        drafting could not read enough of the page: otherwise it would read as a task.
+      -->
       <div v-if="canDraft" class="state-more">
         <p id="regenerate-hint" class="hint">{{ t('draft.regenerateHint') }}</p>
-        <details v-if="detail.draft_status !== 'pending'" class="source-text" :open="insufficient">
+        <details v-if="insufficient" class="source-text" open>
           <summary>{{ t('draft.sourceText.toggle') }}</summary>
           <form class="source-text-form" @submit.prevent="sendSourceText">
             <p>{{ t('draft.sourceText.intro') }}</p>
@@ -827,7 +830,7 @@ usePageDetail(() => detail.value?.item.title)
 .draft-state {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
+  align-items: start;
   gap: var(--space-2) var(--space-3);
   padding: var(--space-4) var(--space-5);
   border: 1px solid var(--color-border-subtle);
@@ -853,6 +856,7 @@ usePageDetail(() => detail.value?.item.title)
   place-items: center;
   width: 2rem;
   height: 2rem;
+  margin-top: 0.125rem;
   border-radius: 50%;
   background: var(--color-neutral-soft);
   color: var(--color-text);
@@ -874,6 +878,10 @@ usePageDetail(() => detail.value?.item.title)
 }
 
 .state-text h2 {
+  display: flex;
+  align-items: center;
+  /* As tall as the icon and the button: the three line up, whatever follows the title. */
+  min-height: 2.25rem;
   margin: 0;
   font-size: 1.125rem;
   line-height: 1.3;
