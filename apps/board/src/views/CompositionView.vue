@@ -15,6 +15,17 @@ import {
   type PostDraft,
 } from '@pann/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogRoot,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from 'reka-ui'
 import { computed, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -555,15 +566,30 @@ usePageDetail(() =>
           <Icon name="clock" />
           {{ t('compose.publish.nextSlot') }}
         </button>
-        <button
-          type="button"
-          class="button"
-          :disabled="altMissing.length > 0"
-          @click="schedule('now')"
-        >
-          <Icon name="send" />
-          {{ t('compose.publish.now') }}
-        </button>
+        <!-- Cannot be undone from Pann: confirmed first, as in the item page. -->
+        <AlertDialogRoot>
+          <AlertDialogTrigger as-child>
+            <button type="button" class="button" :disabled="altMissing.length > 0 || publishing">
+              <Icon name="send" />
+              {{ t('compose.publish.now') }}
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogPortal>
+            <AlertDialogOverlay class="dialog-overlay" />
+            <AlertDialogContent class="dialog">
+              <AlertDialogTitle class="dialog-title">
+                {{ t('diffusion.confirmNowTitle') }}
+              </AlertDialogTitle>
+              <AlertDialogDescription>{{ t('diffusion.confirmNowText') }}</AlertDialogDescription>
+              <div class="dialog-actions">
+                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                <AlertDialogAction class="button" data-variant="primary" @click="schedule('now')">
+                  {{ t('compose.publish.now') }}
+                </AlertDialogAction>
+              </div>
+            </AlertDialogContent>
+          </AlertDialogPortal>
+        </AlertDialogRoot>
         <button
           v-if="composition.status === 'scheduled'"
           type="button"
