@@ -27,3 +27,4 @@ Complète le `CLAUDE.md` à la racine (produit, commandes, règles de code).
 - Le moins de PR possible : une par lot de travail demandé, pas une par sous-sujet.
 
 - Pas de mention « Generated with Claude Code » ni de lien de session dans la description d'une PR ou dans un commentaire.
+- Description courte : quelques puces par changement (quoi et pourquoi), puis une ligne de vérifications. Pas de détail d'implémentation que le diff montre déjà.
