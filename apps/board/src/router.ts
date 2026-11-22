@@ -3,6 +3,14 @@ import { initSession, session } from './lib/session'
 
 export const router = createRouter({
   history: createWebHistory(),
+  // A new page starts at its top; a link to a section goes to it; back and forward return
+  // where the page was; a change of tab or filter (same page) does not move.
+  scrollBehavior(to, from, saved) {
+    if (saved) return saved
+    if (to.hash) return { el: to.hash }
+    if (to.path === from.path) return false
+    return { top: 0 }
+  },
   routes: [
     // Signed in: the topics. Signed out: App shows the marketing page instead.
     {
@@ -44,6 +52,28 @@ export const router = createRouter({
       path: '/pricing',
       name: 'pricing',
       component: () => import('./views/PricingView.vue'),
+      meta: { public: true },
+    },
+    {
+      // Legal pages, open to everyone (content: src/legal/).
+      path: '/legal',
+      name: 'legal',
+      component: () => import('./views/LegalView.vue'),
+      props: { doc: 'legal' },
+      meta: { public: true },
+    },
+    {
+      path: '/terms',
+      name: 'terms',
+      component: () => import('./views/LegalView.vue'),
+      props: { doc: 'terms' },
+      meta: { public: true },
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import('./views/LegalView.vue'),
+      props: { doc: 'privacy' },
       meta: { public: true },
     },
     {
@@ -174,7 +204,12 @@ router.beforeEach(async (to) => {
   }
 })
 
-/** Move focus to the main heading after each navigation (SPA page change announcement). */
-router.afterEach(() => {
+/**
+ * Move focus to the main heading after each navigation to another page (SPA page change
+ * announcement). Within the same page (a tab, a filter, a link to a section), focus stays
+ * where the person put it.
+ */
+router.afterEach((to, from) => {
+  if (from.matched.length && to.path === from.path) return
   requestAnimationFrame(() => document.querySelector<HTMLElement>('main h1')?.focus())
 })

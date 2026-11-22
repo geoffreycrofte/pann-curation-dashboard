@@ -628,6 +628,12 @@ async function shoot(page, name, path, opts = {}) {
     ['admin-requests', '/admin?tab=requests'],
     ['admin-costs', '/admin?tab=costs'],
     ['admin-offers', '/admin?tab=offers'],
+    ['out-home', '/?signedout'],
+    ['out-pricing', '/pricing?signedout'],
+    ['out-login', '/login?signedout'],
+    ['out-legal', '/legal?signedout'],
+    ['out-terms', '/terms?signedout'],
+    ['out-privacy', '/privacy?signedout'],
     ['new-topic', '/topics/new'],
     ['adjust-topic', '/t/t1/adjust'],
   ].filter(([n]) => !only || only.split(',').includes(n))
@@ -640,6 +646,9 @@ async function shoot(page, name, path, opts = {}) {
     const errors = []
     page.on('pageerror', (e) => errors.push(e.message))
     await page.addInitScript(() => {
+      localStorage.setItem('glimr.lang', 'fr')
+      // ?signedout in the address: the page as a visitor sees it.
+      if (new URL(location.href).searchParams.has('signedout')) return
       localStorage.setItem(
         'sb-localhost-auth-token',
         JSON.stringify({

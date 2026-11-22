@@ -86,7 +86,8 @@ async function submit() {
 .login {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-height: 100vh;
+  /* Between the public header and footer: tall enough for the form, no more. */
+  min-height: min(44rem, 80vh);
 }
 
 .intro {

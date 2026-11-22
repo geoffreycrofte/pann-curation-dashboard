@@ -144,6 +144,11 @@ const share = computed(() =>
 </template>
 
 <style scoped>
+/* Signed out, the page brings its own margins (the board's main has them). */
+:global(main.public .pricing) {
+  padding: var(--space-6) clamp(var(--space-4), 4vw, 3.5rem) 4rem;
+}
+
 .pricing {
   display: grid;
   gap: var(--space-8);

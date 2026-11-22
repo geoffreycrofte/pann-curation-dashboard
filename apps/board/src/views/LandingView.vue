@@ -3,16 +3,13 @@ import { computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LandingFigure from '../components/LandingFigure.vue'
 import HeroProspector from '../components/HeroProspector.vue'
-import GlimrMark from '../components/GlimrMark.vue'
-import { setLang } from '../i18n'
+import PublicFooter from '../components/PublicFooter.vue'
+import PublicHeader from '../components/PublicHeader.vue'
 import { ILLUSTRATIONS } from '../lib/landing-images'
-import { isDark, toggleTheme } from '../lib/theme'
 
-const { t, tm, rt, locale } = useI18n()
+const { t, tm, rt } = useI18n()
 
 watchEffect(() => (document.title = t('landing.title')))
-
-const otherLang = computed(() => (locale.value === 'fr' ? 'en' : 'fr'))
 
 /** The way from the river to the showcase: who does each step is part of the message. */
 const STEPS = [
@@ -38,31 +35,7 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
 
 <template>
   <div class="landing">
-    <header class="top">
-      <RouterLink to="/" class="brand">
-        <GlimrMark :size="40" />
-        <span class="brand-name">{{ t('app.name') }}</span>
-      </RouterLink>
-      <!-- The links are in the hero; the bar keeps the name and the theme. -->
-      <button
-        type="button"
-        class="theme"
-        :aria-pressed="isDark()"
-        :aria-label="t('theme.dark')"
-        :title="t('theme.dark')"
-        @click="toggleTheme()"
-      >
-        <svg v-if="isDark()" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <circle cx="12" cy="12" r="4.5" />
-          <path
-            d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"
-          />
-        </svg>
-        <svg v-else viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
-        </svg>
-      </button>
-    </header>
+    <PublicHeader />
 
     <main id="main" tabindex="-1">
       <!-- Hero: the pan lifted, the nugget shining. The one animated moment of the page. -->
@@ -210,19 +183,7 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
       </section>
     </main>
 
-    <footer class="foot">
-      <GlimrMark :size="32" />
-      <p>{{ t('landing.footer') }}</p>
-      <button
-        type="button"
-        class="foot-lang"
-        :lang="otherLang"
-        :aria-label="t('landing.otherLangLabel')"
-        @click="setLang(otherLang)"
-      >
-        {{ t('landing.otherLang') }}
-      </button>
-    </footer>
+    <PublicFooter />
   </div>
 </template>
 
@@ -238,59 +199,6 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
 
 main:focus {
   outline: none;
-}
-
-/* ---------------------------------------------------------------- top bar */
-.top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3) var(--space-6);
-  max-width: 80rem;
-  margin: 0 auto;
-  padding: var(--space-5) var(--gutter);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.brand-name {
-  font-family: var(--font-display);
-  font-size: 1.625rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-
-.theme {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background: transparent;
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-.theme:hover {
-  border-color: var(--color-text);
-}
-
-.theme svg {
-  width: 1.25rem;
-  height: 1.25rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 /* ---------------------------------------------------------------- type */
@@ -716,7 +624,7 @@ h1 {
   line-height: 1.55;
 }
 
-/* ---------------------------------------------------------------- cta, footer */
+/* ---------------------------------------------------------------- cta */
 .cta {
   display: grid;
   justify-items: center;
@@ -726,43 +634,6 @@ h1 {
 
 .cta .display {
   margin-inline: auto;
-}
-
-.foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  padding: var(--space-6) var(--gutter) var(--space-8);
-  border-top: 1px solid color-mix(in srgb, var(--color-on-ink) 15%, transparent);
-  background: var(--color-ink);
-  color: var(--color-on-ink-muted);
-}
-
-.foot p {
-  margin: 0;
-}
-
-.foot-lang {
-  min-height: 2.75rem;
-  padding: 0 var(--space-2);
-  border: 0;
-  background: none;
-  color: var(--color-on-ink);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-  cursor: pointer;
-}
-
-.foot-lang:hover {
-  text-decoration-thickness: 3px;
-}
-
-.foot-lang:focus-visible {
-  outline-color: var(--color-focus-on-ink);
 }
 
 /* ---------------------------------------------------------------- narrow */

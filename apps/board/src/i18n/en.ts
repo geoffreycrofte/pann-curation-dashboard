@@ -24,6 +24,40 @@ export default {
     engagement: 'Conversations',
     settings: 'Topic settings',
     'not-found': 'Page not found',
+    pricing: 'Pricing',
+    legal: 'Legal notice',
+    terms: 'Terms',
+    privacy: 'Privacy and cookies',
+  },
+  public: {
+    navLabel: 'Public pages',
+    pricing: 'Pricing',
+    login: 'Sign in',
+    footer: {
+      about:
+        'Glimr makes your product or subject known: news watch, conversations to help in, posts and newsletter, in your languages.',
+      product: 'Product',
+      information: 'Information',
+      links: {
+        home: 'Home',
+        pricing: 'Pricing',
+        requestAccess: 'Request access',
+        login: 'Sign in',
+        legal: 'Legal notice',
+        terms: 'Terms',
+        privacy: 'Privacy and cookies',
+        contact: 'Contact',
+      },
+      copyright: '© {year} Glimr.',
+      operator: '{name}, Luxembourg. RCS {rcs}. VAT {vat}.',
+    },
+  },
+  legal: {
+    updated: 'Last updated: {date}',
+    toc: 'On this page',
+    translation:
+      'This translation is provided for convenience. Only the French version is binding.',
+    readFrench: 'Lire la version française',
   },
   toast: { close: 'Close the notification “{text}”' },
   a11y: { skipToContent: 'Skip to content' },
@@ -1468,7 +1502,6 @@ export default {
       title: 'Your next nugget is already in the river.',
       text: 'Glimr is open by invitation. Already invited? Sign in with your email address, no password needed.',
     },
-    footer: 'Glimr, content curation tool.',
   },
   notFound: {
     title: 'Nothing in the pan',
