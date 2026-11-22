@@ -100,7 +100,9 @@ export default {
   },
   auth: {
     accountDeleted: 'Your account was deleted. Thank you for using Glimr.',
-    pitch: 'Collect a lot, keep little: only the essentials of your watch.',
+    pitch:
+      'Tell us about your expertise or your product: Glimr searches the web for you and helps you make it known.',
+    back: 'Back to home',
     intro: 'Get a sign-in link by email, no password needed.',
     title: 'Sign in',
     email: 'Email address',

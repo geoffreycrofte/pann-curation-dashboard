@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import Icon from '../components/Icon.vue'
 import LangSwitcher from '../components/LangSwitcher.vue'
 import { ILLUSTRATIONS } from '../lib/landing-images'
 import { supabase } from '../lib/supabase'
@@ -33,6 +34,10 @@ async function submit() {
 <template>
   <div class="login">
     <section class="intro" aria-labelledby="login-brand">
+      <RouterLink to="/" class="back">
+        <Icon name="arrow-left" :size="18" />
+        {{ t('auth.back') }}
+      </RouterLink>
       <!-- Decorative: the name and the tagline say it. Cut-out, on the ink panel. -->
       <img
         class="nugget"
@@ -96,18 +101,43 @@ async function submit() {
 .login {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  /* Under the public header (no footer here): the rest of the screen. */
-  min-height: calc(100vh - 5.5rem);
+  min-height: 100vh;
 }
 
 .intro {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-4);
   padding: clamp(var(--space-6), 6vw, 6rem);
+  /* Room for the way back above the content. */
+  padding-top: max(clamp(var(--space-6), 6vw, 6rem), 5.5rem);
   background: var(--color-ink);
   color: var(--color-on-ink);
+}
+
+/* Back to the home page, top left of the screen. */
+.back {
+  position: absolute;
+  top: var(--space-5);
+  left: clamp(var(--space-4), 4vw, var(--space-8));
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  color: var(--color-on-ink);
+  font-weight: 650;
+  text-decoration: none;
+  text-underline-offset: 0.25em;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.intro :focus-visible {
+  outline-color: var(--color-focus-on-ink);
 }
 
 .nugget {

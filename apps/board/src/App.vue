@@ -259,11 +259,11 @@ watch(
 
   <!-- Signed out elsewhere (pricing, legal pages, sign-in): the public header and footer. -->
   <div v-else class="public-page">
-    <PublicHeader />
+    <!-- Sign-in stays focused on its form: its own way back, no header or footer. -->
+    <PublicHeader v-if="route.name !== 'login'" />
     <main id="main" tabindex="-1" class="public">
       <RouterView />
     </main>
-    <!-- Sign-in stays focused on its form: no footer there. -->
     <PublicFooter v-if="route.name !== 'login'" />
   </div>
   <Toaster />

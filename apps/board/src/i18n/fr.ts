@@ -98,7 +98,9 @@ export default {
   },
   auth: {
     accountDeleted: 'Votre compte a été supprimé. Merci d’avoir utilisé Glimr.',
-    pitch: 'Beaucoup de collecte, peu de sélection : ne gardez que l’essentiel de votre veille.',
+    pitch:
+      'Présentez votre expertise ou votre produit : Glimr parcourt le web pour vous et vous aide à le faire connaître.',
+    back: 'Retour à l’accueil',
     intro: 'Recevez un lien de connexion par e-mail, sans mot de passe.',
     title: 'Connexion',
     email: 'Adresse e-mail',
