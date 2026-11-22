@@ -1,0 +1,607 @@
+/*
+ * Public marketing pages (home page, how it works): type, bands, illustrated steps.
+ * Scoped under .marketing, the class of their root, so nothing leaks into the board.
+ */
+.marketing {
+  --gutter: clamp(1rem, 5vw, 4rem);
+  --measure: 34rem;
+
+  /* The bar and the hero stand on the hero scene's own background. */
+  background: var(--color-scene-hero);
+  color: var(--color-text);
+}
+
+.marketing main:focus {
+  outline: none;
+}
+
+/* ---------------------------------------------------------------- type */
+.marketing h1,
+.marketing .display {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.marketing h1 {
+  font-size: clamp(3rem, 7vw, 6rem);
+  line-height: 0.92;
+}
+
+.marketing .display {
+  max-width: 18ch;
+  font-size: clamp(2.125rem, 5vw, 3.75rem);
+  line-height: 1;
+}
+
+.marketing .display.small {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+}
+
+.marketing .display.huge {
+  max-width: 16ch;
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  line-height: 0.95;
+}
+
+.marketing .body,
+.marketing .lead {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.marketing .lead {
+  font-size: clamp(1.125rem, 1.6vw, 1.3125rem);
+}
+
+.marketing a.button {
+  text-decoration: none;
+}
+
+.marketing .button.big {
+  min-height: 3.25rem;
+  padding-inline: var(--space-6);
+  font-size: 1.0625rem;
+}
+
+/* ---------------------------------------------------------------- hero */
+.marketing .hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: var(--space-8) clamp(2rem, 5vw, 5rem);
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 3rem) var(--gutter) clamp(3rem, 8vw, 6rem);
+}
+
+.marketing .hero-text {
+  display: grid;
+  gap: var(--space-6);
+  justify-items: start;
+}
+
+.marketing .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.marketing .invite {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+}
+
+.marketing .hero-figure {
+  --cut-max-height: 40rem;
+
+  width: min(100%, 32rem);
+  justify-self: center;
+}
+
+/* ---------------------------------------------------------------- bands */
+.marketing .band {
+  padding: clamp(4rem, 10vw, 8rem) var(--gutter);
+}
+
+.marketing .band > * {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+.marketing .paper {
+  background: var(--color-paper);
+}
+
+.marketing .budget {
+  background: var(--color-scene-budget);
+}
+
+.marketing .surface {
+  background: var(--color-surface);
+}
+
+/* Inverted bands: their own text, link and focus colors. */
+.marketing .ink {
+  --color-focus: var(--color-focus-on-ink);
+
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+}
+
+.marketing .gold {
+  --color-focus: var(--color-ink);
+
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+}
+
+.marketing .olive {
+  --color-focus: var(--color-focus-on-ink);
+
+  background: var(--color-olive);
+  color: var(--color-on-olive);
+}
+
+.marketing .split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-8) clamp(2rem, 6vw, 6rem);
+}
+
+.marketing .split > .figure {
+  width: min(100%, 28rem);
+  justify-self: center;
+}
+
+.marketing .split.reverse > .figure {
+  order: 2;
+}
+
+.marketing .copy {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.marketing .ink .body {
+  color: var(--color-on-ink-muted);
+}
+
+/* ---------------------------------------------------------------- steps */
+.marketing .section-head {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: clamp(3rem, 7vw, 5rem);
+}
+
+.marketing #how:focus {
+  outline: none;
+}
+
+.marketing .steps {
+  position: relative;
+  display: grid;
+  gap: clamp(3rem, 8vw, 6rem);
+  margin-block: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * The sluice channel: a wooden bed under the markers. Gold runs down it, step by
+ * step, as each step comes into view (scroll-driven, where supported).
+ */
+.marketing .step {
+  --marker: 3.25rem;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--marker) minmax(0, 1fr) minmax(0, 26rem);
+  align-items: center;
+  gap: var(--space-6) clamp(1.5rem, 4vw, 4rem);
+}
+
+.marketing .step::before,
+.marketing .step::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: calc(-1 * clamp(3rem, 8vw, 6rem));
+  left: calc(var(--marker) / 2 - 3px);
+  width: 6px;
+  border-radius: 3px;
+}
+
+.marketing .step::before {
+  background: color-mix(in srgb, var(--color-wood) 55%, var(--color-paper));
+}
+
+.marketing .step::after {
+  background: var(--color-accent-fill);
+  transform-origin: top;
+}
+
+.marketing .step:last-child::before,
+.marketing .step:last-child::after {
+  bottom: 50%;
+}
+
+.marketing .step:first-child::before,
+.marketing .step:first-child::after {
+  top: 50%;
+}
+
+.marketing .marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--marker);
+  aspect-ratio: 1;
+  border: 3px solid var(--color-text);
+  border-radius: 50%;
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+
+.marketing .step-figure {
+  --cut-max-height: 24rem;
+}
+
+.marketing .step-copy {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+
+.marketing .step-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.marketing .who {
+  margin: 0;
+}
+
+.marketing .step:nth-child(even) .step-figure {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+.marketing .step:nth-child(even) .step-copy {
+  grid-row: 1;
+  grid-column: 3;
+}
+
+@supports (animation-timeline: view()) {
+  .marketing .step::after {
+    animation: pour linear both;
+    animation-timeline: view();
+    animation-range: entry 60% contain 55%;
+  }
+
+  .marketing .marker {
+    animation: reach linear both;
+    animation-timeline: view();
+    animation-range: entry 70% contain 30%;
+  }
+}
+
+@keyframes pour {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes reach {
+  from {
+    background: var(--color-paper);
+  }
+
+  to {
+    background: var(--color-accent-fill);
+  }
+}
+
+/* The paper planes keep flying, gently. */
+.marketing .drift img {
+  animation: drift 6s ease-in-out infinite;
+}
+
+@keyframes drift {
+  50% {
+    transform: translate(1.5%, -2%);
+  }
+}
+
+/* ---------------------------------------------------------------- features */
+/* A tool's name above its title, with its icon. */
+.marketing .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* What the tool replaces: a strip beside the text, not a call to action. */
+.marketing .replaces {
+  justify-self: start;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  font-weight: 650;
+}
+
+.marketing .features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.marketing .feature {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto auto;
+  align-content: start;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.marketing .feature-figure {
+  --cut-max-height: 14rem;
+
+  width: min(100%, 16rem);
+  justify-self: center;
+}
+
+.marketing .feature-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.5vw, 1.875rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.marketing .feature-text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+.marketing .feature-more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------------- engagement */
+.marketing .nuggets {
+  display: grid;
+  gap: var(--space-3);
+  max-width: var(--measure);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+
+.marketing .nuggets li {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+/* A small irregular nugget instead of a bullet. */
+.marketing .nuggets li::before {
+  content: '';
+  width: 0.9rem;
+  height: 0.75rem;
+  margin-top: 0.35em;
+  border-radius: 55% 45% 50% 40% / 50% 60% 40% 50%;
+  background: var(--color-accent-fill);
+}
+
+.marketing .thread {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 28rem;
+  margin: 0;
+  justify-self: center;
+}
+
+.marketing .thread-caption {
+  color: var(--color-on-olive-muted);
+  font-size: 0.9375rem;
+}
+
+.marketing .thread-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 30px 60px rgb(0 0 0 / 0.25);
+  transform: rotate(-1.5deg);
+}
+
+.marketing .thread-card p {
+  margin: 0;
+}
+
+.marketing .thread-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.marketing .thread-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.marketing .thread-score {
+  font-weight: 700;
+}
+
+.marketing .thread-angle {
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------- more */
+.marketing .more {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: var(--space-8) var(--space-6);
+  margin-top: var(--space-8);
+  margin-bottom: 0;
+}
+
+.marketing .more-item {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 4px solid var(--color-accent-fill);
+}
+
+.marketing .more dt {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.marketing .more dd {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+/* ---------------------------------------------------------------- cta */
+.marketing .cta {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-6);
+  text-align: center;
+}
+
+.marketing .cta .display {
+  margin-inline: auto;
+}
+
+/* ---------------------------------------------------------------- narrow */
+@media (max-width: 56rem) {
+  .marketing .hero,
+  .marketing .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .marketing .hero-figure {
+    --cut-max-height: 28rem;
+
+    width: min(100%, 24rem);
+  }
+
+  .marketing .split.reverse > .figure {
+    order: 0;
+  }
+
+  .marketing .split > .figure {
+    --cut-max-height: 22rem;
+
+    width: min(100%, 22rem);
+  }
+
+  .marketing .step,
+  .marketing .step:nth-child(even) {
+    grid-template-columns: var(--marker) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .marketing .step .step-figure,
+  .marketing .step:nth-child(even) .step-figure {
+    grid-row: 2;
+    grid-column: 2;
+    max-width: 20rem;
+  }
+
+  .marketing .step:nth-child(even) .step-copy {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .marketing .step::before,
+  .marketing .step::after,
+  .marketing .step:first-child::before,
+  .marketing .step:first-child::after {
+    top: var(--marker);
+  }
+
+  .marketing .step:last-child::before,
+  .marketing .step:last-child::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing .drift img {
+    animation: none;
+  }
+
+  .marketing .step::after,
+  .marketing .marker {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .marketing .marker {
+    border-color: CanvasText;
+  }
+
+  .marketing .step::after {
+    background: Highlight;
+  }
+
+  .marketing .thread-card {
+    border: 1px solid CanvasText;
+  }
+}

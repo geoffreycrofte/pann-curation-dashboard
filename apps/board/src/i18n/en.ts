@@ -24,6 +24,46 @@ export default {
     engagement: 'Conversations',
     settings: 'Topic settings',
     'not-found': 'Page not found',
+    pricing: 'Pricing',
+    'how-it-works': 'How it works',
+    legal: 'Legal notice',
+    terms: 'Terms',
+    privacy: 'Privacy and cookies',
+    accessibility: 'Accessibility',
+  },
+  public: {
+    navLabel: 'Public pages',
+    how: 'How it works',
+    pricing: 'Pricing',
+    login: 'Sign in',
+    footer: {
+      about:
+        'Glimr makes your product or subject known: news watch, conversations to help in, posts and newsletter, in your languages.',
+      product: 'Product',
+      information: 'Information',
+      links: {
+        home: 'Home',
+        how: 'How it works',
+        pricing: 'Pricing',
+        requestAccess: 'Request access',
+        login: 'Sign in',
+        legal: 'Legal notice',
+        terms: 'Terms',
+        privacy: 'Privacy and cookies',
+        accessibility: 'Accessibility',
+        contact: 'Contact',
+      },
+      copyright: '© {year} Glimr.',
+      operator: '{name}, {address}. RCS {rcs}. VAT {vat}.',
+    },
+  },
+  legal: {
+    updated: 'Last updated: {date}',
+    toc: 'On this page',
+    translation:
+      'This translation is provided for convenience. Only the French version is binding.',
+    readFrench: 'Lire la version française',
+    showEmail: 'Show the e-mail address',
   },
   toast: { close: 'Close the notification “{text}”' },
   a11y: { skipToContent: 'Skip to content' },
@@ -64,7 +104,9 @@ export default {
   },
   auth: {
     accountDeleted: 'Your account was deleted. Thank you for using Glimr.',
-    pitch: 'Collect a lot, keep little: only the essentials of your watch.',
+    pitch:
+      'Tell us about your expertise or your product: Glimr searches the web for you and helps you make it known.',
+    back: 'Back to home',
     intro: 'Get a sign-in link by email, no password needed.',
     title: 'Sign in',
     email: 'Email address',
@@ -1369,6 +1411,75 @@ export default {
     postStatus: ': {status}',
     view: 'View',
   },
+  howItWorks: {
+    title: 'How Glimr works',
+    lead: 'Three tools that work together to make your product or your expertise known. Glimr does the repetitive work, you keep the decisions.',
+    jump: 'The three tools',
+    replaces: 'Replaces {tool}, {price} per month',
+    detail: 'In detail',
+    watch: {
+      name: 'News watch',
+      title: 'Become the reference in your field',
+      text: 'Sharing what matters in your field shows your expertise, and the expertise around your product, without talking about yourself. Glimr follows your sources, sorts the news by your criteria and prepares what you need to share it.',
+    },
+    listen: {
+      name: 'Conversations',
+      title: 'Be where people talk about your subject',
+      text: 'Every day, people ask questions you know how to answer. Glimr watches Hacker News and Bluesky, spots the discussions where your help matters and prepares a reply. You take your place there naturally, without cold outreach.',
+      steps: {
+        spot: {
+          title: 'Spot',
+          text: 'Glimr goes through the discussions about your subject, with your keywords and a popularity threshold.',
+        },
+        score: {
+          title: 'Assess',
+          text: 'For each thread, the AI rates the chance to help, suggests a one-sentence angle and drops hostile threads and requests for services.',
+        },
+        draft: {
+          title: 'Prepare',
+          text: 'For the threads you keep, Glimr drafts a helpful reply, in your voice, with no sales pitch.',
+        },
+        reply: {
+          title: 'Reply',
+          text: 'You read, adjust and publish it yourself. A weekly limit keeps you from overdoing it.',
+        },
+      },
+    },
+    create: {
+      name: 'Create',
+      title: 'Bounce off a topic, publish everywhere',
+      text: 'An article from your watch, a question spotted in a conversation, an idea or a blank page: anything can become a post. Glimr writes it for each network and publishes it on your slots.',
+      steps: {
+        start: {
+          title: 'Start from something',
+          text: 'Your ideas, links, a web search, or leads drawn from your watch and your conversations.',
+        },
+        write: {
+          title: 'Write',
+          text: 'One post per network and per language, grounded in its sources and true to your voice and style rules.',
+        },
+        series: {
+          title: 'Build series',
+          text: 'A series of posts on a theme, from scratch, to keep the pace over several weeks.',
+        },
+        images: {
+          title: 'Illustrate',
+          text: 'Your images, with mandatory alternative text, and an accessibility check of every post.',
+        },
+        publish: {
+          title: 'Publish everywhere',
+          text: 'LinkedIn, Facebook, Bluesky, Mastodon and Discord, each on its slots, shown in the calendar.',
+        },
+      },
+      alt: 'A nugget resting on a blue velvet cushion, with a quill and a blank label.',
+    },
+    cta: {
+      title: 'Ready to make your subject known?',
+      text: 'Glimr is open on invitation, with a 14-day free trial of the offer you choose.',
+      request: 'Request access',
+      pricing: 'See pricing',
+    },
+  },
   landing: {
     title: 'Glimr: wash the news, keep the nuggets',
     how: 'How it works',
@@ -1378,7 +1489,7 @@ export default {
     otherLangLabel: 'Lire cette page en français',
     hero: {
       title: 'Wash the news, keep the nuggets.',
-      lead: 'Glimr gathers the news of your subject, AI washes away the sand, you keep the gold. Summaries, posts and newsletter are ready to go, in your languages.',
+      lead: 'Glimr makes your product or your expertise known. It pans the news of your subject, spots the conversations where you can help and prepares your posts, in your languages. You keep the nuggets.',
       invite: 'Invitation only for now.',
       alt: 'A smiling prospector holds his pan: in the wet sand, a big nugget shines.',
     },
@@ -1388,8 +1499,6 @@ export default {
       alt: 'The prospector shrugs over an empty pan: a single grain is left in it.',
     },
     steps: {
-      title: 'From the river to the showcase',
-      intro: 'Five steps. Only one is really yours: choosing.',
       glimr: 'Glimr does it',
       you: 'You decide',
       collect: {
@@ -1418,6 +1527,36 @@ export default {
         alt: 'Paper planes, each carrying a nugget, fly out of a mine cart full of gold.',
       },
     },
+    tools: {
+      title: 'Three tools to make your subject known',
+      intro:
+        'Each one replaces a tool you pay for separately. Together, they feed each other: your watch and your conversations give the ideas for your posts.',
+      watch: {
+        title: 'Become the reference in your field',
+        text: 'Glimr follows the news of your subject and prepares summaries, posts and newsletter. By sharing what matters, you show the expertise around your product, without talking about yourself.',
+        alt: 'The prospector drops a nugget into an already well-filled jar.',
+      },
+      listen: {
+        title: 'Take your place in the discussions, naturally',
+        text: 'Glimr watches the web, spots the conversations about your subject where your help matters, and prepares replies. You read, you publish.',
+        alt: 'A small brass robot picks the nuggets caught in the riffles of the sluice.',
+      },
+      create: {
+        title: 'Bounce off a topic, publish everywhere',
+        text: 'Start from an article of your watch, a conversation or from scratch: Glimr writes your posts, or whole series, and publishes them on all your networks.',
+        alt: 'Paper planes, each carrying a nugget, take off from a cart full of gold.',
+      },
+    },
+    control: {
+      title: 'You stay in control',
+      text: 'Glimr works for you, never in your place.',
+      points: [
+        'Your budget: a cap per topic and usage tracked operation by operation. At the cap, Glimr stops instead of spending.',
+        'Your competitors: follow the same subjects as they do, and exclude their sites so you never relay their content.',
+        'Your posts: nothing goes out without your approval or your scheduling.',
+        'Your voice: your style rules, your tone and your languages, applied to every text.',
+      ],
+    },
     newsletter: {
       title: 'The box of the week',
       text: 'Scheduled and published nuggets fill the newsletter: one sending per language with Brevo or SendFox, on the day and at the time you set. A public RSS feed also shows them on your site.',
@@ -1425,7 +1564,7 @@ export default {
     },
     engagement: {
       title: 'And when people talk about your subject elsewhere?',
-      text: 'The Engagement module finds, on Hacker News and Bluesky, the conversations where your expertise would really help. AI suggests an angle and flags the risks. You write and post the reply yourself: none goes out on its own.',
+      text: 'Glimr finds, on Hacker News and Bluesky, the conversations where your expertise would really help. AI suggests an angle, flags the risks and drafts a reply. You read and post it: no reply goes out on its own.',
       points: [
         'Reply, watch or skip: one decision for each thread.',
         'A way to help in one sentence, not a sales pitch.',
@@ -1439,8 +1578,6 @@ export default {
       exampleAngle: 'Suggest a three-step method: critical journeys, keyboard, screen reader.',
     },
     budget: {
-      title: 'The weight of sand, the price of gold',
-      text: 'Each topic has its monthly cap. You plug in your own keys (Anthropic, Exa, Brevo, Zernio), kept encrypted in your workspace, and you see the cost of each operation. At the cap, Glimr stops instead of spending.',
       alt: 'A balance scale: a pile of sand on one side, a single nugget balancing it on the other.',
     },
     more: {
@@ -1451,7 +1588,7 @@ export default {
           desc: 'One space per subject, with its sources, criteria and pace.',
         },
         {
-          term: 'Bilingual',
+          term: 'All your languages',
           desc: 'Each summary and post exists in the publishing languages of the topic.',
         },
         {
@@ -1468,7 +1605,6 @@ export default {
       title: 'Your next nugget is already in the river.',
       text: 'Glimr is open by invitation. Already invited? Sign in with your email address, no password needed.',
     },
-    footer: 'Glimr, content curation tool.',
   },
   notFound: {
     title: 'Nothing in the pan',

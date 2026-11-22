@@ -2,8 +2,9 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import GlimrMark from '../components/GlimrMark.vue'
+import Icon from '../components/Icon.vue'
 import LangSwitcher from '../components/LangSwitcher.vue'
+import { ILLUSTRATIONS } from '../lib/landing-images'
 import { supabase } from '../lib/supabase'
 
 const { t } = useI18n()
@@ -33,7 +34,21 @@ async function submit() {
 <template>
   <div class="login">
     <section class="intro" aria-labelledby="login-brand">
-      <GlimrMark :size="88" />
+      <RouterLink to="/" class="back">
+        <Icon name="arrow-left" :size="18" />
+        {{ t('auth.back') }}
+      </RouterLink>
+      <!-- Decorative: the name and the tagline say it. Cut-out, on the ink panel. -->
+      <img
+        class="nugget"
+        :src="ILLUSTRATIONS.draft.cut.src"
+        :srcset="ILLUSTRATIONS.draft.cut.srcset"
+        sizes="(min-width: 48rem) 28vw, 60vw"
+        :width="ILLUSTRATIONS.draft.cut.width"
+        :height="ILLUSTRATIONS.draft.cut.height"
+        alt=""
+        decoding="async"
+      />
       <p id="login-brand" class="brand">{{ t('app.name') }}</p>
       <p class="tagline">{{ t('auth.pitch') }}</p>
     </section>
@@ -90,13 +105,45 @@ async function submit() {
 }
 
 .intro {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-4);
   padding: clamp(var(--space-6), 6vw, 6rem);
+  /* Room for the way back above the content. */
+  padding-top: max(clamp(var(--space-6), 6vw, 6rem), 5.5rem);
   background: var(--color-ink);
   color: var(--color-on-ink);
+}
+
+/* Back to the home page, top left of the screen. */
+.back {
+  position: absolute;
+  top: var(--space-5);
+  left: clamp(var(--space-4), 4vw, var(--space-8));
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  color: var(--color-on-ink);
+  font-weight: 650;
+  text-decoration: none;
+  text-underline-offset: 0.25em;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.intro :focus-visible {
+  outline-color: var(--color-focus-on-ink);
+}
+
+.nugget {
+  width: min(100%, 26rem);
+  height: auto;
+  margin-bottom: var(--space-2);
 }
 
 .brand {
@@ -144,10 +191,16 @@ async function submit() {
 @media (max-width: 48rem) {
   .login {
     grid-template-columns: 1fr;
+    min-height: 0;
   }
 
   .intro {
     gap: var(--space-2);
+  }
+
+  /* The form stays near the top: a smaller nugget. */
+  .nugget {
+    width: 9rem;
   }
 }
 </style>

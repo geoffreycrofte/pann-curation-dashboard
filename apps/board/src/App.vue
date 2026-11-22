@@ -13,6 +13,8 @@ import {
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AccountMenu from './components/AccountMenu.vue'
+import PublicFooter from './components/PublicFooter.vue'
+import PublicHeader from './components/PublicHeader.vue'
 import Toaster from './components/Toaster.vue'
 import GlimrMark from './components/GlimrMark.vue'
 import { api } from './lib/api'
@@ -255,9 +257,15 @@ watch(
   <!-- Signed out on the home page: the marketing page brings its own header, main and footer. -->
   <LandingView v-else-if="route.name === 'home'" />
 
-  <main v-else id="main" tabindex="-1" class="public">
-    <RouterView />
-  </main>
+  <!-- Signed out elsewhere (pricing, legal pages, sign-in): the public header and footer. -->
+  <div v-else class="public-page">
+    <!-- Sign-in stays focused on its form: its own way back, no header or footer. -->
+    <PublicHeader v-if="route.name !== 'login'" />
+    <main id="main" tabindex="-1" class="public">
+      <RouterView />
+    </main>
+    <PublicFooter v-if="route.name !== 'login'" />
+  </div>
   <Toaster />
 </template>
 
@@ -479,7 +487,15 @@ main:focus {
   outline: none;
 }
 
+/* Public pages: header, the page, then the footer at the bottom even on a short page. */
+.public-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 main.public {
+  flex: 1;
   max-width: none;
   padding: 0;
 }

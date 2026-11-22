@@ -540,3 +540,15 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 ## 2026-11-22 : prix hors taxes
 
 Les prix des offres sont **hors taxes** (Glimr s'adresse d'abord à des professionnels) : la TVA s'ajoute au paiement. Stripe Tax la calcule selon l'adresse du client (siège de la structure au Luxembourg) ; un professionnel de l'UE qui donne son numéro de TVA est facturé sans TVA (autoliquidation). Checkout demande l'adresse de facturation et le numéro de TVA. Prix Stripe en `tax_behavior: exclusive`, produits au code fiscal « AIaaS, cloud, business use » (`txcd_10105002`). Corrige l'entrée « paiement, essai et page de tarifs », qui disait « taxes comprises ».
+
+## 2026-11-22 : pages publiques et pages légales
+
+**En-tête et pied de page communs** (`PublicHeader`, `PublicFooter`) sur toutes les pages publiques quand on n'est pas connecté : accueil, tarifs, connexion, demande d'accès, pages légales. Le pied de page donne l'exploitant tel qu'immatriculé (Crofte Studio S.à r.l.-S, RCS B310079, TVA LU37891138), les liens produit et informations, et l'autre langue.
+
+**Pages légales** (`/legal`, `/terms`, `/privacy`, `/accessibility`) inspirées de celles de CheckFox et de Ramp Up, même exploitant : mentions légales, conditions générales (essai, abonnement Stripe, résiliation en fin de période, responsabilité sur les contenus générés par l'IA), confidentialité et cookies (sous-traitants, durées, droits, aucun cookie posé par Glimr), déclaration d'accessibilité (aucune obligation légale pour une microentreprise, niveau AA du RAWeb visé malgré tout, aucun statut de conformité revendiqué sans audit). Leur texte vit dans `apps/board/src/legal/` (un module par langue), pas dans les messages i18n : ce sont des documents longs, et la syntaxe de vue-i18n interprète `@`, `{` et `|`. Le français fait foi ; la version anglaise le dit.
+
+**Navigation.** Un changement de page remonte en haut de page ; un lien vers une section y va ; changer d'onglet ou de filtre (même page) ne déplace ni le défilement ni le focus.
+
+**Comment ça marche** (`/how-it-works`) : les trois outils (veille, conversations, Création), ce que chacun apporte, ses étapes et l'outil séparé qu'il remplace (Feedly Pro+, Syften Standard, Publer Business), puis la comparaison « sans Glimr, avec Glimr » de la page de tarifs (composant `ToolsCompare`, données dans `lib/competitors.ts`). L'accueil résume les trois outils en cartes et dit ce que l'on garde en main (budget, concurrents, validation, voix). Le style des pages marketing vit dans `styles/marketing.css`, sous la classe `.marketing`.
+
+**Litiges** : solution amiable d'abord, puis tribunaux de Luxembourg-Ville, sous réserve des règles qui protègent les consommateurs. Pas d'arbitrage : trop coûteux au regard des montants, et inopposable aux consommateurs.

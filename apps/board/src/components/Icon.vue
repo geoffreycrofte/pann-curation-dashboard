@@ -5,6 +5,7 @@
  */
 import {
   IconAlertCircle,
+  IconArrowLeft,
   IconArrowRight,
   IconBrandBluesky,
   IconBrandDiscord,
@@ -41,6 +42,7 @@ import {
 
 const ICONS = {
   'alert-circle': IconAlertCircle,
+  'arrow-left': IconArrowLeft,
   'arrow-right': IconArrowRight,
   bluesky: IconBrandBluesky,
   calendar: IconCalendarEvent,

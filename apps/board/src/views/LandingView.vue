@@ -1,30 +1,43 @@
 <script setup lang="ts">
 import { computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Icon from '../components/Icon.vue'
 import LandingFigure from '../components/LandingFigure.vue'
 import HeroProspector from '../components/HeroProspector.vue'
-import GlimrMark from '../components/GlimrMark.vue'
-import { setLang } from '../i18n'
+import PublicFooter from '../components/PublicFooter.vue'
+import PublicHeader from '../components/PublicHeader.vue'
+import { competitorFor, type CompetitorNeed } from '../lib/competitors'
 import { ILLUSTRATIONS } from '../lib/landing-images'
-import { isDark, toggleTheme } from '../lib/theme'
+import '../styles/marketing.css'
 
-const { t, tm, rt, locale } = useI18n()
+const { t, tm, rt, n } = useI18n()
 
 watchEffect(() => (document.title = t('landing.title')))
 
-const otherLang = computed(() => (locale.value === 'fr' ? 'en' : 'fr'))
-
-/** The way from the river to the showcase: who does each step is part of the message. */
-const STEPS = [
-  { key: 'collect', who: 'glimr' },
-  { key: 'triage', who: 'glimr' },
-  { key: 'keep', who: 'you' },
-  { key: 'draft', who: 'glimr' },
-  { key: 'share', who: 'glimr' },
+/** The three tools: their anchor on "how it works", icon, illustration and what they replace. */
+const TOOLS = [
+  { key: 'watch', need: 'watch', icon: 'news', image: 'keep' },
+  { key: 'listen', need: 'listen', icon: 'messages', image: 'triage' },
+  { key: 'create', need: 'publish', icon: 'send', image: 'share' },
 ] as const
+
+const replaces = (need: CompetitorNeed) => {
+  const c = competitorFor(need)
+  return t('howItWorks.replaces', {
+    tool: c.tool,
+    price: n(c.usd, {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: c.usd % 1 ? 2 : 0,
+    }),
+  })
+}
 
 const points = computed(() =>
   (tm('landing.engagement.points') as unknown[]).map((p) => rt(p as string)),
+)
+const control = computed(() =>
+  (tm('landing.control.points') as unknown[]).map((p) => rt(p as string)),
 )
 const more = computed(() =>
   (tm('landing.more.items') as { term: unknown; desc: unknown }[]).map((item) => ({
@@ -37,32 +50,8 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
 </script>
 
 <template>
-  <div class="landing">
-    <header class="top">
-      <RouterLink to="/" class="brand">
-        <GlimrMark :size="40" />
-        <span class="brand-name">{{ t('app.name') }}</span>
-      </RouterLink>
-      <!-- The links are in the hero; the bar keeps the name and the theme. -->
-      <button
-        type="button"
-        class="theme"
-        :aria-pressed="isDark()"
-        :aria-label="t('theme.dark')"
-        :title="t('theme.dark')"
-        @click="toggleTheme()"
-      >
-        <svg v-if="isDark()" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <circle cx="12" cy="12" r="4.5" />
-          <path
-            d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"
-          />
-        </svg>
-        <svg v-else viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
-        </svg>
-      </button>
-    </header>
+  <div class="landing marketing">
+    <PublicHeader />
 
     <main id="main" tabindex="-1">
       <!-- Hero: the pan lifted, the nugget shining. The one animated moment of the page. -->
@@ -74,7 +63,9 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
             <RouterLink :to="{ name: 'login' }" class="button big" data-variant="primary">
               {{ t('landing.login') }}
             </RouterLink>
-            <a href="#how" class="button big">{{ t('landing.how') }}</a>
+            <RouterLink :to="{ name: 'how-it-works' }" class="button big">
+              {{ t('landing.how') }}
+            </RouterLink>
             <RouterLink :to="{ name: 'pricing' }" class="button big">
               {{ t('landing.pricing') }}
             </RouterLink>
@@ -105,32 +96,34 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
         </div>
       </section>
 
-      <!-- The way: a sluice channel runs along the steps and fills with gold as you scroll. -->
-      <section id="how" class="band paper" aria-labelledby="how-title" tabindex="-1">
+      <!-- The three tools, what each brings, and what it replaces. -->
+      <section class="band paper" aria-labelledby="tools-title">
         <div class="section-head">
-          <h2 id="how-title" class="display">{{ t('landing.steps.title') }}</h2>
-          <p class="body">{{ t('landing.steps.intro') }}</p>
+          <h2 id="tools-title" class="display">{{ t('landing.tools.title') }}</h2>
+          <p class="body">{{ t('landing.tools.intro') }}</p>
         </div>
-        <ol class="steps">
-          <li v-for="(step, index) in STEPS" :key="step.key" class="step" :data-who="step.who">
-            <span class="marker" aria-hidden="true">{{ index + 1 }}</span>
-            <div class="step-copy">
-              <h3 class="step-title">{{ t(`landing.steps.${step.key}.title`) }}</h3>
-              <p class="who badge" :data-tone="step.who === 'you' ? 'accent' : undefined" data-dot>
-                {{ t(`landing.steps.${step.who}`) }}
-              </p>
-              <p class="body">{{ t(`landing.steps.${step.key}.text`) }}</p>
-            </div>
+        <ul class="features">
+          <li v-for="tool in TOOLS" :key="tool.key" class="feature" :data-tool="tool.key">
             <LandingFigure
-              class="step-figure"
-              :class="{ drift: step.key === 'share' }"
-              :image="ILLUSTRATIONS[step.key]"
-              on-scene
-              :alt="t(`landing.steps.${step.key}.alt`)"
-              sizes="(min-width: 56rem) 26rem, 80vw"
+              class="feature-figure"
+              :image="ILLUSTRATIONS[tool.image]"
+              :alt="t(`landing.tools.${tool.key}.alt`)"
+              sizes="(min-width: 56rem) 22rem, 80vw"
             />
+            <p class="eyebrow">
+              <Icon :name="tool.icon" :size="20" />
+              {{ t(`howItWorks.${tool.key}.name`) }}
+            </p>
+            <h3 class="feature-title">{{ t(`landing.tools.${tool.key}.title`) }}</h3>
+            <p class="feature-text">{{ t(`landing.tools.${tool.key}.text`) }}</p>
+            <p class="replaces">{{ replaces(tool.need) }}</p>
+            <RouterLink :to="{ name: 'how-it-works', hash: `#${tool.key}` }" class="feature-more">
+              {{ t('howItWorks.detail')
+              }}<span class="visually-hidden">{{ t(`howItWorks.${tool.key}.name`) }}</span>
+              <Icon name="arrow-right" :size="18" />
+            </RouterLink>
           </li>
-        </ol>
+        </ul>
       </section>
 
       <!-- Newsletter, on bright gold. -->
@@ -175,8 +168,8 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
         </div>
       </section>
 
-      <!-- Budget, back on sand. -->
-      <section class="band budget" aria-labelledby="budget-title">
+      <!-- In control: budget, competitors, approval, voice. Back on sand. -->
+      <section class="band budget" aria-labelledby="control-title">
         <div class="split">
           <LandingFigure
             on-scene
@@ -185,8 +178,11 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
             :sizes="HALF"
           />
           <div class="copy">
-            <h2 id="budget-title" class="display">{{ t('landing.budget.title') }}</h2>
-            <p class="body">{{ t('landing.budget.text') }}</p>
+            <h2 id="control-title" class="display">{{ t('landing.control.title') }}</h2>
+            <p class="body">{{ t('landing.control.text') }}</p>
+            <ul class="nuggets">
+              <li v-for="point in control" :key="point">{{ point }}</li>
+            </ul>
           </div>
         </div>
       </section>
@@ -210,637 +206,6 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
       </section>
     </main>
 
-    <footer class="foot">
-      <GlimrMark :size="32" />
-      <p>{{ t('landing.footer') }}</p>
-      <button
-        type="button"
-        class="foot-lang"
-        :lang="otherLang"
-        :aria-label="t('landing.otherLangLabel')"
-        @click="setLang(otherLang)"
-      >
-        {{ t('landing.otherLang') }}
-      </button>
-    </footer>
+    <PublicFooter />
   </div>
 </template>
-
-<style scoped>
-.landing {
-  --gutter: clamp(1rem, 5vw, 4rem);
-  --measure: 34rem;
-
-  /* The bar and the hero stand on the hero scene's own background. */
-  background: var(--color-scene-hero);
-  color: var(--color-text);
-}
-
-main:focus {
-  outline: none;
-}
-
-/* ---------------------------------------------------------------- top bar */
-.top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3) var(--space-6);
-  max-width: 80rem;
-  margin: 0 auto;
-  padding: var(--space-5) var(--gutter);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.brand-name {
-  font-family: var(--font-display);
-  font-size: 1.625rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-
-.theme {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background: transparent;
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-.theme:hover {
-  border-color: var(--color-text);
-}
-
-.theme svg {
-  width: 1.25rem;
-  height: 1.25rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* ---------------------------------------------------------------- type */
-h1,
-.display {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-}
-
-h1 {
-  font-size: clamp(3rem, 7vw, 6rem);
-  line-height: 0.92;
-}
-
-.display {
-  max-width: 18ch;
-  font-size: clamp(2.125rem, 5vw, 3.75rem);
-  line-height: 1;
-}
-
-.display.small {
-  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-}
-
-.display.huge {
-  max-width: 16ch;
-  font-size: clamp(2.5rem, 7vw, 5.5rem);
-  line-height: 0.95;
-}
-
-.body,
-.lead {
-  max-width: var(--measure);
-  margin: 0;
-  font-size: 1.125rem;
-  line-height: 1.6;
-  text-wrap: pretty;
-}
-
-.lead {
-  font-size: clamp(1.125rem, 1.6vw, 1.3125rem);
-}
-
-.landing a.button {
-  text-decoration: none;
-}
-
-.button.big {
-  min-height: 3.25rem;
-  padding-inline: var(--space-6);
-  font-size: 1.0625rem;
-}
-
-/* ---------------------------------------------------------------- hero */
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  align-items: center;
-  gap: var(--space-8) clamp(2rem, 5vw, 5rem);
-  max-width: 80rem;
-  margin: 0 auto;
-  padding: clamp(1rem, 4vw, 3rem) var(--gutter) clamp(3rem, 8vw, 6rem);
-}
-
-.hero-text {
-  display: grid;
-  gap: var(--space-6);
-  justify-items: start;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.invite {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.9375rem;
-}
-
-.hero-figure {
-  --cut-max-height: 40rem;
-
-  width: min(100%, 32rem);
-  justify-self: center;
-}
-
-/* ---------------------------------------------------------------- bands */
-.band {
-  padding: clamp(4rem, 10vw, 8rem) var(--gutter);
-}
-
-.band > * {
-  max-width: 72rem;
-  margin-inline: auto;
-}
-
-.paper {
-  background: var(--color-paper);
-}
-
-.budget {
-  background: var(--color-scene-budget);
-}
-
-.surface {
-  background: var(--color-surface);
-}
-
-/* Inverted bands: their own text, link and focus colors. */
-.ink {
-  --color-focus: var(--color-focus-on-ink);
-
-  background: var(--color-ink);
-  color: var(--color-on-ink);
-}
-
-.gold {
-  --color-focus: var(--color-ink);
-
-  background: var(--color-accent-fill);
-  color: var(--color-on-accent);
-}
-
-.olive {
-  --color-focus: var(--color-focus-on-ink);
-
-  background: var(--color-olive);
-  color: var(--color-on-olive);
-}
-
-.split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-8) clamp(2rem, 6vw, 6rem);
-}
-
-.split > .figure {
-  width: min(100%, 28rem);
-  justify-self: center;
-}
-
-.split.reverse > .figure {
-  order: 2;
-}
-
-.copy {
-  display: grid;
-  gap: var(--space-5);
-}
-
-.ink .body {
-  color: var(--color-on-ink-muted);
-}
-
-/* ---------------------------------------------------------------- steps */
-.section-head {
-  display: grid;
-  gap: var(--space-4);
-  margin-bottom: clamp(3rem, 7vw, 5rem);
-}
-
-#how:focus {
-  outline: none;
-}
-
-.steps {
-  position: relative;
-  display: grid;
-  gap: clamp(3rem, 8vw, 6rem);
-  margin-block: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/*
- * The sluice channel: a wooden bed under the markers. Gold runs down it, step by
- * step, as each step comes into view (scroll-driven, where supported).
- */
-.step {
-  --marker: 3.25rem;
-
-  position: relative;
-  display: grid;
-  grid-template-columns: var(--marker) minmax(0, 1fr) minmax(0, 26rem);
-  align-items: center;
-  gap: var(--space-6) clamp(1.5rem, 4vw, 4rem);
-}
-
-.step::before,
-.step::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: calc(-1 * clamp(3rem, 8vw, 6rem));
-  left: calc(var(--marker) / 2 - 3px);
-  width: 6px;
-  border-radius: 3px;
-}
-
-.step::before {
-  background: color-mix(in srgb, var(--color-wood) 55%, var(--color-paper));
-}
-
-.step::after {
-  background: var(--color-accent-fill);
-  transform-origin: top;
-}
-
-.step:last-child::before,
-.step:last-child::after {
-  bottom: 50%;
-}
-
-.step:first-child::before,
-.step:first-child::after {
-  top: 50%;
-}
-
-.marker {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: var(--marker);
-  aspect-ratio: 1;
-  border: 3px solid var(--color-text);
-  border-radius: 50%;
-  background: var(--color-accent-fill);
-  color: var(--color-on-accent);
-  font-family: var(--font-display);
-  font-size: 1.375rem;
-  font-weight: 800;
-}
-
-.step-figure {
-  --cut-max-height: 24rem;
-}
-
-.step-copy {
-  display: grid;
-  gap: var(--space-3);
-  justify-items: start;
-}
-
-.step-title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-
-.who {
-  margin: 0;
-}
-
-.step:nth-child(even) .step-figure {
-  grid-row: 1;
-  grid-column: 2;
-}
-
-.step:nth-child(even) .step-copy {
-  grid-row: 1;
-  grid-column: 3;
-}
-
-@supports (animation-timeline: view()) {
-  .step::after {
-    animation: pour linear both;
-    animation-timeline: view();
-    animation-range: entry 60% contain 55%;
-  }
-
-  .marker {
-    animation: reach linear both;
-    animation-timeline: view();
-    animation-range: entry 70% contain 30%;
-  }
-}
-
-@keyframes pour {
-  from {
-    transform: scaleY(0);
-  }
-
-  to {
-    transform: scaleY(1);
-  }
-}
-
-@keyframes reach {
-  from {
-    background: var(--color-paper);
-  }
-
-  to {
-    background: var(--color-accent-fill);
-  }
-}
-
-/* The paper planes keep flying, gently. */
-.drift :deep(img) {
-  animation: drift 6s ease-in-out infinite;
-}
-
-@keyframes drift {
-  50% {
-    transform: translate(1.5%, -2%);
-  }
-}
-
-/* ---------------------------------------------------------------- engagement */
-.nuggets {
-  display: grid;
-  gap: var(--space-3);
-  max-width: var(--measure);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 1.0625rem;
-  line-height: 1.5;
-}
-
-.nuggets li {
-  display: grid;
-  grid-template-columns: 1rem minmax(0, 1fr);
-  gap: var(--space-3);
-}
-
-/* A small irregular nugget instead of a bullet. */
-.nuggets li::before {
-  content: '';
-  width: 0.9rem;
-  height: 0.75rem;
-  margin-top: 0.35em;
-  border-radius: 55% 45% 50% 40% / 50% 60% 40% 50%;
-  background: var(--color-accent-fill);
-}
-
-.thread {
-  display: grid;
-  gap: var(--space-3);
-  max-width: 28rem;
-  margin: 0;
-  justify-self: center;
-}
-
-.thread-caption {
-  color: var(--color-on-olive-muted);
-  font-size: 0.9375rem;
-}
-
-.thread-card {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-6);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: 0 30px 60px rgb(0 0 0 / 0.25);
-  transform: rotate(-1.5deg);
-}
-
-.thread-card p {
-  margin: 0;
-}
-
-.thread-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.thread-title {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 750;
-  line-height: 1.25;
-}
-
-.thread-score {
-  font-weight: 700;
-}
-
-.thread-angle {
-  color: var(--color-text-muted);
-  line-height: 1.5;
-}
-
-/* ---------------------------------------------------------------- more */
-.more {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
-  gap: var(--space-8) var(--space-6);
-  margin-top: var(--space-8);
-  margin-bottom: 0;
-}
-
-.more-item {
-  display: grid;
-  align-content: start;
-  gap: var(--space-2);
-  padding-top: var(--space-4);
-  border-top: 4px solid var(--color-accent-fill);
-}
-
-.more dt {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 800;
-}
-
-.more dd {
-  margin: 0;
-  color: var(--color-text-muted);
-  line-height: 1.55;
-}
-
-/* ---------------------------------------------------------------- cta, footer */
-.cta {
-  display: grid;
-  justify-items: center;
-  gap: var(--space-6);
-  text-align: center;
-}
-
-.cta .display {
-  margin-inline: auto;
-}
-
-.foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  padding: var(--space-6) var(--gutter) var(--space-8);
-  border-top: 1px solid color-mix(in srgb, var(--color-on-ink) 15%, transparent);
-  background: var(--color-ink);
-  color: var(--color-on-ink-muted);
-}
-
-.foot p {
-  margin: 0;
-}
-
-.foot-lang {
-  min-height: 2.75rem;
-  padding: 0 var(--space-2);
-  border: 0;
-  background: none;
-  color: var(--color-on-ink);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-  cursor: pointer;
-}
-
-.foot-lang:hover {
-  text-decoration-thickness: 3px;
-}
-
-.foot-lang:focus-visible {
-  outline-color: var(--color-focus-on-ink);
-}
-
-/* ---------------------------------------------------------------- narrow */
-@media (max-width: 56rem) {
-  .hero,
-  .split {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .hero-figure {
-    --cut-max-height: 28rem;
-
-    width: min(100%, 24rem);
-  }
-
-  .split.reverse > .figure {
-    order: 0;
-  }
-
-  .split > .figure {
-    --cut-max-height: 22rem;
-
-    width: min(100%, 22rem);
-  }
-
-  .step,
-  .step:nth-child(even) {
-    grid-template-columns: var(--marker) minmax(0, 1fr);
-    align-items: start;
-  }
-
-  .step .step-figure,
-  .step:nth-child(even) .step-figure {
-    grid-row: 2;
-    grid-column: 2;
-    max-width: 20rem;
-  }
-
-  .step:nth-child(even) .step-copy {
-    grid-row: 1;
-    grid-column: 2;
-  }
-
-  .step::before,
-  .step::after,
-  .step:first-child::before,
-  .step:first-child::after {
-    top: var(--marker);
-  }
-
-  .step:last-child::before,
-  .step:last-child::after {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .drift :deep(img) {
-    animation: none;
-  }
-
-  .step::after,
-  .marker {
-    animation: none;
-  }
-}
-
-@media (forced-colors: active) {
-  .marker {
-    border-color: CanvasText;
-  }
-
-  .step::after {
-    background: Highlight;
-  }
-
-  .thread-card {
-    border: 1px solid CanvasText;
-  }
-}
-</style>

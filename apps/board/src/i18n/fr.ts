@@ -22,6 +22,45 @@ export default {
     engagement: 'Conversations',
     settings: 'Réglages du thème',
     'not-found': 'Page introuvable',
+    pricing: 'Tarifs',
+    'how-it-works': 'Comment ça marche',
+    legal: 'Mentions légales',
+    terms: 'Conditions générales',
+    privacy: 'Confidentialité et cookies',
+    accessibility: 'Accessibilité',
+  },
+  public: {
+    navLabel: 'Pages publiques',
+    how: 'Comment ça marche',
+    pricing: 'Tarifs',
+    login: 'Se connecter',
+    footer: {
+      about:
+        'Glimr fait connaître votre produit ou votre sujet : veille, conversations où aider, posts et newsletter, dans vos langues.',
+      product: 'Produit',
+      information: 'Informations',
+      links: {
+        home: 'Accueil',
+        how: 'Comment ça marche',
+        pricing: 'Tarifs',
+        requestAccess: 'Demander un accès',
+        login: 'Se connecter',
+        legal: 'Mentions légales',
+        terms: 'Conditions générales',
+        privacy: 'Confidentialité et cookies',
+        accessibility: 'Accessibilité',
+        contact: 'Contact',
+      },
+      copyright: '© {year} Glimr.',
+      operator: '{name}, {address}. RCS {rcs}. TVA {vat}.',
+    },
+  },
+  legal: {
+    updated: 'Dernière mise à jour : {date}',
+    toc: 'Sur cette page',
+    translation: '',
+    readFrench: 'Lire la version française',
+    showEmail: 'Afficher l’adresse e-mail',
   },
   toast: { close: 'Fermer la notification « {text} »' },
   a11y: { skipToContent: 'Aller au contenu' },
@@ -63,7 +102,9 @@ export default {
   },
   auth: {
     accountDeleted: 'Votre compte a été supprimé. Merci d’avoir utilisé Glimr.',
-    pitch: 'Beaucoup de collecte, peu de sélection : ne gardez que l’essentiel de votre veille.',
+    pitch:
+      'Présentez votre expertise ou votre produit : Glimr parcourt le web pour vous et vous aide à le faire connaître.',
+    back: 'Retour à l’accueil',
     intro: 'Recevez un lien de connexion par e-mail, sans mot de passe.',
     title: 'Connexion',
     email: 'Adresse e-mail',
@@ -1393,6 +1434,75 @@ export default {
     postStatus: ' : {status}',
     view: 'Voir',
   },
+  howItWorks: {
+    title: 'Comment fonctionne Glimr',
+    lead: 'Trois outils qui travaillent ensemble pour faire connaître votre produit ou votre expertise. Glimr fait le travail répétitif, vous gardez les décisions.',
+    jump: 'Les trois outils',
+    replaces: 'Remplace {tool}, {price} par mois',
+    detail: 'En détail',
+    watch: {
+      name: 'Veille',
+      title: 'Devenez la référence de votre domaine',
+      text: 'Partager ce qui compte dans votre domaine montre votre expertise, et celle qui entoure votre produit, sans parler de vous. Glimr suit vos sources, trie l’actualité selon vos critères et prépare de quoi la partager.',
+    },
+    listen: {
+      name: 'Conversations',
+      title: 'Soyez là où l’on parle de votre sujet',
+      text: 'Des gens posent chaque jour des questions auxquelles vous savez répondre. Glimr surveille Hacker News et Bluesky, repère les discussions où votre aide compte et prépare une réponse. Vous y prenez place naturellement, sans démarchage.',
+      steps: {
+        spot: {
+          title: 'Repérer',
+          text: 'Glimr parcourt les discussions qui touchent votre sujet, avec vos mots-clés et un seuil de popularité.',
+        },
+        score: {
+          title: 'Évaluer',
+          text: 'Pour chaque fil, l’IA note l’occasion d’aider, propose un angle en une phrase et écarte les fils hostiles ou les demandes de prestation.',
+        },
+        draft: {
+          title: 'Préparer',
+          text: 'Pour les fils que vous retenez, Glimr rédige un brouillon de réponse utile, dans votre voix, sans argumentaire commercial.',
+        },
+        reply: {
+          title: 'Répondre',
+          text: 'Vous relisez, ajustez et publiez vous-même. Une limite par semaine évite d’en faire trop.',
+        },
+      },
+    },
+    create: {
+      name: 'Création',
+      title: 'Rebondissez, publiez partout',
+      text: 'Un article de votre veille, une question repérée dans une conversation, une idée ou une page blanche : tout peut devenir un post. Glimr l’écrit pour chaque réseau et le publie à vos créneaux.',
+      steps: {
+        start: {
+          title: 'Partir de quelque chose',
+          text: 'Vos idées, des liens, une recherche sur le web, ou des pistes tirées de votre veille et de vos conversations.',
+        },
+        write: {
+          title: 'Rédiger',
+          text: 'Un post par réseau et par langue, ancré dans ses sources et fidèle à votre voix et à vos règles de style.',
+        },
+        series: {
+          title: 'Créer des séries',
+          text: 'Une série de posts sur un thème, partie de zéro, pour tenir le rythme sur plusieurs semaines.',
+        },
+        images: {
+          title: 'Illustrer',
+          text: 'Vos images, avec un texte alternatif obligatoire, et un contrôle d’accessibilité de chaque post.',
+        },
+        publish: {
+          title: 'Multi-publier',
+          text: 'LinkedIn, Facebook, Bluesky, Mastodon et Discord, chacun à ses créneaux, visibles dans le calendrier.',
+        },
+      },
+      alt: 'Une pépite posée sur un coussin de velours bleu, avec une plume et une étiquette vierge.',
+    },
+    cta: {
+      title: 'Prêt à faire connaître votre sujet ?',
+      text: 'Glimr est ouvert sur invitation, avec 14 jours d’essai gratuit sur l’offre de votre choix.',
+      request: 'Demander un accès',
+      pricing: 'Voir les tarifs',
+    },
+  },
   landing: {
     title: 'Glimr : la veille lavée, les pépites gardées',
     how: 'Comment ça marche',
@@ -1402,7 +1512,7 @@ export default {
     otherLangLabel: 'Read this page in English',
     hero: {
       title: 'Lavez la veille, gardez les pépites.',
-      lead: 'Glimr collecte l’actualité de votre sujet, l’IA écarte le sable, vous gardez l’or. Résumés, posts et newsletter sont prêts à partir, dans vos langues.',
+      lead: 'Glimr fait connaître votre produit ou votre expertise. Il lave la veille de votre sujet, repère les conversations où vous pouvez aider et prépare vos posts, dans vos langues. Vous gardez les pépites.',
       invite: 'Sur invitation pour l’instant.',
       alt: 'Un orpailleur souriant tient sa batée : au milieu du sable mouillé, une grosse pépite brille.',
     },
@@ -1412,8 +1522,6 @@ export default {
       alt: 'L’orpailleur hausse les épaules devant une batée vide : un seul grain y reste.',
     },
     steps: {
-      title: 'De la rivière à la vitrine',
-      intro: 'Cinq étapes. Une seule vous revient vraiment : choisir.',
       glimr: 'Glimr s’en charge',
       you: 'Vous décidez',
       collect: {
@@ -1442,6 +1550,36 @@ export default {
         alt: 'Des avions en papier, chacun chargé d’une pépite, s’envolent d’un wagonnet plein d’or.',
       },
     },
+    tools: {
+      title: 'Trois outils pour faire connaître votre sujet',
+      intro:
+        'Chacun remplace un outil que vous payez à part. Ensemble, ils se nourrissent : votre veille et vos conversations donnent les idées de vos posts.',
+      watch: {
+        title: 'Devenez la référence de votre domaine',
+        text: 'Glimr suit l’actualité de votre sujet et prépare résumés, posts et newsletter. En partageant ce qui compte, vous montrez l’expertise qui entoure votre produit, sans parler de vous.',
+        alt: 'L’orpailleur dépose une pépite dans un bocal déjà bien rempli.',
+      },
+      listen: {
+        title: 'Placez-vous naturellement dans les discussions',
+        text: 'Glimr surveille le web, repère les conversations sur votre sujet où votre aide compte et prépare des réponses. Vous relisez, vous publiez.',
+        alt: 'Un petit robot en laiton cueille les pépites retenues par les rainures du sluice.',
+      },
+      create: {
+        title: 'Rebondissez et multi-publiez',
+        text: 'Partez d’un article de votre veille, d’une conversation ou de zéro : Glimr rédige vos posts, ou des séries entières, et les publie sur tous vos réseaux.',
+        alt: 'Des avions en papier, chacun chargé d’une pépite, s’envolent d’un wagonnet plein d’or.',
+      },
+    },
+    control: {
+      title: 'Vous gardez la main',
+      text: 'Glimr travaille pour vous, jamais à votre place.',
+      points: [
+        'Votre budget : un plafond par thème et la consommation suivie opération par opération. Arrivé au plafond, Glimr s’arrête au lieu de dépenser.',
+        'Vos concurrents : suivez les mêmes sujets qu’eux, et écartez leurs sites pour ne jamais relayer leurs contenus.',
+        'Vos publications : rien ne part sans votre validation ou votre programmation.',
+        'Votre voix : vos règles de style, votre ton et vos langues, appliqués à chaque texte.',
+      ],
+    },
     newsletter: {
       title: 'Le coffret de la semaine',
       text: 'Les pépites programmées et publiées remplissent la newsletter : un envoi par langue avec Brevo ou SendFox, le jour et à l’heure que vous fixez. Un flux RSS public les présente aussi sur votre site.',
@@ -1449,7 +1587,7 @@ export default {
     },
     engagement: {
       title: 'Et quand on parle de votre sujet ailleurs ?',
-      text: 'Le module Engagement repère sur Hacker News et Bluesky les conversations où votre expertise aiderait vraiment. L’IA propose un angle et signale les risques. La réponse, c’est vous qui l’écrivez et la publiez : aucune ne part toute seule.',
+      text: 'Glimr repère sur Hacker News et Bluesky les conversations où votre expertise aiderait vraiment. L’IA propose un angle, signale les risques et prépare un brouillon de réponse. Vous relisez et publiez : aucune réponse ne part toute seule.',
       points: [
         'Répondre, surveiller ou passer : une décision pour chaque fil.',
         'Un angle d’aide en une phrase, pas un argumentaire.',
@@ -1464,8 +1602,6 @@ export default {
         'Proposer une méthode en trois temps : parcours critiques, clavier, lecteur d’écran.',
     },
     budget: {
-      title: 'Le poids du sable, le prix de l’or',
-      text: 'Chaque thème a son plafond mensuel. Vous branchez vos propres clés (Anthropic, Exa, Brevo, Zernio), gardées chiffrées dans votre espace, et vous voyez le coût de chaque opération. Arrivé au plafond, Glimr s’arrête au lieu de dépenser.',
       alt: 'Une balance : un tas de sable d’un côté, une seule pépite qui l’équilibre de l’autre.',
     },
     more: {
@@ -1476,7 +1612,7 @@ export default {
           desc: 'Un espace par sujet, avec ses sources, ses critères et son rythme.',
         },
         {
-          term: 'Bilingue',
+          term: 'Toutes vos langues',
           desc: 'Chaque résumé et chaque post existe dans les langues de publication du thème.',
         },
         {
@@ -1493,7 +1629,6 @@ export default {
       title: 'Votre prochaine pépite est déjà dans la rivière.',
       text: 'Glimr est ouvert sur invitation. Déjà invité ? Connectez-vous avec votre adresse e-mail, sans mot de passe.',
     },
-    footer: 'Glimr, outil de curation de veille.',
   },
   notFound: {
     title: 'Rien dans la batée',
