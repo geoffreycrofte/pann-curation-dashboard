@@ -140,7 +140,11 @@ function price(plan: PublicPlan) {
           v-else
           type="button"
           class="button"
-          :data-variant="plan.key === FEATURED && plan.key !== current ? 'primary' : undefined"
+          :data-variant="
+            plan.key === FEATURED && !(mode === 'trial' && plan.key === current)
+              ? 'primary'
+              : undefined
+          "
           :disabled="busy || (mode === 'trial' && plan.key === current)"
           :aria-describedby="`${id}-${plan.key}`"
           @click="emit('choose', plan.key, price(plan)?.interval ?? interval)"
@@ -370,6 +374,7 @@ function price(plan: PublicPlan) {
 /* On ink, the neutral button keeps a visible edge. */
 .offer[data-featured] > .button:not([data-variant]) {
   border-color: var(--color-on-ink);
+  background: transparent;
   color: var(--color-on-ink);
 }
 </style>

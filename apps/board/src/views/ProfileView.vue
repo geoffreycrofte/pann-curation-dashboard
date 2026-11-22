@@ -13,9 +13,10 @@ import {
   AlertDialogTrigger,
 } from 'reka-ui'
 import { useMutation, useQueryCache } from '@pinia/colada'
+import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, reactive, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { setLang } from '../i18n'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
@@ -34,6 +35,22 @@ const queryCache = useQueryCache()
 const { data: me } = useWorkspace()
 
 const user = computed(() => session.value?.user)
+
+// Four sections, one tab each, kept in the address (?tab=…): the trial banner links to the
+// workspace and its offer.
+const TABS = ['profile', 'preferences', 'workspace', 'account'] as const
+type Tab = (typeof TABS)[number]
+const route = useRoute()
+const tab = computed<Tab>({
+  get: () => {
+    const value = route.query.tab
+    return (TABS as readonly unknown[]).includes(value) ? (value as Tab) : 'profile'
+  },
+  set: (value) =>
+    void router.replace({
+      query: { ...route.query, tab: value === 'profile' ? undefined : value },
+    }),
+})
 const workspaces = computed(() => me.value?.workspaces ?? [])
 
 // ---------------------------------------------------------------------------
@@ -41,6 +58,9 @@ const workspaces = computed(() => me.value?.workspaces ?? [])
 // ---------------------------------------------------------------------------
 const fullName = ref<string>((user.value?.user_metadata?.full_name as string | undefined) ?? '')
 const email = ref(user.value?.email ?? '')
+const initial = computed(
+  () => (fullName.value.trim() || email.value).charAt(0).toUpperCase() || '?',
+)
 const identityMessage = ref('')
 const identityError = ref(false)
 const savingIdentity = ref(false)
@@ -132,239 +152,269 @@ async function signOutEverywhere() {
   <h1 tabindex="-1">{{ t('profile.title') }}</h1>
   <p class="intro">{{ t('profile.intro') }}</p>
 
-  <div class="sections">
-    <form
-      class="section-card section"
-      :aria-labelledby="`${id}-identity`"
-      @submit.prevent="saveIdentity"
-    >
-      <h2 :id="`${id}-identity`" class="section-title">{{ t('profile.identity') }}</h2>
-      <div class="form-row">
-        <label :for="`${id}-name`">{{ t('profile.name') }}</label>
-        <input
-          :id="`${id}-name`"
-          v-model="fullName"
-          class="field"
-          type="text"
-          autocomplete="name"
-          maxlength="100"
-          :aria-describedby="`${id}-name-hint`"
-        />
-        <p :id="`${id}-name-hint`" class="hint">{{ t('profile.nameHint') }}</p>
-      </div>
-      <div class="form-row">
-        <label :for="`${id}-email`">{{ t('profile.email') }}</label>
-        <input
-          :id="`${id}-email`"
-          v-model="email"
-          class="field"
-          type="email"
-          autocomplete="email"
-          required
-          spellcheck="false"
-          :aria-describedby="`${id}-email-hint`"
-        />
-        <p :id="`${id}-email-hint`" class="hint">{{ t('profile.emailHint') }}</p>
-      </div>
-      <div class="section-actions">
-        <button type="submit" class="button" data-variant="primary" :disabled="savingIdentity">
-          {{ savingIdentity ? t('common.saving') : t('common.save') }}
-        </button>
-        <p role="status" :class="{ error: identityError }">{{ identityMessage }}</p>
-      </div>
-    </form>
-
-    <section class="section-card section" :aria-labelledby="`${id}-prefs`">
-      <h2 :id="`${id}-prefs`" class="section-title">{{ t('profile.preferences') }}</h2>
-      <p class="hint">{{ t('profile.preferencesHint') }}</p>
-      <fieldset class="choices">
-        <legend class="form-label">{{ t('lang.label') }}</legend>
-        <div v-for="lang in UI_LANGS" :key="lang" class="form-check">
-          <input
-            :id="`${id}-lang-${lang}`"
-            type="radio"
-            :name="`${id}-lang`"
-            :value="lang"
-            :checked="locale === lang"
-            @change="setLang(lang as UiLang)"
-          />
-          <label :for="`${id}-lang-${lang}`" :lang="lang">{{ t(`lang.${lang}`) }}</label>
+  <TabsRoot v-model="tab" activation-mode="manual" class="sections">
+    <TabsList :aria-label="t('profile.tabsLabel')" v-scroll-active class="subtabs tab-row">
+      <TabsTrigger v-for="name in TABS" :key="name" :value="name" class="subtab">
+        {{ t(`profile.tabs.${name}`) }}
+      </TabsTrigger>
+    </TabsList>
+    <TabsContent value="profile" class="tab-panel">
+      <form
+        class="section-card section"
+        :aria-labelledby="`${id}-identity`"
+        @submit.prevent="saveIdentity"
+      >
+        <h2 :id="`${id}-identity`" class="section-title">{{ t('profile.identity') }}</h2>
+        <!-- The same avatar as the account menu: the initial of the name, decorative. -->
+        <div class="who">
+          <span class="avatar" aria-hidden="true">{{ initial }}</span>
+          <p class="who-text">
+            <span class="who-name">{{ fullName || email }}</span>
+            <span v-if="fullName" class="who-email">{{ email }}</span>
+          </p>
         </div>
-      </fieldset>
-      <fieldset class="choices">
-        <legend class="form-label">{{ t('profile.theme') }}</legend>
-        <div v-for="value in ['system', 'light', 'dark'] as const" :key="value" class="form-check">
+        <div class="form-row">
+          <label :for="`${id}-name`">{{ t('profile.name') }}</label>
           <input
-            :id="`${id}-theme-${value}`"
-            type="radio"
-            :name="`${id}-theme`"
-            :value="value"
-            :checked="theme === value"
-            @change="pickTheme(value)"
+            :id="`${id}-name`"
+            v-model="fullName"
+            class="field"
+            type="text"
+            autocomplete="name"
+            maxlength="100"
+            :aria-describedby="`${id}-name-hint`"
           />
-          <label :for="`${id}-theme-${value}`">{{ t(`profile.themes.${value}`) }}</label>
+          <p :id="`${id}-name-hint`" class="hint">{{ t('profile.nameHint') }}</p>
         </div>
-      </fieldset>
-    </section>
-
-    <section class="section-card section" :aria-labelledby="`${id}-workspace`">
-      <h2 :id="`${id}-workspace`" class="section-title">{{ t('profile.workspace') }}</h2>
-      <p class="hint">{{ t('profile.workspaceHint') }}</p>
-      <div v-for="membership in workspaces" :key="membership.workspace.id" class="workspace">
-        <form
-          v-if="membership.role === 'owner'"
-          class="rename"
-          @submit.prevent="rename(membership.workspace.id)"
-        >
-          <div class="form-row">
-            <!-- The role sits on the label's line: it qualifies this workspace. -->
-            <div class="label-row">
-              <label :for="`${id}-ws-${membership.workspace.id}`">
-                {{ t('profile.workspaceName') }}
-              </label>
-              <span class="badge" data-tone="accent">{{ t('profile.roles.owner') }}</span>
-            </div>
-            <div class="inline">
-              <input
-                :id="`${id}-ws-${membership.workspace.id}`"
-                :value="nameOf(membership.workspace.id, membership.workspace.name)"
-                class="field"
-                type="text"
-                required
-                maxlength="100"
-                @input="names[membership.workspace.id] = ($event.target as HTMLInputElement).value"
-              />
-              <button
-                type="submit"
-                class="button"
-                data-variant="primary"
-                data-size="small"
-                :disabled="renaming"
-              >
-                {{ t('profile.rename') }}
-              </button>
-            </div>
+        <div class="form-row">
+          <label :for="`${id}-email`">{{ t('profile.email') }}</label>
+          <input
+            :id="`${id}-email`"
+            v-model="email"
+            class="field"
+            type="email"
+            autocomplete="email"
+            required
+            spellcheck="false"
+            :aria-describedby="`${id}-email-hint`"
+          />
+          <p :id="`${id}-email-hint`" class="hint">{{ t('profile.emailHint') }}</p>
+        </div>
+        <div class="section-actions">
+          <button type="submit" class="button" data-variant="primary" :disabled="savingIdentity">
+            {{ savingIdentity ? t('common.saving') : t('common.save') }}
+          </button>
+          <p role="status" :class="{ error: identityError }">{{ identityMessage }}</p>
+        </div>
+      </form>
+    </TabsContent>
+    <TabsContent value="preferences" class="tab-panel">
+      <section class="section-card section" :aria-labelledby="`${id}-prefs`">
+        <h2 :id="`${id}-prefs`" class="section-title">{{ t('profile.preferences') }}</h2>
+        <p class="hint">{{ t('profile.preferencesHint') }}</p>
+        <fieldset class="choices">
+          <legend class="form-label">{{ t('lang.label') }}</legend>
+          <div v-for="lang in UI_LANGS" :key="lang" class="form-check">
+            <input
+              :id="`${id}-lang-${lang}`"
+              type="radio"
+              :name="`${id}-lang`"
+              :value="lang"
+              :checked="locale === lang"
+              @change="setLang(lang as UiLang)"
+            />
+            <label :for="`${id}-lang-${lang}`" :lang="lang">{{ t(`lang.${lang}`) }}</label>
           </div>
-        </form>
-        <p v-else class="label-row">
-          <span class="workspace-name">{{ membership.workspace.name }}</span>
-          <span class="badge">{{ t(`profile.roles.${membership.role}`) }}</span>
-        </p>
-        <WorkspacePlan
-          :workspace-id="membership.workspace.id"
-          :is-owner="membership.role === 'owner'"
-        />
-      </div>
-      <p role="status" class="message" :class="{ error: workspaceError }">
-        {{ workspaceMessage }}
-      </p>
-    </section>
-
-    <section class="section-card section" :aria-labelledby="`${id}-security`">
-      <h2 :id="`${id}-security`" class="section-title">{{ t('profile.security') }}</h2>
-      <p>{{ t('profile.magicLink') }}</p>
-      <p v-if="user?.last_sign_in_at" class="hint">
-        {{
-          t('profile.lastSignIn', {
-            date: new Date(user.last_sign_in_at).toLocaleString(locale, {
-              dateStyle: 'long',
-              timeStyle: 'short',
-            }),
-          })
-        }}
-      </p>
-      <div>
-        <AlertDialogRoot>
-          <AlertDialogTrigger as-child>
-            <button type="button" class="button">{{ t('profile.signOutEverywhere') }}</button>
-          </AlertDialogTrigger>
-          <AlertDialogPortal>
-            <AlertDialogOverlay class="dialog-overlay" />
-            <AlertDialogContent class="dialog">
-              <AlertDialogTitle class="dialog-title">
-                {{ t('profile.signOutEverywhereTitle') }}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {{ t('profile.signOutEverywhereText') }}
-              </AlertDialogDescription>
-              <div class="dialog-actions">
-                <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
-                <AlertDialogAction class="button" data-variant="primary" @click="signOutEverywhere">
-                  {{ t('profile.signOutEverywhere') }}
-                </AlertDialogAction>
+        </fieldset>
+        <fieldset class="choices">
+          <legend class="form-label">{{ t('profile.theme') }}</legend>
+          <div
+            v-for="value in ['system', 'light', 'dark'] as const"
+            :key="value"
+            class="form-check"
+          >
+            <input
+              :id="`${id}-theme-${value}`"
+              type="radio"
+              :name="`${id}-theme`"
+              :value="value"
+              :checked="theme === value"
+              @change="pickTheme(value)"
+            />
+            <label :for="`${id}-theme-${value}`">{{ t(`profile.themes.${value}`) }}</label>
+          </div>
+        </fieldset>
+      </section>
+    </TabsContent>
+    <TabsContent value="workspace" class="tab-panel">
+      <section class="section-card section" :aria-labelledby="`${id}-workspace`">
+        <h2 :id="`${id}-workspace`" class="section-title">{{ t('profile.workspace') }}</h2>
+        <p class="hint">{{ t('profile.workspaceHint') }}</p>
+        <div v-for="membership in workspaces" :key="membership.workspace.id" class="workspace">
+          <form
+            v-if="membership.role === 'owner'"
+            class="rename"
+            @submit.prevent="rename(membership.workspace.id)"
+          >
+            <div class="form-row">
+              <!-- The role sits on the label's line: it qualifies this workspace. -->
+              <div class="label-row">
+                <label :for="`${id}-ws-${membership.workspace.id}`">
+                  {{ t('profile.workspaceName') }}
+                </label>
+                <span class="badge" data-tone="accent">{{ t('profile.roles.owner') }}</span>
               </div>
-            </AlertDialogContent>
-          </AlertDialogPortal>
-        </AlertDialogRoot>
-      </div>
-    </section>
-
-    <section class="section-card section danger" :aria-labelledby="`${id}-delete`">
-      <h2 :id="`${id}-delete`" class="section-title">{{ t('profile.deleteTitle') }}</h2>
-      <p>{{ t('profile.deleteIntro') }}</p>
-      <ul class="consequences">
-        <li>{{ t('profile.deleteWorkspaces') }}</li>
-        <li>{{ t('profile.deleteShared') }}</li>
-        <li>{{ t('profile.deleteSent') }}</li>
-      </ul>
-      <div>
-        <AlertDialogRoot
-          @update:open="(open) => open || ((confirmEmail = ''), (deleteMessage = ''))"
-        >
-          <AlertDialogTrigger as-child>
-            <button type="button" class="button" data-variant="danger">
-              {{ t('profile.deleteButton') }}
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogPortal>
-            <AlertDialogOverlay class="dialog-overlay" />
-            <AlertDialogContent class="dialog">
-              <AlertDialogTitle class="dialog-title">{{
-                t('profile.deleteConfirmTitle')
-              }}</AlertDialogTitle>
-              <AlertDialogDescription>{{ t('profile.deleteConfirmText') }}</AlertDialogDescription>
-              <form class="form confirm" @submit.prevent="confirmed && deleteAccount()">
-                <div class="form-row">
-                  <label :for="`${id}-confirm`">
-                    {{ t('profile.deleteConfirmLabel', { email: user?.email }) }}
-                  </label>
-                  <input
-                    :id="`${id}-confirm`"
-                    v-model="confirmEmail"
-                    class="field"
-                    type="email"
-                    autocomplete="off"
-                    spellcheck="false"
-                    required
-                  />
-                </div>
-                <p
-                  v-if="deleteMessage"
-                  role="alert"
-                  class="notice notice-inline"
-                  data-tone="danger"
+              <div class="inline">
+                <input
+                  :id="`${id}-ws-${membership.workspace.id}`"
+                  :value="nameOf(membership.workspace.id, membership.workspace.name)"
+                  class="field"
+                  type="text"
+                  required
+                  maxlength="100"
+                  @input="
+                    names[membership.workspace.id] = ($event.target as HTMLInputElement).value
+                  "
+                />
+                <button
+                  type="submit"
+                  class="button"
+                  data-variant="primary"
+                  data-size="small"
+                  :disabled="renaming"
                 >
-                  <Icon name="alert-circle" />
-                  <span>{{ deleteMessage }}</span>
-                </p>
+                  {{ t('profile.rename') }}
+                </button>
+              </div>
+            </div>
+          </form>
+          <p v-else class="label-row">
+            <span class="workspace-name">{{ membership.workspace.name }}</span>
+            <span class="badge">{{ t(`profile.roles.${membership.role}`) }}</span>
+          </p>
+          <WorkspacePlan
+            :workspace-id="membership.workspace.id"
+            :is-owner="membership.role === 'owner'"
+          />
+        </div>
+        <p role="status" class="message" :class="{ error: workspaceError }">
+          {{ workspaceMessage }}
+        </p>
+      </section>
+    </TabsContent>
+    <TabsContent value="account" class="tab-panel">
+      <section class="section-card section" :aria-labelledby="`${id}-security`">
+        <h2 :id="`${id}-security`" class="section-title">{{ t('profile.security') }}</h2>
+        <p>{{ t('profile.magicLink') }}</p>
+        <p v-if="user?.last_sign_in_at" class="hint">
+          {{
+            t('profile.lastSignIn', {
+              date: new Date(user.last_sign_in_at).toLocaleString(locale, {
+                dateStyle: 'long',
+                timeStyle: 'short',
+              }),
+            })
+          }}
+        </p>
+        <div>
+          <AlertDialogRoot>
+            <AlertDialogTrigger as-child>
+              <button type="button" class="button">{{ t('profile.signOutEverywhere') }}</button>
+            </AlertDialogTrigger>
+            <AlertDialogPortal>
+              <AlertDialogOverlay class="dialog-overlay" />
+              <AlertDialogContent class="dialog">
+                <AlertDialogTitle class="dialog-title">
+                  {{ t('profile.signOutEverywhereTitle') }}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {{ t('profile.signOutEverywhereText') }}
+                </AlertDialogDescription>
                 <div class="dialog-actions">
                   <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
-                  <button
-                    type="submit"
+                  <AlertDialogAction
                     class="button"
-                    data-variant="danger"
-                    :disabled="!confirmed || deleting"
+                    data-variant="primary"
+                    @click="signOutEverywhere"
                   >
-                    {{ deleting ? t('profile.deleting') : t('profile.deleteButton') }}
-                  </button>
+                    {{ t('profile.signOutEverywhere') }}
+                  </AlertDialogAction>
                 </div>
-              </form>
-            </AlertDialogContent>
-          </AlertDialogPortal>
-        </AlertDialogRoot>
-      </div>
-    </section>
-  </div>
+              </AlertDialogContent>
+            </AlertDialogPortal>
+          </AlertDialogRoot>
+        </div>
+      </section>
+
+      <section class="section-card section danger" :aria-labelledby="`${id}-delete`">
+        <h2 :id="`${id}-delete`" class="section-title">{{ t('profile.deleteTitle') }}</h2>
+        <p>{{ t('profile.deleteIntro') }}</p>
+        <ul class="consequences">
+          <li>{{ t('profile.deleteWorkspaces') }}</li>
+          <li>{{ t('profile.deleteShared') }}</li>
+          <li>{{ t('profile.deleteSent') }}</li>
+        </ul>
+        <div>
+          <AlertDialogRoot
+            @update:open="(open) => open || ((confirmEmail = ''), (deleteMessage = ''))"
+          >
+            <AlertDialogTrigger as-child>
+              <button type="button" class="button" data-variant="danger">
+                {{ t('profile.deleteButton') }}
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogPortal>
+              <AlertDialogOverlay class="dialog-overlay" />
+              <AlertDialogContent class="dialog">
+                <AlertDialogTitle class="dialog-title">{{
+                  t('profile.deleteConfirmTitle')
+                }}</AlertDialogTitle>
+                <AlertDialogDescription>{{
+                  t('profile.deleteConfirmText')
+                }}</AlertDialogDescription>
+                <form class="form confirm" @submit.prevent="confirmed && deleteAccount()">
+                  <div class="form-row">
+                    <label :for="`${id}-confirm`">
+                      {{ t('profile.deleteConfirmLabel', { email: user?.email }) }}
+                    </label>
+                    <input
+                      :id="`${id}-confirm`"
+                      v-model="confirmEmail"
+                      class="field"
+                      type="email"
+                      autocomplete="off"
+                      spellcheck="false"
+                      required
+                    />
+                  </div>
+                  <p
+                    v-if="deleteMessage"
+                    role="alert"
+                    class="notice notice-inline"
+                    data-tone="danger"
+                  >
+                    <Icon name="alert-circle" />
+                    <span>{{ deleteMessage }}</span>
+                  </p>
+                  <div class="dialog-actions">
+                    <AlertDialogCancel class="button">{{ t('common.cancel') }}</AlertDialogCancel>
+                    <button
+                      type="submit"
+                      class="button"
+                      data-variant="danger"
+                      :disabled="!confirmed || deleting"
+                    >
+                      {{ deleting ? t('profile.deleting') : t('profile.deleteButton') }}
+                    </button>
+                  </div>
+                </form>
+              </AlertDialogContent>
+            </AlertDialogPortal>
+          </AlertDialogRoot>
+        </div>
+      </section>
+    </TabsContent>
+  </TabsRoot>
 </template>
 
 <style scoped>
@@ -376,7 +426,54 @@ async function signOutEverywhere() {
 
 .sections {
   display: grid;
+  gap: var(--space-2);
+}
+
+.tab-panel {
+  display: grid;
   gap: var(--space-6);
+}
+
+/* Inactive panels stay in the page, empty and hidden: no room for them in the grid. */
+.tab-panel[hidden] {
+  display: none;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.who-text {
+  display: grid;
+  margin: 0;
+  min-width: 0;
+}
+
+.who-name {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.who-email {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
 }
 
 .section p {

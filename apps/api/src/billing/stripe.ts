@@ -5,7 +5,8 @@
  */
 const API = 'https://api.stripe.com/v1'
 
-export type StripeResult<T> = { ok: true; data: T } | { ok: false; status: number; error: string }
+export type StripeResult<T> =
+  { ok: true; data: T } | { ok: false; status: number; error: string; message: string }
 
 /** Nested params in Stripe's form encoding: a[b][0]=c. */
 export function formEncode(params: Record<string, unknown>, prefix = ''): string[] {
@@ -43,10 +44,15 @@ export async function stripe<T>(
     body: method === 'POST' ? body : undefined,
   })
   const json = (await response.json().catch(() => ({}))) as {
-    error?: { message?: string; code?: string }
+    error?: { message?: string; code?: string; type?: string }
   }
   if (!response.ok)
-    return { ok: false, status: response.status, error: json.error?.code ?? 'provider_error' }
+    return {
+      ok: false,
+      status: response.status,
+      error: json.error?.code ?? json.error?.type ?? 'provider_error',
+      message: json.error?.message ?? response.statusText,
+    }
   return { ok: true, data: json as T }
 }
 

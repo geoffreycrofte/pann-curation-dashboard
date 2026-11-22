@@ -77,6 +77,19 @@ export async function runBillingRequest(db: SupabaseClient, id: string, fetchImp
 
   const { secret } = await stripeKeys(db)
   if (!secret) return finish({ error: 'billing_not_configured' })
+  // Stripe said no: its reason goes to the Worker logs, the board gets a code.
+  const refused = (result: { status: number; error: string; message: string }) => {
+    console.warn(
+      JSON.stringify({
+        stripe: 'refused',
+        request: id,
+        status: result.status,
+        code: result.error,
+        message: result.message,
+      }),
+    )
+    return finish({ error: `stripe_refused:${result.error}` })
+  }
 
   if (row.kind === 'portal') {
     if (!row.workspace.stripe_customer_id) return finish({ error: 'billing_not_configured' })
@@ -87,7 +100,8 @@ export async function runBillingRequest(db: SupabaseClient, id: string, fetchImp
       { customer: row.workspace.stripe_customer_id, return_url: row.return_url },
       fetchImpl,
     )
-    return portal.ok ? finish({ url: portal.data.url }) : finish({ error: 'provider_error' })
+    if (!portal.ok) return refused(portal)
+    return finish({ url: portal.data.url })
   }
 
   const { data: plan, error: planError } = await db
@@ -145,7 +159,8 @@ export async function runBillingRequest(db: SupabaseClient, id: string, fetchImp
     },
     fetchImpl,
   )
-  return session.ok ? finish({ url: session.data.url }) : finish({ error: 'provider_error' })
+  if (!session.ok) return refused(session)
+  return finish({ url: session.data.url })
 }
 
 interface StripeEvent {

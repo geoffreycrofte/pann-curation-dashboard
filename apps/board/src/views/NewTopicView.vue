@@ -122,7 +122,9 @@ function quit() {
       <p class="notice notice-inline" data-tone="danger" role="note">
         <span>
           {{ t('errors.billing_inactive') }}
-          <RouterLink :to="{ name: 'profile' }">{{ t('billing.banner.link') }}</RouterLink>
+          <RouterLink :to="{ name: 'profile', query: { tab: 'workspace', offer: 'open' } }">{{
+            t('billing.banner.link')
+          }}</RouterLink>
         </span>
       </p>
     </template>

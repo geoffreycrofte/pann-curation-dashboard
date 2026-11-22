@@ -429,7 +429,18 @@ export default {
       'L’essai ou l’abonnement est terminé : vos thèmes sont en pause. Choisissez une offre pour reprendre.',
     choose: 'Choisir une offre et payer',
     manage: 'Gérer l’abonnement',
-    opening: 'Ouverture de la page de paiement…',
+    wait: {
+      checkout: {
+        title: 'Préparation du paiement',
+        text: 'Glimr ouvre la page de paiement sécurisée de Stripe. Cela prend quelques secondes ; ne fermez pas cette page.',
+      },
+      portal: {
+        title: 'Ouverture de votre espace client',
+        text: 'Glimr ouvre votre espace client Stripe (moyen de paiement, factures, résiliation). Cela prend quelques secondes.',
+      },
+      failed: 'La page de paiement n’a pas pu s’ouvrir',
+      retry: 'Réessayer',
+    },
     thanks: 'Merci ! Votre abonnement est enregistré.',
     cancelled: 'Paiement interrompu : rien n’a été débité.',
     banner: {
@@ -522,6 +533,13 @@ export default {
       'Pendant l’essai, Glimr fournit un nombre réduit de tokens. Le quota complet arrive avec l’abonnement.',
   },
   profile: {
+    tabsLabel: 'Sections du profil',
+    tabs: {
+      profile: 'Profil',
+      preferences: 'Préférences',
+      workspace: 'Espace de travail',
+      account: 'Sécurité et compte',
+    },
     title: 'Profil',
     intro: 'Votre compte Glimr : identité, préférences, espace de travail et sessions.',
     identity: 'Identité',
@@ -798,6 +816,8 @@ export default {
     billing_not_configured:
       'Le paiement n’est pas encore ouvert. Réessayez plus tard ou contactez Glimr.',
     subscribed: 'Cet espace a un abonnement : changez d’offre depuis « Gérer l’abonnement ».',
+    stripe_refused:
+      'Stripe a refusé d’ouvrir la page de paiement (code : {detail}). Réessayez dans un instant ; si cela continue, contactez Glimr.',
     token_quota_reached:
       'Les tokens du mois sont épuisés : l’IA et la recherche reprennent le 1er du mois prochain.',
     plan_topic_limit:
@@ -943,16 +963,36 @@ export default {
     started: 'Rédaction des posts manquants lancée.',
   },
   admin: {
+    tabsLabel: 'Sections de l’administration',
+    tabs: {
+      workspaces: 'Espaces de travail',
+      requests: 'Demandes',
+      offers: 'Offres',
+      costs: 'Coûts',
+      keys: 'Clés',
+      open: 'en attente',
+    },
+    colBilling: 'Facturation',
+    noOwner: 'sans propriétaire',
+    billing: {
+      legacy: 'Compte d’avant les offres',
+      trialing: 'Essai : dernier jour | Essai : {n} jours restants',
+      trialEnded: 'Essai terminé',
+      active: { month: 'Payé au mois, jusqu’au {date}', year: 'Payé à l’année, jusqu’au {date}' },
+      pastDue: 'Paiement en échec',
+      canceled: 'Arrêté, accès jusqu’au {date}',
+      expired: 'Terminé, thèmes en pause',
+    },
     workspacesTitle: 'Espaces de travail',
     workspacesIntro:
-      'Cochez un espace pour que LinkedIn et Facebook y passent par la clé Zernio de Glimr (mode plateforme) : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde.',
+      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme) : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
     colPlatform: 'Zernio de Glimr',
-    platformLabel: 'Activé (comptes : {n})',
+    platformLabel: 'Activé ({n} comptes)',
     platformOn: 'Zernio de Glimr activé pour {name}',
     platformOff: 'Zernio de Glimr désactivé pour {name}',
     title: 'Administration de Glimr',
     intro:
-      'Réservé aux administrateurs de Glimr : les clés que Glimr paie lui-même et le centre de coûts de ces dépenses.',
+      'Réservé aux administrateurs de Glimr : les espaces de travail et leur offre, les demandes, les offres, les coûts et les clés que Glimr paie lui-même.',
     keysTitle: 'Clés de Glimr',
     keysIntro:
       'Utilisées pour l’onboarding et pour les offres où Glimr fournit les services, jamais pour l’offre où l’utilisateur apporte ses clés. Chiffrées dans Supabase Vault, jamais réaffichées.',

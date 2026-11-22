@@ -51,6 +51,7 @@ async function save() {
       }),
     )
     await queryCache.invalidateQueries({ key: ['admin', 'workspace-stats'] })
+    await queryCache.invalidateQueries({ key: ['admin', 'workspaces'] })
   } catch (err) {
     toast(describeError((err as Error).message, t).text)
   } finally {
