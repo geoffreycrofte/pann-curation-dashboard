@@ -634,6 +634,7 @@ async function shoot(page, name, path, opts = {}) {
     ['out-legal', '/legal?signedout'],
     ['out-terms', '/terms?signedout'],
     ['out-privacy', '/privacy?signedout'],
+    ['out-accessibility', '/accessibility?signedout'],
     ['new-topic', '/topics/new'],
     ['adjust-topic', '/t/t1/adjust'],
   ].filter(([n]) => !only || only.split(',').includes(n))

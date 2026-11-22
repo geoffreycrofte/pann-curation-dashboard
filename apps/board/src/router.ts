@@ -77,6 +77,13 @@ export const router = createRouter({
       meta: { public: true },
     },
     {
+      path: '/accessibility',
+      name: 'accessibility',
+      component: () => import('./views/LegalView.vue'),
+      props: { doc: 'accessibility' },
+      meta: { public: true },
+    },
+    {
       // Sign-up stays on invitation: people without an account ask for one here.
       path: '/request-access',
       name: 'request-access',

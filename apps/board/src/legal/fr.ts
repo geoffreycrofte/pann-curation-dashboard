@@ -50,15 +50,6 @@ export default {
         ],
       },
       {
-        id: 'accessibility',
-        title: 'Accessibilité',
-        blocks: [
-          {
-            p: 'Glimr vise la conformité au niveau AA des WCAG 2.2. Si un élément vous bloque, écrivez à [support@glimr.cc](mailto:support@glimr.cc) : je vous réponds et je corrige.',
-          },
-        ],
-      },
-      {
         id: 'documents',
         title: 'Autres documents',
         blocks: [
@@ -66,6 +57,7 @@ export default {
             list: [
               '[Conditions générales](/terms) : l’usage du service, l’essai, l’abonnement et la résiliation.',
               '[Confidentialité et cookies](/privacy) : les données traitées, pourquoi, combien de temps, et vos droits.',
+              '[Accessibilité](/accessibility) : le niveau visé, comment Glimr est vérifié, et comment signaler un problème.',
             ],
           },
         ],
@@ -551,6 +543,95 @@ export default {
             p: 'Quand cette politique change sur le fond, sa date de mise à jour change aussi, et les titulaires d’un compte sont prévenus par e-mail.',
           },
         ],
+      },
+    ],
+  },
+  accessibility: {
+    title: 'Accessibilité',
+    lead: 'Le niveau d’accessibilité visé par Glimr, comment il est vérifié, et comment me signaler un problème.',
+    updated: '22 novembre 2026',
+    intro: [
+      {
+        p: 'Crofte Studio n’a aucune obligation légale en matière d’accessibilité : la [loi du 8 mars 2023 relative aux exigences en matière d’accessibilité applicables aux produits et services](https://legilux.public.lu/eli/etat/leg/loi/2023/03/08/a133/jo) exempte les microentreprises. Je vise malgré tout, personnellement, le niveau AA du RAWeb (référentiel d’évaluation de l’accessibilité web luxembourgeois) : Glimr est conçu dès le départ dans ce but.',
+      },
+      { p: 'La présente déclaration d’accessibilité s’applique à Glimr et à toutes ses pages.' },
+    ],
+    sections: [
+      {
+        id: 'what',
+        title: 'Qu’est-ce que l’accessibilité numérique ?',
+        blocks: [
+          {
+            p: 'Chacun doit pouvoir utiliser et consulter facilement les informations figurant sur un site web ou une application, notamment les personnes présentant un handicap et les personnes utilisant des logiciels d’assistance ou du matériel spécialisé (par exemple en raison de handicaps visuels, auditifs, physiques ou cognitifs).',
+          },
+        ],
+      },
+      {
+        id: 'status',
+        title: 'État de conformité',
+        blocks: [
+          {
+            p: 'Glimr n’a pas encore fait l’objet d’une évaluation complète selon le RAWeb : aucun statut de conformité n’est donc revendiqué pour l’instant.',
+          },
+        ],
+      },
+      {
+        id: 'features',
+        title: 'Fonctionnalités d’accessibilité',
+        blocks: [
+          {
+            list: [
+              'Contrastes des couleurs de l’interface vérifiés automatiquement, en mode clair et en mode sombre',
+              'Modes clair et sombre, selon le réglage de votre système ou votre propre choix',
+              'Contenu qui peut être agrandi et qui s’adapte aux écrans étroits',
+              'Toutes les fonctionnalités utilisables au clavier, avec un focus visible et un lien d’évitement',
+              'Un langage clair et des pages bien structurées',
+              'Votre préférence de réduction des animations est respectée',
+              'Des aides contextuelles qui expliquent les réglages techniques directement dans l’interface',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'testing',
+        title: 'Comment Glimr est vérifié',
+        blocks: [
+          {
+            p: 'À chaque modification de Glimr, les contrastes de toutes les couleurs de l’interface sont vérifiés automatiquement selon les seuils AA, en mode clair et en mode sombre.',
+          },
+          {
+            p: 'Les vérifications automatiques ne trouvent qu’une partie des problèmes possibles. Des vérifications manuelles au clavier, avec des lecteurs d’écran et d’autres technologies d’assistance, les complètent.',
+          },
+        ],
+      },
+      {
+        id: 'report',
+        title: 'Signaler un problème',
+        blocks: [
+          {
+            p: 'Si vous constatez un problème d’accessibilité, écrivez-moi à [support@glimr.cc](mailto:support@glimr.cc) : décrivez le problème et la page concernée. Je réponds par e-mail dans un délai d’un mois au plus tard. Je privilégie la correction du problème directement dans Glimr. Si cela n’est pas possible rapidement, je vous transmets l’information souhaitée dans un format accessible de votre choix :',
+          },
+          {
+            list: [
+              'par écrit, dans un document ou un e-mail ;',
+              'à l’oral, lors d’un entretien ou par téléphone.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'unsatisfied',
+        title: 'Si vous n’êtes pas satisfait ou satisfaite',
+        blocks: [
+          {
+            p: 'Si ma réponse ne vous satisfait pas, vous pouvez le signaler à l’OSAPS, l’organisme luxembourgeois qui surveille l’accessibilité des produits et services, au moyen de son [formulaire de signalement](https://accessibilite-produits-services.public.lu/fr/communaute/signaler.html).',
+          },
+        ],
+      },
+    ],
+    outro: [
+      {
+        p: 'La présente déclaration se base sur le modèle défini par la décision d’exécution (UE) 2018/1523. Ce modèle appartient à l’Union européenne et est publié sous licence [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/deed.fr).',
       },
     ],
   },

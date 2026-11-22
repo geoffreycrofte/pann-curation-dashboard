@@ -50,15 +50,6 @@ export default {
         ],
       },
       {
-        id: 'accessibility',
-        title: 'Accessibility',
-        blocks: [
-          {
-            p: 'Glimr aims at WCAG 2.2 level AA. If something blocks you, write to [support@glimr.cc](mailto:support@glimr.cc): I will answer and fix it.',
-          },
-        ],
-      },
-      {
         id: 'documents',
         title: 'Other documents',
         blocks: [
@@ -66,6 +57,7 @@ export default {
             list: [
               '[Terms](/terms): using the service, the trial, the subscription and cancellation.',
               '[Privacy and cookies](/privacy): the data processed, why, for how long, and your rights.',
+              '[Accessibility](/accessibility): the level aimed at, how Glimr is checked, and how to report a problem.',
             ],
           },
         ],
@@ -531,6 +523,95 @@ export default {
             p: 'When this policy changes in substance, its update date changes too, and account holders are told by e-mail.',
           },
         ],
+      },
+    ],
+  },
+  accessibility: {
+    title: 'Accessibility',
+    lead: 'The accessibility level Glimr aims at, how it is checked, and how to tell me about a problem.',
+    updated: '22 November 2026',
+    intro: [
+      {
+        p: 'Crofte Studio has no legal obligation regarding accessibility: the [law of 8 March 2023](https://legilux.public.lu/eli/etat/leg/loi/2023/03/08/a133/jo) on the accessibility requirements for products and services exempts microenterprises. Even so, I personally aim at level AA of RAWeb (the Luxembourg web accessibility assessment framework): Glimr is designed for it from the start.',
+      },
+      { p: 'This accessibility statement applies to Glimr and all its pages.' },
+    ],
+    sections: [
+      {
+        id: 'what',
+        title: 'What is digital accessibility?',
+        blocks: [
+          {
+            p: 'Everyone should be able to use and consult the information on a website or application easily, especially people with disabilities and people using assistive software or specialised hardware (for example because of visual, auditory, physical or cognitive impairments).',
+          },
+        ],
+      },
+      {
+        id: 'status',
+        title: 'Compliance status',
+        blocks: [
+          {
+            p: 'Glimr has not had a complete RAWeb assessment yet, so no compliance status is claimed for now.',
+          },
+        ],
+      },
+      {
+        id: 'features',
+        title: 'Accessibility features',
+        blocks: [
+          {
+            list: [
+              'Interface colour contrast checked automatically, in light and dark mode',
+              'Light and dark modes, following your system setting or your own choice',
+              'Content that can be zoomed and that reflows on narrow screens',
+              'Every feature usable with the keyboard, with a visible focus and a skip link',
+              'Plain language and well-structured pages',
+              'Your reduced motion preference is respected',
+              'Contextual help explaining technical settings right in the interface',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'testing',
+        title: 'How Glimr is checked',
+        blocks: [
+          {
+            p: 'Each time Glimr changes, the contrast of every interface colour is checked automatically against the AA thresholds, in light and dark mode.',
+          },
+          {
+            p: 'Automated checks only find part of the possible problems. Manual checks with the keyboard, screen readers and other assistive technologies complete them.',
+          },
+        ],
+      },
+      {
+        id: 'report',
+        title: 'Reporting a problem',
+        blocks: [
+          {
+            p: 'If you notice an accessibility problem, write to me at [support@glimr.cc](mailto:support@glimr.cc): describe the problem and the page concerned. I answer by email within one month at the latest. I prefer to fix the problem directly in Glimr. If that is not possible quickly, I send you the information you need in an accessible format of your choice:',
+          },
+          {
+            list: [
+              'in writing, in a document or an email;',
+              'orally, during an interview or by telephone.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'unsatisfied',
+        title: 'If you are not satisfied',
+        blocks: [
+          {
+            p: 'If my answer does not satisfy you, you can report it to the OSAPS, the Luxembourg body that monitors the accessibility of products and services, through its [reporting form](https://accessibilite-produits-services.public.lu/en/communaute/signaler.html).',
+          },
+        ],
+      },
+    ],
+    outro: [
+      {
+        p: 'This statement is based on the model defined by Implementing Decision (EU) 2018/1523. That model belongs to the European Union and is published under the [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) licence.',
       },
     ],
   },

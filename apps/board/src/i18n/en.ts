@@ -28,6 +28,7 @@ export default {
     legal: 'Legal notice',
     terms: 'Terms',
     privacy: 'Privacy and cookies',
+    accessibility: 'Accessibility',
   },
   public: {
     navLabel: 'Public pages',
@@ -46,6 +47,7 @@ export default {
         legal: 'Legal notice',
         terms: 'Terms',
         privacy: 'Privacy and cookies',
+        accessibility: 'Accessibility',
         contact: 'Contact',
       },
       copyright: '© {year} Glimr.',

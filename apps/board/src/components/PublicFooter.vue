@@ -23,6 +23,7 @@ const INFORMATION = [
   { to: { name: 'legal' }, key: 'legal' },
   { to: { name: 'terms' }, key: 'terms' },
   { to: { name: 'privacy' }, key: 'privacy' },
+  { to: { name: 'accessibility' }, key: 'accessibility' },
 ] as const
 </script>
 

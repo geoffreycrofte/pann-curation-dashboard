@@ -26,6 +26,7 @@ export default {
     legal: 'Mentions légales',
     terms: 'Conditions générales',
     privacy: 'Confidentialité et cookies',
+    accessibility: 'Accessibilité',
   },
   public: {
     navLabel: 'Pages publiques',
@@ -44,6 +45,7 @@ export default {
         legal: 'Mentions légales',
         terms: 'Conditions générales',
         privacy: 'Confidentialité et cookies',
+        accessibility: 'Accessibilité',
         contact: 'Contact',
       },
       copyright: '© {year} Glimr.',

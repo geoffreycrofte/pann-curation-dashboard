@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
- * A legal page (legal notice, terms, privacy): its title, the date of its last change, a
+ * A legal page (legal notice, terms, privacy, accessibility): its title, the date of its last change, a
  * table of contents, then its sections. French is the binding version: the English one says
  * so and links to it.
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import LegalText from '../components/LegalText.vue'
+import LegalBlocks from '../components/LegalBlocks.vue'
 import { setLang } from '../i18n'
 import en from '../legal/en'
 import fr from '../legal/fr'
@@ -46,6 +46,9 @@ const translated = computed(() => locale.value !== 'fr')
       </nav>
 
       <article class="legal-article">
+        <div v-if="page.intro" class="legal-section">
+          <LegalBlocks :blocks="page.intro" />
+        </div>
         <section
           v-for="section in page.sections"
           :key="section.id"
@@ -53,35 +56,11 @@ const translated = computed(() => locale.value !== 'fr')
           class="legal-section"
         >
           <h2 :id="section.id">{{ section.title }}</h2>
-          <template v-for="(block, i) in section.blocks" :key="i">
-            <p v-if="'p' in block"><LegalText :text="block.p" /></p>
-            <ul v-else-if="'list' in block">
-              <li v-for="(item, j) in block.list" :key="j"><LegalText :text="item" /></li>
-            </ul>
-            <div v-else class="table-wrap">
-              <table>
-                <caption class="visually-hidden">
-                  {{
-                    block.table.caption
-                  }}
-                </caption>
-                <thead>
-                  <tr>
-                    <th v-for="head in block.table.head" :key="head" scope="col">{{ head }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(row, r) in block.table.rows" :key="r">
-                    <template v-for="(cell, c) in row" :key="c">
-                      <th v-if="c === 0" scope="row">{{ cell }}</th>
-                      <td v-else>{{ cell }}</td>
-                    </template>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </template>
+          <LegalBlocks :blocks="section.blocks" />
         </section>
+        <footer v-if="page.outro" class="legal-outro">
+          <LegalBlocks :blocks="page.outro" />
+        </footer>
       </article>
     </div>
   </div>
@@ -205,42 +184,10 @@ const translated = computed(() => locale.value !== 'fr')
   scroll-margin-top: var(--space-6);
 }
 
-.legal-section p,
-.legal-section ul {
-  margin: 0;
-  line-height: 1.6;
-}
-
-.legal-section ul {
-  display: grid;
-  gap: var(--space-2);
-  padding-inline-start: 1.25rem;
-}
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
+.legal-outro {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border-subtle);
+  color: var(--color-text-muted);
   font-size: 0.9375rem;
-}
-
-th,
-td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--color-border-subtle);
-  text-align: start;
-  vertical-align: top;
-}
-
-thead th {
-  border-bottom-color: var(--color-border);
-  font-weight: 700;
-}
-
-tbody th {
-  font-weight: 650;
 }
 </style>

@@ -22,10 +22,14 @@ export interface LegalDoc {
   lead: string
   /** Date of the last change in substance, already written for the reader. */
   updated: string
+  /** Paragraphs before the first section (no table of contents entry). */
+  intro?: LegalBlock[]
   sections: LegalSection[]
+  /** Closing note, after a rule (source of a model, licence). */
+  outro?: LegalBlock[]
 }
 
-export const LEGAL_DOCS = ['legal', 'terms', 'privacy'] as const
+export const LEGAL_DOCS = ['legal', 'terms', 'privacy', 'accessibility'] as const
 export type LegalDocKey = (typeof LEGAL_DOCS)[number]
 export type LegalDocs = Record<LegalDocKey, LegalDoc>
 
