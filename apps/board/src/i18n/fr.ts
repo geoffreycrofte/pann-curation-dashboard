@@ -422,6 +422,11 @@ export default {
       month: 'Abonnement mensuel, renouvelé le {date}.',
       year: 'Abonnement annuel, renouvelé le {date}.',
     },
+    activeTrial: {
+      month:
+        'Abonnement mensuel enregistré : l’essai continue jusqu’au {date}, date du premier paiement.',
+      year: 'Abonnement annuel enregistré : l’essai continue jusqu’au {date}, date du premier paiement.',
+    },
     canceled: 'Abonnement arrêté : accès jusqu’au {date}.',
     pastDue:
       'Le dernier paiement a échoué : mettez à jour votre moyen de paiement pour que vos thèmes continuent.',
@@ -768,7 +773,7 @@ export default {
           'Collez ici cette adresse : elle fait office de clé, ne la partagez pas.',
         ],
         cost: 'Gratuit.',
-        link: 'Aide Discord : les webhooks',
+        link: 'Aide Discord : les webhooks',
       },
       brevo: {
         name: 'Brevo',
@@ -976,23 +981,30 @@ export default {
     noOwner: 'sans propriétaire',
     billing: {
       legacy: 'Compte d’avant les offres',
-      trialing: 'Essai : dernier jour | Essai : {n} jours restants',
+      trialing: 'Essai : dernier jour | Essai : {n} jours restants',
       trialEnded: 'Essai terminé',
-      active: { month: 'Payé au mois, jusqu’au {date}', year: 'Payé à l’année, jusqu’au {date}' },
+      active: {
+        month: 'Payé au mois, renouvelé le {date}',
+        year: 'Payé à l’année, renouvelé le {date}',
+      },
+      activeTrial: {
+        month: 'Abonné au mois, en essai, 1er paiement le {date}',
+        year: 'Abonné à l’année, en essai, 1er paiement le {date}',
+      },
       pastDue: 'Paiement en échec',
       canceled: 'Arrêté, accès jusqu’au {date}',
       expired: 'Terminé, thèmes en pause',
     },
     workspacesTitle: 'Espaces de travail',
     workspacesIntro:
-      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme) : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
+      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme) : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
     colPlatform: 'Zernio de Glimr',
     platformLabel: 'Activé ({n} comptes)',
     platformOn: 'Zernio de Glimr activé pour {name}',
     platformOff: 'Zernio de Glimr désactivé pour {name}',
     title: 'Administration de Glimr',
     intro:
-      'Réservé aux administrateurs de Glimr : les espaces de travail et leur offre, les demandes, les offres, les coûts et les clés que Glimr paie lui-même.',
+      'Réservé aux administrateurs de Glimr : les espaces de travail et leur offre, les demandes, les offres, les coûts et les clés que Glimr paie lui-même.',
     keysTitle: 'Clés de Glimr',
     keysIntro:
       'Utilisées pour l’onboarding et pour les offres où Glimr fournit les services, jamais pour l’offre où l’utilisateur apporte ses clés. Chiffrées dans Supabase Vault, jamais réaffichées.',
@@ -1089,15 +1101,24 @@ export default {
     plans: {
       title: 'Offres',
       intro:
-        'Les limites de chaque offre, appliquées à tous les espaces qui l’ont. L’offre sur mesure se règle espace par espace, dans le tableau des coûts.',
+        'Les limites de chaque offre, appliquées à tous les espaces qui l’ont. L’offre sur mesure se règle espace par espace, dans l’onglet Espaces de travail.',
+      groups: {
+        limits: 'Limites',
+        tokens: 'Tokens',
+        prices: 'Prix en euros HT',
+        stripe: 'Prix Stripe',
+      },
+      perMonthShort: 'Au mois',
+      perYearShort: 'À l’année',
+      duringTrial: 'Pendant l’essai',
+      perMonth: '{price} par mois',
+      perYear: '{price} par an',
+      notSold: 'Pas de prix',
+      payable: 'Payable',
+      notPayable: 'Prix Stripe manquants',
       maxTopics: 'Thèmes au maximum',
       maxAccounts: 'Comptes LinkedIn et Facebook',
       monthlyTokens: 'Tokens par mois',
-      trialTokens: 'Tokens pendant l’essai',
-      priceMonth: 'Prix au mois (€ HT)',
-      priceYear: 'Prix à l’année (€ HT)',
-      stripeMonth: 'Prix Stripe au mois',
-      stripeYear: 'Prix Stripe à l’année',
       stripeHint:
         'Identifiants des prix créés dans Stripe (price_…). Sans eux, l’offre ne peut pas être payée dans cette période.',
       emptyHint:
