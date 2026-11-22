@@ -447,8 +447,8 @@ export default {
     yearlySaving: 'about 20% less',
     monthly: 'Monthly',
     perMonth: 'per month',
-    billedYearly: 'Billed {total} a year, taxes included.',
-    billedMonthly: 'Billed every month, taxes included.',
+    billedYearly: 'Billed {total} a year, excluding VAT.',
+    billedMonthly: 'Billed every month, excluding VAT.',
     current: 'Your offer',
     recommended: 'Recommended',
     pitch: {
@@ -488,7 +488,7 @@ export default {
       versus: 'or',
       with: 'With Glimr',
       withSub: 'One tool, everything connected',
-      withNote: 'Intermediate offer, billed yearly, taxes included.',
+      withNote: 'Intermediate offer, billed yearly, excluding VAT.',
       included: {
         publish: 'Publishing to LinkedIn, Bluesky, Mastodon, Facebook and Discord',
         watch: 'News watch sorted by AI, posts drafted from your sources',
@@ -1037,8 +1037,8 @@ export default {
       maxAccounts: 'LinkedIn and Facebook accounts',
       monthlyTokens: 'Tokens per month',
       trialTokens: 'Tokens during the trial',
-      priceMonth: 'Monthly price (€ incl. tax)',
-      priceYear: 'Yearly price (€ incl. tax)',
+      priceMonth: 'Monthly price (€ excl. VAT)',
+      priceYear: 'Yearly price (€ excl. VAT)',
       stripeMonth: 'Stripe monthly price',
       stripeYear: 'Stripe yearly price',
       stripeHint:

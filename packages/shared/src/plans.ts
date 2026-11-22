@@ -58,7 +58,7 @@ export interface WorkspacePlan extends PlanLimits {
 /** An offer as the pricing page shows it. */
 export interface PublicPlan extends PlanLimits {
   key: Plan
-  /** Euros, taxes included; null: not sold that way. */
+  /** Euros, excluding VAT (added at checkout); null: not sold that way. */
   price_month_eur: number | null
   price_year_eur: number | null
   trial_tokens: number | null

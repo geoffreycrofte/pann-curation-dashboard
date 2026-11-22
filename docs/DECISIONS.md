@@ -536,3 +536,7 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Nom.** Pann semblait déjà déposé : l'outil s'appelle Glimr (de _glimmer_, la lueur de l'or dans la batée). Tout le dépôt suit : textes de l'interface, paquets (`@glimr/*`), Worker et files (`glimr`, `glimr-jobs`), clés de stockage du navigateur, serveur MCP, clés d'idempotence. Exceptions : les migrations déjà appliquées (règle du projet) et le nom du dépôt GitHub. Le logo suivra (composant `GlimrMark`, fichiers de `docs/brand/`).
 
 **Domaine.** `glimr.cc`, en domaine personnalisé du Worker (DNS et certificat créés par Cloudflare au déploiement), `www` redirigé par une règle de la zone. Étapes dans le README (Déploiement, Domaine glimr.cc). Renommer le Worker crée un nouveau Worker : l'ancien `pann` doit être supprimé juste après, sinon ses tâches planifiées tournent en double.
+
+## 2026-11-22 : prix hors taxes
+
+Les prix des offres sont **hors taxes** (Glimr s'adresse d'abord à des professionnels) : la TVA s'ajoute au paiement. Stripe Tax la calcule selon l'adresse du client (siège de la structure au Luxembourg) ; un professionnel de l'UE qui donne son numéro de TVA est facturé sans TVA (autoliquidation). Checkout demande l'adresse de facturation et le numéro de TVA. Prix Stripe en `tax_behavior: exclusive`, produits au code fiscal « AIaaS, cloud, business use » (`txcd_10105002`). Corrige l'entrée « paiement, essai et page de tarifs », qui disait « taxes comprises ».

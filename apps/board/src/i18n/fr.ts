@@ -448,8 +448,8 @@ export default {
     yearlySaving: 'environ 20 % de moins',
     monthly: 'Au mois',
     perMonth: 'par mois',
-    billedYearly: 'Facturé {total} par an, taxes comprises.',
-    billedMonthly: 'Facturé chaque mois, taxes comprises.',
+    billedYearly: 'Facturé {total} par an, hors taxes.',
+    billedMonthly: 'Facturé chaque mois, hors taxes.',
     current: 'Votre offre',
     recommended: 'Recommandée',
     pitch: {
@@ -491,7 +491,7 @@ export default {
       versus: 'ou',
       with: 'Avec Glimr',
       withSub: 'Un seul outil, tout est relié',
-      withNote: 'Offre Intermédiaire, facturée à l’année, taxes comprises.',
+      withNote: 'Offre Intermédiaire, facturée à l’année, hors taxes.',
       included: {
         publish: 'Publication sur LinkedIn, Bluesky, Mastodon, Facebook et Discord',
         watch: 'Veille triée par IA, posts rédigés depuis vos sources',
@@ -1054,8 +1054,8 @@ export default {
       maxAccounts: 'Comptes LinkedIn et Facebook',
       monthlyTokens: 'Tokens par mois',
       trialTokens: 'Tokens pendant l’essai',
-      priceMonth: 'Prix au mois (€ TTC)',
-      priceYear: 'Prix à l’année (€ TTC)',
+      priceMonth: 'Prix au mois (€ HT)',
+      priceYear: 'Prix à l’année (€ HT)',
       stripeMonth: 'Prix Stripe au mois',
       stripeYear: 'Prix Stripe à l’année',
       stripeHint:

@@ -130,6 +130,15 @@ export async function runBillingRequest(db: SupabaseClient, id: string, fetchImp
       success_url: withOutcome(row.return_url, 'success'),
       cancel_url: withOutcome(row.return_url, 'cancel'),
       allow_promotion_codes: true,
+      // Prices exclude VAT: Stripe Tax adds it from the customer's address; a business of
+      // the EU that gives its VAT number is billed without it (reverse charge).
+      automatic_tax: { enabled: true },
+      tax_id_collection: { enabled: true },
+      billing_address_collection: 'required',
+      // An existing customer: Checkout saves the address and name it collects.
+      customer_update: row.workspace.stripe_customer_id
+        ? { address: 'auto', name: 'auto' }
+        : undefined,
       locale: 'auto',
       metadata,
       subscription_data: { metadata, ...(keepTrial ? { trial_end: trialEnd } : {}) },
