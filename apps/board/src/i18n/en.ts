@@ -51,7 +51,7 @@ export default {
         contact: 'Contact',
       },
       copyright: '© {year} Glimr.',
-      operator: '{name}, Luxembourg. RCS {rcs}. VAT {vat}.',
+      operator: '{name}, {address}. RCS {rcs}. VAT {vat}.',
     },
   },
   legal: {
@@ -60,6 +60,7 @@ export default {
     translation:
       'This translation is provided for convenience. Only the French version is binding.',
     readFrench: 'Lire la version française',
+    showEmail: 'Show the e-mail address',
   },
   toast: { close: 'Close the notification “{text}”' },
   a11y: { skipToContent: 'Skip to content' },

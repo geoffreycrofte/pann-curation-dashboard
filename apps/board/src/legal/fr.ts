@@ -13,14 +13,15 @@ export default {
         title: 'Éditeur',
         blocks: [
           {
-            p: 'Glimr (glimr.cc) est édité par Crofte Studio S.à r.l.-S, société à responsabilité limitée simplifiée de droit luxembourgeois, établie au Luxembourg.',
+            p: 'Glimr (glimr.cc) est édité par Crofte Studio S.à r.l.-S, société à responsabilité limitée simplifiée de droit luxembourgeois.',
           },
           {
             list: [
+              'Siège social : 43, rue d’Anvers, L-1130 Luxembourg',
               'Registre de commerce et des sociétés : B310079',
               'Numéro de TVA : LU37891138',
               'Directeur de la publication : Geoffrey Crofte',
-              'Contact : [support@glimr.cc](mailto:support@glimr.cc)',
+              'Contact : {email}',
             ],
           },
         ],
@@ -159,7 +160,7 @@ export default {
             p: 'Vous pouvez changer d’offre ou résilier à tout moment depuis Gérer l’abonnement. La résiliation prend effet à la fin de la période déjà payée : le Service reste disponible jusque-là, puis les thèmes sont mis en pause.',
           },
           {
-            p: 'Sauf obligation légale contraire, une période commencée n’est pas remboursée.',
+            p: 'Un remboursement intégral n’est pas possible si une quantité significative de tokens d’IA a été utilisée pendant la période d’essai. Chaque demande de remboursement est étudiée avec attention : écrivez à {email}.',
           },
         ],
       },
@@ -240,7 +241,7 @@ export default {
         title: '13. Suspension et clôture',
         blocks: [
           {
-            p: 'Vous pouvez supprimer votre compte à tout moment depuis Profil, Sécurité et compte. Je peux suspendre ou clôturer un compte, sans préavis, en cas de violation des Conditions ou d’usage nuisible au Service ou à d’autres utilisateurs.',
+            p: 'Vous pouvez supprimer votre compte à tout moment depuis Profil, Sécurité et compte. Un compte inactif pendant un an est supprimé, après un e-mail d’avertissement envoyé un mois avant. Je peux suspendre ou clôturer un compte, sans préavis, en cas de violation des Conditions ou d’usage nuisible au Service ou à d’autres utilisateurs.',
           },
         ],
       },
@@ -279,7 +280,7 @@ export default {
         title: '17. Contact',
         blocks: [
           {
-            p: 'Une question sur ces Conditions : [support@glimr.cc](mailto:support@glimr.cc).',
+            p: 'Une question sur ces Conditions : {email}.',
           },
         ],
       },
@@ -298,7 +299,7 @@ export default {
           {
             list: [
               'Crofte Studio S.à r.l.-S, Luxembourg, RCS B310079, TVA LU37891138.',
-              'Contact : [support@glimr.cc](mailto:support@glimr.cc).',
+              'Contact : {email}.',
               'Délégué à la protection des données : non requis par l’article 37 du RGPD. Les questions sont traitées directement par l’exploitant.',
               'Autorité de contrôle : Commission nationale pour la protection des données (CNPD), Luxembourg.',
             ],
@@ -448,7 +449,10 @@ export default {
               caption: 'Durées de conservation par catégorie de données',
               head: ['Données', 'Conservation'],
               rows: [
-                ['Compte et contenu des thèmes', 'Tant que le compte existe, puis suppression'],
+                [
+                  'Compte et contenu des thèmes',
+                  'Pendant la vie du compte. Un compte inactif pendant un an est supprimé, après un e-mail d’avertissement envoyé un mois avant.',
+                ],
                 ['Thème supprimé', 'Ses contenus sont supprimés avec lui'],
                 ['Demande d’accès refusée', '1 an après la réponse'],
                 [
@@ -484,7 +488,7 @@ export default {
             p: 'Vous pouvez demander l’accès à vos données, leur rectification, leur effacement, la limitation du traitement, une copie portable, et vous opposer aux traitements fondés sur l’intérêt légitime.',
           },
           {
-            p: 'Une partie se fait sans rien demander : votre profil se modifie dans Profil, et le compte se supprime dans Profil, Sécurité et compte. Pour le reste, écrivez à [support@glimr.cc](mailto:support@glimr.cc). Je réponds dans un délai d’un mois.',
+            p: 'Une partie se fait sans rien demander : votre profil se modifie dans Profil, et le compte se supprime dans Profil, Sécurité et compte. Pour le reste, écrivez à {email}. Je réponds dans un délai d’un mois.',
           },
           {
             p: 'Si ma réponse ne vous satisfait pas, vous pouvez saisir la CNPD ([cnpd.public.lu](https://cnpd.public.lu)) ou l’autorité de contrôle de votre pays.',
@@ -609,7 +613,7 @@ export default {
         title: 'Signaler un problème',
         blocks: [
           {
-            p: 'Si vous constatez un problème d’accessibilité, écrivez-moi à [support@glimr.cc](mailto:support@glimr.cc) : décrivez le problème et la page concernée. Je réponds par e-mail dans un délai d’un mois au plus tard. Je privilégie la correction du problème directement dans Glimr. Si cela n’est pas possible rapidement, je vous transmets l’information souhaitée dans un format accessible de votre choix :',
+            p: 'Si vous constatez un problème d’accessibilité, écrivez-moi à {email} : décrivez le problème et la page concernée. Je réponds par e-mail dans un délai d’un mois au plus tard. Je privilégie la correction du problème directement dans Glimr. Si cela n’est pas possible rapidement, je vous transmets l’information souhaitée dans un format accessible de votre choix :',
           },
           {
             list: [

@@ -49,7 +49,7 @@ export default {
         contact: 'Contact',
       },
       copyright: '© {year} Glimr.',
-      operator: '{name}, Luxembourg. RCS {rcs}. TVA {vat}.',
+      operator: '{name}, {address}. RCS {rcs}. TVA {vat}.',
     },
   },
   legal: {
@@ -57,6 +57,7 @@ export default {
     toc: 'Sur cette page',
     translation: '',
     readFrench: 'Lire la version française',
+    showEmail: 'Afficher l’adresse e-mail',
   },
   toast: { close: 'Fermer la notification « {text} »' },
   a11y: { skipToContent: 'Aller au contenu' },

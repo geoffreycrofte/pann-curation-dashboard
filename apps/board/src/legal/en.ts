@@ -13,14 +13,15 @@ export default {
         title: 'Publisher',
         blocks: [
           {
-            p: 'Glimr (glimr.cc) is published by Crofte Studio S.à r.l.-S, a simplified limited liability company under Luxembourg law, established in Luxembourg.',
+            p: 'Glimr (glimr.cc) is published by Crofte Studio S.à r.l.-S, a simplified limited liability company under Luxembourg law.',
           },
           {
             list: [
+              'Registered office: 43, rue d’Anvers, L-1130 Luxembourg',
               'Trade and companies register: B310079',
               'VAT number: LU37891138',
               'Publication director: Geoffrey Crofte',
-              'Contact: [support@glimr.cc](mailto:support@glimr.cc)',
+              'Contact: {email}',
             ],
           },
         ],
@@ -159,7 +160,7 @@ export default {
             p: 'You can change offer or cancel at any time from Manage subscription. Cancellation takes effect at the end of the period already paid: the Service stays available until then, then topics are paused.',
           },
           {
-            p: 'Unless the law requires otherwise, a period that has started is not refunded.',
+            p: 'A full refund is not possible if a significant amount of AI tokens was used during the trial period. Every refund request is looked at carefully: write to {email}.',
           },
         ],
       },
@@ -240,7 +241,7 @@ export default {
         title: '13. Suspension and closure',
         blocks: [
           {
-            p: 'You can delete your account at any time from Profile, Security and account. I may suspend or close an account, without notice, if the Terms are breached or if its use harms the Service or other users.',
+            p: 'You can delete your account at any time from Profile, Security and account. An account inactive for one year is deleted, after a warning e-mail sent one month before. I may suspend or close an account, without notice, if the Terms are breached or if its use harms the Service or other users.',
           },
         ],
       },
@@ -279,7 +280,7 @@ export default {
         title: '17. Contact',
         blocks: [
           {
-            p: 'A question about these Terms: [support@glimr.cc](mailto:support@glimr.cc).',
+            p: 'A question about these Terms: {email}.',
           },
         ],
       },
@@ -298,7 +299,7 @@ export default {
           {
             list: [
               'Crofte Studio S.à r.l.-S, Luxembourg, RCS B310079, VAT LU37891138.',
-              'Contact: [support@glimr.cc](mailto:support@glimr.cc).',
+              'Contact: {email}.',
               'Data protection officer: not required under Article 37 of the GDPR. Questions are handled directly by the operator.',
               'Supervisory authority: Commission nationale pour la protection des données (CNPD), Luxembourg.',
             ],
@@ -428,7 +429,10 @@ export default {
               caption: 'Retention periods by category of data',
               head: ['Data', 'Retention'],
               rows: [
-                ['Account and topic content', 'For as long as the account exists, then deleted'],
+                [
+                  'Account and topic content',
+                  'For the life of the account. An account inactive for one year is deleted, after a warning e-mail sent one month before.',
+                ],
                 ['Deleted topic', 'Its content is deleted with it'],
                 ['Declined access request', '1 year after the answer'],
                 [
@@ -464,7 +468,7 @@ export default {
             p: 'You may ask for access to your data, its correction, its erasure, a restriction of processing, a portable copy, and object to processing based on legitimate interests.',
           },
           {
-            p: 'Part of it needs no request: your profile is edited in Profile, and the account is deleted in Profile, Security and account. For the rest, write to [support@glimr.cc](mailto:support@glimr.cc). I answer within one month.',
+            p: 'Part of it needs no request: your profile is edited in Profile, and the account is deleted in Profile, Security and account. For the rest, write to {email}. I answer within one month.',
           },
           {
             p: 'If my answer does not satisfy you, you may complain to the CNPD ([cnpd.public.lu](https://cnpd.public.lu)) or to the supervisory authority of your country.',
@@ -589,7 +593,7 @@ export default {
         title: 'Reporting a problem',
         blocks: [
           {
-            p: 'If you notice an accessibility problem, write to me at [support@glimr.cc](mailto:support@glimr.cc): describe the problem and the page concerned. I answer by email within one month at the latest. I prefer to fix the problem directly in Glimr. If that is not possible quickly, I send you the information you need in an accessible format of your choice:',
+            p: 'If you notice an accessibility problem, write to me at {email}: describe the problem and the page concerned. I answer by email within one month at the latest. I prefer to fix the problem directly in Glimr. If that is not possible quickly, I send you the information you need in an accessible format of your choice:',
           },
           {
             list: [

@@ -3,7 +3,9 @@
  * live here, one module per language, instead of the i18n messages (whose syntax treats
  * "@", "{" and "|" as markup). French is the reference and the binding version.
  *
- * Inline links in a paragraph or a list item: [label](/path) or [label](mailto:…).
+ * Inline links in a paragraph or a list item: [label](/path) or [label](https://…).
+ * {email}: the contact address, behind a button that reveals it (never in clear in the
+ * page or in the code, against harvesting robots).
  */
 export type LegalBlock =
   | { p: string }
@@ -38,5 +40,12 @@ export const OPERATOR = {
   name: 'Crofte Studio S.à r.l.-S',
   rcs: 'B310079',
   vat: 'LU37891138',
-  email: 'support@glimr.cc',
+  address: '43, rue d’Anvers, L-1130 Luxembourg',
 } as const
+
+/** The contact address, encoded (XOR): decoded only when someone asks to see it. */
+const EMAIL_CODE = [52, 25, 25, 29, 29, 53, 24, 41, 10, 30, 46, 1, 27, 67, 17, 36]
+const EMAIL_KEY = [71, 108, 105, 109, 114]
+export function contactEmail(): string {
+  return String.fromCharCode(...EMAIL_CODE.map((c, i) => c ^ EMAIL_KEY[i % EMAIL_KEY.length]!))
+}

@@ -61,7 +61,10 @@ const INFORMATION = [
             <RouterLink :to="link.to">{{ t(`public.footer.links.${link.key}`) }}</RouterLink>
           </li>
           <li>
-            <a :href="`mailto:${OPERATOR.email}`">{{ t('public.footer.links.contact') }}</a>
+            <!-- The address is shown, protected, in the legal notice. -->
+            <RouterLink :to="{ name: 'legal', hash: '#editor' }">{{
+              t('public.footer.links.contact')
+            }}</RouterLink>
           </li>
         </ul>
       </nav>
@@ -69,7 +72,12 @@ const INFORMATION = [
     <p class="foot-legal">
       {{ t('public.footer.copyright', { year }) }}
       {{
-        t('public.footer.operator', { name: OPERATOR.name, rcs: OPERATOR.rcs, vat: OPERATOR.vat })
+        t('public.footer.operator', {
+          name: OPERATOR.name,
+          address: OPERATOR.address,
+          rcs: OPERATOR.rcs,
+          vat: OPERATOR.vat,
+        })
       }}
     </p>
   </footer>
