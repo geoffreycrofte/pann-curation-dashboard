@@ -2,8 +2,8 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import GlimrMark from '../components/GlimrMark.vue'
 import LangSwitcher from '../components/LangSwitcher.vue'
+import { ILLUSTRATIONS } from '../lib/landing-images'
 import { supabase } from '../lib/supabase'
 
 const { t } = useI18n()
@@ -33,7 +33,17 @@ async function submit() {
 <template>
   <div class="login">
     <section class="intro" aria-labelledby="login-brand">
-      <GlimrMark :size="88" />
+      <!-- Decorative: the name and the tagline say it. Cut-out, on the ink panel. -->
+      <img
+        class="nugget"
+        :src="ILLUSTRATIONS.draft.cut.src"
+        :srcset="ILLUSTRATIONS.draft.cut.srcset"
+        sizes="(min-width: 48rem) 28vw, 60vw"
+        :width="ILLUSTRATIONS.draft.cut.width"
+        :height="ILLUSTRATIONS.draft.cut.height"
+        alt=""
+        decoding="async"
+      />
       <p id="login-brand" class="brand">{{ t('app.name') }}</p>
       <p class="tagline">{{ t('auth.pitch') }}</p>
     </section>
@@ -86,8 +96,8 @@ async function submit() {
 .login {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  /* Between the public header and footer: tall enough for the form, no more. */
-  min-height: min(44rem, 80vh);
+  /* Under the public header (no footer here): the rest of the screen. */
+  min-height: calc(100vh - 5.5rem);
 }
 
 .intro {
@@ -98,6 +108,12 @@ async function submit() {
   padding: clamp(var(--space-6), 6vw, 6rem);
   background: var(--color-ink);
   color: var(--color-on-ink);
+}
+
+.nugget {
+  width: min(100%, 26rem);
+  height: auto;
+  margin-bottom: var(--space-2);
 }
 
 .brand {
@@ -145,10 +161,16 @@ async function submit() {
 @media (max-width: 48rem) {
   .login {
     grid-template-columns: 1fr;
+    min-height: 0;
   }
 
   .intro {
     gap: var(--space-2);
+  }
+
+  /* The form stays near the top: a smaller nugget. */
+  .nugget {
+    width: 9rem;
   }
 }
 </style>

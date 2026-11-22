@@ -263,7 +263,8 @@ watch(
     <main id="main" tabindex="-1" class="public">
       <RouterView />
     </main>
-    <PublicFooter />
+    <!-- Sign-in stays focused on its form: no footer there. -->
+    <PublicFooter v-if="route.name !== 'login'" />
   </div>
   <Toaster />
 </template>
