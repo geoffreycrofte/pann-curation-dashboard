@@ -268,7 +268,7 @@ export default {
         title: '16. Governing law and language',
         blocks: [
           {
-            p: 'The Terms are governed by Luxembourg law. Any dispute will be settled by arbitration under the rules of the Luxembourg Chamber of Commerce.',
+            p: 'The Terms are governed by Luxembourg law. In case of dispute, the parties first look for an amicable solution; failing that, the courts of Luxembourg City have sole jurisdiction, subject to the rules that protect consumers.',
           },
           {
             p: 'The Terms are written in French. Translations are provided for convenience: in case of discrepancy, the French version prevails.',

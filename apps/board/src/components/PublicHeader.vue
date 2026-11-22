@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * Top bar of the public pages (home, pricing, legal pages, sign-in): the name, back to the
- * home page, the pricing, signing in, and the theme. The current page is marked.
+ * Top bar of the public pages (home, how it works, pricing, legal pages): the name, back to
+ * the home page, how it works, the pricing, signing in, and the theme. The current page is
+ * marked.
  */
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
@@ -20,6 +21,15 @@ const route = useRoute()
     </RouterLink>
     <nav class="public-nav" :aria-label="t('public.navLabel')">
       <ul>
+        <li>
+          <RouterLink
+            :to="{ name: 'how-it-works' }"
+            class="public-link"
+            :aria-current="route.name === 'how-it-works' ? 'page' : undefined"
+          >
+            {{ t('public.how') }}
+          </RouterLink>
+        </li>
         <li>
           <RouterLink
             :to="{ name: 'pricing' }"
@@ -104,6 +114,12 @@ const route = useRoute()
 @media (max-width: 30rem) {
   .public-header {
     gap: var(--space-3);
+  }
+
+  /* The links take their own row under the name and the theme. */
+  .public-nav {
+    order: 3;
+    width: 100%;
   }
 
   .public-nav ul {

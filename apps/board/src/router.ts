@@ -55,6 +55,13 @@ export const router = createRouter({
       meta: { public: true },
     },
     {
+      // The three tools in detail, open to everyone.
+      path: '/how-it-works',
+      name: 'how-it-works',
+      component: () => import('./views/HowItWorksView.vue'),
+      meta: { public: true },
+    },
+    {
       // Legal pages, open to everyone (content: src/legal/).
       path: '/legal',
       name: 'legal',

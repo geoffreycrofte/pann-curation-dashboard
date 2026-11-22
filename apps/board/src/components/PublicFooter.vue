@@ -15,6 +15,7 @@ const year = new Date().getFullYear()
 
 const PRODUCT = [
   { to: { name: 'home' }, key: 'home' },
+  { to: { name: 'how-it-works' }, key: 'how' },
   { to: { name: 'pricing' }, key: 'pricing' },
   { to: { name: 'request-access' }, key: 'requestAccess' },
   { to: { name: 'login' }, key: 'login' },

@@ -630,6 +630,7 @@ async function shoot(page, name, path, opts = {}) {
     ['admin-offers', '/admin?tab=offers'],
     ['out-home', '/?signedout'],
     ['out-pricing', '/pricing?signedout'],
+    ['out-how', '/how-it-works?signedout'],
     ['out-login', '/login?signedout'],
     ['out-legal', '/legal?signedout'],
     ['out-terms', '/terms?signedout'],

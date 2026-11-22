@@ -268,7 +268,7 @@ export default {
         title: '16. Droit applicable et langue',
         blocks: [
           {
-            p: 'Les Conditions sont régies par le droit luxembourgeois. Tout litige sera tranché par arbitrage selon le règlement de la Chambre de commerce du Luxembourg.',
+            p: 'Les Conditions sont régies par le droit luxembourgeois. En cas de litige, les parties cherchent d’abord une solution amiable ; à défaut, les tribunaux de Luxembourg-Ville sont seuls compétents, sous réserve des règles qui protègent les consommateurs.',
           },
           {
             p: 'Les Conditions sont rédigées en français. Leurs traductions sont fournies pour faciliter la lecture : en cas de divergence, la version française fait foi.',
