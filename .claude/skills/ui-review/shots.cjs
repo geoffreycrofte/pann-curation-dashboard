@@ -491,6 +491,7 @@ async function shoot(page, name, path, opts = {}) {
       { click: 'button.toggle[aria-expanded="false"]:has-text("Gérer")', viewport: true },
     ],
     ['profile', '/profile'],
+    ['profile-workspace', '/profile?tab=workspace&offer=open'],
     ['pricing', '/pricing'],
     ['new-topic-plan', '/topics/new'],
     ['composition', '/t/t1/compose/c1'],

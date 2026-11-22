@@ -428,7 +428,18 @@ export default {
       'The trial or the subscription has ended: your topics are paused. Choose an offer to resume.',
     choose: 'Choose an offer and pay',
     manage: 'Manage subscription',
-    opening: 'Opening the payment page…',
+    wait: {
+      checkout: {
+        title: 'Preparing the payment',
+        text: 'Glimr is opening Stripe’s secure payment page. It takes a few seconds; do not close this page.',
+      },
+      portal: {
+        title: 'Opening your customer space',
+        text: 'Glimr is opening your Stripe customer space (payment method, invoices, cancellation). It takes a few seconds.',
+      },
+      failed: 'The payment page could not open',
+      retry: 'Try again',
+    },
     thanks: 'Thank you! Your subscription is saved.',
     cancelled: 'Payment interrupted: nothing was charged.',
     banner: {
@@ -519,6 +530,13 @@ export default {
       'During the trial, Glimr provides a reduced number of tokens. The full quota comes with the subscription.',
   },
   profile: {
+    tabsLabel: 'Profile sections',
+    tabs: {
+      profile: 'Profile',
+      preferences: 'Preferences',
+      workspace: 'Workspace',
+      account: 'Security and account',
+    },
     title: 'Profile',
     intro: 'Your Glimr account: identity, preferences, workspace and sessions.',
     identity: 'Identity',
@@ -789,6 +807,8 @@ export default {
       'This workspace’s trial or subscription has ended: its topics are paused. Choose an offer to resume.',
     billing_not_configured: 'Payment is not open yet. Try again later or contact Glimr.',
     subscribed: 'This workspace has a subscription: change offer from “Manage subscription”.',
+    stripe_refused:
+      'Stripe refused to open the payment page (code: {detail}). Try again in a moment; if it goes on, contact Glimr.',
     token_quota_reached:
       'This month’s tokens are used up: AI and search resume on the 1st of next month.',
     plan_topic_limit:

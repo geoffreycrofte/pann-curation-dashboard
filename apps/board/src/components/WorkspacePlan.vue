@@ -6,7 +6,7 @@
  */
 import { trialDaysLeft, type BillingInterval, type Plan } from '@glimr/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
-import { computed, onMounted, ref, useId } from 'vue'
+import { computed, nextTick, onMounted, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../lib/api'
@@ -14,6 +14,7 @@ import { goToBilling } from '../lib/billing'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
 import Icon from './Icon.vue'
+import BillingOverlay from './BillingOverlay.vue'
 import PlanPicker from './PlanPicker.vue'
 
 const props = defineProps<{ workspaceId: string; isOwner: boolean }>()
@@ -63,31 +64,41 @@ const status = computed(() => {
   }
 })
 
-const choosing = ref(false)
+// The banner's link opens this offer with the choice unfolded.
+const choosing = ref(route.query.offer === 'open')
 const busy = ref(false)
-async function subscribe(planKey: Plan, interval: BillingInterval) {
+const RETURN_PATH = '/profile?tab=workspace'
+
+/** The full-screen wait while Stripe's page is prepared, and its error if it fails. */
+type BillingInput = Parameters<typeof goToBilling>[1]
+const overlay = ref<{ input: BillingInput; error: string | null } | null>(null)
+async function openBilling(input: BillingInput) {
   busy.value = true
-  const error = await goToBilling(props.workspaceId, {
-    kind: 'checkout',
-    plan: planKey,
-    interval,
-    return_path: '/profile',
-  })
+  overlay.value = { input, error: null }
+  const error = await goToBilling(props.workspaceId, input)
   busy.value = false
-  if (error) toast(describeError(error, t).text)
+  // No error: the browser is leaving for Stripe, the screen stays until then.
+  if (error && overlay.value) overlay.value = { input, error: describeError(error, t).text }
 }
-async function manage() {
-  busy.value = true
-  const error = await goToBilling(props.workspaceId, { kind: 'portal', return_path: '/profile' })
-  busy.value = false
-  if (error) toast(describeError(error, t).text)
+function subscribe(planKey: Plan, interval: BillingInterval) {
+  void openBilling({ kind: 'checkout', plan: planKey, interval, return_path: RETURN_PATH })
+}
+function manage() {
+  void openBilling({ kind: 'portal', return_path: RETURN_PATH })
 }
 
 // Back from Stripe: say how it went; the webhook may take a moment to update the offer.
 onMounted(() => {
+  if (choosing.value)
+    void nextTick(() =>
+      document
+        .getElementById(`offer-${props.workspaceId}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    )
   const outcome = route.query.billing
   if (outcome !== 'success' && outcome !== 'cancel') return
-  toast(outcome === 'success' ? t('billing.thanks') : t('billing.cancelled'))
+  // Back from a cancelled payment: the person chose it, nothing to say.
+  if (outcome === 'success') toast(t('billing.thanks'))
   void router.replace({ query: { ...route.query, billing: undefined } })
   if (outcome === 'success')
     setTimeout(
@@ -175,7 +186,6 @@ onMounted(() => {
       >
         {{ t('billing.choose') }}
       </button>
-      <p v-if="busy" role="status" class="hint">{{ t('billing.opening') }}</p>
     </div>
     <div v-if="choosing && !plan.subscribed && plans" :id="`${id}-picker`" class="picker">
       <PlanPicker
@@ -187,6 +197,13 @@ onMounted(() => {
       />
     </div>
     <p class="hint">{{ t('plans.change') }}</p>
+    <BillingOverlay
+      :open="!!overlay"
+      :kind="overlay?.input.kind ?? 'checkout'"
+      :error="overlay?.error ?? null"
+      @retry="overlay && openBilling(overlay.input)"
+      @close="overlay = null"
+    />
   </div>
 </template>
 

@@ -429,7 +429,18 @@ export default {
       'L’essai ou l’abonnement est terminé : vos thèmes sont en pause. Choisissez une offre pour reprendre.',
     choose: 'Choisir une offre et payer',
     manage: 'Gérer l’abonnement',
-    opening: 'Ouverture de la page de paiement…',
+    wait: {
+      checkout: {
+        title: 'Préparation du paiement',
+        text: 'Glimr ouvre la page de paiement sécurisée de Stripe. Cela prend quelques secondes ; ne fermez pas cette page.',
+      },
+      portal: {
+        title: 'Ouverture de votre espace client',
+        text: 'Glimr ouvre votre espace client Stripe (moyen de paiement, factures, résiliation). Cela prend quelques secondes.',
+      },
+      failed: 'La page de paiement n’a pas pu s’ouvrir',
+      retry: 'Réessayer',
+    },
     thanks: 'Merci ! Votre abonnement est enregistré.',
     cancelled: 'Paiement interrompu : rien n’a été débité.',
     banner: {
@@ -522,6 +533,13 @@ export default {
       'Pendant l’essai, Glimr fournit un nombre réduit de tokens. Le quota complet arrive avec l’abonnement.',
   },
   profile: {
+    tabsLabel: 'Sections du profil',
+    tabs: {
+      profile: 'Profil',
+      preferences: 'Préférences',
+      workspace: 'Espace de travail',
+      account: 'Sécurité et compte',
+    },
     title: 'Profil',
     intro: 'Votre compte Glimr : identité, préférences, espace de travail et sessions.',
     identity: 'Identité',
@@ -798,6 +816,8 @@ export default {
     billing_not_configured:
       'Le paiement n’est pas encore ouvert. Réessayez plus tard ou contactez Glimr.',
     subscribed: 'Cet espace a un abonnement : changez d’offre depuis « Gérer l’abonnement ».',
+    stripe_refused:
+      'Stripe a refusé d’ouvrir la page de paiement (code : {detail}). Réessayez dans un instant ; si cela continue, contactez Glimr.',
     token_quota_reached:
       'Les tokens du mois sont épuisés : l’IA et la recherche reprennent le 1er du mois prochain.',
     plan_topic_limit:

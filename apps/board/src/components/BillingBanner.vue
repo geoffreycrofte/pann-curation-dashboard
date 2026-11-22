@@ -40,7 +40,7 @@ const banner = computed(() => {
     <Icon v-if="banner.tone === 'danger'" name="alert-circle" />
     <span>
       {{ banner.text }}
-      <RouterLink :to="{ name: 'profile', hash: `#offer-${workspaceId}` }">
+      <RouterLink :to="{ name: 'profile', query: { tab: 'workspace', offer: 'open' } }">
         {{ t('billing.banner.link') }}
       </RouterLink>
     </span>

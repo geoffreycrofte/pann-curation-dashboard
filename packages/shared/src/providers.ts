@@ -187,6 +187,7 @@ export const ERROR_CODES = [
   'billing_inactive', // trial over or subscription stopped: pay to go on
   'billing_not_configured', // Stripe keys or prices not set in the admin space
   'subscribed', // the offer of a paying workspace changes through Stripe
+  'stripe_refused', // :stripe error code (Stripe refused to open the payment page)
   'refusal',
   'invalid_output',
   'provider_error',
