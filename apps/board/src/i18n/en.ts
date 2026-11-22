@@ -422,6 +422,11 @@ export default {
       month: 'Monthly subscription, renews on {date}.',
       year: 'Yearly subscription, renews on {date}.',
     },
+    activeTrial: {
+      month:
+        'Monthly subscription saved: the trial goes on until {date}, the date of the first payment.',
+      year: 'Yearly subscription saved: the trial goes on until {date}, the date of the first payment.',
+    },
     canceled: 'Subscription stopped: access until {date}.',
     pastDue: 'The last payment failed: update your payment method so your topics go on.',
     expired:
@@ -966,7 +971,11 @@ export default {
       legacy: 'Account from before the offers',
       trialing: 'Trial: last day | Trial: {n} days left',
       trialEnded: 'Trial ended',
-      active: { month: 'Paid monthly, until {date}', year: 'Paid yearly, until {date}' },
+      active: { month: 'Paid monthly, renews on {date}', year: 'Paid yearly, renews on {date}' },
+      activeTrial: {
+        month: 'Subscribed monthly, in trial, first payment on {date}',
+        year: 'Subscribed yearly, in trial, first payment on {date}',
+      },
       pastDue: 'Payment failed',
       canceled: 'Stopped, access until {date}',
       expired: 'Ended, topics paused',
@@ -1072,15 +1081,24 @@ export default {
     plans: {
       title: 'Offers',
       intro:
-        'The limits of each offer, applied to every workspace that has it. The custom offer is set workspace by workspace, in the costs table.',
+        'The limits of each offer, applied to every workspace that has it. The custom offer is set workspace by workspace, in the Workspaces tab.',
+      groups: {
+        limits: 'Limits',
+        tokens: 'Tokens',
+        prices: 'Prices in euros excl. tax',
+        stripe: 'Stripe prices',
+      },
+      perMonthShort: 'Per month',
+      perYearShort: 'Per year',
+      duringTrial: 'During the trial',
+      perMonth: '{price} per month',
+      perYear: '{price} per year',
+      notSold: 'No price',
+      payable: 'Payable',
+      notPayable: 'Stripe prices missing',
       maxTopics: 'Topics at most',
       maxAccounts: 'LinkedIn and Facebook accounts',
       monthlyTokens: 'Tokens per month',
-      trialTokens: 'Tokens during the trial',
-      priceMonth: 'Monthly price (€ excl. VAT)',
-      priceYear: 'Yearly price (€ excl. VAT)',
-      stripeMonth: 'Stripe monthly price',
-      stripeYear: 'Stripe yearly price',
       stripeHint:
         'Ids of the prices created in Stripe (price_…). Without them, the offer cannot be paid for that period.',
       emptyHint:

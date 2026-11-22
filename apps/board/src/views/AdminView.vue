@@ -235,6 +235,13 @@ function billingOf(w: AdminWorkspace): { label: string; tone?: string } {
         : { label: t('admin.billing.trialEnded'), tone: 'danger' }
     }
     case 'active':
+      if (w.trial_ends_at && Date.parse(w.trial_ends_at) > Date.now())
+        return {
+          label: t(`admin.billing.activeTrial.${w.billing_interval ?? 'month'}`, {
+            date: date(w.trial_ends_at),
+          }),
+          tone: 'success',
+        }
       return {
         label: t(`admin.billing.active.${w.billing_interval ?? 'month'}`, {
           date: date(w.current_period_end),
@@ -340,19 +347,45 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
         <template v-else>
           <p>{{ t('admin.openRequests', { count: openRequests.length }) }}</p>
           <ul class="requests">
-            <li v-for="request in requests" :key="request.id" class="request">
-              <h3>
-                {{ request.name }}
-                <span class="badge" :data-tone="request.status === 'new' ? 'accent' : undefined">
-                  {{ t(`admin.requestStatus.${request.status}`) }}
-                </span>
-              </h3>
-              <p>
-                <a :href="`mailto:${request.email}`">{{ request.email }}</a
-                >,
-                {{ d(new Date(request.created_at), { dateStyle: 'medium', timeStyle: 'short' }) }}
-              </p>
-              <p class="motivation" :lang="request.lang">{{ request.motivation }}</p>
+            <li
+              v-for="request in requests"
+              :key="request.id"
+              class="request"
+              :data-status="request.status"
+            >
+              <div class="request-head">
+                <span class="request-avatar" aria-hidden="true">{{
+                  request.name.trim().charAt(0).toUpperCase()
+                }}</span>
+                <div class="request-who">
+                  <h3>
+                    {{ request.name }}
+                    <span
+                      class="badge"
+                      data-dot
+                      :data-tone="
+                        request.status === 'new'
+                          ? 'accent'
+                          : request.status === 'accepted'
+                            ? 'success'
+                            : undefined
+                      "
+                    >
+                      {{ t(`admin.requestStatus.${request.status}`) }}
+                    </span>
+                  </h3>
+                  <p class="request-meta">
+                    <a :href="`mailto:${request.email}`">{{ request.email }}</a
+                    >,
+                    {{
+                      d(new Date(request.created_at), { dateStyle: 'medium', timeStyle: 'short' })
+                    }}
+                  </p>
+                </div>
+              </div>
+              <blockquote class="motivation" :lang="request.lang">
+                {{ request.motivation }}
+              </blockquote>
               <p v-if="request.notify_error" class="notice notice-inline" data-tone="danger">
                 <Icon name="alert-circle" />
                 <span>{{
@@ -364,6 +397,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
                   v-if="request.status !== 'accepted'"
                   type="button"
                   class="button"
+                  data-variant="primary"
                   data-size="small"
                   :disabled="handling === request.id"
                   @click="handle(request, 'accepted')"
@@ -777,8 +811,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
   margin-top: var(--space-2);
 }
 
-.keys > li + li,
-.requests > li + li {
+.keys > li + li {
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border-subtle);
 }
@@ -837,9 +870,47 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
   max-width: 10rem;
 }
 
+/* One tile per request, on the page's background; a gold edge while it waits. */
 .request {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.request[data-status='new'] {
+  border-inline-start: 4px solid var(--color-accent-fill);
+}
+
+.request-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.request-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--color-neutral-soft);
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.request[data-status='new'] .request-avatar {
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+}
+
+.request-who {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
 }
 
 .request h3,
@@ -852,9 +923,22 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+  font-size: 1.0625rem;
 }
 
+.request-meta {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+/* The person's own words: a quote, apart from Glimr's text. */
 .motivation {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 3px solid var(--color-border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--color-surface);
   white-space: pre-line;
 }
 

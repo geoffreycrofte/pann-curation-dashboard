@@ -11,7 +11,7 @@ import { api, type AdminPlan } from '../../lib/api'
 import { describeError } from '../../lib/errors'
 import { toast } from '../../lib/toast'
 
-const { t } = useI18n()
+const { t, n } = useI18n()
 const id = useId()
 const queryCache = useQueryCache()
 
@@ -43,6 +43,21 @@ watch(
 )
 
 const editable = (p: AdminPlan) => p.key !== 'custom'
+const eur = (value: number) =>
+  n(value, { style: 'currency', currency: 'EUR', maximumFractionDigits: value % 1 ? 2 : 0 })
+/** The saved prices, said in one line next to the offer's name. */
+function summary(p: AdminPlan) {
+  const parts = [
+    p.price_month_eur !== null ? t('admin.plans.perMonth', { price: eur(p.price_month_eur) }) : '',
+    p.price_year_eur !== null ? t('admin.plans.perYear', { price: eur(p.price_year_eur) }) : '',
+  ].filter(Boolean)
+  return parts.length ? parts.join(', ') : t('admin.plans.notSold')
+}
+/** Every price it is sold at has its Stripe price: it can be paid. */
+const payable = (p: AdminPlan) =>
+  (p.price_month_eur !== null || p.price_year_eur !== null) &&
+  (p.price_month_eur === null || !!p.stripe_price_month) &&
+  (p.price_year_eur === null || !!p.stripe_price_year)
 const saving = ref<Plan | null>(null)
 async function save(key: Plan) {
   const f = fields[key]
@@ -77,114 +92,154 @@ async function save(key: Plan) {
     <ul class="plans">
       <li v-for="p in (plans ?? []).filter(editable)" :key="p.key" class="plan">
         <form v-if="fields[p.key]" @submit.prevent="save(p.key)">
-          <h3 :id="`${id}-${p.key}`">{{ t(`plans.names.${p.key}`) }}</h3>
-          <div class="grid">
-            <div class="form-row">
-              <label :for="`${id}-${p.key}-topics`">{{ t('admin.plans.maxTopics') }}</label>
-              <input
-                :id="`${id}-${p.key}-topics`"
-                v-model.number="fields[p.key]!.max_topics"
-                class="field number"
-                type="number"
-                min="1"
-                step="1"
-                :aria-describedby="`${id}-empty`"
-              />
+          <header class="plan-head">
+            <h3 :id="`${id}-${p.key}`">{{ t(`plans.names.${p.key}`) }}</h3>
+            <span class="plan-summary">{{ summary(p) }}</span>
+            <span class="badge" data-dot :data-tone="payable(p) ? 'success' : 'danger'">
+              {{ payable(p) ? t('admin.plans.payable') : t('admin.plans.notPayable') }}
+            </span>
+          </header>
+
+          <div class="groups">
+            <div class="group" role="group" :aria-labelledby="`${id}-${p.key}-limits`">
+              <h4 :id="`${id}-${p.key}-limits`" class="group-title">
+                {{ t('admin.plans.groups.limits') }}
+              </h4>
+              <div class="form-row">
+                <label :for="`${id}-${p.key}-topics`">{{ t('admin.plans.maxTopics') }}</label>
+                <input
+                  :id="`${id}-${p.key}-topics`"
+                  v-model.number="fields[p.key]!.max_topics"
+                  class="field"
+                  type="number"
+                  min="1"
+                  step="1"
+                  :aria-describedby="`${id}-empty`"
+                />
+              </div>
+              <div class="form-row">
+                <label :for="`${id}-${p.key}-accounts`">{{ t('admin.plans.maxAccounts') }}</label>
+                <input
+                  :id="`${id}-${p.key}-accounts`"
+                  v-model.number="fields[p.key]!.max_social_accounts"
+                  class="field"
+                  type="number"
+                  min="1"
+                  step="1"
+                  :aria-describedby="`${id}-empty`"
+                />
+              </div>
             </div>
-            <div class="form-row">
-              <label :for="`${id}-${p.key}-accounts`">{{ t('admin.plans.maxAccounts') }}</label>
-              <input
-                :id="`${id}-${p.key}-accounts`"
-                v-model.number="fields[p.key]!.max_social_accounts"
-                class="field number"
-                type="number"
-                min="1"
-                step="1"
-                :aria-describedby="`${id}-empty`"
-              />
+
+            <div
+              v-if="p.key !== 'own_keys'"
+              class="group"
+              role="group"
+              :aria-labelledby="`${id}-${p.key}-tokens-title`"
+            >
+              <h4 :id="`${id}-${p.key}-tokens-title`" class="group-title">
+                {{ t('admin.plans.groups.tokens') }}
+              </h4>
+              <div class="form-row">
+                <label :for="`${id}-${p.key}-tokens`">{{ t('admin.plans.perMonthShort') }}</label>
+                <input
+                  :id="`${id}-${p.key}-tokens`"
+                  v-model.number="fields[p.key]!.monthly_tokens"
+                  class="field"
+                  type="number"
+                  min="1"
+                  step="100000"
+                  required
+                />
+              </div>
+              <div class="form-row">
+                <label :for="`${id}-${p.key}-trial`">{{ t('admin.plans.duringTrial') }}</label>
+                <input
+                  :id="`${id}-${p.key}-trial`"
+                  v-model.number="fields[p.key]!.trial_tokens"
+                  class="field"
+                  type="number"
+                  min="1"
+                  step="100000"
+                />
+              </div>
             </div>
-            <div v-if="p.key !== 'own_keys'" class="form-row">
-              <label :for="`${id}-${p.key}-tokens`">{{ t('admin.plans.monthlyTokens') }}</label>
-              <input
-                :id="`${id}-${p.key}-tokens`"
-                v-model.number="fields[p.key]!.monthly_tokens"
-                class="field number wide"
-                type="number"
-                min="1"
-                step="100000"
-                required
-              />
+
+            <div class="group" role="group" :aria-labelledby="`${id}-${p.key}-prices`">
+              <h4 :id="`${id}-${p.key}-prices`" class="group-title">
+                {{ t('admin.plans.groups.prices') }}
+              </h4>
+              <div class="form-row">
+                <label :for="`${id}-${p.key}-pm`">{{ t('admin.plans.perMonthShort') }}</label>
+                <input
+                  :id="`${id}-${p.key}-pm`"
+                  v-model.number="fields[p.key]!.price_month_eur"
+                  class="field"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  :aria-describedby="`${id}-empty`"
+                />
+              </div>
+              <div class="form-row">
+                <label :for="`${id}-${p.key}-py`">{{ t('admin.plans.perYearShort') }}</label>
+                <input
+                  :id="`${id}-${p.key}-py`"
+                  v-model.number="fields[p.key]!.price_year_eur"
+                  class="field"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  :aria-describedby="`${id}-empty`"
+                />
+              </div>
             </div>
-            <div v-if="p.key !== 'own_keys'" class="form-row">
-              <label :for="`${id}-${p.key}-trial`">{{ t('admin.plans.trialTokens') }}</label>
-              <input
-                :id="`${id}-${p.key}-trial`"
-                v-model.number="fields[p.key]!.trial_tokens"
-                class="field number wide"
-                type="number"
-                min="1"
-                step="100000"
-              />
-            </div>
-            <div class="form-row">
-              <label :for="`${id}-${p.key}-pm`">{{ t('admin.plans.priceMonth') }}</label>
-              <input
-                :id="`${id}-${p.key}-pm`"
-                v-model.number="fields[p.key]!.price_month_eur"
-                class="field number"
-                type="number"
-                min="0"
-                step="0.01"
-                :aria-describedby="`${id}-empty`"
-              />
-            </div>
-            <div class="form-row">
-              <label :for="`${id}-${p.key}-py`">{{ t('admin.plans.priceYear') }}</label>
-              <input
-                :id="`${id}-${p.key}-py`"
-                v-model.number="fields[p.key]!.price_year_eur"
-                class="field number"
-                type="number"
-                min="0"
-                step="0.01"
-                :aria-describedby="`${id}-empty`"
-              />
-            </div>
-            <div class="form-row">
-              <label :for="`${id}-${p.key}-spm`">{{ t('admin.plans.stripeMonth') }}</label>
-              <input
-                :id="`${id}-${p.key}-spm`"
-                v-model="fields[p.key]!.stripe_price_month"
-                class="field"
-                type="text"
-                pattern="price_[A-Za-z0-9]+"
-                placeholder="price_…"
-                :aria-describedby="`${id}-stripe`"
-              />
-            </div>
-            <div class="form-row">
-              <label :for="`${id}-${p.key}-spy`">{{ t('admin.plans.stripeYear') }}</label>
-              <input
-                :id="`${id}-${p.key}-spy`"
-                v-model="fields[p.key]!.stripe_price_year"
-                class="field"
-                type="text"
-                pattern="price_[A-Za-z0-9]+"
-                placeholder="price_…"
-                :aria-describedby="`${id}-stripe`"
-              />
+
+            <div class="group" role="group" :aria-labelledby="`${id}-${p.key}-stripe`">
+              <h4 :id="`${id}-${p.key}-stripe`" class="group-title">
+                {{ t('admin.plans.groups.stripe') }}
+              </h4>
+              <div class="form-row">
+                <label :for="`${id}-${p.key}-spm`">{{ t('admin.plans.perMonthShort') }}</label>
+                <input
+                  :id="`${id}-${p.key}-spm`"
+                  v-model="fields[p.key]!.stripe_price_month"
+                  class="field mono"
+                  type="text"
+                  pattern="price_[A-Za-z0-9]+"
+                  placeholder="price_…"
+                  spellcheck="false"
+                  :aria-describedby="`${id}-stripe`"
+                />
+              </div>
+              <div class="form-row">
+                <label :for="`${id}-${p.key}-spy`">{{ t('admin.plans.perYearShort') }}</label>
+                <input
+                  :id="`${id}-${p.key}-spy`"
+                  v-model="fields[p.key]!.stripe_price_year"
+                  class="field mono"
+                  type="text"
+                  pattern="price_[A-Za-z0-9]+"
+                  placeholder="price_…"
+                  spellcheck="false"
+                  :aria-describedby="`${id}-stripe`"
+                />
+              </div>
             </div>
           </div>
-          <button
-            type="submit"
-            class="button"
-            data-variant="primary"
-            data-size="small"
-            :disabled="saving === p.key"
-            :aria-describedby="`${id}-${p.key}`"
-          >
-            {{ t('common.save') }}
-          </button>
+
+          <div class="plan-actions">
+            <button
+              type="submit"
+              class="button"
+              data-variant="primary"
+              data-size="small"
+              :disabled="saving === p.key"
+              :aria-describedby="`${id}-${p.key}`"
+            >
+              {{ t('common.save') }}
+            </button>
+          </div>
         </form>
       </li>
     </ul>
@@ -202,37 +257,74 @@ async function save(key: Plan) {
   list-style: none;
 }
 
-.plan + .plan {
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border-subtle);
-}
-
+/* One tile per offer, on the page's background: set apart from the card around it. */
 .plan form {
   display: grid;
-  gap: var(--space-3);
-  justify-items: start;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
 }
 
-.plan h3 {
+.plan-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.plan-head h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.25rem;
 }
 
-.grid {
+.plan-summary {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-head .badge {
+  margin-inline-start: auto;
+}
+
+/* Limits, tokens, prices, Stripe: side by side on a wide screen, one under the other otherwise. */
+.groups {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
-  /* Fields line up even when a label wraps. */
-  align-items: end;
+  gap: var(--space-4) var(--space-6);
+}
+
+.group {
+  display: grid;
+  align-content: start;
   gap: var(--space-3);
+}
+
+.group-title {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.group .field {
   width: 100%;
 }
 
-.number {
-  max-width: 8rem;
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9375rem;
 }
 
-.number.wide {
-  max-width: 11rem;
+.plan-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 p {

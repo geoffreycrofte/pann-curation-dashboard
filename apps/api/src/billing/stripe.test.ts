@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { billingStatusOf, formEncode, periodEndOf, verifyStripeSignature } from './stripe'
+import {
+  billingStatusOf,
+  formEncode,
+  periodEndOf,
+  trialEndOf,
+  verifyStripeSignature,
+} from './stripe'
 
 async function sign(payload: string, secret: string, t: number) {
   const key = await crypto.subtle.importKey(
@@ -77,5 +83,24 @@ describe('billingStatusOf', () => {
         items: { data: [{ price: { id: 'p' }, current_period_end: 1_800_000_000 }] },
       }),
     ).toBe('2027-01-15T08:00:00.000Z')
+  })
+})
+
+describe('trialEndOf', () => {
+  const sub = {
+    id: 's',
+    customer: 'c',
+    cancel_at_period_end: false,
+    metadata: {},
+    items: { data: [] },
+  }
+  it('gives the end of a running Stripe trial', () => {
+    expect(trialEndOf({ ...sub, status: 'trialing', trial_end: 1796515200 })).toBe(
+      new Date(1796515200 * 1000).toISOString(),
+    )
+  })
+  it('gives nothing once the trial is over', () => {
+    expect(trialEndOf({ ...sub, status: 'active', trial_end: 1796515200 })).toBeNull()
+    expect(trialEndOf({ ...sub, status: 'trialing', trial_end: null })).toBeNull()
   })
 })

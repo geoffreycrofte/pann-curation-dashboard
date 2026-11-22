@@ -114,6 +114,8 @@ export interface StripeSubscription {
   cancel_at_period_end: boolean
   /** Older API versions; newer ones put it on the items. */
   current_period_end?: number
+  /** End of the Stripe trial (the rest of Glimr's trial, kept when paying early). */
+  trial_end?: number | null
   metadata: Record<string, string>
   items: {
     data: { price: { id: string }; current_period_end?: number }[]
@@ -141,6 +143,13 @@ export function billingStatusOf(
     default:
       return null
   }
+}
+
+/** While Stripe's trial runs: its end, when the first payment is taken. */
+export function trialEndOf(sub: StripeSubscription): string | null {
+  return sub.status === 'trialing' && sub.trial_end
+    ? new Date(sub.trial_end * 1000).toISOString()
+    : null
 }
 
 export function periodEndOf(sub: StripeSubscription): string | null {

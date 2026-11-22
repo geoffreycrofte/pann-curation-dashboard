@@ -47,6 +47,14 @@ const status = computed(() => {
         }),
       }
     case 'active':
+      // Paid during the trial: subscribed, the first payment comes at the trial's end.
+      if (p.trial_ends_at && Date.parse(p.trial_ends_at) > Date.now())
+        return {
+          tone: 'success',
+          text: t(`billing.activeTrial.${p.billing_interval ?? 'month'}`, {
+            date: date(p.trial_ends_at),
+          }),
+        }
       return {
         tone: 'success',
         text: t(`billing.active.${p.billing_interval ?? 'month'}`, {
