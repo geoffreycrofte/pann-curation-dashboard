@@ -3,6 +3,7 @@ import {
   billingStatusOf,
   periodEndOf,
   stripe,
+  trialEndOf,
   verifyStripeSignature,
   type StripeSubscription,
 } from './stripe'
@@ -209,6 +210,7 @@ async function applySubscription(
     p_customer: sub.customer,
     p_subscription: sub.id,
     p_period_end: periodEndOf(sub),
+    p_trial_end: deleted ? null : trialEndOf(sub),
   })
   if (error) throw error
   return status
