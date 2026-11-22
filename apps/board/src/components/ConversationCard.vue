@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { canTransition, type Conversation, type ItemTopicStatus } from '@pann/shared'
+import { canTransition, type Conversation, type ItemTopicStatus } from '@glimr/shared'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ComposeFromIdea from './compose/ComposeFromIdea.vue'
 import Icon from './Icon.vue'
 import ReplyDraft from './ReplyDraft.vue'
 
-/** A conversation to join (or not). Pann never posts: the link opens it to reply. */
+/** A conversation to join (or not). Glimr never posts: the link opens it to reply. */
 const props = defineProps<{
   conversation: Conversation
   busy: boolean
@@ -130,7 +130,7 @@ const overLimit = computed(
         }}</span>
       </p>
 
-      <!-- Once the person chose to reply: a suggestion to adapt, never posted by Pann. -->
+      <!-- Once the person chose to reply: a suggestion to adapt, never posted by Glimr. -->
       <ReplyDraft v-if="c.status === 'validated'" :conversation="c" />
 
       <div class="footer">

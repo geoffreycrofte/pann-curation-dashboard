@@ -1,7 +1,7 @@
-# CONTEXT.md : Pann, outil de curation de veille multi-thèmes
+# CONTEXT.md : Glimr, outil de curation de veille multi-thèmes
 
 Document de passation pour Claude Code. Rédigé le 30/09/2026, révision 3 du 01/10/2026 (hébergement Cloudflare, stack alignée sur CheckFox, budget, nom et vocabulaire).
-Nom de travail : **Pann** (outil) et **Lede** (newsletter). Voir section 11.
+Nom de travail : **Glimr** (outil) et **Lede** (newsletter). Voir section 11.
 Porteur du projet : Geoffrey Crofte (UX/UI designer, dev front-end, auditeur accessibilité, créateur de CheckFox.eu).
 Utilisateur unique : Geoffrey. Deux boards prévus à terme.
 
@@ -347,7 +347,7 @@ Restantes :
 6. **W Social** : API disponible ? Compatibilité AT Protocol exploitable ?
 7. **Tarif Sonnet 5.5** à confirmer ; limites des plans gratuits Zernio et Brevo.
 8. **Fréquence de collecte** par type de source (le légal peut être quotidien, les outils hebdomadaires).
-9. **Disponibilité des noms** Pann et Lede : domaines, comptes sociaux (Bluesky, Mastodon, LinkedIn), marques déposées dans la classe de services concernée. Rien n'a été vérifié.
+9. **Disponibilité des noms** Glimr et Lede : domaines, comptes sociaux (Bluesky, Mastodon, LinkedIn), marques déposées dans la classe de services concernée. Rien n'a été vérifié.
 
 ---
 
@@ -355,19 +355,19 @@ Restantes :
 
 ### Noms (favoris de Geoffrey, non définitifs tant que la disponibilité n'est pas vérifiée)
 
-- **Pann** : l'outil. Référence à l'orpaillage (*gold panning*) : on lave beaucoup de sable pour ne garder que les pépites. C'est la métaphore de la veille : beaucoup de collecte, peu de sélection.
+- **Glimr** : l'outil (de *glimmer*, la lueur de l'or dans la batée). Il garde la référence à l'orpaillage : on lave beaucoup de sable pour ne garder que les pépites. C'est la métaphore de la veille : beaucoup de collecte, peu de sélection. Premier nom : Pann (*gold panning*), abandonné car déjà déposé.
 - **Lede** : la newsletter hebdomadaire. En journalisme anglophone, le *lede* est l'information essentielle placée en tête d'article ; le digest est l'essentiel de la semaine.
 
 Catégorie de produit : « outil de curation de veille » (FR), « content curation tool » (EN).
 
-### Changement de nom en cours (2026-11-17)
+### Changement de nom (2026-11-17, fait le 2026-11-22)
 
-**Pann semble déjà déposé** par un tiers : le nom doit changer avant l'ouverture au public. Piste retenue pour l'instant : **Glimr** (de *glimmer*, la lueur de l'or dans la batée), à condition de trouver un nom de domaine qui convienne.
+**Pann semblait déjà déposé** par un tiers : le nom devait changer avant l'ouverture au public. Nom retenu : **Glimr** (de *glimmer*, la lueur de l'or dans la batée). Domaine : **glimr.cc**, réservé le 2026-11-22. Le dépôt GitHub garde son nom (`pann-curation-dashboard`) et les migrations déjà appliquées gardent « Pann » dans leurs commentaires.
 
 - **Homonymes connus** : un framework de développement, une app photo et une app de rencontre portent déjà ce nom. Ce sont des logiciels, la même catégorie de marque (classes 9 et 42) : vérifier le risque d'opposition à l'INPI et à l'EUIPO avant de déposer.
 - **Domaines (vérifiés le 2026-11-17 par RDAP)** : `glimr.com`, `glimr.app`, `glimr.fr`, `glimr.studio` et `getglimr.com` sont pris ; `useglimr.com`, `glimrhq.com` et `glimro.app` paraissaient libres. Les .io, .eu et .co n'ont pas pu être vérifiés.
 - **Pistes écartées par Geoffrey** : les mots de l'orpaillage (Filon, Placer, Riffle, Bateia, Paillette, Orpa), les noms inventés autour de la lueur (Glisora, Glimpan, Panglint, Shimeva), les pierres (Geode, Citrine, Spinel). À éviter de toute façon : Klondike, Eldorado, Bonanza, Nugget, Eureka, Carat, Jasper (outil d'IA de rédaction marketing), Obsidian, Opal, Onyx, Quartz.
-- **Coût du renommage** : faible. Le code, la base et l'API sont en vocabulaire neutre ; le nom ne vit que dans les libellés (`app.name`), la page d'accueil, les documents de marque et le mot du logo (`docs/brand/logo/`, à revectoriser). La pépite reste valable. D'ici là, le code et les documents continuent de dire « Pann ».
+- **Coût du renommage** : faible. Le code, la base et l'API sont en vocabulaire neutre ; le nom ne vit que dans les libellés (`app.name`), la page d'accueil, les documents de marque et le mot du logo (`docs/brand/logo/`, à revectoriser). La pépite reste valable. D'ici là, le code et les documents continuent de dire « Glimr ».
 
 ### Vocabulaire produit
 
@@ -398,11 +398,11 @@ Règles :
 Modèle voulu par Geoffrey, prix et quotas à fixer après une analyse de la concurrence menée à part de la refonte de l'onboarding (`docs/TODO.md`) :
 
 1. **Offre « clés personnelles »**, environ 2 € par mois avec engagement d'un an : l'utilisateur apporte ses propres clés (IA, Zernio, Exa…) et règle ses budgets en dollars, comme aujourd'hui.
-2. **Offre intermédiaire**, au mois ou à l'année : Pann fournit l'IA et les services. On parle de budget en **tokens**, jamais en dollars, pour effacer la comparaison avec le coût d'achat. Nombre de réseaux limité.
+2. **Offre intermédiaire**, au mois ou à l'année : Glimr fournit l'IA et les services. On parle de budget en **tokens**, jamais en dollars, pour effacer la comparaison avec le coût d'achat. Nombre de réseaux limité.
 3. **Offre supérieure** : le même service, plus cher, avec des quotas plus élevés.
 4. **Enterprise** : sur mesure, négociée directement avec Geoffrey.
 
-Conséquences sur le produit : la règle « clés de services par espace, jamais en variables d'environnement » vaut pour la première offre ; les offres 2 et 3 supposent une IA et des services fournis par Pann, avec un compteur de tokens par espace. L'interface ne montre des dollars que dans l'offre « clés personnelles ».
+Conséquences sur le produit : la règle « clés de services par espace, jamais en variables d'environnement » vaut pour la première offre ; les offres 2 et 3 supposent une IA et des services fournis par Glimr, avec un compteur de tokens par espace. L'interface ne montre des dollars que dans l'offre « clés personnelles ».
 
-Mis en place le 2026-11-21 (`docs/DECISIONS.md`) : une offre par espace (`own_keys`, `essential`, `pro`, `custom`), limites réglées dans l'espace d'admin (thèmes 2, 3, 5 ; tokens 5 et 15 millions par mois pour les deux offres où Pann fournit l'IA, valeurs de départ), tokens pondérés par le prix du modèle. Prix fixés et paiement par Stripe le 2026-11-22 : 2 € par mois à l'année ; 19 € ou 15 € à l'année ; 49 € ou 39 € à l'année ; essai de 14 jours.
+Mis en place le 2026-11-21 (`docs/DECISIONS.md`) : une offre par espace (`own_keys`, `essential`, `pro`, `custom`), limites réglées dans l'espace d'admin (thèmes 2, 3, 5 ; tokens 5 et 15 millions par mois pour les deux offres où Glimr fournit l'IA, valeurs de départ), tokens pondérés par le prix du modèle. Prix fixés et paiement par Stripe le 2026-11-22 : 2 € par mois à l'année ; 19 € ou 15 € à l'année ; 49 € ou 39 € à l'année ; essai de 14 jours.
 

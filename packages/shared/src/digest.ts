@@ -96,13 +96,13 @@ export interface DigestInput {
   provider?: NewsletterProvider
   /** https image above the name; decorative (the name follows as text). */
   logoUrl?: string
-  /** Decorative color: top band and a mark beside each item. Default: Pann gold. */
+  /** Decorative color: top band and a mark beside each item. Default: Glimr gold. */
   accentColor?: string
   /** Text at the bottom, written by the user. */
   footer?: string
   /** When set, items are grouped under these kinds, in this order (label in `lang`). */
   groups?: { key: string; label: string; lang?: string }[]
-  /** Fixed texts written by the user for `lang`; Pann's own are used for the others. */
+  /** Fixed texts written by the user for `lang`; Glimr's own are used for the others. */
   texts?: Partial<DigestTexts>
 }
 
@@ -250,7 +250,7 @@ ${section.items.map((item) => itemRow(item, input.lang, 'h3', accent)).join('\n'
 }
 
 /**
- * Fixed texts of an issue in `lang`: the user's own (newsletter settings), else Pann's in
+ * Fixed texts of an issue in `lang`: the user's own (newsletter settings), else Glimr's in
  * the closest interface language. `lang` is set on a text whose language differs from the
  * issue, so that screen readers pronounce it right.
  */

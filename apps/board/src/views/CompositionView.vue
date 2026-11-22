@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * A composed post (Création): what it is about, where its content comes from (the
- * person's notes, links they give, or sources Pann searches and they choose), their
+ * person's notes, links they give, or sources Glimr searches and they choose), their
  * images with text alternatives, then one post per network and language to edit and
  * schedule on the Création slots. Drafting and search run as jobs: the page polls.
  */
@@ -13,7 +13,7 @@ import {
   publishedLength,
   type DraftChannel,
   type PostDraft,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
 import {
   AlertDialogAction,
@@ -682,7 +682,7 @@ usePageDetail(() =>
           <Icon name="clock" />
           {{ t('compose.publish.nextSlot') }}
         </button>
-        <!-- Cannot be undone from Pann: confirmed first, as in the item page. -->
+        <!-- Cannot be undone from Glimr: confirmed first, as in the item page. -->
         <AlertDialogRoot>
           <AlertDialogTrigger as-child>
             <button type="button" class="button" :disabled="altMissing.length > 0 || publishing">

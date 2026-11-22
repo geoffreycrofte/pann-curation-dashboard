@@ -43,7 +43,7 @@ jobs:
           pnpm exec supabase db push
 
       - name: Build board
-        run: pnpm --filter @pann/board build
+        run: pnpm --filter @glimr/board build
         env:
           VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
@@ -52,7 +52,7 @@ jobs:
       - name: Job queues
         working-directory: apps/api
         run: |
-          for queue in pann-jobs pann-jobs-dlq; do
+          for queue in glimr-jobs glimr-jobs-dlq; do
             if pnpm exec wrangler queues info "$queue" > /dev/null 2>&1; then
               echo "Queue $queue exists"
             else

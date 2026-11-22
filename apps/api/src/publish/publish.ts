@@ -7,7 +7,7 @@ import {
   type DraftChannel,
   type Lang,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import type { BlueskyAccount, DiscordWebhook } from './direct'
 import type { MastodonAccount, PublishImage, PublishRequest, PublishResult } from './networks'
 
@@ -48,7 +48,7 @@ export interface DuePost {
 export interface PublishCredentials {
   zernio?: string
   /**
-   * Platform mode: `zernio` is Pann's key, which reaches every workspace's profile; only
+   * Platform mode: `zernio` is Glimr's key, which reaches every workspace's profile; only
    * the accounts of this workspace's own profile may be published to.
    */
   zernioAccounts?: string[]
@@ -179,7 +179,7 @@ export async function publish(deps: {
         postSignature(post.topic_config, post.channel, post.lang),
       ),
       firstComment: firstCommentFor(post.topic_config, post.channel, post.lang, post.first_comment),
-      idempotencyKey: `pann-${post.id}-${post.publish_attempts}`,
+      idempotencyKey: `glimr-${post.id}-${post.publish_attempts}`,
       ...(post.images.length
         ? {
             images: post.images.map((image): PublishImage => ({

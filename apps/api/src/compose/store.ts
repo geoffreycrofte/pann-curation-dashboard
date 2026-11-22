@@ -1,4 +1,4 @@
-import { errorCode, parseTopicConfig } from '@pann/shared'
+import { errorCode, parseTopicConfig } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { EXA_SEARCH_URL } from '../collect/adapters/exa'
 import { extractArticleText } from '../lib/article-text'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isUiLang, slugify, type TopicKind } from '@pann/shared'
+import { isUiLang, slugify, type TopicKind } from '@glimr/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -9,7 +9,7 @@ import { toast } from '../lib/toast'
 import { contentLangName } from '../lib/langs'
 
 /**
- * Kinds of content of the topic: Pann's defaults to start with, then renamed, added or
+ * Kinds of content of the topic: Glimr's defaults to start with, then renamed, added or
  * removed here. A removed kind is replaced, on its items and sources, by another one.
  */
 const props = defineProps<{ topic: TopicWithConfig }>()

@@ -14,7 +14,7 @@ import {
   type ItemTopicStatus,
   type Lang,
   type PostDraft,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import {
   AlertDialogAction,
@@ -155,7 +155,7 @@ const { mutate: regenerate, isLoading: regenerating } = useMutation({
   },
 })
 
-// Pasted source text: for pages Pann cannot read (paywall, page built by script).
+// Pasted source text: for pages Glimr cannot read (paywall, page built by script).
 const sourceTextId = useId()
 const sourceText = ref('')
 const sourceTextLength = computed(() => sourceText.value.trim().length)

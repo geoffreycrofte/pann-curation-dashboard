@@ -13,14 +13,14 @@ const request = {
 describe('access request email', () => {
   const email = accessRequestEmail(
     request,
-    'Pann <noreply@example.org>',
+    'Glimr <noreply@example.org>',
     ['admin@example.org'],
-    'https://pann.example/admin',
+    'https://glimr.example/admin',
   )
 
   it('answers the person directly and is sent once per request', () => {
     expect(email.replyTo).toBe('alex@example.org')
-    expect(email.idempotencyKey).toBe('pann-access-request-r1')
+    expect(email.idempotencyKey).toBe('glimr-access-request-r1')
     expect(email.to).toEqual(['admin@example.org'])
   })
 

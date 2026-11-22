@@ -4,7 +4,7 @@
  * alternative in every language of the topic: required to publish. The AI proposes the
  * empty ones; a proposed text is marked until the person edits it.
  */
-import { MAX_ALT_LENGTH, MAX_COMPOSE_IMAGES } from '@pann/shared'
+import { MAX_ALT_LENGTH, MAX_COMPOSE_IMAGES } from '@glimr/shared'
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api, type CompositionMedia } from '../../lib/api'

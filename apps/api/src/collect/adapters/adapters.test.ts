@@ -1,4 +1,4 @@
-import { parseTopicConfig } from '@pann/shared'
+import { parseTopicConfig } from '@glimr/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CollectSource } from '../types'
 import { domainFilters, exaAdapter } from './exa'

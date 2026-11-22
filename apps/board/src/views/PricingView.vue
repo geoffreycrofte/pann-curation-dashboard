@@ -19,31 +19,31 @@ const {
   error,
 } = useQuery({ key: ['public-plans'], query: api.publicPlans })
 
-/** Without Pann, for one person, yearly prices per month (USD, as the vendors show them). */
+/** Without Glimr, for one person, yearly prices per month (USD, as the vendors show them). */
 const WITHOUT = [
   { need: 'publish', tool: 'Publer Business', usd: 24, icon: 'send' },
   { need: 'watch', tool: 'Feedly Pro+', usd: 12, icon: 'news' },
   { need: 'listen', tool: 'Syften Standard', usd: 49.95, icon: 'messages' },
 ] as const
-/** What the Pann offer includes, said next to its price. */
+/** What the Glimr offer includes, said next to its price. */
 const INCLUDED = ['publish', 'watch', 'listen', 'create'] as const
 /** What separate tools cost besides their price. */
 const DRAWBACKS = ['bills', 'silos', 'ai'] as const
 const totalUsd = WITHOUT.reduce((sum, row) => sum + row.usd, 0)
 const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
-/** With Pann: the intermediate offer, paid yearly. */
-const pannMonth = computed(() => {
+/** With Glimr: the intermediate offer, paid yearly. */
+const glimrMonth = computed(() => {
   const year = plans.value?.find((p) => p.key === 'essential')?.price_year_eur
   return year ? year / 12 : null
 })
-const withPann = computed(() =>
-  pannMonth.value === null
+const withGlimr = computed(() =>
+  glimrMonth.value === null
     ? null
-    : n(pannMonth.value, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }),
+    : n(glimrMonth.value, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }),
 )
-/** Width of Pann's bar, on the scale of the separate tools (at least visible). */
+/** Width of Glimr's bar, on the scale of the separate tools (at least visible). */
 const share = computed(() =>
-  pannMonth.value === null ? 0 : Math.max(4, Math.round((pannMonth.value / totalUsd) * 100)),
+  glimrMonth.value === null ? 0 : Math.max(4, Math.round((glimrMonth.value / totalUsd) * 100)),
 )
 </script>
 
@@ -115,13 +115,13 @@ const share = computed(() =>
             {{ t('pricing.compare.with') }}
             <span class="side-sub">{{ t('pricing.compare.withSub') }}</span>
           </h3>
-          <p v-if="withPann" class="with-price">
-            <span class="amount">{{ withPann }}</span>
+          <p v-if="withGlimr" class="with-price">
+            <span class="amount">{{ withGlimr }}</span>
             <span class="per">{{ t('pricing.perMonth') }}</span>
           </p>
           <p class="with-note">{{ t('pricing.compare.withNote') }}</p>
           <div class="scale" aria-hidden="true">
-            <span class="part pann" :style="{ width: `${share}%` }"></span>
+            <span class="part glimr" :style="{ width: `${share}%` }"></span>
           </div>
           <ul class="included">
             <li v-for="key in INCLUDED" :key="key">
@@ -184,7 +184,7 @@ const share = computed(() =>
   color: var(--color-accent-text);
 }
 
-/* Without Pann, with Pann. */
+/* Without Glimr, with Glimr. */
 .compare {
   display: grid;
   gap: var(--space-4);
@@ -293,7 +293,7 @@ const share = computed(() =>
   font-variant-numeric: tabular-nums;
 }
 
-/* Bars: the same scale on both sides, so Pann's is a fraction of the other. */
+/* Bars: the same scale on both sides, so Glimr's is a fraction of the other. */
 .scale {
   display: flex;
   flex: none;
@@ -332,13 +332,13 @@ const share = computed(() =>
   background: var(--color-kind-conversation);
 }
 
-/* Pann's bar on a faint track the width of the other side's bar. */
+/* Glimr's bar on a faint track the width of the other side's bar. */
 .with .scale {
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--color-on-ink) 15%, transparent);
 }
 
-.part.pann {
+.part.glimr {
   flex: none;
   border-radius: var(--radius-pill);
   background: var(--color-accent-fill);
@@ -407,7 +407,7 @@ const share = computed(() =>
   font-weight: 800;
 }
 
-/* With Pann: the ink card of the featured offer, gold edge. */
+/* With Glimr: the ink card of the featured offer, gold edge. */
 .with {
   border: 2px solid var(--color-accent-fill);
   background: var(--color-ink);

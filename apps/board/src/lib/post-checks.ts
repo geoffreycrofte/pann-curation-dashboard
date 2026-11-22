@@ -1,4 +1,4 @@
-import { checkPost, type TopicConfig } from '@pann/shared'
+import { checkPost, type TopicConfig } from '@glimr/shared'
 
 type Translate = (key: string, params?: Record<string, unknown>) => string
 

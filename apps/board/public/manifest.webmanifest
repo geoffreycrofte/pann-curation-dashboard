@@ -1,6 +1,6 @@
 {
-  "name": "Pann",
-  "short_name": "Pann",
+  "name": "Glimr",
+  "short_name": "Glimr",
   "description": "Outil de curation de veille",
   "start_url": "/",
   "display": "standalone",

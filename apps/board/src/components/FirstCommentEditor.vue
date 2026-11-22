@@ -4,7 +4,7 @@
  * Stored as null (default), '' (none) or the text, like `posts.first_comment`. Saved by
  * itself: a choice at once, a text a moment after typing.
  */
-import { FIRST_COMMENT_MAX } from '@pann/shared'
+import { FIRST_COMMENT_MAX } from '@glimr/shared'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAutosave } from '../lib/autosave'

@@ -1,4 +1,4 @@
-import { parseTopicConfig, type CredentialMeta, type DraftChannel, type Lang } from '@pann/shared'
+import { parseTopicConfig, type CredentialMeta, type DraftChannel, type Lang } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { listZernioAccounts } from './networks'
 import { MEDIA_BUCKET } from '../compose/store'
@@ -121,7 +121,7 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         bluesky: {},
         discord: {},
       }
-      // No Zernio key of its own: Pann's, in platform mode, limited to its own profile.
+      // No Zernio key of its own: Glimr's, in platform mode, limited to its own profile.
       if (!result.zernio) {
         const { data: link, error: linkError } = await db
           .from('zernio_platform_links')

@@ -1,4 +1,4 @@
-import { isMultiAccount, PROVIDERS, type CredentialMeta, type Provider } from '@pann/shared'
+import { isMultiAccount, PROVIDERS, type CredentialMeta, type Provider } from '@glimr/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'

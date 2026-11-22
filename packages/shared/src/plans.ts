@@ -2,7 +2,7 @@
  * Offers. The limits of each plan live in the database (public.plans, tuned in the admin
  * space); only their keys are known here.
  * - own_keys: the workspace brings its own keys (AI, search, publishing) and its budgets in dollars;
- * - essential, pro: Pann provides the AI and the search, up to a monthly quota of tokens;
+ * - essential, pro: Glimr provides the AI and the search, up to a monthly quota of tokens;
  * - custom: limits negotiated per workspace.
  */
 export const PLANS = ['own_keys', 'essential', 'pro', 'custom'] as const
@@ -64,7 +64,7 @@ export interface PublicPlan extends PlanLimits {
   trial_tokens: number | null
 }
 
-/** Offers a person can pick (custom is negotiated with Pann). */
+/** Offers a person can pick (custom is negotiated with Glimr). */
 export const SELF_SERVE_PLANS = ['own_keys', 'essential', 'pro'] as const satisfies readonly Plan[]
 
 /** Days left in a trial, rounded up (0 once over). */

@@ -51,7 +51,7 @@ describe('verifyStripeSignature', () => {
 })
 
 describe('billingStatusOf', () => {
-  it('maps Stripe statuses to what Pann keeps', () => {
+  it('maps Stripe statuses to what Glimr keeps', () => {
     expect(billingStatusOf({ status: 'active', cancel_at_period_end: false })).toBe('active')
     expect(billingStatusOf({ status: 'trialing', cancel_at_period_end: false })).toBe('active')
     expect(billingStatusOf({ status: 'active', cancel_at_period_end: true })).toBe('canceled')

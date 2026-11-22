@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Icon from '../components/Icon.vue'
-import { UI_LANGS, type UiLang } from '@pann/shared'
+import { UI_LANGS, type UiLang } from '@glimr/shared'
 import {
   AlertDialogAction,
   AlertDialogCancel,

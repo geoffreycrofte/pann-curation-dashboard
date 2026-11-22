@@ -4,7 +4,7 @@ import {
   parseErrorCode,
   PROVIDERS,
   type Provider,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { contentLangName } from './langs'
 
 type Translate = (key: string, params?: Record<string, unknown>) => string

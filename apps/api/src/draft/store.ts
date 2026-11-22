@@ -1,4 +1,4 @@
-import { parseTopicConfig, type DraftChannel, type Lang } from '@pann/shared'
+import { parseTopicConfig, type DraftChannel, type Lang } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { extractArticleText } from '../lib/article-text'
 import { fetchText } from '../lib/fetch-text'

@@ -3,7 +3,7 @@
  * Admin space: the limits of each offer. An empty field means no limit; on the own-keys
  * offer there are no tokens (the workspace pays its own services).
  */
-import type { Plan, PlanLimits } from '@pann/shared'
+import type { Plan, PlanLimits } from '@glimr/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
 import { reactive, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'

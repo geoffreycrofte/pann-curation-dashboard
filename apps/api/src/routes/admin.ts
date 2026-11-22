@@ -1,4 +1,4 @@
-import { PLANS, PLATFORM_PROVIDERS, type PlatformProvider } from '@pann/shared'
+import { PLANS, PLATFORM_PROVIDERS, type PlatformProvider } from '@glimr/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
@@ -18,7 +18,7 @@ const settingsBody = z
   .object({
     onboarding_credit_usd: z.number().min(0).max(100),
     monthly_cap_usd: z.number().min(0).max(100_000),
-    /** Sender of the service emails: "Pann <noreply@example.org>" on a Resend domain. */
+    /** Sender of the service emails: "Glimr <noreply@example.org>" on a Resend domain. */
     email_from: z.union([
       z.literal(''),
       z
@@ -58,8 +58,8 @@ function platformProvider(value: string): PlatformProvider {
 }
 
 /**
- * Administration of Pann, mounted under /admin: Pann's own keys and the cost centre of what
- * Pann pays. Platform admins only (a list changed in SQL); anyone else gets a 404, as if
+ * Administration of Glimr, mounted under /admin: Glimr's own keys and the cost centre of what
+ * Glimr pays. Platform admins only (a list changed in SQL); anyone else gets a 404, as if
  * the space did not exist. The database checks the role again in every function.
  */
 export const admin = new Hono<AppEnv>()
@@ -137,7 +137,7 @@ export const admin = new Hono<AppEnv>()
     return c.json(data)
   })
 
-  /** What Pann paid during a calendar month (UTC), per workspace, service and operation. */
+  /** What Glimr paid during a calendar month (UTC), per workspace, service and operation. */
   .get('/usage', async (c) => {
     const query = usageQuery.safeParse(c.req.query())
     if (!query.success) throw new HTTPException(400, { message: 'invalid_config' })
@@ -234,7 +234,7 @@ export const admin = new Hono<AppEnv>()
   })
 
   /** Requests made from the product (another network, a coming tool), newest first. */
-  /** Workspaces, and whether their LinkedIn and Facebook go through Pann's Zernio. */
+  /** Workspaces, and whether their LinkedIn and Facebook go through Glimr's Zernio. */
   .get('/workspaces', async (c) => {
     const { data, error } = await c.var.db.rpc('admin_workspaces')
     if (error) throw error

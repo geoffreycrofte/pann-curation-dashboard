@@ -1,4 +1,4 @@
-import { decodeEntities } from '@pann/shared'
+import { decodeEntities } from '@glimr/shared'
 import { XMLParser } from 'fast-xml-parser'
 
 export interface FeedEntry {

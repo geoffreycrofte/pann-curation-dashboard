@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ItemKind, TopicConfig } from '@pann/shared'
-import { effectiveIntervalHours } from '@pann/shared'
+import type { ItemKind, TopicConfig } from '@glimr/shared'
+import { effectiveIntervalHours } from '@glimr/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'

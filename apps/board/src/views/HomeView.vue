@@ -13,7 +13,7 @@ const { data: topics, isPending, error } = useQuery({ key: ['topics'], query: ap
 // No topic yet: the first visit of the session opens the creation conversation. Leaving
 // it comes back here, to the empty state (no loop).
 const router = useRouter()
-const FIRST_KEY = 'pann.firstTopicOffered'
+const FIRST_KEY = 'glimr.firstTopicOffered'
 watch(
   topics,
   (list) => {

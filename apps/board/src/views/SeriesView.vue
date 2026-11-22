@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * A series of posts (Création): a subject, a number of posts and a span. Pann proposes a
+ * A series of posts (Création): a subject, a number of posts and a span. Glimr proposes a
  * plan (one angle per post), the person edits it, then each post becomes a composition
  * drafted from its angle. "Schedule the series" spreads them over the span, each on the
  * first free Création slot from its share of the span.

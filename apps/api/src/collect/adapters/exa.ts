@@ -1,4 +1,4 @@
-import { exaSourceConfigSchema } from '@pann/shared'
+import { exaSourceConfigSchema } from '@glimr/shared'
 import { z } from 'zod'
 import { SourceError, type Adapter } from '../types'
 

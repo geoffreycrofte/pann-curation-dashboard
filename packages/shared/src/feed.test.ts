@@ -5,7 +5,7 @@ const feed = {
   lang: 'fr' as const,
   title: 'Veille accessibilité',
   description: 'Les éléments retenus & résumés',
-  self_url: 'https://pann.example/feeds/k/fr.xml',
+  self_url: 'https://glimr.example/feeds/k/fr.xml',
   site_url: 'https://checkfox.eu/veille',
   entries: [
     {
@@ -33,7 +33,7 @@ describe('renderRss', () => {
   it('writes a valid RSS 2.0 channel, escaped', () => {
     const xml = renderRss(feed)
     expect(xml).toContain('<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">')
-    expect(xml).toContain('<atom:link href="https://pann.example/feeds/k/fr.xml" rel="self"')
+    expect(xml).toContain('<atom:link href="https://glimr.example/feeds/k/fr.xml" rel="self"')
     expect(xml).toContain('<language>fr</language>')
     expect(xml).toContain('<title>WCAG &lt;2.2&gt;</title>')
     expect(xml).toContain('<link>https://e.org/a?x=1&amp;y=2</link>')

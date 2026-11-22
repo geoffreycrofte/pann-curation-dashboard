@@ -1,12 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
-import { claudeCostUsd, langName } from '@pann/shared'
+import { claudeCostUsd, langName } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { extractArticleText } from '../lib/article-text'
 import { fetchText } from '../lib/fetch-text'
 
-/** Pann pays for this conversation: the current Opus, at low effort (a short exchange). */
+/** Glimr pays for this conversation: the current Opus, at low effort (a short exchange). */
 export const ONBOARDING_MODEL = 'claude-opus-5-5'
 export const ONBOARDING_PROMPT_VERSION = 'onboarding-v3'
 /** The exchange stops after this many questions, whatever is left. */
@@ -98,7 +98,7 @@ export function onboardingSystemPrompt(context: OnboardingContext): string {
     ...(engagement ? ['when a reply helps in a conversation'] : []),
     ...(curation || compose ? ['tone and style of the posts, and rules for the posts'] : []),
   ]
-  return `You help a person set up a topic in Pann, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${compose ? ", writes the person's own posts from their notes" : ''}${engagement ? ', and finds online conversations where the person can help' : ''}.
+  return `You help a person set up a topic in Glimr, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${compose ? ", writes the person's own posts from their notes" : ''}${engagement ? ', and finds online conversations where the person can help' : ''}.
 
 Your job is to fill these settings through a short conversation: ${fields.join('; ')}.
 
@@ -118,7 +118,7 @@ function adjustSystemPrompt(context: OnboardingContext): string {
   const curation = context.tools.includes('curation')
   const engagement = context.tools.includes('engagement')
   const compose = context.tools.includes('compose')
-  return `You help a person adjust the settings of an existing topic in Pann, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${compose ? ", writes the person's own posts from their notes" : ''}${engagement ? ', and finds online conversations where the person can help' : ''}. The current settings are given below.
+  return `You help a person adjust the settings of an existing topic in Glimr, a tool that makes a product or a subject known: it collects the news of the subject${curation ? ', drafts social posts and a newsletter' : ''}${compose ? ", writes the person's own posts from their notes" : ''}${engagement ? ', and finds online conversations where the person can help' : ''}. The current settings are given below.
 
 # How to ask
 - Write in ${langName(context.ui_lang, 'en')}, the language of the person.
@@ -164,7 +164,7 @@ export function onboardingMessages(
   // or the person would be left with a question they cannot answer.
   if (lastTurn) {
     const last = messages[messages.length - 1]!
-    last.content = `${String(last.content)}\n\n[Pann: this is your last message. Do not ask a question: set done to true and wrap up in one or two sentences.]`
+    last.content = `${String(last.content)}\n\n[Glimr: this is your last message. Do not ask a question: set done to true and wrap up in one or two sentences.]`
   }
   return messages
 }
@@ -227,8 +227,8 @@ interface SessionRow {
 }
 
 /**
- * Job: answers the last message of an onboarding session, on Pann's key, within the
- * onboarding credit of the workspace and Pann's monthly cap. `db` uses the secret key.
+ * Job: answers the last message of an onboarding session, on Glimr's key, within the
+ * onboarding credit of the workspace and Glimr's monthly cap. `db` uses the secret key.
  */
 export async function runOnboarding(
   db: SupabaseClient,
@@ -251,7 +251,7 @@ export async function runOnboarding(
     if (updateError) throw updateError
   }
 
-  // Limits of what Pann pays: past them, the review opens with what is there.
+  // Limits of what Glimr pays: past them, the review opens with what is there.
   const { data: budget, error: budgetError } = await db
     .rpc('onboarding_budget', { p_workspace_id: session.workspace_id })
     .single<{ workspace_onboarding: number; month_total: number; credit: number; cap: number }>()

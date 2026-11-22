@@ -1,4 +1,4 @@
-import { isTopicKind, KIND_KEY, parseTopicConfig } from '@pann/shared'
+import { isTopicKind, KIND_KEY, parseTopicConfig } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'

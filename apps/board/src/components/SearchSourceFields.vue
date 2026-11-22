@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SearchSourceType } from '@pann/shared'
+import type { SearchSourceType } from '@glimr/shared'
 import { useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { SearchDraft } from '../lib/source-draft'

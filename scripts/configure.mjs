@@ -49,7 +49,7 @@ async function ask(question, { current: value, secret = false, validate }) {
 }
 
 console.log(`
-Configuration de Pann (une seule fois)
+Configuration de Glimr (une seule fois)
 ======================================
 
 Il faut 3 informations, toutes dans le tableau de bord Supabase de votre projet

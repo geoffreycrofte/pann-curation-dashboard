@@ -1,4 +1,4 @@
-import { parseTopicConfig, type DraftChannel, type Lang } from '@pann/shared'
+import { parseTopicConfig, type DraftChannel, type Lang } from '@glimr/shared'
 import { describe, expect, it, vi } from 'vitest'
 import type { UsageEntry } from '../collect/types'
 import {

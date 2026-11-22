@@ -2,7 +2,7 @@
 import Icon from '../components/Icon.vue'
 /**
  * Access request (sign-up stays on invitation): a person without an account says who
- * they are and why they want Pann; the admins receive it by email.
+ * they are and why they want Glimr; the admins receive it by email.
  */
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'

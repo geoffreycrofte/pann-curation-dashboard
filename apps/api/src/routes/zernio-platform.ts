@@ -1,4 +1,4 @@
-import { ZERNIO_PLATFORMS } from '@pann/shared'
+import { ZERNIO_PLATFORMS } from '@glimr/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
@@ -10,7 +10,7 @@ const LINK_COLUMNS =
 
 /**
  * Zernio in platform mode, mounted under /workspaces (user's JWT, RLS: members). The key
- * is Pann's: jobs only. A request marks what to prepare, then queues the job.
+ * is Glimr's: jobs only. A request marks what to prepare, then queues the job.
  */
 export const zernioPlatform = new Hono<AppEnv>()
   .get('/:workspaceId/zernio-platform', async (c) => {

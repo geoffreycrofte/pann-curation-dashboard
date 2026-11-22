@@ -4,9 +4,9 @@ import Icon from '../components/Icon.vue'
  * "Adjust with the assistant": the same assistant as at creation, on an existing topic.
  * It knows the current settings and proposes changes; the person then sees each change
  * next to the current value, edits it if needed, and applies only those they keep.
- * Nothing changes before "Apply". Runs on Pann's assistant credit, like the creation.
+ * Nothing changes before "Apply". Runs on Glimr's assistant credit, like the creation.
  */
-import { canonicalLang, MAX_OUTPUT_LANGS, type TopicConfig } from '@pann/shared'
+import { canonicalLang, MAX_OUTPUT_LANGS, type TopicConfig } from '@glimr/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
 import { computed, nextTick, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -43,7 +43,7 @@ const { data: assistant } = useQuery({
 })
 
 // The session survives a reload (this tab only), so the comparison can be reopened.
-const storageKey = () => `pann.adjust.${props.topicId}`
+const storageKey = () => `glimr.adjust.${props.topicId}`
 const sessionId = ref(read(storageKey()))
 watch(sessionId, (value) => write(storageKey(), value))
 function read(key: string) {

@@ -281,15 +281,15 @@ const routes = {
     workspaces: [{ role: 'owner', workspace: { id: 'w1', name: 'Perso' } }],
     is_platform_admin: true,
   },
-  '/api/topics': [topic, { ...topic, id: 't2', slug: 'pann', name_fr: 'Pann', name_en: 'Pann' }],
+  '/api/topics': [topic, { ...topic, id: 't2', slug: 'glimr', name_fr: 'Glimr', name_en: 'Glimr' }],
   '/api/topics/t1': { ...topic, config, feed_key: 'k' },
   '/api/topics/t1/queue': queue,
   '/api/topics/t2': {
     ...topic,
     id: 't2',
-    slug: 'pann',
-    name_fr: 'Pann',
-    name_en: 'Pann',
+    slug: 'glimr',
+    name_fr: 'Glimr',
+    name_en: 'Glimr',
     config,
     feed_key: null,
   },
@@ -529,7 +529,7 @@ async function shoot(page, name, path, opts = {}) {
           },
         }),
       )
-      localStorage.setItem('pann.lang', 'fr')
+      localStorage.setItem('glimr.lang', 'fr')
     })
     await page.route('http://localhost:54321/**', (r) =>
       r.fulfill({ status: 200, body: '{}', contentType: 'application/json' }),

@@ -6,7 +6,7 @@ import {
   type ConversationMeta,
   type SourceType,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 
 /** An entry as returned by an adapter, before URL normalisation. */
 export interface CollectedItem {
@@ -63,7 +63,7 @@ export interface CollectSource {
 
 export type Adapter = (source: CollectSource, ctx: AdapterContext) => Promise<AdapterResult>
 
-/** Raised for problems shown as the source's last error. `message` is an error code (@pann/shared). */
+/** Raised for problems shown as the source's last error. `message` is an error code (@glimr/shared). */
 export class SourceError extends Error {
   constructor(code: ErrorCode, detail?: string | number) {
     super(errorCode(code, detail))

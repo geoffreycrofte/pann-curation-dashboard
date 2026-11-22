@@ -5,7 +5,7 @@ import {
   type DraftChannel,
   type Lang,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes. Stored with each summary (summaries.prompt_version). */

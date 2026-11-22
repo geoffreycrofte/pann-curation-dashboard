@@ -3,7 +3,7 @@
  * Pause of the scheduled collection beyond N items to sort (`pause_above` of the
  * curation or engagement settings): a checkbox, then the limit. null: no pause.
  */
-import { BACKLOG_LIMIT_MAX, BACKLOG_LIMIT_MIN } from '@pann/shared'
+import { BACKLOG_LIMIT_MAX, BACKLOG_LIMIT_MIN } from '@glimr/shared'
 import { ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 

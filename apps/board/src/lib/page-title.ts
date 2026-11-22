@@ -2,7 +2,7 @@ import { onBeforeUnmount, ref, toValue, watchEffect, type MaybeRefOrGetter } fro
 
 /**
  * Most specific part of the document title, set by the page shown when it has one (an
- * item's title, a settings tab…). App builds the title: detail, page, topic, Pann.
+ * item's title, a settings tab…). App builds the title: detail, page, topic, Glimr.
  */
 export const pageDetail = ref('')
 

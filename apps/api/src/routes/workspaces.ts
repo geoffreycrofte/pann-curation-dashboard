@@ -70,7 +70,7 @@ export const workspaces = new Hono<AppEnv>()
 
   /**
    * Payment: the owner asks for the Stripe page (subscribe, or manage the subscription). The
-   * request is recorded with RLS (owners only), then a job opens the page with Pann's key.
+   * request is recorded with RLS (owners only), then a job opens the page with Glimr's key.
    */
   .post('/:workspaceId/billing', async (c) => {
     const body = await parseJson(billingBody, c.req.raw)

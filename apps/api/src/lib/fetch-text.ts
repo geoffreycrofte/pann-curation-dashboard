@@ -1,9 +1,9 @@
-import { errorCode, type ErrorCode } from '@pann/shared'
+import { errorCode, type ErrorCode } from '@glimr/shared'
 
 export const USER_AGENT =
   'PannBot/0.1 (content curation; +https://github.com/geoffreycrofte/pann-curation-dashboard)'
 
-/** `message` is the full error code from @pann/shared (timeout, unreachable, http:404…). */
+/** `message` is the full error code from @glimr/shared (timeout, unreachable, http:404…). */
 export class FetchTextError extends Error {
   constructor(
     readonly code: ErrorCode,

@@ -7,7 +7,7 @@ import {
   type StripeSubscription,
 } from './stripe'
 
-/** Pann's Stripe keys, from Vault. `db` must use the secret key (jobs, webhook). */
+/** Glimr's Stripe keys, from Vault. `db` must use the secret key (jobs, webhook). */
 export async function stripeKeys(db: SupabaseClient) {
   const { data, error } = await db.rpc('platform_credentials_for_jobs')
   if (error) throw error
@@ -49,7 +49,7 @@ function withOutcome(url: string, outcome: string): string {
 
 /**
  * Job: opens the Stripe page the person asked for (subscribe to an offer, or manage the
- * subscription) with Pann's key, and stores its address on the request.
+ * subscription) with Glimr's key, and stores its address on the request.
  */
 export async function runBillingRequest(db: SupabaseClient, id: string, fetchImpl = fetch) {
   const { data: row, error } = await db

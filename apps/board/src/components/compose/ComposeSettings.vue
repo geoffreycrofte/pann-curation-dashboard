@@ -3,7 +3,7 @@
  * Settings of the Création tool: its own publication slots (distinct from the news
  * watch's, same time zone) and the mode a new composition starts in.
  */
-import { COMPOSE_MODES, type ComposeMode } from '@pann/shared'
+import { COMPOSE_MODES, type ComposeMode } from '@glimr/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'

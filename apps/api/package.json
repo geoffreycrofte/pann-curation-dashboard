@@ -1,5 +1,5 @@
 {
-  "name": "@pann/api",
+  "name": "@glimr/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
     "@anthropic-ai/sdk": "^0.131.0",
     "@cfworker/json-schema": "^4.1.1",
     "@modelcontextprotocol/sdk": "1.32.0",
-    "@pann/shared": "workspace:*",
+    "@glimr/shared": "workspace:*",
     "@supabase/supabase-js": "^2.75.0",
     "fast-xml-parser": "^5.11.2",
     "hono": "^4.10.0",

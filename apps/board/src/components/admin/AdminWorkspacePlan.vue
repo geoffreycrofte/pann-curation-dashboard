@@ -3,7 +3,7 @@
  * Admin space: the offer of one workspace, in its row of the costs table. The custom offer
  * takes its own limits (empty: no limit; no tokens: the workspace brings its own keys).
  */
-import { PLANS, type Plan, type PlanLimits } from '@pann/shared'
+import { PLANS, type Plan, type PlanLimits } from '@glimr/shared'
 import { useQueryCache } from '@pinia/colada'
 import { reactive, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'

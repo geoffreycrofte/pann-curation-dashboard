@@ -6,7 +6,7 @@
  * summary at any moment. Nothing is saved before "Create the topic"; the board then
  * rebuilds around the new topic. The draft lives in the session (survives a reload).
  */
-import type { Plan } from '@pann/shared'
+import type { Plan } from '@glimr/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -29,7 +29,7 @@ const { workspaceId } = useWorkspace()
 const { draft, clear } = useOnboardingDraft()
 provideOnboardingDraft(draft)
 
-// The assistant's part exists only when Pann's assistant can run for this workspace (key
+// The assistant's part exists only when Glimr's assistant can run for this workspace (key
 // set, onboarding credit and monthly cap not reached); otherwise its questions are text.
 // The offer may allow no other topic: say so before the person spends time on the setup.
 const { data: plan } = useQuery({

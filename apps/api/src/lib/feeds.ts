@@ -4,7 +4,7 @@ import {
   errorCode,
   extractFeedTitle,
   type FeedFormat,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { fetchText, FetchTextError } from './fetch-text'
 
 export type FeedResolution =

@@ -1,4 +1,4 @@
-import { parseTopicConfig } from '@pann/shared'
+import { parseTopicConfig } from '@glimr/shared'
 import { describe, expect, it } from 'vitest'
 import type { EngagementModel } from './model'
 import { engagementSystemPrompt, engagementUserMessage } from './prompt'

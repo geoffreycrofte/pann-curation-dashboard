@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ITEM_TOPIC_STATUSES, type ItemTopicStatus } from '@pann/shared'
+import { ITEM_TOPIC_STATUSES, type ItemTopicStatus } from '@glimr/shared'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, ref } from 'vue'
 import { useQuery } from '@pinia/colada'

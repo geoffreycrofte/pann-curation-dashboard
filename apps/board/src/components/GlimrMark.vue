@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Pann mark: the faceted gold nugget on its own, with a sparkle.
+ * Glimr mark: the faceted gold nugget on its own, with a sparkle.
  * Transparent, so it sits on any background; the sparkle takes the text
  * colour (`currentColor`), which keeps it visible in light and dark modes.
  * Sources and exports: docs/brand/logo/.
@@ -10,7 +10,7 @@ defineProps<{ size?: number }>()
 
 <template>
   <svg
-    class="pann-mark"
+    class="glimr-mark"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 64 64"
     :width="size ?? 40"

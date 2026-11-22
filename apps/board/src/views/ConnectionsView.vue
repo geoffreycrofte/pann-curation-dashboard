@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isMultiAccount, PROVIDER_INFO, PROVIDERS, type Provider } from '@pann/shared'
+import { isMultiAccount, PROVIDER_INFO, PROVIDERS, type Provider } from '@glimr/shared'
 import { useQuery } from '@pinia/colada'
 import { useI18n } from 'vue-i18n'
 import McpSection from '../components/McpSection.vue'
@@ -40,13 +40,13 @@ const {
   enabled: () => !!workspaceId.value,
 })
 
-// LinkedIn and Facebook through Pann's Zernio, for the workspaces a platform admin chose.
+// LinkedIn and Facebook through Glimr's Zernio, for the workspaces a platform admin chose.
 const { data: platform } = useQuery({
   key: () => ['zernio-platform', workspaceId.value ?? ''],
   query: () => api.zernioPlatform(workspaceId.value!),
   enabled: () => !!workspaceId.value,
 })
-const viaPann = (provider: Provider) =>
+const viaGlimr = (provider: Provider) =>
   provider === 'zernio' &&
   !!platform.value?.enabled &&
   !credentials.value?.some((c) => c.provider === 'zernio')
@@ -97,7 +97,7 @@ const accountsOf = (provider: Provider) =>
               />
             </template>
             <ZernioPlatformCard
-              v-else-if="viaPann(provider) && platform"
+              v-else-if="viaGlimr(provider) && platform"
               :workspace-id="workspaceId"
               :link="platform"
             />

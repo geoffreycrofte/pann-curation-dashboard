@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SourceType, TopicConfig } from '@pann/shared'
+import type { SourceType, TopicConfig } from '@glimr/shared'
 
 /** Sources of the curation board (conversations are added from the Engagement tab). */
 type CurationSourceType = Extract<SourceType, 'rss' | 'exa' | 'github'>

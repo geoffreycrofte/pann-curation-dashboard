@@ -1,6 +1,6 @@
 # Thème « Accessibilité numérique » : réglages de rédaction
 
-Ces règles ne sont pas écrites en dur dans Pann : elles se règlent dans l'app, page **Réglages** du thème, section **Rédaction par IA**. Elles reprennent les protocoles éditoriaux de `grounding.md` et `voice.md` (voir `docs/CONTEXT.md`, section 5). Les règles « propres au thème » et « pour les posts » sont déjà enregistrées dans le projet Supabase ; à coller à la main : **Style et ton des résumés**.
+Ces règles ne sont pas écrites en dur dans Glimr : elles se règlent dans l'app, page **Réglages** du thème, section **Rédaction par IA**. Elles reprennent les protocoles éditoriaux de `grounding.md` et `voice.md` (voir `docs/CONTEXT.md`, section 5). Les règles « propres au thème » et « pour les posts » sont déjà enregistrées dans le projet Supabase ; à coller à la main : **Style et ton des résumés**.
 
 ## Règles propres au thème
 

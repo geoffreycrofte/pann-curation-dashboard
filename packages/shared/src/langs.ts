@@ -10,7 +10,7 @@ export type UiLang = (typeof UI_LANGS)[number]
  */
 export type Lang = string
 
-/** Language, optional script and optional region: enough for every content Pann writes. */
+/** Language, optional script and optional region: enough for every content Glimr writes. */
 const LANG_TAG = /^[a-z]{2,3}(-[a-z]{4})?(-([a-z]{2}|\d{3}))?$/i
 
 /** At most this many languages per topic: each one is a summary and a post per network. */

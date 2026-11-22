@@ -7,7 +7,7 @@ import {
   renderRss,
   type FeedEntry,
   type FeedInput,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { createClient } from '@supabase/supabase-js'
 import { Hono } from 'hono'
 import type { Env } from '../env'

@@ -10,7 +10,7 @@ import { supabaseEngagementStore } from '../engagement/store'
 import { runBillingRequest } from '../billing/billing'
 import { runReplyDraft } from '../engagement/reply'
 import { triageConversations } from '../engagement/triage'
-import type { Lang } from '@pann/shared'
+import type { Lang } from '@glimr/shared'
 import { sendDigests } from '../newsletter/digest'
 import { sendCampaign } from '../newsletter/send'
 import { refreshNewsletterAccount, supabaseDigestStore } from '../newsletter/store'
@@ -58,9 +58,9 @@ export type JobMessage =
   | { type: 'delete-account'; userId: string }
   /** AI rewrite of a summary or post, asked from the item page (table rewrites). */
   | { type: 'rewrite'; rewriteId: string }
-  /** Emails the platform admins about an access request (Resend, Pann's key). */
+  /** Emails the platform admins about an access request (Resend, Glimr's key). */
   | { type: 'notify-access-request'; requestId: string; origin: string }
-  /** Next answer of the onboarding assistant (Pann's key, onboarding credit). */
+  /** Next answer of the onboarding assistant (Glimr's key, onboarding credit). */
   | { type: 'onboarding'; sessionId: string }
   /** Création: search sources, write the posts, propose the text alternatives of an image. */
   | { type: 'compose-research'; compositionId: string }

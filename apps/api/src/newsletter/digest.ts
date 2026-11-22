@@ -8,7 +8,7 @@ import {
   type Lang,
   type NewsletterProvider,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import type { DigestContent } from './content'
 import type { SendCampaign } from './send'
 
@@ -157,7 +157,7 @@ async function sendIssue(
   await store.addIssueItems(id, content.item_ids)
 
   const result = await deps.send(provider, apiKey, {
-    name: `Pann ${topic.slug} ${lang} ${periodTo.toISOString().slice(0, 10)}`,
+    name: `Glimr ${topic.slug} ${lang} ${periodTo.toISOString().slice(0, 10)}`,
     subject,
     senderId: newsletter.sender_id,
     listId,

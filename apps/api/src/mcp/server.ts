@@ -1,4 +1,4 @@
-import { ITEM_TOPIC_STATUSES, KIND_KEY, langSchema } from '@pann/shared'
+import { ITEM_TOPIC_STATUSES, KIND_KEY, langSchema } from '@glimr/shared'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 import { CfWorkerJsonSchemaValidator } from '@modelcontextprotocol/sdk/validation/cfworker'
@@ -13,10 +13,10 @@ export type ApiCall = (
   body?: unknown,
 ) => Promise<{ ok: boolean; status: number; data: unknown }>
 
-const INSTRUCTIONS = `Pann is a content-curation tool. Each topic (board) collects items from its sources; an AI triage scores them (0 to 100) and the user sorts them.
+const INSTRUCTIONS = `Glimr is a content-curation tool. Each topic (board) collects items from its sources; an AI triage scores them (0 to 100) and the user sorts them.
 Item statuses: new (to sort), validated (kept), rejected, archived (scored below the topic threshold), published (its posts went out).
 Validating an item queues the AI drafting of its summaries (French and English) and of its social posts (one per network and language). Drafting takes a few seconds to a minute: read the item again to see the drafts.
-Posts go out on the topic's slots once scheduled (schedule_item with when "next_slot"), or immediately with when "now". A scheduled item no longer appears in list_items with status validated: get_queue lists it. Publishing is public and cannot be undone from Pann: always ask the user before using "now".
+Posts go out on the topic's slots once scheduled (schedule_item with when "next_slot"), or immediately with when "now". A scheduled item no longer appears in list_items with status validated: get_queue lists it. Publishing is public and cannot be undone from Glimr: always ask the user before using "now".
 Never invent an id: list topics, then items, to get them. Answers of the tools are JSON.`
 
 const json = (value: unknown) => ({
@@ -51,9 +51,9 @@ interface ItemRow {
 }
 
 /** One MCP server per request (stateless): nothing is shared between users. */
-export function createPannServer(api: ApiCall): McpServer {
+export function createGlimrServer(api: ApiCall): McpServer {
   const server = new McpServer(
-    { name: 'pann', title: 'Pann', version: '0.1.0' },
+    { name: 'glimr', title: 'Glimr', version: '0.1.0' },
     { instructions: INSTRUCTIONS, jsonSchemaValidator: new CfWorkerJsonSchemaValidator() },
   )
   const readOnly = { readOnlyHint: true, openWorldHint: false }
@@ -308,7 +308,7 @@ export function protectedResourceMetadata(origin: string, env: Env) {
     resource: `${origin}${MCP_PATH}`,
     authorization_servers: [`${env.SUPABASE_URL}/auth/v1`],
     bearer_methods_supported: ['header'],
-    resource_name: 'Pann',
+    resource_name: 'Glimr',
   }
 }
 
@@ -367,7 +367,7 @@ export async function handleMcp(
 
 /** Answers one MCP request (JSON-RPC over Streamable HTTP, stateless) for a signed-in user. */
 export async function serveMcp(request: Request, api: ApiCall): Promise<Response> {
-  const server = createPannServer(api)
+  const server = createGlimrServer(api)
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,

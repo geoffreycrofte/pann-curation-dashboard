@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * The offer of a workspace: its limits, where its payment stands and, when Pann provides
+ * The offer of a workspace: its limits, where its payment stands and, when Glimr provides
  * the AI, the tokens used this month (tokens only, never dollars). Its owner subscribes here,
  * or manages the subscription in Stripe's customer portal.
  */
-import { trialDaysLeft, type BillingInterval, type Plan } from '@pann/shared'
+import { trialDaysLeft, type BillingInterval, type Plan } from '@glimr/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
 import { computed, onMounted, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'

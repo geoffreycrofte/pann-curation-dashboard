@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ItemKind } from '@pann/shared'
+import type { ItemKind } from '@glimr/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'

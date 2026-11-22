@@ -1,4 +1,4 @@
-import { parseTopicConfig, type ConversationMeta } from '@pann/shared'
+import { parseTopicConfig, type ConversationMeta } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { supabaseTriageStore } from '../triage/store'
 import { MAX_ENGAGEMENT_ATTEMPTS, type EngagementStore } from './triage'

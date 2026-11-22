@@ -14,7 +14,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AccountMenu from './components/AccountMenu.vue'
 import Toaster from './components/Toaster.vue'
-import PannMark from './components/PannMark.vue'
+import GlimrMark from './components/GlimrMark.vue'
 import { api } from './lib/api'
 import { session } from './lib/session'
 import { pageDetail } from './lib/page-title'
@@ -49,7 +49,7 @@ const { data: currentTopic } = useQuery({
   enabled: () => !!session.value && !!currentTopicId.value,
 })
 // Document title, from the most specific to the most general: what the page shows (an
-// item, a tab), the page, the topic, Pann. The marketing page sets its own.
+// item, a tab), the page, the topic, Glimr. The marketing page sets its own.
 watchEffect(() => {
   if (!session.value && route.name === 'home') return
   const name = String(route.name ?? '')
@@ -144,7 +144,7 @@ watch(
       <div class="sidebar-inner">
         <div ref="topBar" class="sidebar-top">
           <RouterLink to="/" class="brand">
-            <PannMark :size="44" />
+            <GlimrMark :size="44" />
             <span class="brand-text">
               <span class="brand-name">{{ t('app.name') }}</span>
               <span class="brand-tagline">{{ t('app.tagline') }}</span>

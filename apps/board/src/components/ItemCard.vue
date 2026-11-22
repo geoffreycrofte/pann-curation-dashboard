@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { BoardItem, ItemTopicStatus } from '@pann/shared'
-import { canTransition, siteOf } from '@pann/shared'
+import type { BoardItem, ItemTopicStatus } from '@glimr/shared'
+import { canTransition, siteOf } from '@glimr/shared'
 import {
   DropdownMenuContent,
   DropdownMenuItem,

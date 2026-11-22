@@ -1,6 +1,6 @@
 /**
  * Stripe through its REST API (form-encoded), with fetch and Web Crypto: no SDK, so it runs
- * as is on Workers. Only what Pann needs: Checkout, the customer portal, subscriptions, and
+ * as is on Workers. Only what Glimr needs: Checkout, the customer portal, subscriptions, and
  * the signature of the webhook.
  */
 const API = 'https://api.stripe.com/v1'
@@ -114,7 +114,7 @@ export interface StripeSubscription {
   }
 }
 
-/** What Pann keeps of a subscription's state. */
+/** What Glimr keeps of a subscription's state. */
 export type BillingStatus = 'active' | 'past_due' | 'canceled' | 'expired'
 
 export function billingStatusOf(
@@ -122,7 +122,7 @@ export function billingStatusOf(
 ): BillingStatus | null {
   switch (sub.status) {
     case 'active':
-    // A Stripe trial (the rest of Pann's trial, card given): the person has subscribed.
+    // A Stripe trial (the rest of Glimr's trial, card given): the person has subscribed.
     case 'trialing':
       return sub.cancel_at_period_end ? 'canceled' : 'active'
     case 'past_due':

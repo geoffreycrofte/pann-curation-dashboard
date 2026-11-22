@@ -7,7 +7,7 @@ import {
   type Provider,
   type Source,
   type SourceRunStats,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import {
   TabsContent,

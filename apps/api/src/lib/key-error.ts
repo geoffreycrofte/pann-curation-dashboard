@@ -1,9 +1,9 @@
-import { errorCode } from '@pann/shared'
+import { errorCode } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
- * Why a job has no key for a service. On a plan where Pann provides the AI and the search,
- * a missing key means the month's token quota (or Pann's own cap) is used up, not a key to
+ * Why a job has no key for a service. On a plan where Glimr provides the AI and the search,
+ * a missing key means the month's token quota (or Glimr's own cap) is used up, not a key to
  * set in Connexions. `db` must use the secret key (jobs only).
  */
 export async function missingKeyError(

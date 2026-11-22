@@ -1,5 +1,5 @@
 {
-  "name": "pann",
+  "name": "glimr",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.28.0",
@@ -8,9 +8,9 @@
   },
   "scripts": {
     "configure": "node scripts/configure.mjs",
-    "dev": "pnpm --parallel --filter @pann/api --filter @pann/board dev",
-    "dev:api": "pnpm --filter @pann/api dev",
-    "dev:board": "pnpm --filter @pann/board dev",
+    "dev": "pnpm --parallel --filter @glimr/api --filter @glimr/board dev",
+    "dev:api": "pnpm --filter @glimr/api dev",
+    "dev:board": "pnpm --filter @glimr/board dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",

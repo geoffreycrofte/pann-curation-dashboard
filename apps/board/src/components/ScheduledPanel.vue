@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { zonedDay } from '@pann/shared'
+import { zonedDay } from '@glimr/shared'
 import { useQuery } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed } from 'vue'

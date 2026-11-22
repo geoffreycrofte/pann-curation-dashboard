@@ -1,4 +1,4 @@
-import { parseTopicConfig } from '@pann/shared'
+import { parseTopicConfig } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { TRIAGE_RECENT_ITEMS } from './prompt'
 import { MAX_TRIAGE_ATTEMPTS, type PendingTriage, type TriageStore } from './triage'

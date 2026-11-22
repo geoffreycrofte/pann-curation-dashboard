@@ -27,7 +27,7 @@ const MAX_USER_MESSAGES = 6
 
 /**
  * Onboarding conversation. Every request goes through the RLS (own sessions, in a
- * workspace the user belongs to); a job answers on Pann's key, and the board polls.
+ * workspace the user belongs to); a job answers on Glimr's key, and the board polls.
  */
 export const onboarding = new Hono<AppEnv>()
   .get('/available', async (c) => {

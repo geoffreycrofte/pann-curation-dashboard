@@ -12,7 +12,7 @@ const headers = (key: string) => ({
 
 /**
  * Checks a Resend key with a free call (list of domains). A key restricted to sending
- * answers `restricted_api_key`: it exists, which is all Pann needs.
+ * answers `restricted_api_key`: it exists, which is all Glimr needs.
  */
 export async function checkResendKey(
   key: string,

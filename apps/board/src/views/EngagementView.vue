@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ItemTopicStatus } from '@pann/shared'
+import type { ItemTopicStatus } from '@glimr/shared'
 import { useQuery } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, ref } from 'vue'
@@ -61,7 +61,7 @@ const announcement = ref('')
   <template v-else-if="topic">
     <!-- Its sources and settings are in the topic settings (Sources, Conversations). -->
     <div>
-      <!-- The rule of the tool, always in view: Pann never posts a reply. -->
+      <!-- The rule of the tool, always in view: Glimr never posts a reply. -->
       <p class="notice" role="note">{{ t('engagement.neverPosted') }}</p>
       <BacklogNotice
         :topic-id="topicId"

@@ -1,6 +1,6 @@
 export default {
-  app: { name: 'Pann', tagline: 'Faites connaître votre sujet' },
-  /** Document titles, by route name: detail – page – topic – Pann. */
+  app: { name: 'Glimr', tagline: 'Faites connaître votre sujet' },
+  /** Document titles, by route name: detail – page – topic – Glimr. */
   pageTitle: {
     separator: ' – ',
     home: 'Aujourd’hui',
@@ -62,7 +62,7 @@ export default {
     never: 'Jamais',
   },
   auth: {
-    accountDeleted: 'Votre compte a été supprimé. Merci d’avoir utilisé Pann.',
+    accountDeleted: 'Votre compte a été supprimé. Merci d’avoir utilisé Glimr.',
     pitch: 'Beaucoup de collecte, peu de sélection : ne gardez que l’essentiel de votre veille.',
     intro: 'Recevez un lien de connexion par e-mail, sans mot de passe.',
     title: 'Connexion',
@@ -97,7 +97,7 @@ export default {
     heading: 'Aujourd’hui',
     intro: 'Ce qui attend dans chacun de vos thèmes.',
     empty:
-      'Aucun thème pour l’instant. Un thème, c’est un produit ou un sujet à faire connaître : Pann en suit l’actualité, repère les conversations et prépare vos publications.',
+      'Aucun thème pour l’instant. Un thème, c’est un produit ou un sujet à faire connaître : Glimr en suit l’actualité, repère les conversations et prépare vos publications.',
     createFirst: 'Créer votre premier thème',
   },
   summary: {
@@ -151,10 +151,10 @@ export default {
       notes: 'Mes idées',
       notesHint: 'Vos notes ou votre brouillon. L’IA met en forme sans rien ajouter de factuel.',
       links: 'Des liens',
-      linksHint: 'Vous donnez vos sources ; Pann les lit et s’appuie dessus.',
+      linksHint: 'Vous donnez vos sources ; Glimr les lit et s’appuie dessus.',
       search: 'Une recherche',
       searchHint:
-        'Pann cherche des sources sur votre sujet, vous choisissez celles à garder. Utilise votre clé Exa.',
+        'Glimr cherche des sources sur votre sujet, vous choisissez celles à garder. Utilise votre clé Exa.',
     },
     notes: 'Vos notes',
     notesOptional: 'Vos notes (facultatif)',
@@ -304,7 +304,7 @@ export default {
     open: 'Planifier une série',
     newTitle: 'Nouvelle série de posts',
     intro:
-      'Plusieurs posts sur un même sujet, répartis sur une période. Pann propose un plan, vous le relisez, puis chaque post est rédigé à partir de son angle.',
+      'Plusieurs posts sur un même sujet, répartis sur une période. Glimr propose un plan, vous le relisez, puis chaque post est rédigé à partir de son angle.',
     subject: 'Sujet de la série',
     notes: 'Ce que la série doit dire',
     notesHint:
@@ -312,7 +312,7 @@ export default {
     count: 'Nombre de posts',
     span: 'Sur combien de jours',
     plan: 'Proposer un plan',
-    planning: 'Pann prépare le plan…',
+    planning: 'Glimr prépare le plan…',
     title: 'Série : {subject}',
     summary: '{count} posts sur {days} jours',
     planTitle: 'Plan',
@@ -334,9 +334,9 @@ export default {
     errors: { subject: 'Indiquez le sujet de la série.' },
   },
   zernioPlatform: {
-    title: 'LinkedIn et Facebook, via Pann',
+    title: 'LinkedIn et Facebook, via Glimr',
     intro:
-      'Pas de clé à saisir : connectez vos comptes sur l’écran de Zernio, le service qui publie pour Pann, puis revenez ici. Pann ne voit jamais vos mots de passe.',
+      'Pas de clé à saisir : connectez vos comptes sur l’écran de Zernio, le service qui publie pour Glimr, puis revenez ici. Glimr ne voit jamais vos mots de passe.',
     none: 'Aucun compte connecté pour l’instant.',
     inactive: 'À reconnecter',
     listedOn: 'Liste mise à jour le {date}.',
@@ -354,7 +354,7 @@ export default {
     pause: 'Mettre en pause',
     resume: 'Reprendre',
     pauseEffect:
-      'En pause, Pann ne collecte plus, ne trie plus, ne rédige plus de lui-même et ne publie plus. Les posts programmés attendent la reprise.',
+      'En pause, Glimr ne collecte plus, ne trie plus, ne rédige plus de lui-même et ne publie plus. Les posts programmés attendent la reprise.',
     resumeEffect:
       'Rien n’est collecté ni publié. À la reprise, les posts dont le créneau est passé partent aussitôt.',
     paused: 'Thème en pause',
@@ -409,7 +409,7 @@ export default {
     openCalendar: 'Ouvrir le calendrier',
     created: 'Thème créé.',
     collecting:
-      'Thème créé. Pann cherche vos premiers éléments : cela prend en général une à deux minutes.',
+      'Thème créé. Glimr cherche vos premiers éléments : cela prend en général une à deux minutes.',
   },
   calendar: {
     heading: 'Calendrier : {topic}',
@@ -440,7 +440,7 @@ export default {
   },
   pricing: {
     title: 'Tarifs',
-    lead: 'Veille, conversations, création et publication dans un seul outil. Choisissez qui fournit l’IA : vous, avec vos propres clés, ou Pann.',
+    lead: 'Veille, conversations, création et publication dans un seul outil. Choisissez qui fournit l’IA : vous, avec vos propres clés, ou Glimr.',
     trial: '14 jours d’essai gratuit sur l’offre de votre choix, sans engagement.',
     loadError: 'Les offres n’ont pas pu être chargées. Réessayez dans un instant.',
     period: 'Paiement',
@@ -456,7 +456,7 @@ export default {
       own_keys:
         'Vous apportez vos clés (IA, recherche, publication) et gardez la main sur vos dépenses.',
       essential:
-        'Pann fournit l’IA et la recherche. Pour une personne qui veut publier régulièrement.',
+        'Glimr fournit l’IA et la recherche. Pour une personne qui veut publier régulièrement.',
       pro: 'Plus de thèmes, plus de tokens, plus de comptes. Pour un usage soutenu.',
     },
     topics: '{n} thème | {n} thèmes',
@@ -471,10 +471,10 @@ export default {
     chosen: 'Offre choisie',
     subscribe: 'S’abonner',
     compare: {
-      title: 'Sans Pann, avec Pann',
+      title: 'Sans Glimr, avec Glimr',
       intro:
         'Ce qu’une personne seule paierait pour faire le même travail avec des outils séparés, à l’année.',
-      without: 'Sans Pann',
+      without: 'Sans Glimr',
       withoutSub: '3 abonnements, 3 outils à apprendre',
       needs: {
         publish: 'Publier sur 3 réseaux, avec IA',
@@ -489,7 +489,7 @@ export default {
       },
       struck: 'Prix barré :',
       versus: 'ou',
-      with: 'Avec Pann',
+      with: 'Avec Glimr',
       withSub: 'Un seul outil, tout est relié',
       withNote: 'Offre Intermédiaire, facturée à l’année, taxes comprises.',
       included: {
@@ -516,14 +516,14 @@ export default {
     ownKeys: 'L’IA, la recherche et la publication passent par vos propres clés (page Connexions).',
     tokens: 'Tokens ce mois-ci : {used} sur {max}',
     tokensHint:
-      'Pann fournit l’IA et la recherche. Une rédaction compte davantage qu’un tri : elle coûte plus. Le compteur repart le 1er du mois.',
-    change: 'Pour une offre sur mesure (plus de thèmes, une équipe), contactez Pann.',
+      'Glimr fournit l’IA et la recherche. Une rédaction compte davantage qu’un tri : elle coûte plus. Le compteur repart le 1er du mois.',
+    change: 'Pour une offre sur mesure (plus de thèmes, une équipe), contactez Glimr.',
     trialTokensHint:
-      'Pendant l’essai, Pann fournit un nombre réduit de tokens. Le quota complet arrive avec l’abonnement.',
+      'Pendant l’essai, Glimr fournit un nombre réduit de tokens. Le quota complet arrive avec l’abonnement.',
   },
   profile: {
     title: 'Profil',
-    intro: 'Votre compte Pann : identité, préférences, espace de travail et sessions.',
+    intro: 'Votre compte Glimr : identité, préférences, espace de travail et sessions.',
     identity: 'Identité',
     name: 'Nom affiché',
     nameHint: 'Affiché dans le menu, à la place de votre adresse e-mail.',
@@ -558,7 +558,7 @@ export default {
     roles: { owner: 'Propriétaire', editor: 'Éditeur' },
     security: 'Connexion et sécurité',
     magicLink:
-      'Pann n’utilise pas de mot de passe : vous vous connectez avec un lien envoyé par e-mail, valable une seule fois.',
+      'Glimr n’utilise pas de mot de passe : vous vous connectez avec un lien envoyé par e-mail, valable une seule fois.',
     lastSignIn: 'Dernière connexion : {date}',
     signOutEverywhere: 'Se déconnecter de tous les appareils',
     signOutEverywhereTitle: 'Se déconnecter partout ?',
@@ -568,26 +568,26 @@ export default {
   connections: {
     title: 'Connexions aux services',
     intro:
-      'Pann utilise des services externes pour collecter et trier la veille. Chaque service demande une clé, propre à votre workspace.',
+      'Glimr utilise des services externes pour collecter et trier la veille. Chaque service demande une clé, propre à votre workspace.',
     security:
-      'Les clés sont chiffrées dans la base de données (Supabase Vault). Pann ne les réaffiche jamais : seuls les 4 derniers caractères restent visibles.',
+      'Les clés sont chiffrées dans la base de données (Supabase Vault). Glimr ne les réaffiche jamais : seuls les 4 derniers caractères restent visibles.',
     ownerOnly: 'Seul le propriétaire du workspace peut ajouter, remplacer ou supprimer une clé.',
     groupCollect: 'Collecte et IA',
     groupDiffusion: 'Diffusion sur les réseaux',
     groupNewsletter: 'Newsletter',
     mcpTitle: 'Claude et autres assistants (MCP)',
     mcpIntro:
-      'Connectez Claude à Pann pour trier et rédiger en conversation : « montre-moi les éléments légaux de la semaine », « valide les trois premiers ». Claude agit avec votre compte, après votre autorisation.',
+      'Connectez Claude à Glimr pour trier et rédiger en conversation : « montre-moi les éléments légaux de la semaine », « valide les trois premiers ». Claude agit avec votre compte, après votre autorisation.',
     mcpUrl: 'Adresse du serveur MCP',
     mcpCopy: 'Copier l’adresse',
     mcpCopied: 'Adresse copiée.',
     mcpSteps: [
       'Dans Claude, ouvrez Paramètres, puis Connecteurs, et ajoutez un connecteur personnalisé.',
       'Collez l’adresse ci-dessus et validez.',
-      'Claude ouvre une page de Pann : vérifiez la demande, puis cliquez sur « Autoriser ».',
+      'Claude ouvre une page de Glimr : vérifiez la demande, puis cliquez sur « Autoriser ».',
     ],
     mcpPublic:
-      'Claude doit pouvoir joindre cette adresse depuis internet : elle fonctionne une fois Pann en ligne, pas sur 127.0.0.1.',
+      'Claude doit pouvoir joindre cette adresse depuis internet : elle fonctionne une fois Glimr en ligne, pas sur 127.0.0.1.',
     grants: 'Applications autorisées',
     grantsEmpty: 'Aucune application autorisée pour l’instant.',
     grantsUnavailable:
@@ -659,7 +659,7 @@ export default {
       rejected_during_publication: 'La clé a été refusée lors de la dernière publication.',
       rejected_during_newsletter: 'La clé a été refusée lors du dernier envoi de la newsletter.',
       ip_not_authorized:
-        'Brevo bloque les appels venant d’adresses IP inconnues. Désactivez ce blocage dans Brevo (Sécurité, IP autorisées) : Pann tourne sur Cloudflare, dont les adresses changent.',
+        'Brevo bloque les appels venant d’adresses IP inconnues. Désactivez ce blocage dans Brevo (Sécurité, IP autorisées) : Glimr tourne sur Cloudflare, dont les adresses changent.',
     },
     providers: {
       anthropic: {
@@ -669,10 +669,10 @@ export default {
         steps: [
           'Connectez-vous à la Claude Console (platform.claude.com) et configurez la facturation si ce n’est pas déjà fait.',
           'Ouvrez Settings, puis API keys.',
-          'Cliquez sur « Create key » et donnez-lui un nom, par exemple « Pann ».',
+          'Cliquez sur « Create key » et donnez-lui un nom, par exemple « Glimr ».',
           'Copiez la clé (elle commence par sk-ant-) : elle ne s’affiche qu’une seule fois.',
         ],
-        cost: 'Payant à l’usage. Pann enregistre le coût de chaque appel.',
+        cost: 'Payant à l’usage. Glimr enregistre le coût de chaque appel.',
         link: 'Guide officiel : obtenir une clé API Claude',
       },
       exa: {
@@ -684,7 +684,7 @@ export default {
           'Dans le tableau de bord Exa, ouvrez « API Keys ».',
           'Cliquez sur « Create API Key », donnez-lui un nom, puis copiez-la : elle ne s’affiche qu’une seule fois.',
         ],
-        cost: 'Payant à la recherche. Pann enregistre le coût réel de chaque recherche.',
+        cost: 'Payant à la recherche. Glimr enregistre le coût réel de chaque recherche.',
         link: 'Ouvrir la page des clés Exa',
       },
       github: {
@@ -694,7 +694,7 @@ export default {
         steps: [
           'Sur github.com, ouvrez Settings, puis Developer settings (en bas du menu).',
           'Choisissez Personal access tokens, puis Fine-grained tokens, puis « Generate new token ».',
-          'Donnez un nom et une date d’expiration. Laissez l’accès « Public repositories » : aucune permission n’est nécessaire, Pann ne lit que des données publiques.',
+          'Donnez un nom et une date d’expiration. Laissez l’accès « Public repositories » : aucune permission n’est nécessaire, Glimr ne lit que des données publiques.',
           'Générez le jeton et copiez-le (il commence par github_pat_).',
         ],
         cost: 'Gratuit. Sans jeton, GitHub limite fortement le nombre de recherches et la collecte échoue vite.',
@@ -703,7 +703,7 @@ export default {
       zernio: {
         name: 'Zernio',
         purpose:
-          'Publication sur LinkedIn et Facebook (une Page), deux réseaux qui n’ouvrent leur API qu’aux applications validées. Vos comptes se connectent dans Zernio, Pann publie à travers lui.',
+          'Publication sur LinkedIn et Facebook (une Page), deux réseaux qui n’ouvrent leur API qu’aux applications validées. Vos comptes se connectent dans Zernio, Glimr publie à travers lui.',
         steps: [
           'Créez un compte sur zernio.com.',
           'Dans Zernio, connectez votre compte LinkedIn et, si besoin, une Page Facebook (vous devez en être administrateur ou éditeur).',
@@ -711,7 +711,7 @@ export default {
           'Copiez la clé (elle commence par sk_) : elle ne s’affiche qu’une seule fois.',
           'Après l’enregistrement, choisissez dans les réglages de chaque thème quel compte publie quelle langue. Un compte connecté plus tard dans Zernio apparaît après « Actualiser la liste des comptes ».',
         ],
-        cost: 'Selon l’abonnement Zernio (les deux premiers comptes sont gratuits). Pann ne publie que les posts que vous avez programmés.',
+        cost: 'Selon l’abonnement Zernio (les deux premiers comptes sont gratuits). Glimr ne publie que les posts que vous avez programmés.',
         link: 'Ouvrir la page des clés Zernio',
       },
       mastodon: {
@@ -720,7 +720,7 @@ export default {
           'Publication sur Mastodon, directement sur votre instance, avec la langue de chaque post.',
         steps: [
           'Sur votre instance Mastodon, ouvrez Préférences, puis Développement.',
-          'Cliquez sur « Nouvelle application » et donnez-lui un nom, par exemple « Pann ».',
+          'Cliquez sur « Nouvelle application » et donnez-lui un nom, par exemple « Glimr ».',
           'Dans les autorisations, ne cochez que read:accounts, write:statuses et write:media (pour les images), puis enregistrez.',
           'Ouvrez l’application créée et copiez « Votre jeton d’accès ».',
           'Collez ici le jeton et l’adresse de votre instance.',
@@ -734,7 +734,7 @@ export default {
           'Publication sur Bluesky, directement, avec la langue de chaque post et le lien cliquable.',
         steps: [
           'Dans Bluesky, ouvrez Réglages, puis Confidentialité et sécurité, puis Mots de passe d’application.',
-          'Ajoutez un mot de passe d’application nommé « Pann », sans l’accès aux messages privés, et copiez-le : il ne s’affiche qu’une fois.',
+          'Ajoutez un mot de passe d’application nommé « Glimr », sans l’accès aux messages privés, et copiez-le : il ne s’affiche qu’une fois.',
           'Collez ici ce mot de passe et votre identifiant (par exemple vous.bsky.social). Votre mot de passe principal n’est jamais demandé.',
         ],
         cost: 'Gratuit.',
@@ -746,7 +746,7 @@ export default {
           'Publication dans un salon de votre serveur Discord, par un webhook. Les mentions sont désactivées : un post ne notifie jamais tout le serveur.',
         steps: [
           'Sur votre serveur, ouvrez Paramètres du serveur, Intégrations, puis Webhooks (il faut le droit de gérer les webhooks).',
-          'Créez un webhook nommé « Pann », choisissez le salon où publier, puis copiez l’URL du webhook.',
+          'Créez un webhook nommé « Glimr », choisissez le salon où publier, puis copiez l’URL du webhook.',
           'Collez ici cette adresse : elle fait office de clé, ne la partagez pas.',
         ],
         cost: 'Gratuit.',
@@ -760,8 +760,8 @@ export default {
           'Créez un compte sur brevo.com, puis une liste de contacts par langue (Contacts, puis Listes).',
           'Ajoutez et validez votre adresse d’expédition (Expéditeurs, domaines et IP dédiées).',
           'Ouvrez le menu de votre compte, puis Paramètres, SMTP et API, onglet « Clés API et MCP ».',
-          'Cliquez sur « Générer une nouvelle clé API », nommez-la « Pann » et copiez-la : elle ne s’affiche qu’une seule fois.',
-          'Si Brevo bloque les adresses IP inconnues, désactivez ce blocage : Pann tourne sur Cloudflare, dont les adresses changent.',
+          'Cliquez sur « Générer une nouvelle clé API », nommez-la « Glimr » et copiez-la : elle ne s’affiche qu’une seule fois.',
+          'Si Brevo bloque les adresses IP inconnues, désactivez ce blocage : Glimr tourne sur Cloudflare, dont les adresses changent.',
           'Ensuite, dans les réglages de chaque thème, choisissez l’expéditeur et la liste de chaque langue.',
         ],
         cost: 'Le plan gratuit de Brevo limite le nombre d’e-mails envoyés par jour : vérifiez qu’il couvre vos listes.',
@@ -773,8 +773,8 @@ export default {
           'Envoi de la newsletter, une campagne par langue, à la liste de contacts de cette langue. Une autre option que Brevo.',
         steps: [
           'Créez un compte sur sendfox.com, puis une liste de contacts par langue.',
-          'Dans les réglages du compte, enregistrez l’expéditeur par défaut (nom et adresse) et le fuseau horaire : Pann envoie avec cet expéditeur, et SendFox exige le fuseau pour créer une campagne.',
-          'Ouvrez la page des jetons (Account, OAuth) et créez un jeton d’accès personnel nommé « Pann », puis copiez-le.',
+          'Dans les réglages du compte, enregistrez l’expéditeur par défaut (nom et adresse) et le fuseau horaire : Glimr envoie avec cet expéditeur, et SendFox exige le fuseau pour créer une campagne.',
+          'Ouvrez la page des jetons (Account, OAuth) et créez un jeton d’accès personnel nommé « Glimr », puis copiez-le.',
           'Ensuite, dans les réglages de chaque thème (Newsletter), choisissez SendFox et la liste de chaque langue.',
         ],
         cost: 'Selon l’offre SendFox. Les campagnes envoyées par l’API passent par ses contrôles habituels : validation du contenu et limites d’envoi d’un nouveau compte.',
@@ -796,7 +796,7 @@ export default {
     billing_inactive:
       'L’essai ou l’abonnement de cet espace est terminé : les thèmes sont en pause. Choisissez une offre pour reprendre.',
     billing_not_configured:
-      'Le paiement n’est pas encore ouvert. Réessayez plus tard ou contactez Pann.',
+      'Le paiement n’est pas encore ouvert. Réessayez plus tard ou contactez Glimr.',
     subscribed: 'Cet espace a un abonnement : changez d’offre depuis « Gérer l’abonnement ».',
     token_quota_reached:
       'Les tokens du mois sont épuisés : l’IA et la recherche reprennent le 1er du mois prochain.',
@@ -914,7 +914,7 @@ export default {
     sourceText: {
       toggle: 'Fournir le texte de la source',
       intro:
-        'Pann n’a pas pu lire la page (accès payant, page vide ou générée par script) ? Collez ici le texte de l’article auquel vous avez accès : la rédaction repart de ce texte.',
+        'Glimr n’a pas pu lire la page (accès payant, page vide ou générée par script) ? Collez ici le texte de l’article auquel vous avez accès : la rédaction repart de ce texte.',
       label: 'Texte de l’article',
       hint: '{count} caractères, {min} au minimum. Ne collez qu’un contenu que vous avez le droit de lire. Cet appel compte dans le budget mensuel du thème.',
       submit: 'Rédiger à partir de ce texte',
@@ -945,26 +945,26 @@ export default {
   admin: {
     workspacesTitle: 'Espaces de travail',
     workspacesIntro:
-      'Cochez un espace pour que LinkedIn et Facebook y passent par la clé Zernio de Pann (mode plateforme) : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde.',
-    colPlatform: 'Zernio de Pann',
+      'Cochez un espace pour que LinkedIn et Facebook y passent par la clé Zernio de Glimr (mode plateforme) : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde.',
+    colPlatform: 'Zernio de Glimr',
     platformLabel: 'Activé (comptes : {n})',
-    platformOn: 'Zernio de Pann activé pour {name}',
-    platformOff: 'Zernio de Pann désactivé pour {name}',
-    title: 'Administration de Pann',
+    platformOn: 'Zernio de Glimr activé pour {name}',
+    platformOff: 'Zernio de Glimr désactivé pour {name}',
+    title: 'Administration de Glimr',
     intro:
-      'Réservé aux administrateurs de Pann : les clés que Pann paie lui-même et le centre de coûts de ces dépenses.',
-    keysTitle: 'Clés de Pann',
+      'Réservé aux administrateurs de Glimr : les clés que Glimr paie lui-même et le centre de coûts de ces dépenses.',
+    keysTitle: 'Clés de Glimr',
     keysIntro:
-      'Utilisées pour l’onboarding et pour les offres où Pann fournit les services, jamais pour l’offre où l’utilisateur apporte ses clés. Chiffrées dans Supabase Vault, jamais réaffichées.',
+      'Utilisées pour l’onboarding et pour les offres où Glimr fournit les services, jamais pour l’offre où l’utilisateur apporte ses clés. Chiffrées dans Supabase Vault, jamais réaffichées.',
     providers: {
       anthropic: {
         name: 'Anthropic (Claude)',
-        purpose: 'IA de la conversation d’onboarding et des offres où Pann fournit l’IA.',
+        purpose: 'IA de la conversation d’onboarding et des offres où Glimr fournit l’IA.',
       },
       exa: {
         name: 'Exa',
         purpose:
-          'Recherche web des offres où Pann fournit les services (sources de recherche, Création). Exa n’a pas de vérification gratuite : la clé est enregistrée sans être testée.',
+          'Recherche web des offres où Glimr fournit les services (sources de recherche, Création). Exa n’a pas de vérification gratuite : la clé est enregistrée sans être testée.',
       },
       stripe: {
         name: 'Stripe',
@@ -979,7 +979,7 @@ export default {
       zernio: {
         name: 'Zernio, mode plateforme',
         purpose:
-          'Publication sur LinkedIn et Facebook pour l’offre la plus élevée : Pann connecte les comptes de ses utilisateurs avec sa propre clé.',
+          'Publication sur LinkedIn et Facebook pour l’offre la plus élevée : Glimr connecte les comptes de ses utilisateurs avec sa propre clé.',
       },
       resend: {
         name: 'Resend',
@@ -996,14 +996,14 @@ export default {
     keySaved: 'Clé vérifiée et enregistrée.',
     keyRemoved: 'Clé supprimée.',
     costsTitle: 'Centre de coûts',
-    costsIntro: 'Ce que Pann paie avec ses clés, et les plafonds de ces dépenses.',
+    costsIntro: 'Ce que Glimr paie avec ses clés, et les plafonds de ces dépenses.',
     credit: 'Crédit d’onboarding par espace (en dollars US)',
-    creditHint: 'Ce que Pann dépense au plus pour la conversation d’onboarding d’un espace.',
-    cap: 'Plafond mensuel de Pann (en dollars US)',
-    capHint: 'Tous espaces confondus, par mois civil. Au-delà, Pann n’utilise plus ses clés.',
+    creditHint: 'Ce que Glimr dépense au plus pour la conversation d’onboarding d’un espace.',
+    cap: 'Plafond mensuel de Glimr (en dollars US)',
+    capHint: 'Tous espaces confondus, par mois civil. Au-delà, Glimr n’utilise plus ses clés.',
     emailFrom: 'Expéditeur des e-mails du service',
     emailFromHint:
-      "Nom et adresse sur un domaine vérifié dans Resend, par exemple « Pann <noreply{'@'}exemple.org> ».",
+      "Nom et adresse sur un domaine vérifié dans Resend, par exemple « Glimr <noreply{'@'}exemple.org> ».",
     requestsTitle: 'Demandes d’accès',
     requestsIntro:
       'Envoyées depuis la page de connexion, et transmises par e-mail aux administrateurs. L’invitation elle-même se fait dans Supabase (Authentication, Invite user).',
@@ -1021,7 +1021,7 @@ export default {
     notifyFailed: 'E-mail aux administrateurs non envoyé : {reason}',
     featuresTitle: 'Demandes depuis le produit',
     featuresIntro:
-      'Réseaux sur lesquels Pann ne publie pas encore, et outils attendus. À traiter et prioriser, sans rien promettre.',
+      'Réseaux sur lesquels Glimr ne publie pas encore, et outils attendus. À traiter et prioriser, sans rien promettre.',
     noFeatures: 'Aucune demande pour l’instant.',
     colRequest: 'Demande',
     colDate: 'Date',
@@ -1037,11 +1037,11 @@ export default {
     featureMarked: 'Demande « {subject} » mise à jour.',
     month: 'Mois',
     total: 'Dépensé ce mois : {total} sur un plafond de {cap}.',
-    noUsage: 'Aucune dépense payée par Pann ce mois-ci.',
-    usageCaption: 'Dépenses payées par Pann en {month}',
+    noUsage: 'Aucune dépense payée par Glimr ce mois-ci.',
+    usageCaption: 'Dépenses payées par Glimr en {month}',
     statsTitle: 'Coûts par espace',
     statsHint:
-      'L’offre de chaque espace, tout ce qu’il a dépensé ce mois-là avec ses clés ou celles de Pann, et le coût par jour et par post publié.',
+      'L’offre de chaque espace, tout ce qu’il a dépensé ce mois-là avec ses clés ou celles de Glimr, et le coût par jour et par post publié.',
     noStats: 'Aucune dépense ce mois-là.',
     statsCaption: 'Coûts par espace en {month}',
     colTopics: 'Thèmes',
@@ -1061,13 +1061,13 @@ export default {
       stripeHint:
         'Identifiants des prix créés dans Stripe (price_…). Sans eux, l’offre ne peut pas être payée dans cette période.',
       emptyHint:
-        'Un champ vide veut dire sans limite. Les comptes LinkedIn et Facebook ne sont pas encore limités par Pann. Sur mesure, sans tokens, l’espace utilise ses propres clés.',
+        'Un champ vide veut dire sans limite. Les comptes LinkedIn et Facebook ne sont pas encore limités par Glimr. Sur mesure, sans tokens, l’espace utilise ses propres clés.',
       saved: 'Offre {plan} enregistrée.',
       workspaceSaved: '{name} : offre {plan}.',
       planOf: 'Offre de {name}',
       customOf: 'Limites sur mesure de {name}',
     },
-    colPaidByPann: 'Dont Pann',
+    colPaidByGlimr: 'Dont Glimr',
     colPerDay: 'Par jour',
     colPublished: 'Posts publiés',
     colPerPost: 'Par post publié',
@@ -1080,7 +1080,7 @@ export default {
   access: {
     title: 'Demander un accès',
     intro:
-      'Pann est sur invitation pour l’instant. Dites-nous qui vous êtes et ce que vous voulez faire connaître : nous vous répondons par e-mail.',
+      'Glimr est sur invitation pour l’instant. Dites-nous qui vous êtes et ce que vous voulez faire connaître : nous vous répondons par e-mail.',
     name: 'Nom',
     motivation: 'Votre projet',
     motivationHint:
@@ -1107,7 +1107,7 @@ export default {
     retry: 'Programmer de nouveau les posts en échec',
     confirmNowTitle: 'Publier maintenant ?',
     confirmNowText:
-      'Les posts partent tout de suite sur les comptes choisis. Une fois publié, un post ne peut pas être retiré depuis Pann.',
+      'Les posts partent tout de suite sur les comptes choisis. Une fois publié, un post ne peut pas être retiré depuis Glimr.',
     confirmScheduleTitle: 'Programmer au prochain créneau ?',
     confirmRetryTitle: 'Programmer de nouveau les posts en échec ?',
     confirmScheduleText:
@@ -1176,8 +1176,8 @@ export default {
     },
   },
   consent: {
-    title: 'Autoriser {client} à accéder à Pann ?',
-    titleUnknown: 'Autoriser cette application à accéder à Pann ?',
+    title: 'Autoriser {client} à accéder à Glimr ?',
+    titleUnknown: 'Autoriser cette application à accéder à Glimr ?',
     intro: 'En votre nom, avec le compte {email}, {client} pourra :',
     can: [
       'lire vos thèmes, éléments, résumés et brouillons de posts ;',
@@ -1202,7 +1202,7 @@ export default {
       'Collecter, trier et partager des contenus sur les réseaux et dans la newsletter. Désactivée : la collecte et l’envoi automatique de la newsletter s’arrêtent, et ses sections sont masquées. Les éléments, les posts déjà programmés et les flux publics restent en place.',
     engagement: 'Engagement',
     engagementHint:
-      'Repérer des conversations (Hacker News, Bluesky) où votre équipe peut aider, et les trier. Pann ne publie jamais de réponse : vous répondez vous-même.',
+      'Repérer des conversations (Hacker News, Bluesky) où votre équipe peut aider, et les trier. Glimr ne publie jamais de réponse : vous répondez vous-même.',
     compose: 'Création',
     composeHint:
       'Écrire vos propres posts, à partir de vos notes, de liens ou d’une recherche, avec vos images. Ils partent sur leurs propres créneaux.',
@@ -1271,15 +1271,15 @@ export default {
     paused: 'Ce thème est en pause : rien n’est collecté.',
     noSources: {
       curation:
-        'Aucune source pour la veille : ajoutez-en pour que Pann collecte des éléments à trier.',
+        'Aucune source pour la veille : ajoutez-en pour que Glimr collecte des éléments à trier.',
       engagement:
-        'Aucune source de conversations : ajoutez-en pour que Pann cherche des conversations où aider.',
+        'Aucune source de conversations : ajoutez-en pour que Glimr cherche des conversations où aider.',
     },
     empty: {
       curation:
-        'Rien à trier pour l’instant. Pann collecte vos sources régulièrement ; vous pouvez aussi lancer une collecte maintenant.',
+        'Rien à trier pour l’instant. Glimr collecte vos sources régulièrement ; vous pouvez aussi lancer une collecte maintenant.',
       engagement:
-        'Aucune conversation à examiner pour l’instant. Pann cherche régulièrement ; vous pouvez aussi lancer une collecte maintenant.',
+        'Aucune conversation à examiner pour l’instant. Glimr cherche régulièrement ; vous pouvez aussi lancer une collecte maintenant.',
     },
     done: {
       curation:
@@ -1333,7 +1333,7 @@ export default {
     view: 'Voir',
   },
   landing: {
-    title: 'Pann : la veille lavée, les pépites gardées',
+    title: 'Glimr : la veille lavée, les pépites gardées',
     how: 'Comment ça marche',
     pricing: 'Tarifs',
     login: 'Se connecter',
@@ -1341,7 +1341,7 @@ export default {
     otherLangLabel: 'Read this page in English',
     hero: {
       title: 'Lavez la veille, gardez les pépites.',
-      lead: 'Pann collecte l’actualité de votre sujet, l’IA écarte le sable, vous gardez l’or. Résumés, posts et newsletter sont prêts à partir, dans vos langues.',
+      lead: 'Glimr collecte l’actualité de votre sujet, l’IA écarte le sable, vous gardez l’or. Résumés, posts et newsletter sont prêts à partir, dans vos langues.',
       invite: 'Sur invitation pour l’instant.',
       alt: 'Un orpailleur souriant tient sa batée : au milieu du sable mouillé, une grosse pépite brille.',
     },
@@ -1353,7 +1353,7 @@ export default {
     steps: {
       title: 'De la rivière à la vitrine',
       intro: 'Cinq étapes. Une seule vous revient vraiment : choisir.',
-      pann: 'Pann s’en charge',
+      glimr: 'Glimr s’en charge',
       you: 'Vous décidez',
       collect: {
         title: 'Collecter',
@@ -1372,7 +1372,7 @@ export default {
       },
       draft: {
         title: 'Rédiger',
-        text: 'Dès la validation, Pann écrit les résumés et un post par réseau et par langue, en suivant vos règles de style. Raccourcir, allonger, changer de ton : la réécriture se demande en un clic.',
+        text: 'Dès la validation, Glimr écrit les résumés et un post par réseau et par langue, en suivant vos règles de style. Raccourcir, allonger, changer de ton : la réécriture se demande en un clic.',
         alt: 'Une pépite posée sur un coussin de velours bleu, avec une plume et une étiquette vierge.',
       },
       share: {
@@ -1404,7 +1404,7 @@ export default {
     },
     budget: {
       title: 'Le poids du sable, le prix de l’or',
-      text: 'Chaque thème a son plafond mensuel. Vous branchez vos propres clés (Anthropic, Exa, Brevo, Zernio), gardées chiffrées dans votre espace, et vous voyez le coût de chaque opération. Arrivé au plafond, Pann s’arrête au lieu de dépenser.',
+      text: 'Chaque thème a son plafond mensuel. Vous branchez vos propres clés (Anthropic, Exa, Brevo, Zernio), gardées chiffrées dans votre espace, et vous voyez le coût de chaque opération. Arrivé au plafond, Glimr s’arrête au lieu de dépenser.',
       alt: 'Une balance : un tas de sable d’un côté, une seule pépite qui l’équilibre de l’autre.',
     },
     more: {
@@ -1430,9 +1430,9 @@ export default {
     },
     cta: {
       title: 'Votre prochaine pépite est déjà dans la rivière.',
-      text: 'Pann est ouvert sur invitation. Déjà invité ? Connectez-vous avec votre adresse e-mail, sans mot de passe.',
+      text: 'Glimr est ouvert sur invitation. Déjà invité ? Connectez-vous avec votre adresse e-mail, sans mot de passe.',
     },
-    footer: 'Pann, outil de curation de veille.',
+    footer: 'Glimr, outil de curation de veille.',
   },
   notFound: {
     title: 'Rien dans la batée',
@@ -1476,7 +1476,7 @@ export default {
   },
   sourcePreview: {
     title: 'Ce que dit la source',
-    none: 'Pann n’a pas pu lire le texte de cette page à la collecte. Ouvrez la source pour en juger.',
+    none: 'Glimr n’a pas pu lire le texte de cette page à la collecte. Ouvrez la source pour en juger.',
     published: 'Publié le {date}',
     readMore: 'Lire la suite sur {site}',
   },
@@ -1498,7 +1498,7 @@ export default {
   kinds: {
     title: 'Types de contenu',
     intro:
-      'Les types servent à étiqueter les éléments, à régler la fréquence de collecte (ci-dessous) et à guider le tri par IA. Pann en propose quatre au départ : renommez-les, ajoutez-en ou retirez-en selon votre thème.',
+      'Les types servent à étiqueter les éléments, à régler la fréquence de collecte (ci-dessous) et à guider le tri par IA. Glimr en propose quatre au départ : renommez-les, ajoutez-en ou retirez-en selon votre thème.',
     newKind: 'Nouveau type',
     labelFr: 'Nom en français',
     labelEn: 'Nom en anglais',
@@ -1596,17 +1596,17 @@ export default {
     goal: {
       name: 'Que voulez-vous faire connaître ?',
       url: 'Adresse du site',
-      tools: 'Ce que Pann fait pour vous',
+      tools: 'Ce que Glimr fait pour vous',
       toolsHint: 'Au moins une activité. Vous pourrez en ajouter d’autres plus tard.',
       curation: 'Partager la veille de mon domaine',
       curationHint:
-        'Pann collecte l’actualité de votre sujet, la trie, et rédige les posts et la newsletter. Vous choisissez ce qui part.',
+        'Glimr collecte l’actualité de votre sujet, la trie, et rédige les posts et la newsletter. Vous choisissez ce qui part.',
       engagement: 'Répondre à des conversations sur mon sujet',
       engagementHint:
-        'Pann repère des discussions où vous pouvez aider. Vous répondez vous-même : Pann ne publie jamais à votre place.',
+        'Glimr repère des discussions où vous pouvez aider. Vous répondez vous-même : Glimr ne publie jamais à votre place.',
       compose: 'Créer mes propres posts',
       composeHint:
-        'À partir de vos notes, de liens ou d’une recherche, avec vos images ; Pann rédige un post par réseau et par langue.',
+        'À partir de vos notes, de liens ou d’une recherche, avec vos images ; Glimr rédige un post par réseau et par langue.',
     },
     networks: {
       publish: 'Réseaux où publier',
@@ -1622,15 +1622,15 @@ export default {
       other: 'Un autre réseau',
       otherName: 'Lequel ?',
       otherHint:
-        'Pann ne publie pas encore sur ce réseau. Nous notons votre demande ; en attendant, vos posts sont rédigés et copiables.',
-      noX: 'Pann ne publie plus sur X. Votre demande est tout de même notée.',
+        'Glimr ne publie pas encore sur ce réseau. Nous notons votre demande ; en attendant, vos posts sont rédigés et copiables.',
+      noX: 'Glimr ne publie plus sur X. Votre demande est tout de même notée.',
       listen: 'Où écouter',
       listenHint:
-        'Pann y cherche les discussions qui parlent de votre sujet ; vous ajusterez les recherches ensuite.',
+        'Glimr y cherche les discussions qui parlent de votre sujet ; vous ajusterez les recherches ensuite.',
       platforms: { hackernews: 'Hacker News', bluesky: 'Bluesky' },
     },
     thread: {
-      brand: 'Pann',
+      brand: 'Glimr',
       title: 'Créons votre thème',
       label: 'Conversation de création du thème',
       navLabel: 'Création du thème',
@@ -1643,7 +1643,7 @@ export default {
       q: {
         name: 'Que voulez-vous faire connaître ?',
         url: 'Avez-vous un site ? Je peux le lire pour gagner du temps.',
-        tools: 'Que voulez-vous que Pann fasse pour vous ?',
+        tools: 'Que voulez-vous que Glimr fasse pour vous ?',
         publish: 'Où publiez-vous ?',
         listen: 'Où chercher les conversations sur votre sujet ?',
         assistant: 'Parlons maintenant de ce que vous faites connaître.',
@@ -1656,9 +1656,9 @@ export default {
       },
       hint: {
         name: 'Le nom de votre produit ou de votre sujet, par exemple « Accessibilité numérique ».',
-        url: 'Facultatif. Pann ne publie rien sur votre site.',
+        url: 'Facultatif. Glimr ne publie rien sur votre site.',
         budget:
-          'En dollars US. Au-delà, Pann ne fait plus appel à l’IA pour ce thème jusqu’au mois suivant.',
+          'En dollars US. Au-delà, Glimr ne fait plus appel à l’IA pour ce thème jusqu’au mois suivant.',
         description: 'Facultatif, mais c’est ce qui guide l’IA.',
         audience: 'Les personnes visées et ce qu’elles cherchent.',
         voice: 'Par exemple : « phrases courtes, tutoiement, pas d’emoji ».',
@@ -1723,7 +1723,7 @@ export default {
       rhythm: 'Rythme',
       budget: 'Budget',
       budgetLabel: 'Plafond mensuel (en dollars US)',
-      budgetHint: 'Au-delà, Pann ne fait plus appel à l’IA pour ce thème jusqu’au mois suivant.',
+      budgetHint: 'Au-delà, Glimr ne fait plus appel à l’IA pour ce thème jusqu’au mois suivant.',
       create: 'Créer le thème',
       creating: 'Création…',
       restart: 'Recommencer',
@@ -1777,7 +1777,7 @@ export default {
     heading: 'Conversations : {topic}',
     off: 'L’engagement est désactivé pour ce thème.',
     neverPosted:
-      'Pann ne publie jamais de réponse. Ouvrez la discussion, répondez vous-même si vous pouvez vraiment aider, et mentionnez votre lien avec le produit dès que vous le citez.',
+      'Glimr ne publie jamais de réponse. Ouvrez la discussion, répondez vous-même si vous pouvez vraiment aider, et mentionnez votre lien avec le produit dès que vous le citez.',
     statusFilter: 'Afficher les conversations',
     status: {
       new: 'À examiner',
@@ -1809,7 +1809,7 @@ export default {
     },
     reply: {
       title: 'Proposition de réponse',
-      hint: 'Relisez-la et adaptez-la : c’est vous qui répondez, depuis la conversation. Pann ne publie rien.',
+      hint: 'Relisez-la et adaptez-la : c’est vous qui répondez, depuis la conversation. Glimr ne publie rien.',
       request: 'Proposer une réponse',
       again: 'Proposer une autre réponse',
       againConfirm: 'La proposition actuelle sera remplacée.',
@@ -1837,7 +1837,7 @@ export default {
     sources: {
       title: 'Sources de conversations',
       intro:
-        'Pann cherche des discussions récentes où votre équipe peut aider. Ces sources ne nourrissent que l’engagement, jamais la curation.',
+        'Glimr cherche des discussions récentes où votre équipe peut aider. Ces sources ne nourrissent que l’engagement, jamais la curation.',
       empty: 'Aucune source de conversations pour ce thème.',
       add: 'Ajouter une recherche',
       query: 'Recherche',
@@ -1854,7 +1854,7 @@ export default {
       },
       minPoints: 'Points minimum d’un sujet',
       minPointsHint:
-        'Sur Hacker News, les points sont les votes reçus par un sujet. À 0, Pann garde tous les sujets ; à 10, seulement ceux que d’autres lecteurs ont déjà remarqués. Les commentaires n’ont pas de points : ils sont toujours gardés.',
+        'Sur Hacker News, les points sont les votes reçus par un sujet. À 0, Glimr garde tous les sujets ; à 10, seulement ceux que d’autres lecteurs ont déjà remarqués. Les commentaires n’ont pas de points : ils sont toujours gardés.',
       lang: 'Langue des posts',
       langHint: 'Code à deux lettres, par exemple fr ou en.',
       lastRun: 'Dernière collecte : {date}',
@@ -1922,7 +1922,7 @@ export default {
   addRss: {
     title: 'Ajouter un flux RSS',
     url: 'Adresse du flux ou de la page du site',
-    urlHint: "Si vous donnez l'adresse d'une page, Pann cherche le flux qu'elle déclare.",
+    urlHint: "Si vous donnez l'adresse d'une page, Glimr cherche le flux qu'elle déclare.",
     label: 'Nom',
     labelHint: 'Laissé vide, le titre du flux est utilisé.',
     kind: 'Type de contenu principal',
@@ -1958,7 +1958,7 @@ export default {
       'Exemple : actualités réglementaires et outils pour les équipes produit ; écarter les offres d’emploi.',
     drafting: 'Rédaction par IA',
     draftingHint:
-      'Pann résume toujours à partir de la source seule et signale un contenu insuffisant. Les règles ci-dessous, facultatives, adaptent le résultat à votre thème et à votre style.',
+      'Glimr résume toujours à partir de la source seule et signale un contenu insuffisant. Les règles ci-dessous, facultatives, adaptent le résultat à votre thème et à votre style.',
     editorialRules: 'Règles propres au thème',
     editorialRulesHint:
       'Précisions de fond : versions de normes à citer exactement, nuances juridiques, sources à traiter avec prudence.',
@@ -2074,7 +2074,7 @@ export default {
       'Sous les éléments : qui envoie la newsletter, une adresse, un lien. Facultatif. Le lien de désabonnement est toujours ajouté.',
     newsletterTexts: 'Textes fixes de l’e-mail',
     newsletterTextsHint:
-      'Laissés vides : ceux de Pann, en français ou en anglais. À écrire pour une newsletter dans une autre langue.',
+      'Laissés vides : ceux de Glimr, en français ou en anglais. À écrire pour une newsletter dans une autre langue.',
     newsletterText: {
       mirror: 'Lien vers la version web, en {lang}',
       unsubscribe: 'Lien de désabonnement, en {lang}',

@@ -1,4 +1,4 @@
-# Pann
+# Glimr
 
 Outil de curation de veille multi-thèmes : collecter, trier, valider, diffuser.
 Content curation tool: collect, triage, validate, publish.
@@ -17,7 +17,7 @@ packages/
               règles de transition de statut. Utilisé par l'API et le board.
 supabase/
   migrations/ Schéma Postgres multi-tenant + RLS + garde-fous de curation.
-  seed.sql    Données locales : utilisateur dev@pann.local, topic « accessibilité ».
+  seed.sql    Données locales : utilisateur dev@glimr.local, topic « accessibilité ».
 ```
 
 ## Démarrer en local
@@ -43,8 +43,8 @@ Ouvrez ensuite http://127.0.0.1:5173 et connectez-vous avec votre adresse e-mail
 
 ### Pour aller plus loin
 
-- Stack Supabase entièrement locale (Docker) : `pnpm db:start`, puis `pnpm configure` avec l'adresse `http://127.0.0.1:54321` et les clés affichées par `pnpm exec supabase status`. Utilisateur de test : `dev@pann.local` (lien de connexion dans Mailpit, adresse donnée par `supabase status`).
-- Passage automatique de collecte (toutes les heures en production) déclenché à la main : `pnpm --filter @pann/api collect:local` pendant que `pnpm dev` tourne.
+- Stack Supabase entièrement locale (Docker) : `pnpm db:start`, puis `pnpm configure` avec l'adresse `http://127.0.0.1:54321` et les clés affichées par `pnpm exec supabase status`. Utilisateur de test : `dev@glimr.local` (lien de connexion dans Mailpit, adresse donnée par `supabase status`).
+- Passage automatique de collecte (toutes les heures en production) déclenché à la main : `pnpm --filter @glimr/api collect:local` pendant que `pnpm dev` tourne.
 
 ## Vérifications
 
@@ -69,7 +69,20 @@ Workflow `Deploy` (GitHub Actions), lancé automatiquement après chaque CI réu
 - Jeton Cloudflare : modèle « Edit Cloudflare Workers », plus la permission Queues en écriture sur le compte.
 - Les clés des services (Anthropic, Exa, Zernio…) ne vont jamais ici : elles se règlent dans l'app (Connexions).
 - Supabase Auth (projet distant) : désactiver les inscriptions publiques, inviter son adresse, définir l'URL du site et les URLs de redirection.
-- Serveur MCP (Claude) : dans Supabase, Authentication, puis OAuth Server : activer le serveur OAuth, activer l'enregistrement dynamique des clients, et régler l'Authorization Path sur `/oauth/consent`. L'URL du site (Authentication, URL Configuration) doit être celle de Pann en ligne : la page de consentement s'y trouve. Dans Claude : Paramètres, Connecteurs, connecteur personnalisé, adresse `https://<pann>/mcp`.
+- Serveur MCP (Claude) : dans Supabase, Authentication, puis OAuth Server : activer le serveur OAuth, activer l'enregistrement dynamique des clients, et régler l'Authorization Path sur `/oauth/consent`. L'URL du site (Authentication, URL Configuration) doit être celle de Glimr en ligne : la page de consentement s'y trouve. Dans Claude : Paramètres, Connecteurs, connecteur personnalisé, adresse `https://<glimr>/mcp`.
+
+### Domaine glimr.cc
+
+Le Worker répond sur `https://glimr.cc` (`routes` de `apps/api/wrangler.jsonc`) ; l'adresse `*.workers.dev` reste active en secours. Mise en place, dans l'ordre :
+
+1. **Zone Cloudflare** : ajouter `glimr.cc` au compte Cloudflare du Worker (offre gratuite), puis remplacer chez le registraire les serveurs DNS par les deux serveurs donnés par Cloudflare. Attendre que la zone soit « active » (de quelques minutes à quelques heures).
+2. **Jeton de déploiement** : ajouter au jeton `CLOUDFLARE_API_TOKEN` les permissions de zone « Workers Routes : Edit » et « DNS : Edit » sur `glimr.cc`. Le déploiement crée alors l'enregistrement DNS et le certificat.
+3. **Déployer** (fusion sur `main`) : le déploiement échoue tant que la zone n'est pas active.
+4. **www** : dans la zone, Rules, Redirect Rules, modèle « Redirect from WWW to root » (301 vers `https://glimr.cc`), avec un enregistrement DNS `www` proxifié (AAAA `100::`).
+5. **Supabase Auth** : URL du site `https://glimr.cc` ; URLs de redirection `https://glimr.cc/**` (garder l'ancienne adresse le temps de la bascule).
+6. **Services externes** : webhook Stripe sur `https://glimr.cc/api/stripe/webhook` ; domaine d'envoi `glimr.cc` vérifié dans Resend (enregistrements DNS à ajouter dans la zone) et expéditeur réglé dans l'admin ; connecteur MCP dans Claude sur `https://glimr.cc/mcp`.
+
+Le Worker s'appelle `glimr` depuis le 2026-11-22 (ancien nom `pann`) : le premier déploiement crée un nouveau Worker et ses files `glimr-jobs`. **Supprimer ensuite le Worker `pann`** (Workers et Pages, `pann`, Paramètres, Supprimer) : tant qu'il existe, ses tâches planifiées tournent en double (collecte, publication).
 
 ## Avancement (plan de `docs/CONTEXT.md`, section 9)
 

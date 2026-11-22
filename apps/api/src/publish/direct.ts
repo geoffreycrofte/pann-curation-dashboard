@@ -1,4 +1,4 @@
-import { errorCode } from '@pann/shared'
+import { errorCode } from '@glimr/shared'
 import { PRIVATE_HOST, USER_AGENT } from '../lib/fetch-text'
 import type { PublishImage, PublishRequest, PublishResult } from './networks'
 

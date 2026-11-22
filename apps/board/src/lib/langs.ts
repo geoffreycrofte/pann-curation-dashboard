@@ -1,4 +1,4 @@
-import { langName } from '@pann/shared'
+import { langName } from '@glimr/shared'
 import { i18n } from '../i18n'
 
 /**

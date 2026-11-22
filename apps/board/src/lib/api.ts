@@ -23,7 +23,7 @@ import type {
   WorkspacePlan,
   PublicPlan,
   BillingInterval,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { supabase } from './supabase'
 
 export class ApiError extends Error {
@@ -96,7 +96,7 @@ export type SourcePatch = Partial<
   Pick<Source, 'label' | 'active' | 'default_kind' | 'interval_hours' | 'config'>
 >
 
-/** Exa search or GitHub repository search (config: see @pann/shared source-config). */
+/** Exa search or GitHub repository search (config: see @glimr/shared source-config). */
 export interface AddSearchSourceInput {
   type: SearchSourceType | EngagementSourceType
   label: string
@@ -114,7 +114,7 @@ export interface NewTopicInput {
   monthly_budget_usd: number
   /** First settings: any part of a topic config. */
   config: Record<string, unknown>
-  /** What Pann does not do yet: another network, a coming tool. */
+  /** What Glimr does not do yet: another network, a coming tool. */
   requests: { kind: 'network' | 'feature'; subject: string }[]
 }
 
@@ -243,7 +243,7 @@ export interface Series {
   > & { draft_error: string | null; series_position: number })[]
 }
 
-/** Zernio in platform mode: Pann's key, the workspace's own Zernio profile. */
+/** Zernio in platform mode: Glimr's key, the workspace's own Zernio profile. */
 export interface ZernioPlatformLink {
   enabled: boolean
   profile_id?: string | null
@@ -278,7 +278,7 @@ export type TopicPatch = Partial<
 export interface Me {
   user: { id: string; email?: string }
   workspaces: { role: 'owner' | 'editor'; workspace: { id: string; name: string } }[]
-  /** Platform admin: sees the admin space (Pann's keys and cost centre). */
+  /** Platform admin: sees the admin space (Glimr's keys and cost centre). */
   is_platform_admin: boolean
 }
 
@@ -303,7 +303,7 @@ export type AccessRequestStatus = 'new' | 'accepted' | 'declined'
 
 export type FeatureRequestStatus = 'new' | 'planned' | 'answered' | 'declined'
 
-/** Asked from the product: a network Pann does not publish to, a coming tool. */
+/** Asked from the product: a network Glimr does not publish to, a coming tool. */
 export interface FeatureRequest {
   id: string
   kind: 'network' | 'feature'

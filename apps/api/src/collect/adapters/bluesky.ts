@@ -1,4 +1,4 @@
-import { blueskySourceConfigSchema } from '@pann/shared'
+import { blueskySourceConfigSchema } from '@glimr/shared'
 import { z } from 'zod'
 import { USER_AGENT } from '../../lib/fetch-text'
 import { SourceError, type Adapter } from '../types'

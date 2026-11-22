@@ -35,7 +35,7 @@ export interface WorkspaceCredential {
 }
 
 /**
- * Pann channels published through Zernio, with Zernio's name for each platform: the
+ * Glimr channels published through Zernio, with Zernio's name for each platform: the
  * networks whose API needs an approved app. Bluesky, Mastodon and Discord are direct.
  */
 export const ZERNIO_PLATFORMS = {
@@ -44,10 +44,10 @@ export const ZERNIO_PLATFORMS = {
 } as const
 export type ZernioChannel = keyof typeof ZERNIO_PLATFORMS
 
-/** Social accounts reachable through Zernio (only the channels Pann publishes to). */
+/** Social accounts reachable through Zernio (only the channels Glimr publishes to). */
 export interface ZernioAccount {
   id: string
-  /** The Pann channel of the account. */
+  /** The Glimr channel of the account. */
   platform: ZernioChannel
   username: string
   active: boolean
@@ -78,9 +78,9 @@ export interface CredentialMeta {
 
 /** Networks published directly, where a workspace can connect several accounts. */
 /**
- * Keys of Pann itself, set in the admin space: the AI of the onboarding and of the offers
- * where Pann provides the AI, Zernio in platform mode (highest offer), and Resend for the
- * service emails (access requests). Other AI services join this list when Pann supports
+ * Keys of Glimr itself, set in the admin space: the AI of the onboarding and of the offers
+ * where Glimr provides the AI, Zernio in platform mode (highest offer), and Resend for the
+ * service emails (access requests). Other AI services join this list when Glimr supports
  * them.
  */
 export const PLATFORM_PROVIDERS = [
@@ -182,7 +182,7 @@ export const ERROR_CODES = [
   'invalid_config',
   'insufficient_content',
   'budget_exceeded',
-  'token_quota_reached', // plans where Pann provides the AI: the month's tokens are used up
+  'token_quota_reached', // plans where Glimr provides the AI: the month's tokens are used up
   'plan_topic_limit', // the plan allows no more topics
   'billing_inactive', // trial over or subscription stopped: pay to go on
   'billing_not_configured', // Stripe keys or prices not set in the admin space
@@ -202,8 +202,8 @@ export const ERROR_CODES = [
   'empty_digest', // nothing validated since the last newsletter
   'email_sender_missing', // no sender set for the service emails (admin space)
   'no_platform_admin', // nobody to notify
-  'onboarding_unavailable', // no Pann key for the onboarding assistant
-  'onboarding_credit_exhausted', // onboarding credit or Pann's monthly cap reached
+  'onboarding_unavailable', // no Glimr key for the onboarding assistant
+  'onboarding_credit_exhausted', // onboarding credit or Glimr's monthly cap reached
   'alt_missing', // :lang (an image of a composed post has no text alternative in it)
   'too_many_images', // a composed post takes at most 4 images
   'unexpected',

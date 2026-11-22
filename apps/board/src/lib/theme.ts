@@ -3,7 +3,7 @@ import { ref } from 'vue'
 export type Theme = 'light' | 'dark'
 
 /** Also read by the inline script of index.html, which applies it before the first paint. */
-const STORAGE_KEY = 'pann.theme'
+const STORAGE_KEY = 'glimr.theme'
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 
 function storedTheme(): Theme | null {
