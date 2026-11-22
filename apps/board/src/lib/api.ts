@@ -262,6 +262,13 @@ export interface AdminWorkspace {
   created_at: string
   zernio_platform: boolean
   accounts: number
+  owner_email: string | null
+  plan: Plan
+  plan_limits: Partial<PlanLimits>
+  billing_status: 'legacy' | 'trialing' | 'active' | 'past_due' | 'canceled' | 'expired'
+  billing_interval: 'month' | 'year' | null
+  trial_ends_at: string | null
+  current_period_end: string | null
 }
 
 export interface RewriteInput {

@@ -434,6 +434,11 @@ async function signOutEverywhere() {
   gap: var(--space-6);
 }
 
+/* Inactive panels stay in the page, empty and hidden: no room for them in the grid. */
+.tab-panel[hidden] {
+  display: none;
+}
+
 .who {
   display: flex;
   align-items: center;
