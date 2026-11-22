@@ -28,7 +28,7 @@ Complète `docs/CONTEXT.md`. Une entrée par décision, la plus récente en bas.
 
 **Fréquence de collecte par type de contenu.** `topics.config.collection.intervals_hours` (défauts : actualité 24 h, légal 48 h, outil 168 h, ressource 72 h, autres 24 h), modifiable dans Réglages. Chaque source porte un type de contenu principal (`sources.default_kind`) et peut surcharger la fréquence (`sources.interval_hours`). Le cron de collecte tournera toutes les heures et ne traitera que les sources dues (`isSourceDue`).
 
-**Ajout manuel de flux RSS.** L'API récupère l'URL : si c'est un flux, il est enregistré ; si c'est une page, Pann suit l'auto-découverte (`<link rel="alternate">`) et vérifie le flux trouvé, ou propose un choix s'il y en a plusieurs. Aucun flux n'est enregistré sans avoir été récupéré et reconnu. Un flux ne peut être ajouté qu'une fois par topic.
+**Ajout manuel de flux RSS.** L'API récupère l'URL : si c'est un flux, il est enregistré ; si c'est une page, Glimr suit l'auto-découverte (`<link rel="alternate">`) et vérifie le flux trouvé, ou propose un choix s'il y en a plusieurs. Aucun flux n'est enregistré sans avoir été récupéré et reconnu. Un flux ne peut être ajouté qu'une fois par topic.
 
 **Ajout manuel d'articles et d'outils.** Validés par défaut (case à décocher pour les envoyer dans « À trier »). Le titre est récupéré depuis la page s'il n'est pas fourni. L'insertion passe par la fonction `public.add_manual_item` (security definer, contrôle d'accès au topic explicite), ce qui évite d'utiliser la clé secrète pour une requête utilisateur. Les items manuels portent `origin = 'manual'` : comme `items` est partagé entre workspaces, les collecteurs devront rafraîchir leur titre et leur contenu au lieu de faire confiance à la saisie.
 
@@ -84,7 +84,7 @@ Complète `docs/CONTEXT.md`. Une entrée par décision, la plus récente en bas.
 
 **Quand.** Mode `on_validate` par défaut : valider un élément met sa rédaction en file (trigger SQL `queue_draft_on_validate`) et l'API envoie aussitôt une tâche. Mode `on_display` (réglable) : tout élément gardé par le tri est rédigé avant décision. Le passage horaire rattrape les rédactions en attente.
 
-**File de tâches Cloudflare Queues.** `waitUntil` après une réponse est coupé au bout de 30 secondes, trop court pour une rédaction ou une collecte suivie du tri. Les requêtes utilisateur (« Collecter maintenant », validation, « Relancer la rédaction ») déposent une tâche dans la file `pann-jobs` ; le consommateur dispose de 15 minutes, avec 2 nouvelles tentatives puis la file `pann-jobs-dlq`. Wrangler simule la file en local.
+**File de tâches Cloudflare Queues.** `waitUntil` après une réponse est coupé au bout de 30 secondes, trop court pour une rédaction ou une collecte suivie du tri. Les requêtes utilisateur (« Collecter maintenant », validation, « Relancer la rédaction ») déposent une tâche dans la file `glimr-jobs` ; le consommateur dispose de 15 minutes, avec 2 nouvelles tentatives puis la file `glimr-jobs-dlq`. Wrangler simule la file en local.
 
 **Modèle.** `claude-sonnet-5-5` (réglable par thème), effort `low` (point de départ recommandé pour la génération de contenu, réglable : `ai.draft_effort`), sorties structurées, consigne système mise en cache (identique pour tous les éléments d'un thème ; seuil de cache de 512 tokens sur Sonnet 5.5). Modèle de secours côté serveur activé (`fallbacks: "default"`, bêta `server-side-fallback-2026-07-01`) : en cas de refus pour certaines catégories, la requête est relancée sur un autre modèle ; le coût est calculé avec le modèle qui a réellement répondu.
 
@@ -132,7 +132,7 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 
 ## 2026-10-02 : diffusion sur les réseaux (étape 6)
 
-**File d'attente tenue par Pann, publication immédiate chez les réseaux.** Chaque élément validé prend un créneau du thème (`schedule.slots`, `posts_per_day`, `timezone`) ; un index unique sur `item_topics (topic_id, publish_at)` garantit un seul élément par créneau. Un cron toutes les 5 minutes publie les posts dont l'heure est venue. Zernio sait aussi programmer, mais Mastodon passe par sa propre API : une seule file pour tous les réseaux reste plus simple, et les posts restent modifiables dans Pann jusqu'à leur départ.
+**File d'attente tenue par Glimr, publication immédiate chez les réseaux.** Chaque élément validé prend un créneau du thème (`schedule.slots`, `posts_per_day`, `timezone`) ; un index unique sur `item_topics (topic_id, publish_at)` garantit un seul élément par créneau. Un cron toutes les 5 minutes publie les posts dont l'heure est venue. Zernio sait aussi programmer, mais Mastodon passe par sa propre API : une seule file pour tous les réseaux reste plus simple, et les posts restent modifiables dans Glimr jusqu'à leur départ.
 
 **Validation humaine des textes.** Valider un élément ne programme rien : la personne relit les posts, puis choisit « Programmer au prochain créneau » ou « Publier maintenant » (avec confirmation). Rien ne sort sans ce geste.
 
@@ -140,7 +140,7 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 
 **Lien et longueur.** Le lien vers la source est ajouté après le texte, séparé par une ligne vide. Les limites envoyées à l'IA tiennent compte du lien (prompt `draft-v3`), Mastodon compte chaque lien pour 23 caractères, et sa limite réelle vient de l'instance. Un post trop long, lien compris, bloque la programmation.
 
-**Fiabilité.** Les posts dus sont réservés par `claim_due_posts` (`for update skip locked`), puis repris après 10 minutes si le job s'arrête. Chaque envoi porte une clé d'idempotence (`pann-<post>-<essai>`) reconnue par Zernio (24 h) et Mastodon (1 h) : une réponse perdue ne crée pas de doublon. Erreurs passagères : 3 essais espacés ; clé refusée, compte à reconnecter ou post refusé : échec immédiat, affiché sur la fiche, puis « Programmer de nouveau ». Un élément passe en `published` quand tous ses posts sont partis ou en échec et qu'au moins un est publié.
+**Fiabilité.** Les posts dus sont réservés par `claim_due_posts` (`for update skip locked`), puis repris après 10 minutes si le job s'arrête. Chaque envoi porte une clé d'idempotence (`glimr-<post>-<essai>`) reconnue par Zernio (24 h) et Mastodon (1 h) : une réponse perdue ne crée pas de doublon. Erreurs passagères : 3 essais espacés ; clé refusée, compte à reconnecter ou post refusé : échec immédiat, affiché sur la fiche, puis « Programmer de nouveau ». Un élément passe en `published` quand tous ses posts sont partis ou en échec et qu'au moins un est publié.
 
 **Droits.** Les utilisateurs ne modifient plus que le texte d'un post (droits par colonne) ; programmation et retrait passent par `schedule_item` et `unschedule_item`, qui vérifient l'accès au thème. Un élément qui quitte `validated` sort de la file.
 
@@ -170,13 +170,13 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 
 ## 2026-10-02 : serveur MCP pour Claude, connexion OAuth
 
-**Supabase Auth comme serveur d'autorisation.** Le serveur OAuth 2.1 de Supabase gère l'enregistrement dynamique des clients (Claude s'inscrit seul), le code d'autorisation avec PKCE et l'émission des jetons. Pann n'écrit que la page de consentement (`/oauth/consent`, avec `supabase.auth.oauth`) et publie les métadonnées de ressource protégée (RFC 9728) qui pointent vers `<projet>/auth/v1`. Les jetons reçus sont des JWT Supabase de l'utilisateur (avec un `client_id`) : la RLS s'applique telle quelle. Écarté : `workers-oauth-provider` de Cloudflare, qui demandait de coder un serveur d'autorisation et de stocker des jetons Supabase dans KV.
+**Supabase Auth comme serveur d'autorisation.** Le serveur OAuth 2.1 de Supabase gère l'enregistrement dynamique des clients (Claude s'inscrit seul), le code d'autorisation avec PKCE et l'émission des jetons. Glimr n'écrit que la page de consentement (`/oauth/consent`, avec `supabase.auth.oauth`) et publie les métadonnées de ressource protégée (RFC 9728) qui pointent vers `<projet>/auth/v1`. Les jetons reçus sont des JWT Supabase de l'utilisateur (avec un `client_id`) : la RLS s'applique telle quelle. Écarté : `workers-oauth-provider` de Cloudflare, qui demandait de coder un serveur d'autorisation et de stocker des jetons Supabase dans KV.
 
 **Sans état, dans le même Worker.** `POST /mcp` en Streamable HTTP, un serveur et un transport par requête (SDK MCP officiel, `WebStandardStreamableHTTPServerTransport`, validateur JSON Schema `@cfworker/json-schema` car Workers interdit la compilation dynamique d'ajv). Aucun Durable Object, aucune session.
 
 **Les outils passent par l'API du board**, avec le jeton de l'utilisateur (appel interne `app.request`) : mêmes contrôles, mêmes transitions de statut, mêmes jobs, même RLS ; aucune logique dupliquée. Outils : lister thèmes et éléments, lire un élément, trier, ajouter un lien, modifier résumés et posts, relancer la rédaction, programmer ou retirer de la file, lire la file de diffusion et la prochaine newsletter. Pas d'envoi de newsletter depuis MCP : il reste dans le board. Les instructions du serveur demandent à Claude de toujours demander avant une publication immédiate ; les annotations (`readOnlyHint`, `openWorldHint`) aident le client à demander confirmation.
 
-**Accès révocable** : la page Connexions liste les applications autorisées (`listGrants`) et retire un accès (`revokeGrant`, qui invalide aussi ses jetons de rafraîchissement). Après connexion par lien magique, Pann ramène sur la page demandée (consentement compris) : chemin gardé dans localStorage, car le lien s'ouvre dans un nouvel onglet.
+**Accès révocable** : la page Connexions liste les applications autorisées (`listGrants`) et retire un accès (`revokeGrant`, qui invalide aussi ses jetons de rafraîchissement). Après connexion par lien magique, Glimr ramène sur la page demandée (consentement compris) : chemin gardé dans localStorage, car le lien s'ouvre dans un nouvel onglet.
 
 ## 2026-11-08 : déploiement automatique après la CI
 
@@ -200,7 +200,7 @@ Choix de Geoffrey parmi les quatre pistes : la **batée vue de dessus** (piste D
 
 ## 2026-11-08 : types de contenu propres à chaque thème
 
-**Liste par thème** (`kinds` dans la config : clé, noms FR et EN, définition). Pann propose quatre types par défaut (actualité, légal, outil, ressource) ; chaque thème les renomme, en ajoute ou en retire (Réglages, Types de contenu). Les anciennes configs reprennent `categories`, prévu pour cela mais jamais utilisé, sinon les types par défaut.
+**Liste par thème** (`kinds` dans la config : clé, noms FR et EN, définition). Glimr propose quatre types par défaut (actualité, légal, outil, ressource) ; chaque thème les renomme, en ajoute ou en retire (Réglages, Types de contenu). Les anciennes configs reprennent `categories`, prévu pour cela mais jamais utilisé, sinon les types par défaut.
 
 **Le type d'un élément est stocké par thème** (`item_topics.kind`), plus sur l'élément partagé : un même article peut être « légal » dans un thème et « actualité » dans un autre. Migration `20261108000000_custom_kinds` : reprise des valeurs, `sources.default_kind` en texte, fonctions `ingest_items`, `add_manual_item` et `topic_feed` réécrites, suppression de `items.kind` et du type `item_kind`. Les clés ne sont pas contraintes en base (elles vivent dans la config) : l'API vérifie qu'un type existe dans le thème.
 
@@ -222,9 +222,9 @@ Un seul style pour les étiquettes et statuts de toute l'application (`.badge` d
 
 ## 2026-11-08 : un thème, deux outils (curation et engagement)
 
-**Un thème représente un produit ou un sujet à faire connaître** (CheckFox, Kitzy, Pann, RampUp…). Il porte deux outils, activables séparément dans Réglages, Général (`topics.config.modules`) :
+**Un thème représente un produit ou un sujet à faire connaître** (CheckFox, Kitzy, Glimr, RampUp…). Il porte deux outils, activables séparément dans Réglages, Général (`topics.config.modules`) :
 
-- **curation** : ce que Pann fait déjà (collecter, trier, partager sur les réseaux et dans la newsletter) ;
+- **curation** : ce que Glimr fait déjà (collecter, trier, partager sur les réseaux et dans la newsletter) ;
 - **engagement** : repérer des conversations (Hacker News, Bluesky, Mastodon, GitHub…) où l'équipe du produit peut aider, et préparer une réponse que la personne publie elle-même.
 
 Les deux outils partagent la sémantique du thème (types de contenu, langues, sites exclus), ses connexions (clés par workspace) et son budget. Un outil séparé (dépôt `halo-marketing-tool`, brief « Growth OS ») a été écarté : il aurait refait la collecte, le tri, le board et la rédaction.
@@ -235,7 +235,7 @@ Les deux outils partagent la sémantique du thème (types de contenu, langues, s
 
 **Fiche produit** (`topics.config.product`, Réglages, Produit) : nom, adresse, description, public, positionnement et messages, preuves (avec leur source), ce qu'il ne faut jamais dire, et la mention du lien de l'auteur avec le produit. Ce sont des réglages de l'utilisateur, conformément à la règle « rien en dur dans les prompts » : l'IA s'en servira quand elle écrit au nom du produit (réponses d'engagement).
 
-**Garde-fous de l'engagement, à intégrer à l'outil et non aux réglages** (étapes suivantes) : une réponse n'est jamais publiée par une API, la personne l'ouvre, la copie et la marque comme publiée ; la mention du lien avec le produit est ajoutée dès que le produit est cité ; un plafond de réponses par communauté et par semaine, commun à tous les thèmes d'un même compte. Sinon, Pann ouvert en SaaS deviendrait un outil de spam.
+**Garde-fous de l'engagement, à intégrer à l'outil et non aux réglages** (étapes suivantes) : une réponse n'est jamais publiée par une API, la personne l'ouvre, la copie et la marque comme publiée ; la mention du lien avec le produit est ajoutée dès que le produit est cité ; un plafond de réponses par communauté et par semaine, commun à tous les thèmes d'un même compte. Sinon, Glimr ouvert en SaaS deviendrait un outil de spam.
 
 **Suite prévue** : interface de l'engagement et sources de conversations (Hacker News et Bluesky d'abord), puis tri et rédaction propres à l'engagement (une réponse dans la langue de la discussion, aux limites de la plateforme d'origine).
 
@@ -243,7 +243,7 @@ Les deux outils partagent la sémantique du thème (types de contenu, langues, s
 
 **L'outil d'une source et d'un élément est enregistré** (`sources.module`, `item_topics.module`, `curation` ou `engagement`, `curation` par défaut : rien ne change pour l'existant). Il découle du type de la source : RSS, Exa et GitHub alimentent la curation, Hacker News et Bluesky l'engagement. Une source ne tourne que si l'outil qu'elle alimente est activé pour son thème. `ingest_items` reçoit l'outil (`p_module`) et l'écrit sur le lien de l'élément au thème ; les conversations ne sont jamais fusionnées sur leur titre (les commentaires d'un même sujet le partagent). La clé primaire de `item_topics` reste (élément, thème) : une même URL ne peut pas être à la fois dans la curation et dans l'engagement d'un thème, ce qui n'arrive pas en pratique (une conversation est une page de discussion, pas un article).
 
-**Les deux outils ne se mélangent pas.** Seuls les éléments de curation sont rédigés (trigger `queue_draft_on_validate` et `request_draft` limités à la curation), affichés dans le tri, comptés sur ses onglets et repris dans la newsletter. Une réponse à une conversation n'est jamais publiée par une API : la personne ouvre la discussion et répond elle-même ; Pann ne rédige pas encore de réponse (étape suivante).
+**Les deux outils ne se mélangent pas.** Seuls les éléments de curation sont rédigés (trigger `queue_draft_on_validate` et `request_draft` limités à la curation), affichés dans le tri, comptés sur ses onglets et repris dans la newsletter. Une réponse à une conversation n'est jamais publiée par une API : la personne ouvre la discussion et répond elle-même ; Glimr ne rédige pas encore de réponse (étape suivante).
 
 **Sources de conversations**, vérifiées le 2026-11-08 :
 
@@ -274,7 +274,7 @@ Deux vues, gardées dans l'adresse (`view=week`, `week=AAAA-MM-JJ`) : une liste 
 
 **Où** : sur `/`, une personne non connectée voit la page de présentation (`LandingView`, chargée à la demande) ; connectée, elle voit ses thèmes comme avant. La page a son propre en-tête, `main` et pied de page (le lien d'évitement vise toujours `#main`). Les adresses inconnues mènent à une page 404 (`NotFoundView`) qui reprend l'illustration de la batée vide.
 
-**Contenu** : les illustrations du brief (`docs/brand/illustrations-brief.md`), une par idée : héros, problème, les cinq étapes (collecter, trier, garder, rédiger, diffuser), newsletter, engagement (sans illustration : une conversation telle que Pann la montre), budget. Chaque étape dit qui s'en charge (Pann ou vous) : seule la validation revient à l'utilisateur. Pas d'inscription publique (les comptes sont invités) : l'appel à l'action est « Se connecter », avec la mention « sur invitation ».
+**Contenu** : les illustrations du brief (`docs/brand/illustrations-brief.md`), une par idée : héros, problème, les cinq étapes (collecter, trier, garder, rédiger, diffuser), newsletter, engagement (sans illustration : une conversation telle que Glimr la montre), budget. Chaque étape dit qui s'en charge (Glimr ou vous) : seule la validation revient à l'utilisateur. Pas d'inscription publique (les comptes sont invités) : l'appel à l'action est « Se connecter », avec la mention « sur invitation ».
 
 **Charte** : les couleurs des scènes deviennent des tokens (sable, plateau, olive, bois), contrôlés par `check-contrast.mjs` ; le fond de l'app est légèrement réchauffé vers le sable (`#f7f0e2`). Les sections alternent sable, encre, or et olive. Les illustrations sont posées sur un « plateau » couleur sable aux bords estompés : invisible sur le sable, il les encadre sur les autres fonds et en thème sombre. Images en WebP (560 et 1 000 px, `srcset`), dimensions déclarées.
 
@@ -287,7 +287,7 @@ Deux vues, gardées dans l'adresse (`view=week`, `week=AAAA-MM-JJ`) : une liste 
 Trois réseaux de plus, publiés **par Zernio** comme LinkedIn et Bluesky (même clé, comptes connectés dans Zernio). Vérifié le 2026-11-11 sur docs.zernio.com :
 
 - **X** (`twitter` chez Zernio) : 280 caractères pour un compte gratuit, lien compté 23, emoji compté 2. X facture chaque appel à son API, refacturé par Zernio.
-- **Facebook** : une Page (pas de profil personnel). Facebook accepte 63 206 caractères mais coupe vers 480 derrière « Voir plus » : Pann garde la limite de LinkedIn (3 000).
+- **Facebook** : une Page (pas de profil personnel). Facebook accepte 63 206 caractères mais coupe vers 480 derrière « Voir plus » : Glimr garde la limite de LinkedIn (3 000).
 - **Discord** : un compte Zernio par salon ; `platformSpecificData.channelId` est obligatoire, lu au moment de publier (`GET /v1/accounts/{id}/discord-settings`) pour suivre un changement de salon. 2 000 caractères.
 
 **Rédaction** : LinkedIn, Bluesky et Mastodon restent rédigés pour chaque élément ; X, Facebook et Discord seulement dans les thèmes qui ont un compte pour eux (`draftChannels`), pour ne pas payer des posts que personne ne publiera. Un compte ajouté après coup : relancer la rédaction de l'élément. W reste sans API de publication connue.
@@ -306,7 +306,7 @@ Une newsletter reprenait les éléments **validés** depuis la précédente. Ell
 Réglages du thème (Newsletter, Apparence), appliqués à l'aperçu et à l'envoi (`digestLook`) :
 
 - **Logo** : une image en https au-dessus du nom, décorative (`alt=""`) car le nom suit en texte ; une adresse qui n'est pas en https est ignorée.
-- **Couleur d'accent** : un bandeau en haut et un trait à gauche de chaque élément, sans texte posé dessus, donc sans contrainte de contraste. Pann la refuse si ce n'est pas une couleur `#rrggbb`.
+- **Couleur d'accent** : un bandeau en haut et un trait à gauche de chaque élément, sans texte posé dessus, donc sans contrainte de contraste. Glimr la refuse si ce n'est pas une couleur `#rrggbb`.
 - **Pied de page** par langue, au-dessus de la mention d'inscription et du lien de désabonnement, qui restent toujours.
 - **Regroupement par type de contenu** : un titre par type (dans l'ordre des types du thème), les éléments passent en titres de niveau 3 ; les éléments sans type connu sous « Autres ».
 
@@ -317,7 +317,7 @@ Le reste du gabarit reste fixe : il garantit l'accessibilité de l'e-mail (langu
 Chaque thème choisit son service d'envoi (`newsletter.provider` : `brevo` par défaut, ou `sendfox`) ; la clé se règle dans Connexions comme les autres. Vérifié le 2026-11-11 sur sendfox.com/developer/docs (API 1.6.0) :
 
 - **Clé** : un jeton d'accès personnel (`Authorization: Bearer`), vérifié par `GET /me` ; les listes viennent de `GET /lists` (abonnés joignables : `subscribed_contacts_count`).
-- **Envoi** : `POST /campaigns` (brouillon adressé à la liste de la langue, `web_publish: false` car les flux publics de Pann publient sur le web), puis `POST /campaigns/{id}/send`. Pas d'expéditeur à choisir : SendFox envoie avec celui du compte, et exige un fuseau horaire réglé dans le compte.
+- **Envoi** : `POST /campaigns` (brouillon adressé à la liste de la langue, `web_publish: false` car les flux publics de Glimr publient sur le web), puis `POST /campaigns/{id}/send`. Pas d'expéditeur à choisir : SendFox envoie avec celui du compte, et exige un fuseau horaire réglé dans le compte.
 - **Gabarit** : SendFox exige `{{unsubscribe_url}}` et un `<body>` ; il n'a pas de lien « voir en ligne », la ligne disparaît (`renderDigest` choisit les liens selon le service). Hors mise en page « Code Your Own », SendFox retire les balises hors de son éditeur : à vérifier sur un premier envoi réel.
 - 60 requêtes par minute, partagées entre tous les appels : un envoi en fait deux par langue.
 
@@ -347,11 +347,11 @@ Les confirmations d'enregistrement s'affichent dans un toast vert en bas à droi
 
 ## 2026-11-13 : logo, la pépite seule
 
-La batée vue de dessus était trop détaillée et pas assez imagée. Nouvelles pistes autour de la pépite sur son coussin (écrin, présentoir, trait d'encre, pépite enfoncée dans le coussin, pépite seule), comparées aux petites tailles. Choix de Geoffrey : **la pépite seule**, taillée en facettes, avec un éclat. Le symbole n'a pas de fond : l'éclat suit la couleur du texte, ce qui le rend lisible en clair comme en sombre sans deux composants. Le favicon retire l'éclat et agrandit la pépite pour rester net à 16 px ; les icônes d'app la posent sur une tuile encre. Le mot « Pann » des logos complets est vectorisé pour ne pas dépendre de la police. Fichiers et usages : `docs/brand/README.md`.
+La batée vue de dessus était trop détaillée et pas assez imagée. Nouvelles pistes autour de la pépite sur son coussin (écrin, présentoir, trait d'encre, pépite enfoncée dans le coussin, pépite seule), comparées aux petites tailles. Choix de Geoffrey : **la pépite seule**, taillée en facettes, avec un éclat. Le symbole n'a pas de fond : l'éclat suit la couleur du texte, ce qui le rend lisible en clair comme en sombre sans deux composants. Le favicon retire l'éclat et agrandit la pépite pour rester net à 16 px ; les icônes d'app la posent sur une tuile encre. Le mot « Glimr » des logos complets est vectorisé pour ne pas dépendre de la police. Fichiers et usages : `docs/brand/README.md`.
 
 ## 2026-11-14 : texte de la source fourni à la main
 
-Quand Pann ne peut pas lire une page (accès payant, page vide ou construite par script), la rédaction échoue avec `insufficient_content`. La personne peut désormais coller le texte de l'article dans le bloc de rédaction (« Fournir le texte de la source », ouvert d'office après cet échec). Le texte remplace `items.fetched_content` via la fonction `set_item_source_text`, qui vérifie l'accès au thème comme `request_draft`, puis la rédaction habituelle repart : même ancrage dans la source, mêmes posts, même budget, pas de second circuit. Le texte vaut pour tous les thèmes qui suivent l'élément, puisque c'est le même article. Bornes communes à l'API, à la base et au board (`SOURCE_TEXT_MIN` = 600, seuil sous lequel la rédaction récupère à nouveau la page et pourrait garder une accroche plus longue ; `SOURCE_TEXT_MAX` = 60 000). Un rappel invite à ne coller qu'un contenu qu'on a le droit de lire.
+Quand Glimr ne peut pas lire une page (accès payant, page vide ou construite par script), la rédaction échoue avec `insufficient_content`. La personne peut désormais coller le texte de l'article dans le bloc de rédaction (« Fournir le texte de la source », ouvert d'office après cet échec). Le texte remplace `items.fetched_content` via la fonction `set_item_source_text`, qui vérifie l'accès au thème comme `request_draft`, puis la rédaction habituelle repart : même ancrage dans la source, mêmes posts, même budget, pas de second circuit. Le texte vaut pour tous les thèmes qui suivent l'élément, puisque c'est le même article. Bornes communes à l'API, à la base et au board (`SOURCE_TEXT_MIN` = 600, seuil sous lequel la rédaction récupère à nouveau la page et pourrait garder une accroche plus longue ; `SOURCE_TEXT_MAX` = 60 000). Un rappel invite à ne coller qu'un contenu qu'on a le droit de lire.
 
 ## 2026-11-14 : signature et premier commentaire LinkedIn
 
@@ -365,9 +365,9 @@ Les posts Discord et Facebook ne sont rédigés que si le thème publie déjà s
 
 Réponses de Geoffrey aux questions de `docs/studies/onboarding-ia.md` (détail dans l'étude) : la refonte se fait **d'un coup**, sans version allégée ni redirections (seul utilisateur pour l'instant) ; l'objectif se demande avant les réseaux ; sections Aujourd'hui (multi-thèmes), Aperçu, Veille, Conversations, Création, Calendrier ; **la métaphore de l'orpaillage quitte le board** et reste sur les pages publiques (règle mise à jour dans `CLAUDE.md`) ; inscription sur invitation, avec une demande motivée envoyée par e-mail ; créneaux distincts par outil ; demandes « autre réseau » traitées et priorisées ; Création avec les 5 réseaux actuels, images dans l'offre intermédiaire ; **toutes les langues pour les contenus**, l'interface restant en français et en anglais.
 
-## 2026-11-17 : espace d'admin, clés et centre de coûts de Pann
+## 2026-11-17 : espace d'admin, clés et centre de coûts de Glimr
 
-L'IA de l'onboarding et des offres où Pann fournit les services est payée par Pann, avec ses propres clés : c'est la seule exception à la règle des clés par espace (`CLAUDE.md` mis à jour). Ces clés (Anthropic, Zernio en mode plateforme pour l'offre la plus élevée ; d'autres IA quand Pann les prendra en charge) se règlent dans un **espace d'admin** (`/admin`), stockées dans Supabase Vault comme les autres, vérifiées auprès du service avant enregistrement et jamais réaffichées. Les jobs les lisent avec la clé secrète (`platform_credentials_for_jobs`).
+L'IA de l'onboarding et des offres où Glimr fournit les services est payée par Glimr, avec ses propres clés : c'est la seule exception à la règle des clés par espace (`CLAUDE.md` mis à jour). Ces clés (Anthropic, Zernio en mode plateforme pour l'offre la plus élevée ; d'autres IA quand Glimr les prendra en charge) se règlent dans un **espace d'admin** (`/admin`), stockées dans Supabase Vault comme les autres, vérifiées auprès du service avant enregistrement et jamais réaffichées. Les jobs les lisent avec la clé secrète (`platform_credentials_for_jobs`).
 
 Le rôle d'administrateur est une table du schéma `private` (`private.platform_admins`), hors de portée de l'API : il ne s'accorde qu'en SQL, une fois, dans l'éditeur de Supabase :
 
@@ -376,7 +376,7 @@ insert into private.platform_admins (user_id)
 select id from auth.users where email = '<adresse de l’administrateur>';
 ```
 
-L'API répond 404 aux autres comptes, et chaque fonction de la base revérifie le rôle. Le **centre de coûts** lit `usage_log`, où une nouvelle colonne `billed_to` (`workspace` ou `platform`) dit qui paie chaque appel, et règle deux plafonds (`platform_settings`) : le crédit d'onboarding par espace et le plafond mensuel de Pann. Rien n'utilise encore les clés de Pann : l'onboarding s'y branchera, en respectant ces plafonds.
+L'API répond 404 aux autres comptes, et chaque fonction de la base revérifie le rôle. Le **centre de coûts** lit `usage_log`, où une nouvelle colonne `billed_to` (`workspace` ou `platform`) dit qui paie chaque appel, et règle deux plafonds (`platform_settings`) : le crédit d'onboarding par espace et le plafond mensuel de Glimr. Rien n'utilise encore les clés de Glimr : l'onboarding s'y branchera, en respectant ces plafonds.
 
 ## 2026-11-17 : contenus dans toutes les langues
 
@@ -385,7 +385,7 @@ L'interface reste en français et en anglais (`UI_LANGS`), mais un thème écrit
 - **Rédaction** : la sortie du modèle n'a plus de champs `summary_fr` et `summary_en`, mais un résumé et un post par langue du thème (`draft-v4`) ; le prompt nomme les langues en anglais pour le modèle. Une langue que le modèle omet n'est pas enregistrée vide.
 - **Textes saisis par l'utilisateur** : un texte par langue (`newsletter.title`, `intro`, `footer`, `feed.title`, `description`, `linkedin.signature`, `first_comment`). Les anciens champs `title_fr` et `title_en` sont convertis à la lecture de la configuration, sans migration des données.
 - **Types de contenu** : noms d'interface en français et en anglais, plus un nom facultatif par autre langue du thème ; à défaut, le nom anglais.
-- **Newsletter** : les textes fixes de l'e-mail (version web, désabonnement, raison, « Autres ») se règlent par langue. À défaut, ceux de Pann en français ou en anglais, marqués `lang` pour que les lecteurs d'écran les prononcent correctement.
+- **Newsletter** : les textes fixes de l'e-mail (version web, désabonnement, raison, « Autres ») se règlent par langue. À défaut, ceux de Glimr en français ou en anglais, marqués `lang` pour que les lecteurs d'écran les prononcent correctement.
 - **Flux publics** : `/feeds/<clé>/<langue>.xml` pour toute langue du thème.
 - Le nom d'un thème reste en français et en anglais (noms d'interface) : un contenu dans une autre langue prend le nom anglais quand aucun titre n'est réglé.
 
@@ -393,7 +393,7 @@ L'interface reste en français et en anglais (`UI_LANGS`), mais un thème écrit
 
 L'inscription reste sur invitation. Une personne sans compte envoie une **demande motivée** depuis la page de connexion (`/request-access`) : nom, adresse, projet. La demande est enregistrée par `request_access` (clé publique, sans compte), qui limite à trois demandes par jour et par adresse IP (stockée hachée) et à une demande ouverte par e-mail ; la réponse est la même dans tous les cas, pour ne jamais révéler qu'une adresse a déjà demandé. Un champ piège, invisible, écarte les robots.
 
-Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, choisi pour le transactionnel : clé de Pann réglée dans l'espace d'admin (une clé « envoi seulement » suffit, reconnue à sa réponse `restricted_api_key`), expéditeur sur un domaine vérifié (`platform_settings.email_from`), destinataires lus en base (`platform_admin_emails`, clé secrète seulement), réponse directe à la personne (`reply_to`). Sans clé ni expéditeur, la demande reste listée avec la raison. Cet e-mail interne est écrit en français, pour l'administrateur : ce n'est pas un texte du produit. Les demandes se lisent et se marquent (acceptée, refusée) dans l'espace d'admin ; l'invitation elle-même part de Supabase.
+Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, choisi pour le transactionnel : clé de Glimr réglée dans l'espace d'admin (une clé « envoi seulement » suffit, reconnue à sa réponse `restricted_api_key`), expéditeur sur un domaine vérifié (`platform_settings.email_from`), destinataires lus en base (`platform_admin_emails`, clé secrète seulement), réponse directe à la personne (`reply_to`). Sans clé ni expéditeur, la demande reste listée avec la raison. Cet e-mail interne est écrit en français, pour l'administrateur : ce n'est pas un texte du produit. Les demandes se lisent et se marquent (acceptée, refusée) dans l'espace d'admin ; l'invitation elle-même part de Supabase.
 
 ## 2026-11-18 : nouvelle architecture du board
 
@@ -405,7 +405,7 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 
 ## 2026-11-18 : conversation de cadrage (assistant de création)
 
-**Un échange court sur la clé de Pann, dans un crédit par espace.** Entre « Réseaux » et « Relecture », un assistant pose au plus 10 questions et propose les réglages (description, public, langues, critères, ton, rythme…). Il tourne sur la clé Anthropic de Pann (espace d'admin), dans le crédit d'onboarding de l'espace et le plafond mensuel de Pann (`platform_settings`) : chaque appel est inscrit dans `usage_log` avec `billed_to = 'platform'`, et le job vérifie les deux limites avant d'appeler. Au-delà, ou sans clé, l'étape disparaît et la relecture se remplit à la main.
+**Un échange court sur la clé de Glimr, dans un crédit par espace.** Entre « Réseaux » et « Relecture », un assistant pose au plus 10 questions et propose les réglages (description, public, langues, critères, ton, rythme…). Il tourne sur la clé Anthropic de Glimr (espace d'admin), dans le crédit d'onboarding de l'espace et le plafond mensuel de Glimr (`platform_settings`) : chaque appel est inscrit dans `usage_log` avec `billed_to = 'platform'`, et le job vérifie les deux limites avant d'appeler. Au-delà, ou sans clé, l'étape disparaît et la relecture se remplit à la main.
 
 **Même modèle que les réécritures.** La requête de l'utilisateur écrit la session (`onboarding_sessions`, RLS : la personne et seulement elle, dans un espace dont elle est membre), une tâche répond avec la clé secrète, le board interroge la session. Modèle `claude-opus-5-5` en effort `low`, sortie structurée (zod), repli serveur en cas de refus. Le prompt ne décrit que le fonctionnement (quels réglages remplir, une question à la fois, ne pas redemander ce qui est connu, ne rien inventer) : ton et règles viennent des réponses de la personne. Le site est lu une fois, au premier tour.
 
@@ -421,7 +421,7 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 
 ## 2026-11-18 : ajuster un thème avec l'assistant, menu des réglages, souhait de newsletter
 
-**« Ajuster avec l'assistant ».** Le même assistant qu'à la création, sur un thème existant (bouton en tête des Réglages, plein écran comme la création). Il reçoit les réglages actuels sous forme de texte et ne propose que les changements voulus (null pour le reste, jamais de copie) ; il ne relit pas le site. La personne voit ensuite chaque changement à côté de la valeur actuelle, le modifie si besoin, décoche ceux qu'elle ne veut pas, puis applique : rien ne change avant. Même crédit que la création (crédit de l'assistant de l'espace et plafond mensuel de Pann) ; s'il est épuisé, le bouton disparaît. Le cadre plein écran est partagé (`components/onboarding/FullScreen.vue`).
+**« Ajuster avec l'assistant ».** Le même assistant qu'à la création, sur un thème existant (bouton en tête des Réglages, plein écran comme la création). Il reçoit les réglages actuels sous forme de texte et ne propose que les changements voulus (null pour le reste, jamais de copie) ; il ne relit pas le site. La personne voit ensuite chaque changement à côté de la valeur actuelle, le modifie si besoin, décoche ceux qu'elle ne veut pas, puis applique : rien ne change avant. Même crédit que la création (crédit de l'assistant de l'espace et plafond mensuel de Glimr) ; s'il est épuisé, le bouton disparaît. Le cadre plein écran est partagé (`components/onboarding/FullScreen.vue`).
 
 **Menu des réglages.** Dix sections ne tiennent plus sur une ligne : liste verticale à côté du panneau à partir de 1152 px (flèches haut et bas), liste déroulante native au-dessus en dessous.
 
@@ -449,11 +449,11 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 
 ## 2026-11-19 : Zernio en mode plateforme
 
-**Pour qui.** Un administrateur de la plateforme coche, dans l'espace d'admin, les espaces dont LinkedIn et Facebook passent par la clé Zernio de Pann (plus tard : les offres où Pann fournit les services). Un espace qui a sa propre clé Zernio la garde ; la clé de Pann ne sert qu'à défaut.
+**Pour qui.** Un administrateur de la plateforme coche, dans l'espace d'admin, les espaces dont LinkedIn et Facebook passent par la clé Zernio de Glimr (plus tard : les offres où Glimr fournit les services). Un espace qui a sa propre clé Zernio la garde ; la clé de Glimr ne sert qu'à défaut.
 
-**Comment.** Un profil Zernio par espace (`externalId` = id de l'espace, nom « Pann <id> » car les noms sont uniques), créé à la première connexion. La clé de Pann ne sert qu'aux tâches : la personne demande une connexion (fonction `request_zernio_platform`, membres seulement, espace activé), une tâche prépare le lien de Zernio (`GET /v1/connect/{platform}`, mode standard : Zernio héberge le choix de la Page ou de l'organisation, écran d'accueil au nom de Pann, droits `posting,comments` pour les premiers commentaires), le board y envoie la personne, qui revient sur Connexions. L'adresse de retour est construite par l'API, jamais reçue du navigateur. Au retour, une tâche liste les comptes du profil (`GET /v1/accounts?profileId=`). Vérifié sur docs.zernio.com le 2026-11-19.
+**Comment.** Un profil Zernio par espace (`externalId` = id de l'espace, nom « Glimr <id> » car les noms sont uniques), créé à la première connexion. La clé de Glimr ne sert qu'aux tâches : la personne demande une connexion (fonction `request_zernio_platform`, membres seulement, espace activé), une tâche prépare le lien de Zernio (`GET /v1/connect/{platform}`, mode standard : Zernio héberge le choix de la Page ou de l'organisation, écran d'accueil au nom de Glimr, droits `posting,comments` pour les premiers commentaires), le board y envoie la personne, qui revient sur Connexions. L'adresse de retour est construite par l'API, jamais reçue du navigateur. Au retour, une tâche liste les comptes du profil (`GET /v1/accounts?profileId=`). Vérifié sur docs.zernio.com le 2026-11-19.
 
-**Isolement.** La clé de Pann atteint tous les profils : la tâche de publication n'accepte qu'un compte de la liste du profil de l'espace ; un compte d'un autre espace mis dans les réglages d'un thème est refusé (`channel_not_configured`). Table `zernio_platform_links` (lecture : membres ; écriture : fonctions et tâches).
+**Isolement.** La clé de Glimr atteint tous les profils : la tâche de publication n'accepte qu'un compte de la liste du profil de l'espace ; un compte d'un autre espace mis dans les réglages d'un thème est refusé (`channel_not_configured`). Table `zernio_platform_links` (lecture : membres ; écriture : fonctions et tâches).
 
 ## 2026-11-19 : Thème en pause, identité visuelle par type de contenu
 
@@ -495,7 +495,7 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 
 ## 2026-11-21 : réponses aux conversations
 
-**Proposition de réponse.** Sur une conversation « À répondre », « Proposer une réponse » fait rédiger une réponse par l'IA (job `engagement-reply`, clé Anthropic de l'espace, budget du thème, modèle de rédaction). La requête passe par la fonction `request_reply_draft`, qui vérifie l'accès (`private.can_access_topic`) avant de marquer la demande ; le job écrit avec la clé secrète. Le prompt ne contient que le fonctionnement de l'outil : aider d'abord, s'en tenir à la conversation et à la fiche produit, dire son lien avec le produit quand on le cite (avec la phrase de la fiche si elle existe), la limite de la plateforme (300 caractères sur Bluesky). Le style vient de `ai.style_rules`. La réponse se retouche avec l'enregistrement automatique et se copie : Pann ne publie jamais.
+**Proposition de réponse.** Sur une conversation « À répondre », « Proposer une réponse » fait rédiger une réponse par l'IA (job `engagement-reply`, clé Anthropic de l'espace, budget du thème, modèle de rédaction). La requête passe par la fonction `request_reply_draft`, qui vérifie l'accès (`private.can_access_topic`) avant de marquer la demande ; le job écrit avec la clé secrète. Le prompt ne contient que le fonctionnement de l'outil : aider d'abord, s'en tenir à la conversation et à la fiche produit, dire son lien avec le produit quand on le cite (avec la phrase de la fiche si elle existe), la limite de la plateforme (300 caractères sur Bluesky). Le style vient de `ai.style_rules`. La réponse se retouche avec l'enregistrement automatique et se copie : Glimr ne publie jamais.
 
 **Marquer comme répondu.** Une conversation n'a pas de publication : `published` veut dire « répondue par la personne ». Transitions `validated → published` et retour, pour l'outil Conversations seulement (`status.ts` et le trigger SQL). `replied_at` date la réponse. Nouvel onglet « Répondues ».
 
@@ -505,7 +505,7 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 
 **Haiku 5.5.** Le tri (veille et conversations) passe de Haiku 4.5 à Haiku 5.5 : dix fois moins cher (0,10 $ / 0,50 $ par million de tokens), qualité déjà vérifiée par Geoffrey sur un autre outil. Le modèle réfléchit avant de répondre et cette réflexion compte dans `max_tokens` : effort `low` et 2 048 tokens de marge. Les thèmes qui avaient l'ancien défaut enregistré passent au nouveau (migration) ; un autre choix est gardé.
 
-**Coûts lisibles.** Le Budget du thème donne le coût moyen par appel, par jour, par post rédigé et par post publié, et la projection du mois. L'espace d'admin liste chaque espace avec tout ce qu'il a dépensé (ses clés ou celles de Pann), la part payée par Pann, le coût par jour et par post publié (`platform_workspace_stats`) : de quoi fixer les quotas des offres sur l'usage réel.
+**Coûts lisibles.** Le Budget du thème donne le coût moyen par appel, par jour, par post rédigé et par post publié, et la projection du mois. L'espace d'admin liste chaque espace avec tout ce qu'il a dépensé (ses clés ou celles de Glimr), la part payée par Glimr, le coût par jour et par post publié (`platform_workspace_stats`) : de quoi fixer les quotas des offres sur l'usage réel.
 
 ## 2026-11-21 : offres dans le produit
 
@@ -513,20 +513,26 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 
 **Tokens pondérés.** Un token vaut 2 $ par million, le prix d'entrée du modèle de rédaction : le compteur se déduit du coût déjà enregistré dans `usage_log` (`private.cost_to_tokens`), sans compter les tokens modèle par modèle. Une rédaction compte donc plus qu'un tri, comme elle coûte plus.
 
-**Pann fournit l'IA et la recherche** sur les offres qui ont un quota de tokens. `workspace_credentials_for_jobs` y remplace les clés Anthropic et Exa de l'espace par celles de Pann tant que le quota du mois et le plafond mensuel de Pann ne sont pas atteints ; au-delà, plus de clé pour ces services, et les jobs disent `token_quota_reached` au lieu de « clé manquante ». Un trigger sur `usage_log` compte ces dépenses à Pann (`billed_to = 'platform'`), quel que soit le job qui les enregistre. Exa rejoint les clés de Pann.
+**Glimr fournit l'IA et la recherche** sur les offres qui ont un quota de tokens. `workspace_credentials_for_jobs` y remplace les clés Anthropic et Exa de l'espace par celles de Glimr tant que le quota du mois et le plafond mensuel de Glimr ne sont pas atteints ; au-delà, plus de clé pour ces services, et les jobs disent `token_quota_reached` au lieu de « clé manquante ». Un trigger sur `usage_log` compte ces dépenses à Glimr (`billed_to = 'platform'`), quel que soit le job qui les enregistre. Exa rejoint les clés de Glimr.
 
 **Limites.** Le nombre de thèmes est vérifié par un trigger à la création (`plan_topic_limit`) ; la page « Nouveau thème » le dit avant que la personne ne commence. Les espaces existants qui ont déjà plus de thèmes que leur offre les gardent. Les comptes LinkedIn et Facebook ne sont pas encore limités.
 
-**Affichage.** Le Profil montre l'offre, les thèmes utilisés et, quand Pann fournit l'IA, les tokens du mois. Le Budget d'un thème passe alors en tokens : jamais de dollars sur ces offres.
+**Affichage.** Le Profil montre l'offre, les thèmes utilisés et, quand Glimr fournit l'IA, les tokens du mois. Le Budget d'un thème passe alors en tokens : jamais de dollars sur ces offres.
 
 ## 2026-11-22 : paiement, essai et page de tarifs
 
 **Prix (décision de Geoffrey).** Clés personnelles : 2 € par mois, à l'année seulement (24 €). Intermédiaire : 19 € par mois, ou 15 € par mois à l'année (180 €). Supérieure : 49 €, ou 39 € à l'année (468 €). Taxes comprises. Réglables dans l'admin avec les identifiants de prix Stripe (`plans.price_*`, `plans.stripe_price_*`).
 
-**Essai.** Un nouvel espace a 14 jours d'essai sur l'offre qu'il choisit au début de l'onboarding ; pendant l'essai d'une offre où Pann fournit l'IA, 1 million de tokens au lieu du quota du mois (`plans.trial_tokens`). Ensuite, il faut payer pour continuer. Les espaces créés avant ce changement passent en `legacy` : ils gardent leur accès tant que Geoffrey n'a pas décidé.
+**Essai.** Un nouvel espace a 14 jours d'essai sur l'offre qu'il choisit au début de l'onboarding ; pendant l'essai d'une offre où Glimr fournit l'IA, 1 million de tokens au lieu du quota du mois (`plans.trial_tokens`). Ensuite, il faut payer pour continuer. Les espaces créés avant ce changement passent en `legacy` : ils gardent leur accès tant que Geoffrey n'a pas décidé.
 
 **Quand un espace ne paie plus** (essai fini, abonnement arrêté et période écoulée) : ses thèmes sont mis en pause, avec la pause qui existe déjà (collecte, tri, rédaction, publication), marqués `paused_by_billing` ; la personne ne peut pas les relancer, le paiement les relance. Pas de nouveau thème non plus. Un paiement en échec (`past_due`) laisse tourner l'espace pendant que Stripe relance. Vérifié chaque heure (`sync_billing_pauses_for_jobs`) et à chaque évènement Stripe.
 
-**Stripe.** Par son API REST, sans SDK (fetch et Web Crypto, compatibles Workers). Les clés (secrète et secret de signature du webhook) sont des clés de Pann, dans le Vault, réglées dans l'admin. Payer ou gérer son abonnement : la requête de la personne est enregistrée avec la RLS (propriétaire seulement), puis un job ouvre la page Stripe (Checkout ou portail client) avec la clé de Pann ; le board attend l'adresse et y envoie la personne. Payer pendant l'essai garde les jours d'essai restants. Le webhook (`/api/stripe/webhook`, public, signature vérifiée) applique l'offre (déduite du prix, donc aussi après un changement dans le portail) et l'état de l'abonnement.
+**Stripe.** Par son API REST, sans SDK (fetch et Web Crypto, compatibles Workers). Les clés (secrète et secret de signature du webhook) sont des clés de Glimr, dans le Vault, réglées dans l'admin. Payer ou gérer son abonnement : la requête de la personne est enregistrée avec la RLS (propriétaire seulement), puis un job ouvre la page Stripe (Checkout ou portail client) avec la clé de Glimr ; le board attend l'adresse et y envoie la personne. Payer pendant l'essai garde les jours d'essai restants. Le webhook (`/api/stripe/webhook`, public, signature vérifiée) applique l'offre (déduite du prix, donc aussi après un changement dans le portail) et l'état de l'abonnement.
 
-**Page de tarifs** publique (`/pricing`) : les trois offres, puis « sans Pann, avec Pann » à la façon d'Odoo (Publer, Feedly, Syften, environ 86 $ par mois, contre 15 €), avec « tarifs relevés en novembre 2026, à titre indicatif ».
+**Page de tarifs** publique (`/pricing`) : les trois offres, puis « sans Glimr, avec Glimr » à la façon d'Odoo (Publer, Feedly, Syften, environ 86 $ par mois, contre 15 €), avec « tarifs relevés en novembre 2026, à titre indicatif ».
+
+## 2026-11-22 : Pann devient Glimr, sur glimr.cc
+
+**Nom.** Pann semblait déjà déposé : l'outil s'appelle Glimr (de _glimmer_, la lueur de l'or dans la batée). Tout le dépôt suit : textes de l'interface, paquets (`@glimr/*`), Worker et files (`glimr`, `glimr-jobs`), clés de stockage du navigateur, serveur MCP, clés d'idempotence. Exceptions : les migrations déjà appliquées (règle du projet) et le nom du dépôt GitHub. Le logo suivra (composant `GlimrMark`, fichiers de `docs/brand/`).
+
+**Domaine.** `glimr.cc`, en domaine personnalisé du Worker (DNS et certificat créés par Cloudflare au déploiement), `www` redirigé par une règle de la zone. Étapes dans le README (Déploiement, Domaine glimr.cc). Renommer le Worker crée un nouveau Worker : l'ancien `pann` doit être supprimé juste après, sinon ses tâches planifiées tournent en double.

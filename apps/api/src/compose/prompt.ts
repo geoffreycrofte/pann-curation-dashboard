@@ -5,7 +5,7 @@ import {
   type DraftChannel,
   type Lang,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { z } from 'zod'
 import { langList } from '../draft/prompt'
 

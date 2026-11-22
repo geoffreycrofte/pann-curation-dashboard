@@ -1,4 +1,4 @@
-import type { DigestItem, Lang } from '@pann/shared'
+import type { DigestItem, Lang } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 interface Row {

@@ -20,7 +20,7 @@ import {
   type ItemTopicStatus,
   communityOf,
   type ConversationMeta,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
@@ -104,7 +104,7 @@ const topicPatch = z
 /**
  * A new topic, as reviewed at the end of the onboarding: its names, budget and first
  * settings (any part of a topic config; the rest keeps its default), and what the person
- * asked for that Pann does not do yet (another network, a coming tool).
+ * asked for that Glimr does not do yet (another network, a coming tool).
  */
 const newTopicBody = z.object({
   workspace_id: z.uuid(),

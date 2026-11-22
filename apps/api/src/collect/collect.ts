@@ -9,7 +9,7 @@ import {
   type ConversationMeta,
   type Provider,
   type SourceRunStats,
-} from '@pann/shared'
+} from '@glimr/shared'
 import {
   SourceError,
   type Adapter,

@@ -9,7 +9,7 @@ const TOPIC = '9d45500e-e01c-4538-b78f-447f49fb6c0c'
 const ITEM = 'ecf2add0-e6e4-4884-b45f-d9993420b602'
 
 function rpc(method: string, params: unknown = {}, id = 1) {
-  return new Request('https://pann.example/mcp', {
+  return new Request('https://glimr.example/mcp', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -46,26 +46,26 @@ describe('MCP endpoint', () => {
     const res = await handleMcp(rpc('tools/list'), env, () => fakeApi().api)
     expect(res.status).toBe(401)
     expect(res.headers.get('WWW-Authenticate')).toBe(
-      'Bearer resource_metadata="https://pann.example/.well-known/oauth-protected-resource/mcp"',
+      'Bearer resource_metadata="https://glimr.example/.well-known/oauth-protected-resource/mcp"',
     )
   })
 
   it('names Supabase Auth as the authorization server', async () => {
     const res = await handleMcp(
-      new Request('https://pann.example/.well-known/oauth-protected-resource/mcp'),
+      new Request('https://glimr.example/.well-known/oauth-protected-resource/mcp'),
       env,
       () => fakeApi().api,
     )
     expect(await res.json()).toEqual({
-      resource: 'https://pann.example/mcp',
+      resource: 'https://glimr.example/mcp',
       authorization_servers: ['https://ref.supabase.co/auth/v1'],
       bearer_methods_supported: ['header'],
-      resource_name: 'Pann',
+      resource_name: 'Glimr',
     })
   })
 })
 
-describe('Pann MCP server', () => {
+describe('Glimr MCP server', () => {
   it('initializes with instructions and lists its tools', async () => {
     const init = await result(
       await serveMcp(

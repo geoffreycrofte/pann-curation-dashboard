@@ -1,9 +1,9 @@
-import { UI_LANGS, type UiLang } from '@pann/shared'
+import { UI_LANGS, type UiLang } from '@glimr/shared'
 import { createI18n } from 'vue-i18n'
 import en from './en'
 import fr from './fr'
 
-const STORAGE_KEY = 'pann.lang'
+const STORAGE_KEY = 'glimr.lang'
 
 function initialLang(): UiLang {
   try {

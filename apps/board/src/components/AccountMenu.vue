@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UI_LANGS, type UiLang } from '@pann/shared'
+import { UI_LANGS, type UiLang } from '@glimr/shared'
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,

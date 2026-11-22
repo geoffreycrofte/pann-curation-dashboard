@@ -7,7 +7,7 @@ values (
   '00000000-0000-4000-8000-000000000001',
   '00000000-0000-0000-0000-000000000000',
   'authenticated', 'authenticated',
-  'dev@pann.local', now(),
+  'dev@glimr.local', now(),
   '{"provider":"email","providers":["email"]}', '{}', now(), now()
 );
 

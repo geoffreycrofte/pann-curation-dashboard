@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UI_LANGS } from '@pann/shared'
+import { UI_LANGS } from '@glimr/shared'
 import { useI18n } from 'vue-i18n'
 import { setLang } from '../i18n'
 

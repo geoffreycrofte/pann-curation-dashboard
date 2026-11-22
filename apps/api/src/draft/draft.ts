@@ -9,7 +9,7 @@ import {
   type DraftChannel,
   type Lang,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import type { UsageEntry } from '../collect/types'
 import type { DraftModel, DraftResult } from './model'
 import {
@@ -52,7 +52,7 @@ export interface DraftWrite {
 export interface DraftStore {
   pending(options: { limit: number; topicId?: string; itemId?: string }): Promise<PendingDraft[]>
   anthropicKey(workspaceId: string): Promise<string | undefined>
-  /** Why there is no key (quota used up on plans where Pann provides the AI). */
+  /** Why there is no key (quota used up on plans where Glimr provides the AI). */
   missingKeyError?(workspaceId: string): Promise<string>
   markCredentialInvalid(workspaceId: string): Promise<void>
   monthCostUsd(topicId: string): Promise<number>

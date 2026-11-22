@@ -1,4 +1,4 @@
-import { kindLabel, type Lang } from '@pann/shared'
+import { kindLabel, type Lang } from '@glimr/shared'
 import { useQuery } from '@pinia/colada'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useI18n } from 'vue-i18n'

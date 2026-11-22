@@ -85,7 +85,7 @@ describe('post length', () => {
 })
 
 describe('channels of a topic', () => {
-  it('drops the channels Pann no longer publishes to', () => {
+  it('drops the channels Glimr no longer publishes to', () => {
     const config = parseTopicConfig({
       channels: [
         { channel: 'x', account_id: 'z1', langs: ['fr'] },

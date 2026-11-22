@@ -5,7 +5,7 @@
  * centred column of 840px at most; on wide screens, an illustration in the right margin.
  */
 import { useI18n } from 'vue-i18n'
-import PannMark from '../PannMark.vue'
+import GlimrMark from '../GlimrMark.vue'
 
 defineProps<{ status: string; navLabel: string }>()
 const { t } = useI18n()
@@ -15,7 +15,7 @@ const { t } = useI18n()
   <div class="full-screen">
     <header class="bar">
       <p class="brand">
-        <PannMark :size="32" />
+        <GlimrMark :size="32" />
         <span>{{ t('onboarding.thread.brand') }}</span>
       </p>
       <p class="progress">{{ status }}</p>

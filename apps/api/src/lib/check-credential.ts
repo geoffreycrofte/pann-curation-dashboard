@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { CredentialMeta, CredentialStatus, Provider } from '@pann/shared'
+import type { CredentialMeta, CredentialStatus, Provider } from '@glimr/shared'
 import { readBrevoAccount } from '../newsletter/brevo'
 import { readSendfoxAccount } from '../newsletter/sendfox'
 import { checkBluesky, checkDiscordWebhook } from '../publish/direct'

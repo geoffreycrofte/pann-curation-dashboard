@@ -3,7 +3,7 @@
  * The offers side by side, with the period of payment. Used by the pricing page (to ask for
  * an account), the onboarding (to pick the offer of the trial) and the Profile (to subscribe).
  */
-import { SELF_SERVE_PLANS, type BillingInterval, type Plan, type PublicPlan } from '@pann/shared'
+import { SELF_SERVE_PLANS, type BillingInterval, type Plan, type PublicPlan } from '@glimr/shared'
 import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { session } from '../lib/session'

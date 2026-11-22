@@ -29,11 +29,11 @@ describe('Zernio profiles', () => {
     )
     expect(await ensureProfile('k', 'ws-1')).toEqual({ ok: true, id: 'p2' })
     expect(JSON.parse(calls[1]!.init.body as string)).toEqual({
-      name: 'Pann ws-1',
+      name: 'Glimr ws-1',
       externalId: 'ws-1',
     })
     expect((calls[1]!.init.headers as Record<string, string>)['Idempotency-Key']).toBe(
-      'pann-profile-ws-1',
+      'glimr-profile-ws-1',
     )
 
     stubFetch((url, init) =>
@@ -44,10 +44,10 @@ describe('Zernio profiles', () => {
     expect(await ensureProfile('k', 'ws-1')).toEqual({ ok: true, id: 'p3' })
   })
 
-  it('asks for posting and comments, with Pann’s welcome screen', async () => {
+  it('asks for posting and comments, with Glimr’s welcome screen', async () => {
     const calls = stubFetch(() => Response.json({ authUrl: 'https://www.linkedin.com/oauth/x' }))
     expect(
-      await connectUrl('k', 'linkedin', 'p1', 'https://pann.example/connections?zernio=connected'),
+      await connectUrl('k', 'linkedin', 'p1', 'https://glimr.example/connections?zernio=connected'),
     ).toEqual({
       ok: true,
       url: 'https://www.linkedin.com/oauth/x',
@@ -56,12 +56,12 @@ describe('Zernio profiles', () => {
     expect(url.pathname).toBe('/api/v1/connect/linkedin')
     expect(url.searchParams.get('profileId')).toBe('p1')
     expect(url.searchParams.get('scopes')).toBe('posting,comments')
-    expect(url.searchParams.get('brandName')).toBe('Pann')
+    expect(url.searchParams.get('brandName')).toBe('Glimr')
   })
 })
 
 describe('runZernioPlatform', () => {
-  function fakeDb(link: Record<string, unknown>, key: string | null = 'pann_key') {
+  function fakeDb(link: Record<string, unknown>, key: string | null = 'glimr_key') {
     const updates: Record<string, unknown>[] = []
     const ok = <T>(data: T) => Promise.resolve({ data, error: null })
     const db = {
@@ -79,7 +79,7 @@ describe('runZernioPlatform', () => {
     workspace_id: 'ws-1',
     enabled: true,
     status: 'pending',
-    redirect_url: 'https://pann.example/connections?zernio=connected',
+    redirect_url: 'https://glimr.example/connections?zernio=connected',
   }
 
   it('creates the profile if needed, then prepares the connection link', async () => {
@@ -112,7 +112,7 @@ describe('runZernioPlatform', () => {
     })
   })
 
-  it('does nothing for a workspace not in platform mode, and fails without Pann’s key', async () => {
+  it('does nothing for a workspace not in platform mode, and fails without Glimr’s key', async () => {
     expect(await runZernioPlatform(fakeDb({ ...base, enabled: false }).db, 'ws-1')).toBe('skipped')
     const { db, updates } = fakeDb({ ...base, profile_id: 'p1', connect_platform: null }, null)
     expect(await runZernioPlatform(db, 'ws-1')).toBe('no_key')

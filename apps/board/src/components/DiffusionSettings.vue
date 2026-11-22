@@ -6,7 +6,7 @@ import {
   type DraftChannel,
   type Lang,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -81,7 +81,7 @@ const { data: platform } = useQuery({
 const accounts = computed<AccountRow[]>(() => {
   const rows: AccountRow[] = []
   const zernio = credentials.value?.find((c) => c.provider === 'zernio')
-  // Without a Zernio key of its own, the workspace may publish through Pann's (platform).
+  // Without a Zernio key of its own, the workspace may publish through Glimr's (platform).
   if (!zernio && platform.value?.enabled)
     for (const a of platform.value.accounts)
       rows.push({

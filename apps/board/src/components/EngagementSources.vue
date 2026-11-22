@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ENGAGEMENT_SOURCE_TYPES, type EngagementSourceType, type Source } from '@pann/shared'
+import { ENGAGEMENT_SOURCE_TYPES, type EngagementSourceType, type Source } from '@glimr/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import {
   AlertDialogAction,

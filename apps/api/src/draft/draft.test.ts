@@ -1,4 +1,4 @@
-import { parseTopicConfig } from '@pann/shared'
+import { parseTopicConfig } from '@glimr/shared'
 import { describe, expect, it } from 'vitest'
 import { draft, toDraftWrite, type DraftStore, type DraftWrite, type PendingDraft } from './draft'
 import type { DraftModel } from './model'

@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
-import type { DraftChannel, Lang } from '@pann/shared'
+import type { DraftChannel, Lang } from '@glimr/shared'
 import { draftOutputSchema, type DraftOutput } from './prompt'
 
 export interface DraftCall {

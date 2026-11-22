@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { postLength } from '@pann/shared'
+import { postLength } from '@glimr/shared'
 import {
   DialogClose,
   DialogContent,

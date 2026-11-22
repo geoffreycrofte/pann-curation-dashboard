@@ -1,4 +1,4 @@
-import { zonedTimeToUtc } from '@pann/shared'
+import { zonedTimeToUtc } from '@glimr/shared'
 
 /** Wall-clock time (HH:MM, 24 h) of an instant in a time zone. */
 export function zonedTime(value: string | Date, timeZone: string): string {

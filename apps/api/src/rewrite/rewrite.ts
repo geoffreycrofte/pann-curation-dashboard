@@ -5,7 +5,7 @@ import {
   parseTopicConfig,
   POST_LIMITS,
   postSignature,
-} from '@pann/shared'
+} from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   REWRITE_PROMPT_VERSION,

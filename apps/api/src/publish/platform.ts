@@ -1,10 +1,10 @@
-import { errorCode, type ZernioAccount, type ZernioChannel } from '@pann/shared'
+import { errorCode, type ZernioAccount, type ZernioChannel } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { USER_AGENT } from '../lib/fetch-text'
 import { listZernioAccounts, ZERNIO_API } from './networks'
 
 /**
- * Zernio in platform mode: Pann's own key, one Zernio profile per workspace
+ * Zernio in platform mode: Glimr's own key, one Zernio profile per workspace
  * (externalId = workspace id). Profiles and connection links per docs.zernio.com
  * (guides/profiles, guides/connecting-accounts, connect/get-connect-url; 2026-11-19).
  */
@@ -48,10 +48,10 @@ export async function ensureProfile(apiKey: string, workspaceId: string): Promis
     method: 'POST',
     headers: headers(apiKey, {
       'Content-Type': 'application/json',
-      'Idempotency-Key': `pann-profile-${workspaceId}`,
+      'Idempotency-Key': `glimr-profile-${workspaceId}`,
     }),
     // Names are unique per Zernio team: the workspace id keeps them apart.
-    body: JSON.stringify({ name: `Pann ${workspaceId}`, externalId: workspaceId }),
+    body: JSON.stringify({ name: `Glimr ${workspaceId}`, externalId: workspaceId }),
   })
   const body = (await created?.json().catch(() => ({}))) as {
     profile?: { _id?: string }
@@ -80,7 +80,7 @@ export async function connectUrl(
     redirect_url: redirectUrl,
     scopes: 'posting,comments',
     welcome: 'true',
-    brandName: 'Pann',
+    brandName: 'Glimr',
   })
   const res = await call(`${ZERNIO_API}/connect/${platform}?${query}`, { headers: headers(apiKey) })
   if (!res?.ok) return { ok: false, error: failed(res) }

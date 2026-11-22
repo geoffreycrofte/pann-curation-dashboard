@@ -4,7 +4,7 @@ import {
   langName,
   parseTopicConfig,
   POST_LIMITS,
-} from '@pann/shared'
+} from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RewriteModel } from '../rewrite/rewrite'
 import { ENGAGEMENT_CONTENT_CHARS, productBlock, type EngagementTopic } from './prompt'

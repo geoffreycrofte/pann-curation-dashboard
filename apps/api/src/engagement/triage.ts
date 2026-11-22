@@ -3,7 +3,7 @@ import {
   type EngagementDecision,
   type EngagementRisk,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import type { UsageEntry } from '../collect/types'
 import type { EngagementModel } from './model'
 import {

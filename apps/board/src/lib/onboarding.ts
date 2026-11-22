@@ -1,8 +1,8 @@
-import { canonicalLang, MAX_OUTPUT_LANGS, type DraftChannel } from '@pann/shared'
+import { canonicalLang, MAX_OUTPUT_LANGS, type DraftChannel } from '@glimr/shared'
 import type { OnboardingProposal } from './api'
 import { inject, provide, reactive, watch, type InjectionKey } from 'vue'
 
-/** Networks Pann publishes to, in the order shown at onboarding. */
+/** Networks Glimr publishes to, in the order shown at onboarding. */
 export const PUBLISH_CHANNELS: readonly DraftChannel[] = [
   'linkedin',
   'facebook',
@@ -149,7 +149,7 @@ export const PROPOSED_FIELDS = [
 ] as const
 export type ProposedField = (typeof PROPOSED_FIELDS)[number]
 
-const STORAGE_KEY = 'pann.onboarding'
+const STORAGE_KEY = 'glimr.onboarding'
 
 export function emptyDraft(): OnboardingDraft {
   return {

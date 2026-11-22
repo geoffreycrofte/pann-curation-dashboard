@@ -138,7 +138,7 @@ export const router = createRouter({
 })
 
 /** Page asked before signing in (e.g. the OAuth consent page), resumed afterwards. */
-const REDIRECT_KEY = 'pann.redirect'
+const REDIRECT_KEY = 'glimr.redirect'
 
 function remember(path: string | null) {
   try {

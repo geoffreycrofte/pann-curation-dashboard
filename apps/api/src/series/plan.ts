@@ -1,4 +1,4 @@
-import { claudeCostUsd, errorCode, langName, parseTopicConfig } from '@pann/shared'
+import { claudeCostUsd, errorCode, langName, parseTopicConfig } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import type { ComposeModel } from '../compose/model'

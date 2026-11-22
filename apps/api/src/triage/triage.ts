@@ -1,4 +1,4 @@
-import { claudeCostUsd, isTopicKind, type ItemKind, type TopicConfig } from '@pann/shared'
+import { claudeCostUsd, isTopicKind, type ItemKind, type TopicConfig } from '@glimr/shared'
 import type { UsageEntry } from '../collect/types'
 import type { TriageModel } from './model'
 import {

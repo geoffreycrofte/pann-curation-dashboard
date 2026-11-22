@@ -1,4 +1,4 @@
-import { PROVIDERS, parseTopicConfig, type Provider } from '@pann/shared'
+import { PROVIDERS, parseTopicConfig, type Provider } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { CollectStore, IngestStats } from './collect'
 import type { CollectSecrets, CollectSource } from './types'

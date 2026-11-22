@@ -5,7 +5,7 @@ import {
   type ItemKind,
   type SearchSourceType,
   type Source,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'

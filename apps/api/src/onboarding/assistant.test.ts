@@ -169,7 +169,7 @@ describe('onboarding prompt', () => {
 })
 
 describe('runOnboarding', () => {
-  it('answers, logs the cost on Pann, and waits for the next answer', async () => {
+  it('answers, logs the cost on Glimr, and waits for the next answer', async () => {
     const s = state()
     expect(await runOnboarding(fakeDb(s), 's1', answering())).toBe('answered')
     expect(s.usage[0]).toMatchObject({
@@ -204,13 +204,13 @@ describe('runOnboarding', () => {
     expect(s.updates[0]).toMatchObject({ status: 'done', error: 'onboarding_credit_exhausted' })
   })
 
-  it('does not call the model past Pann monthly cap', async () => {
+  it('does not call the model past Glimr monthly cap', async () => {
     const s = state()
     s.budget.month_total = 20
     expect(await runOnboarding(fakeDb(s), 's1', answering())).toBe('credit_exhausted')
   })
 
-  it('fails without Pann key', async () => {
+  it('fails without Glimr key', async () => {
     const s = state()
     s.keys = []
     expect(await runOnboarding(fakeDb(s), 's1', answering())).toBe('no_key')

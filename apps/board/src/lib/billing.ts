@@ -1,9 +1,9 @@
-import type { BillingInterval, Plan } from '@pann/shared'
+import type { BillingInterval, Plan } from '@glimr/shared'
 import { api, ApiError } from './api'
 
 /**
  * Opens a Stripe page (subscribe, or manage the subscription). The API records the request,
- * a job prepares the page with Pann's key; this waits for its address, then goes there.
+ * a job prepares the page with Glimr's key; this waits for its address, then goes there.
  * Resolves with an error code when it could not.
  */
 export async function goToBilling(

@@ -145,7 +145,7 @@ describe('issues in other languages', () => {
     timezone: 'Europe/Luxembourg',
   }
 
-  it('marks Pann’s own fixed texts with their language when the issue is in another one', () => {
+  it('marks Glimr’s own fixed texts with their language when the issue is in another one', () => {
     const { html } = renderDigest({ ...base, lang: 'de' })
     expect(html).toContain('lang="de"')
     expect(html).toMatch(/<a href="\{\{ unsubscribe \}\}" lang="en"[^>]*>Unsubscribe<\/a>/)

@@ -19,8 +19,8 @@ jobs:
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm --filter @pann/board build
-      - run: pnpm --filter @pann/api build
+      - run: pnpm --filter @glimr/board build
+      - run: pnpm --filter @glimr/api build
 
   migrations:
     runs-on: ubuntu-latest

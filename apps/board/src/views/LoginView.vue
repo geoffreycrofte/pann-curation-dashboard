@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import PannMark from '../components/PannMark.vue'
+import GlimrMark from '../components/GlimrMark.vue'
 import LangSwitcher from '../components/LangSwitcher.vue'
 import { supabase } from '../lib/supabase'
 
@@ -33,7 +33,7 @@ async function submit() {
 <template>
   <div class="login">
     <section class="intro" aria-labelledby="login-brand">
-      <PannMark :size="88" />
+      <GlimrMark :size="88" />
       <p id="login-brand" class="brand">{{ t('app.name') }}</p>
       <p class="tagline">{{ t('auth.pitch') }}</p>
     </section>

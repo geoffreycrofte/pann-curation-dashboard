@@ -1,4 +1,4 @@
-import type { Topic } from '@pann/shared'
+import type { Topic } from '@glimr/shared'
 import { useQuery } from '@pinia/colada'
 import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 import { useI18n } from 'vue-i18n'

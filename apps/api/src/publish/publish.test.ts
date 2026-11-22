@@ -1,4 +1,4 @@
-import { parseTopicConfig } from '@pann/shared'
+import { parseTopicConfig } from '@glimr/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { blueskyHandle, discordWebhookUrl, publishToBluesky, publishToDiscord } from './direct'
 import {
@@ -90,7 +90,7 @@ describe('publish', () => {
         channel: 'linkedin',
         lang: 'fr',
         content: 'Un texte.\n\nhttps://example.org/a',
-        idempotencyKey: 'pann-p1-0',
+        idempotencyKey: 'glimr-p1-0',
         firstComment: null,
       },
     ])
@@ -222,7 +222,7 @@ describe('networks', () => {
     channel: 'linkedin' as const,
     lang: 'en' as const,
     content: 'Hi\n\nhttps://example.org',
-    idempotencyKey: 'pann-p1-0',
+    idempotencyKey: 'glimr-p1-0',
   }
 
   it('publishes now with Zernio and reads the link of the post', async () => {
@@ -241,7 +241,7 @@ describe('networks', () => {
       url: 'https://linkedin.com/x',
     })
     expect(requests[0]!.url).toBe('https://zernio.com/api/v1/posts')
-    expect(new Headers(requests[0]!.init.headers).get('Idempotency-Key')).toBe('pann-p1-0')
+    expect(new Headers(requests[0]!.init.headers).get('Idempotency-Key')).toBe('glimr-p1-0')
     expect(JSON.parse(requests[0]!.init.body as string)).toEqual({
       content: request.content,
       platforms: [{ platform: 'linkedin', accountId: 'acc' }],
@@ -418,7 +418,7 @@ describe('images of composed posts', () => {
     channel: 'linkedin' as const,
     lang: 'fr' as const,
     content: 'Notre version 2 est là.',
-    idempotencyKey: 'pann-p1-0',
+    idempotencyKey: 'glimr-p1-0',
     images: [image],
   }
 
@@ -544,7 +544,7 @@ describe('Zernio in platform mode', () => {
     const credentials = store.credentials
     store.credentials = async (w) => ({
       ...(await credentials(w)),
-      zernio: 'pann_key',
+      zernio: 'glimr_key',
       zernioAccounts: ['someone-else'],
     })
     expect(await publish({ store, networks })).toEqual({ sent: 0, failed: 2, retried: 0 })
@@ -553,7 +553,7 @@ describe('Zernio in platform mode', () => {
 
     store.credentials = async (w) => ({
       ...(await credentials(w)),
-      zernio: 'pann_key',
+      zernio: 'glimr_key',
       zernioAccounts: ['li-1'],
     })
     expect((await publish({ store, networks })).sent).toBe(2)

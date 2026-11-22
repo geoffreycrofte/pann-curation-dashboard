@@ -48,7 +48,7 @@ export const kindSchema = z.object({
 })
 export type TopicKind = z.infer<typeof kindSchema>
 
-/** Kinds offered by Pann to every new topic; each topic can rename, add or remove kinds. */
+/** Kinds offered by Glimr to every new topic; each topic can rename, add or remove kinds. */
 export const DEFAULT_KINDS: TopicKind[] = [
   {
     key: 'news',
@@ -90,7 +90,7 @@ export type TopicModule = (typeof TOPIC_MODULES)[number]
 
 /**
  * Where the content of a composed post comes from (Création tool): the person's notes
- * only, links they give, or sources Pann searches. Chosen per composition.
+ * only, links they give, or sources Glimr searches. Chosen per composition.
  */
 export const COMPOSE_MODES = ['notes', 'links', 'search'] as const
 export type ComposeMode = (typeof COMPOSE_MODES)[number]
@@ -281,7 +281,7 @@ export const topicConfigSchema = z.object({
       footer: localizedText(1000),
       /**
        * Fixed texts of the email written by the user per language (link to the web
-       * version, unsubscribe, reason, "other" group). Empty: Pann's own, in French or
+       * version, unsubscribe, reason, "other" group). Empty: Glimr's own, in French or
        * English (marked as such for screen readers in other languages).
        */
       texts: z
@@ -352,7 +352,7 @@ export const topicConfigSchema = z.object({
    */
   channels: z.preprocess(
     // Entries written by an older version (account_ref, no languages) are dropped, and so
-    // are the channels Pann no longer publishes to (X, left out on 2026-11-12).
+    // are the channels Glimr no longer publishes to (X, left out on 2026-11-12).
     (value) =>
       Array.isArray(value)
         ? value.filter(

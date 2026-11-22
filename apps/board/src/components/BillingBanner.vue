@@ -3,7 +3,7 @@
  * On every page of the board: how many days of trial are left, or that the workspace no
  * longer runs (trial over, subscription stopped, payment failed). Leads to the Profile.
  */
-import { trialDaysLeft } from '@pann/shared'
+import { trialDaysLeft } from '@glimr/shared'
 import { useQuery } from '@pinia/colada'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

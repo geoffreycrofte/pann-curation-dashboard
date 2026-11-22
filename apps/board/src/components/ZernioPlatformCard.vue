@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * LinkedIn and Facebook through Pann (Zernio in platform mode): no key to enter, the
+ * LinkedIn and Facebook through Glimr (Zernio in platform mode): no key to enter, the
  * person connects their accounts on Zernio's screen and comes back here. Preparing the
- * link runs as a job (Pann's key never reaches a request); the card waits for it, then
+ * link runs as a job (Glimr's key never reaches a request); the card waits for it, then
  * opens Zernio. Back with ?zernio=connected, the accounts are listed again.
  */
 import { useQuery, useQueryCache } from '@pinia/colada'

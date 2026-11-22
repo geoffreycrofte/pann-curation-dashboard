@@ -7,7 +7,7 @@ import {
   parseTopicConfig,
   renderDigest,
   type Lang,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'

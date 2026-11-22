@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { costToTokens, USD_PER_TOKEN } from '@pann/shared'
+import { costToTokens, USD_PER_TOKEN } from '@glimr/shared'
 import { api } from '../lib/api'
 import { useWorkspace } from '../lib/workspace'
 import { describeError } from '../lib/errors'
@@ -22,7 +22,7 @@ const budget = ref<number>()
 watch(usage, (value) => {
   if (value && budget.value === undefined) budget.value = value.budget_usd
 })
-/** The cap as typed: tokens on offers where Pann provides the AI. */
+/** The cap as typed: tokens on offers where Glimr provides the AI. */
 const budgetField = computed({
   get: () =>
     budget.value === undefined
@@ -38,7 +38,7 @@ const budgetField = computed({
 const usd = (value: number) =>
   n(value, { style: 'currency', currency: 'USD', maximumFractionDigits: value < 1 ? 4 : 2 })
 
-// On offers where Pann provides the AI, amounts are tokens, never dollars.
+// On offers where Glimr provides the AI, amounts are tokens, never dollars.
 const { workspaceId } = useWorkspace()
 const { data: plan } = useQuery({
   key: () => ['workspace-plan', workspaceId.value ?? ''],

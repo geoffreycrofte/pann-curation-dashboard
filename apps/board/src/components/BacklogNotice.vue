@@ -3,7 +3,7 @@
  * Above a list to sort: the scheduled collection of this tool waits, as too much is
  * left to sort (`pause_above`). Text first; the link leads to the limit.
  */
-import { backlogLimitOf, isBacklogFull, type TopicConfig } from '@pann/shared'
+import { backlogLimitOf, isBacklogFull, type TopicConfig } from '@glimr/shared'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 

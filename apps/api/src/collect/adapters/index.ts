@@ -1,4 +1,4 @@
-import type { SourceType } from '@pann/shared'
+import type { SourceType } from '@glimr/shared'
 import type { Adapter } from '../types'
 import { blueskyAdapter } from './bluesky'
 import { exaAdapter } from './exa'

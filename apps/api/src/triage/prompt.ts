@@ -1,4 +1,4 @@
-import { langName, type TopicConfig } from '@pann/shared'
+import { langName, type TopicConfig } from '@glimr/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes, to compare and re-run. Stored with each triage. */

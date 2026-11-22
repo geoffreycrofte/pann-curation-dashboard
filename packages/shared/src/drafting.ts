@@ -1,7 +1,7 @@
 import type { Lang } from './langs'
 
 /**
- * Channels Pann can write a post for. Bluesky, Mastodon and Discord are published
+ * Channels Glimr can write a post for. Bluesky, Mastodon and Discord are published
  * directly; LinkedIn and Facebook through Zernio. X is left out on purpose.
  */
 export const DRAFT_CHANNELS = ['linkedin', 'bluesky', 'mastodon', 'facebook', 'discord'] as const
@@ -13,7 +13,7 @@ export const DEFAULT_DRAFT_CHANNELS: readonly DraftChannel[] = ['linkedin', 'blu
 /**
  * Length limits of a post, in characters (graphemes for Bluesky). Mastodon: the default
  * of mastodon.social; other instances can differ. Checked 2026-10-01. Discord: 2,000 per
- * message. Facebook allows 63,206 but cuts the post at about 480 behind "See more": Pann
+ * message. Facebook allows 63,206 but cuts the post at about 480 behind "See more": Glimr
  * keeps the LinkedIn length.
  */
 export const POST_LIMITS: Record<DraftChannel, number> = {
@@ -25,7 +25,7 @@ export const POST_LIMITS: Record<DraftChannel, number> = {
 }
 
 /**
- * Source text pasted by a person when Pann could not read the page (paywall, script-only
+ * Source text pasted by a person when Glimr could not read the page (paywall, script-only
  * page). Below the minimum, drafting fetches the page again and could keep a longer teaser
  * instead; the maximum leaves room above what drafting reads.
  */
@@ -34,7 +34,7 @@ export const SOURCE_TEXT_MAX = 60_000
 
 /**
  * LinkedIn extras (topic settings and posts). The signature takes room from the post
- * itself; the first comment is capped by Pann, well under what a post allows.
+ * itself; the first comment is capped by Glimr, well under what a post allows.
  */
 export const LINKEDIN_SIGNATURE_MAX = 600
 export const FIRST_COMMENT_MAX = 1250

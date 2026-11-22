@@ -1,4 +1,4 @@
-import { escapeHtml } from '@pann/shared'
+import { escapeHtml } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { sendResendEmail, type SendResult, type ServiceEmail } from '../lib/resend'
 
@@ -13,7 +13,7 @@ export interface AccessRequest {
 
 /**
  * Email to the platform admins about a new access request. Written for the admin of
- * Pann, in French: it is an internal notification, not a text of the product.
+ * Glimr, in French: it is an internal notification, not a text of the product.
  */
 export function accessRequestEmail(
   request: AccessRequest,
@@ -21,9 +21,9 @@ export function accessRequestEmail(
   to: string[],
   adminUrl: string,
 ): ServiceEmail {
-  const subject = `Demande d’accès à Pann : ${request.name}`
+  const subject = `Demande d’accès à Glimr : ${request.name}`
   const lines = [
-    `${request.name} <${request.email}> demande un accès à Pann.`,
+    `${request.name} <${request.email}> demande un accès à Glimr.`,
     '',
     'Motivation :',
     request.motivation,
@@ -34,7 +34,7 @@ export function accessRequestEmail(
     'Répondre à cet e-mail écrit directement à la personne.',
   ]
   const html = `<div lang="fr" style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#141414;">
-<p><strong>${escapeHtml(request.name)}</strong> &lt;${escapeHtml(request.email)}&gt; demande un accès à Pann.</p>
+<p><strong>${escapeHtml(request.name)}</strong> &lt;${escapeHtml(request.email)}&gt; demande un accès à Glimr.</p>
 <h2 style="font-size:18px;margin:24px 0 8px;">Motivation</h2>
 ${request.motivation
   .split(/\n{2,}/)
@@ -49,12 +49,12 @@ ${request.motivation
     text: lines.join('\n'),
     html,
     replyTo: request.email,
-    idempotencyKey: `pann-access-request-${request.id}`,
+    idempotencyKey: `glimr-access-request-${request.id}`,
   }
 }
 
 /**
- * Job: notifies the platform admins of an access request. Needs Pann's Resend key and a
+ * Job: notifies the platform admins of an access request. Needs Glimr's Resend key and a
  * sender (admin space); without them the request stays listed, with the reason.
  * `db` uses the secret key.
  */

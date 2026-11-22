@@ -1,4 +1,4 @@
-import { githubSourceConfigSchema } from '@pann/shared'
+import { githubSourceConfigSchema } from '@glimr/shared'
 import { z } from 'zod'
 import { USER_AGENT } from '../../lib/fetch-text'
 import { SourceError, type Adapter } from '../types'

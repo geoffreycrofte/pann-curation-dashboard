@@ -5,7 +5,7 @@ import {
   type Lang,
   type ZernioAccount,
   type ZernioChannel,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { USER_AGENT } from '../lib/fetch-text'
 
 /** Checked 2026-10-02 on docs.zernio.com. */
@@ -234,7 +234,7 @@ export async function publishToMastodon(
 export type AccountsResult =
   { ok: true; accounts: ZernioAccount[] } | { ok: false; invalid: boolean }
 
-/** Social accounts connected in Zernio, limited to the networks Pann publishes to. */
+/** Social accounts connected in Zernio, limited to the networks Glimr publishes to. */
 /** Accounts of the key; with `profileId`, only those of that profile (platform mode). */
 export async function listZernioAccounts(
   apiKey: string,
@@ -256,7 +256,7 @@ export async function listZernioAccounts(
       isActive?: boolean
     }[]
   }
-  // Zernio's platform name to Pann's channel (X is "twitter" at Zernio).
+  // Zernio's platform name to Glimr's channel (X is "twitter" at Zernio).
   const channelOf = new Map(
     Object.entries(ZERNIO_PLATFORMS).map(([channel, platform]) => [platform, channel]),
   ) as Map<string, ZernioChannel>

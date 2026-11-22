@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DRAFT_MODES, kindLabel, type Lang, type TopicConfig } from '@pann/shared'
+import { DRAFT_MODES, kindLabel, type Lang, type TopicConfig } from '@glimr/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
@@ -99,7 +99,7 @@ const {
   query: () => api.topic(props.topicId),
 })
 
-// "Adjust with the assistant": offered while Pann's assistant can run for this workspace.
+// "Adjust with the assistant": offered while Glimr's assistant can run for this workspace.
 const { data: assistant } = useQuery({
   key: () => ['onboarding-available', topic.value?.workspace_id ?? ''],
   query: () => api.onboardingAvailable(topic.value!.workspace_id),

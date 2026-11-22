@@ -3,7 +3,7 @@
  * Languages a topic writes in (any language): the chosen ones as a list, each with a
  * Remove button, and an Add control offering common languages or any typed tag.
  */
-import { canonicalLang, COMMON_LANGS, MAX_OUTPUT_LANGS } from '@pann/shared'
+import { canonicalLang, COMMON_LANGS, MAX_OUTPUT_LANGS } from '@glimr/shared'
 import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { contentLangName } from '../lib/langs'

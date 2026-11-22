@@ -3,7 +3,7 @@ import { computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LandingFigure from '../components/LandingFigure.vue'
 import HeroProspector from '../components/HeroProspector.vue'
-import PannMark from '../components/PannMark.vue'
+import GlimrMark from '../components/GlimrMark.vue'
 import { setLang } from '../i18n'
 import { ILLUSTRATIONS } from '../lib/landing-images'
 import { isDark, toggleTheme } from '../lib/theme'
@@ -16,11 +16,11 @@ const otherLang = computed(() => (locale.value === 'fr' ? 'en' : 'fr'))
 
 /** The way from the river to the showcase: who does each step is part of the message. */
 const STEPS = [
-  { key: 'collect', who: 'pann' },
-  { key: 'triage', who: 'pann' },
+  { key: 'collect', who: 'glimr' },
+  { key: 'triage', who: 'glimr' },
   { key: 'keep', who: 'you' },
-  { key: 'draft', who: 'pann' },
-  { key: 'share', who: 'pann' },
+  { key: 'draft', who: 'glimr' },
+  { key: 'share', who: 'glimr' },
 ] as const
 
 const points = computed(() =>
@@ -40,7 +40,7 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
   <div class="landing">
     <header class="top">
       <RouterLink to="/" class="brand">
-        <PannMark :size="40" />
+        <GlimrMark :size="40" />
         <span class="brand-name">{{ t('app.name') }}</span>
       </RouterLink>
       <!-- The links are in the hero; the bar keeps the name and the theme. -->
@@ -148,7 +148,7 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
         </div>
       </section>
 
-      <!-- Engagement, on olive: no illustration, a conversation as Pann shows it. -->
+      <!-- Engagement, on olive: no illustration, a conversation as Glimr shows it. -->
       <section class="band olive" aria-labelledby="engagement-title">
         <div class="split">
           <div class="copy">
@@ -211,7 +211,7 @@ const HALF = '(min-width: 56rem) 40vw, 92vw'
     </main>
 
     <footer class="foot">
-      <PannMark :size="32" />
+      <GlimrMark :size="32" />
       <p>{{ t('landing.footer') }}</p>
       <button
         type="button"

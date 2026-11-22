@@ -1,26 +1,26 @@
 # Engagement brief (originally "CheckFox Growth OS")
 
-English translation of the brief Geoffrey wrote on 2026-11-08 for a supervised organic acquisition system for CheckFox. It is kept as the reference for the **engagement** tool of Pann: principles, qualification rules, drafting rules and publishing rules.
+English translation of the brief Geoffrey wrote on 2026-11-08 for a supervised organic acquisition system for CheckFox. It is kept as the reference for the **engagement** tool of Glimr: principles, qualification rules, drafting rules and publishing rules.
 
-## How to read this document in Pann
+## How to read this document in Glimr
 
-The brief was written for a standalone tool (Markdown files in a Git repository, driven by Claude Code). That tool was not built: engagement became a tool of each Pann topic (see `docs/DECISIONS.md`, entry "un thème, deux outils"). Some parts therefore map to Pann features or are superseded:
+The brief was written for a standalone tool (Markdown files in a Git repository, driven by Claude Code). That tool was not built: engagement became a tool of each Glimr topic (see `docs/DECISIONS.md`, entry "un thème, deux outils"). Some parts therefore map to Glimr features or are superseded:
 
-| Brief                                                                      | In Pann                                                                                      |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| One repository per product (CheckFox)                                      | One topic per product (CheckFox, Kitzy, Pann, RampUp...), with curation and engagement tools |
-| `brand/positioning.md`, `messaging.md`, `objections.md`, `proof-points.md` | Product profile of the topic (`topics.config.product`, Settings, Product)                    |
-| `listening/queries.md`, collection with Harken or OpenMagpie               | Engagement sources of the topic (Hacker News, Bluesky, Mastodon, GitHub...)                  |
-| `listening/rules.md`, scoring grid                                         | Engagement triage (to be built), its criteria set per topic                                  |
-| `content/drafts/`, `prompts/draft-reply.md`                                | Engagement drafts in the board (to be built)                                                 |
-| Markdown tables of opportunities and rejections                            | Items and statuses in the database, shown on the board                                       |
-| `prompts/*.md`                                                             | Prompts of the Pann jobs (tool behaviour only) plus topic settings (style, rules)            |
-| Postiz for scheduling                                                      | Pann diffusion queue (curation). Engagement replies are never published by an API            |
-| `ops/metrics.md`, `ops/learnings.md`                                       | Not built yet                                                                                |
+| Brief                                                                      | In Glimr                                                                                      |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| One repository per product (CheckFox)                                      | One topic per product (CheckFox, Kitzy, Glimr, RampUp...), with curation and engagement tools |
+| `brand/positioning.md`, `messaging.md`, `objections.md`, `proof-points.md` | Product profile of the topic (`topics.config.product`, Settings, Product)                     |
+| `listening/queries.md`, collection with Harken or OpenMagpie               | Engagement sources of the topic (Hacker News, Bluesky, Mastodon, GitHub...)                   |
+| `listening/rules.md`, scoring grid                                         | Engagement triage (to be built), its criteria set per topic                                   |
+| `content/drafts/`, `prompts/draft-reply.md`                                | Engagement drafts in the board (to be built)                                                  |
+| Markdown tables of opportunities and rejections                            | Items and statuses in the database, shown on the board                                        |
+| `prompts/*.md`                                                             | Prompts of the Glimr jobs (tool behaviour only) plus topic settings (style, rules)            |
+| Postiz for scheduling                                                      | Glimr diffusion queue (curation). Engagement replies are never published by an API            |
+| `ops/metrics.md`, `ops/learnings.md`                                       | Not built yet                                                                                 |
 
 Rules that stay valid as written: sections 1 (non-negotiable principles), 2 (positioning, as CheckFox content for its product profile), the qualification signals and Reddit rules of section 6, the drafting constraints of section 7 and the publishing rules of section 8.
 
-Product-specific content (CheckFox positioning, personas, keywords, queries) is an example for the CheckFox topic, not built-in behaviour: Pann never hard-codes a topic.
+Product-specific content (CheckFox positioning, personas, keywords, queries) is an example for the CheckFox topic, not built-in behaviour: Glimr never hard-codes a topic.
 
 ---
 
@@ -60,7 +60,7 @@ The system must produce little, but well: useful, accurate, credible content, co
 8. **Everything is versioned.**
    Rules, drafts, decisions and learnings are kept and tracked.
 
-Added during the review of the brief: **disclose the link with the product.** Whenever a reply mentions the product, it says who is writing (for example "I am the maker of CheckFox"). In Pann this is a rule of the tool, not a setting.
+Added during the review of the brief: **disclose the link with the product.** Whenever a reply mentions the product, it says who is writing (for example "I am the maker of CheckFox"). In Glimr this is a rule of the tool, not a setting.
 
 ---
 
@@ -134,7 +134,7 @@ checkfox-growth-os/
 └── prompts/      listen, qualify, draft-reply, draft-post, weekly-plan, learn
 ```
 
-See the mapping table at the top of this document for where each part lives in Pann.
+See the mapping table at the top of this document for where each part lives in Glimr.
 
 ---
 
@@ -435,7 +435,7 @@ Review note: a points grid scored by a model looks more precise than it is. Pref
 - Do not reply to a thread older than 30 days without a strong reason.
 - No more than one reply per subreddit per week, except for an exceptional opportunity.
 
-Review note: in Pann, the weekly limit per community applies per account across all topics, not per product.
+Review note: in Glimr, the weekly limit per community applies per account across all topics, not per product.
 
 ### Listening step (original prompt)
 
@@ -501,7 +501,7 @@ Review note: in Pann, the weekly limit per community applies per account across 
 - No link unless it brings direct value.
 - At most one mention of CheckFox.
 
-Review note: Bluesky's limit is 300 characters (graphemes), not 500; Pann already enforces it for posts. A reply is written in the language of the discussion.
+Review note: Bluesky's limit is 300 characters (graphemes), not 500; Glimr already enforces it for posts. A reply is written in the language of the discussion.
 
 **Draft fields.** Date; source; URL; status (to validate); channel; intent (help, education, monitoring or soft conversion); CheckFox mention (yes / no); risk (low / medium / high); proposed reply; why this reply.
 
@@ -613,7 +613,7 @@ Decisions:
 - **Days 8 to 10, light industrialisation.** Add Postiz for scheduled drafts. Create a daily workflow. Add a weekly report. Link publications to visits and sign-ups. Remove unhelpful sources.
 - **Days 11 to 14, optimisation.** Analyse results. Identify the 3 best angles. Double down on sources that convert. Reduce or stop sources that only produce noise. Prepare a pillar article or a product demo.
 
-In Pann, monitoring is the engagement sources of the topic, and scheduling is the diffusion queue: Harken, OpenMagpie and Postiz are not needed.
+In Glimr, monitoring is the engagement sources of the topic, and scheduling is the diffusion queue: Harken, OpenMagpie and Postiz are not needed.
 
 ---
 

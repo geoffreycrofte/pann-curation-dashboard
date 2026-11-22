@@ -7,7 +7,7 @@
  * Outcomes are announced through the list's live region (`announce`): once items arrive,
  * this empty state is gone.
  */
-import type { Source, TopicModule } from '@pann/shared'
+import type { Source, TopicModule } from '@glimr/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'

@@ -1,4 +1,4 @@
-import { hackerNewsSourceConfigSchema } from '@pann/shared'
+import { hackerNewsSourceConfigSchema } from '@glimr/shared'
 import { z } from 'zod'
 import { USER_AGENT } from '../../lib/fetch-text'
 import { htmlToText } from '../feed-parser'

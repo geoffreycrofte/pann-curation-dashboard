@@ -7,28 +7,28 @@
 - **Le coût de Zernio n'est pas le problème** : les 2 premiers comptes sont gratuits, puis 6 $, 3 $ ou 1 $ par compte et par mois selon le volume. Pour un produit SaaS, compter de 3 à 7 $ par client actif.
 - **Ce que Zernio fait vraiment gagner, ce sont les validations** : LinkedIn (pages entreprise), Meta (Facebook, Threads, Instagram) et X demandent une application validée, une entité légale, des démonstrations filmées et des semaines d'attente. Zernio les a déjà.
 - **Ce qui est ouvert, gratuit et simple se fait très bien en direct** : Mastodon (déjà fait), Bluesky, Discord.
-- **X coûte cher pour Pann, avec ou sans Zernio** : 0,20 $ par post contenant un lien, et tous les posts de Pann en contiennent un.
+- **X coûte cher pour Glimr, avec ou sans Zernio** : 0,20 $ par post contenant un lien, et tous les posts de Glimr en contiennent un.
 - **Recommandation** : un modèle hybride. En direct pour Bluesky, Mastodon et Discord ; Zernio pour LinkedIn, Facebook, Threads et X. Pour le SaaS, Zernio en mode plateforme pour ces derniers, ce qui réduit aussi le nombre de comptes facturés par Zernio.
 
-## Aujourd'hui dans Pann
+## Aujourd'hui dans Glimr
 
-- **Zernio, clé par espace de travail** : chaque utilisateur ouvre son compte Zernio, y connecte ses réseaux, paie Zernio et, pour X, les appels refacturés. Pann garde la clé dans le Vault et publie avec.
+- **Zernio, clé par espace de travail** : chaque utilisateur ouvre son compte Zernio, y connecte ses réseaux, paie Zernio et, pour X, les appels refacturés. Glimr garde la clé dans le Vault et publie avec.
 - **Mastodon en direct** : jeton de l'utilisateur sur son instance, gratuit.
 
 ## Réseau par réseau
 
-| Réseau                    | Accès à l'API                                                      | Validation                                                                                | Jetons                                                                                      | Coût de l'API                              | Effort en direct                                              |
-| ------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------- |
-| Mastodon                  | Ouvert, par instance                                               | Aucune                                                                                    | Jeton d'application, sans expiration                                                        | Gratuit                                    | Fait                                                          |
-| Bluesky                   | Ouvert (AT Protocol) : mot de passe d'application ou OAuth         | Aucune                                                                                    | Session à rafraîchir                                                                        | Gratuit                                    | Faible                                                        |
-| Discord                   | Webhook de salon (une adresse à coller)                            | Aucune (droit « gérer les webhooks » sur le serveur)                                      | Aucun : l'adresse fait office de clé                                                        | Gratuit                                    | Très faible                                                   |
-| LinkedIn, profil          | Produit « Share on LinkedIn » en libre-service (`w_member_social`) | Légère                                                                                    | 60 jours, sans jeton de rafraîchissement hors partenaires : reconnexion tous les 2 mois     | Gratuit                                    | Moyen                                                         |
-| LinkedIn, page entreprise | Community Management API (`w_organization_social`)                 | Demande d'accès, entité légale, palier « Standard » à obtenir (guides tiers)              | Idem, rafraîchissement réservé aux partenaires                                              | Gratuit                                    | Élevé                                                         |
-| X                         | OAuth 2, compte développeur avec carte                             | Légère                                                                                    | Rafraîchissables                                                                            | **0,015 $ par post, 0,200 $ avec un lien** | Moyen                                                         |
-| Facebook (Page)           | Graph API, `pages_manage_posts`                                    | Revue d'application Meta avec vidéo, vérification d'entreprise (souvent 10 jours et plus) | Jeton de Page sans expiration, mais invalidé par un changement de mot de passe ou de droits | Gratuit                                    | Élevé                                                         |
-| Threads                   | Threads API, `threads_content_publish`                             | Revue d'application Meta                                                                  | Jetons longs, à rafraîchir                                                                  | Gratuit                                    | Élevé                                                         |
-| Instagram                 | Graph API                                                          | Revue Meta                                                                                | Idem Facebook                                                                               | Gratuit                                    | Hors sujet : une image est obligatoire, Pann n'en produit pas |
-| W                         | Pas d'API publique connue (dépôt public retiré selon la presse)    | Aucune info                                                                               | Aucune info                                                                                 | Aucune info                                | Impossible pour l'instant                                     |
+| Réseau                    | Accès à l'API                                                      | Validation                                                                                | Jetons                                                                                      | Coût de l'API                              | Effort en direct                                               |
+| ------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------- |
+| Mastodon                  | Ouvert, par instance                                               | Aucune                                                                                    | Jeton d'application, sans expiration                                                        | Gratuit                                    | Fait                                                           |
+| Bluesky                   | Ouvert (AT Protocol) : mot de passe d'application ou OAuth         | Aucune                                                                                    | Session à rafraîchir                                                                        | Gratuit                                    | Faible                                                         |
+| Discord                   | Webhook de salon (une adresse à coller)                            | Aucune (droit « gérer les webhooks » sur le serveur)                                      | Aucun : l'adresse fait office de clé                                                        | Gratuit                                    | Très faible                                                    |
+| LinkedIn, profil          | Produit « Share on LinkedIn » en libre-service (`w_member_social`) | Légère                                                                                    | 60 jours, sans jeton de rafraîchissement hors partenaires : reconnexion tous les 2 mois     | Gratuit                                    | Moyen                                                          |
+| LinkedIn, page entreprise | Community Management API (`w_organization_social`)                 | Demande d'accès, entité légale, palier « Standard » à obtenir (guides tiers)              | Idem, rafraîchissement réservé aux partenaires                                              | Gratuit                                    | Élevé                                                          |
+| X                         | OAuth 2, compte développeur avec carte                             | Légère                                                                                    | Rafraîchissables                                                                            | **0,015 $ par post, 0,200 $ avec un lien** | Moyen                                                          |
+| Facebook (Page)           | Graph API, `pages_manage_posts`                                    | Revue d'application Meta avec vidéo, vérification d'entreprise (souvent 10 jours et plus) | Jeton de Page sans expiration, mais invalidé par un changement de mot de passe ou de droits | Gratuit                                    | Élevé                                                          |
+| Threads                   | Threads API, `threads_content_publish`                             | Revue d'application Meta                                                                  | Jetons longs, à rafraîchir                                                                  | Gratuit                                    | Élevé                                                          |
+| Instagram                 | Graph API                                                          | Revue Meta                                                                                | Idem Facebook                                                                               | Gratuit                                    | Hors sujet : une image est obligatoire, Glimr n'en produit pas |
+| W                         | Pas d'API publique connue (dépôt public retiré selon la presse)    | Aucune info                                                                               | Aucune info                                                                                 | Aucune info                                | Impossible pour l'instant                                      |
 
 « Effort en direct » est une estimation : _faible_ tient en un à deux jours, _moyen_ en deux à quatre jours plus la gestion des reconnexions, _élevé_ ajoute des semaines de validation qui ne dépendent pas de nous.
 
@@ -48,7 +48,7 @@ Vérifié sur zernio.com/pricing : facturation au compte connecté, toutes fonct
 X est refacturé au prix d'X, sans marge.
 
 - **Aujourd'hui (clé par espace)** : c'est l'utilisateur qui paie. Avec LinkedIn, Bluesky, X et une Page Facebook, il a 4 comptes, soit 2 gratuits et 2 à 6 $ : 12 $ par mois, plus X.
-- **Mode plateforme** : c'est Pann qui paie, pour tous ses clients. Avec 50 clients à 3 comptes chacun, soit 150 comptes, on arrive à environ 368 $ par mois, soit 7,40 $ par client. Avec 500 clients, 1 718 $ par mois, soit 3,40 $ par client (exemple de Zernio).
+- **Mode plateforme** : c'est Glimr qui paie, pour tous ses clients. Avec 50 clients à 3 comptes chacun, soit 150 comptes, on arrive à environ 368 $ par mois, soit 7,40 $ par client. Avec 500 clients, 1 718 $ par mois, soit 3,40 $ par client (exemple de Zernio).
 - **Avec le modèle hybride**, Bluesky, Mastodon et Discord ne passent plus par Zernio. Si la moitié des comptes sont sur ces réseaux, la facture Zernio baisse d'autant.
 
 ### X, le poste le plus cher
@@ -63,7 +63,7 @@ Vérifié sur docs.x.com : 0,015 $ par post, et **0,200 $ par post contenant un 
 
 - Aucun abonnement, et les API de Mastodon, Bluesky, Discord, LinkedIn et Meta sont gratuites. X reste payant, à ton nom.
 - Le vrai coût, c'est le temps :
-  - un socle commun d'environ une semaine : connexion OAuth avec retour dans Pann, stockage chiffré des jetons (le Vault existe déjà), rafraîchissement, détection des comptes déconnectés, erreurs propres à chaque réseau ;
+  - un socle commun d'environ une semaine : connexion OAuth avec retour dans Glimr, stockage chiffré des jetons (le Vault existe déjà), rafraîchissement, détection des comptes déconnectés, erreurs propres à chaque réseau ;
   - puis le travail par réseau du tableau ci-dessus.
 - La maintenance ne s'arrête jamais : les API changent, des permissions sont retirées, et les revues de Meta et de LinkedIn sont à refaire quand l'application évolue.
 - Les démarches : une entité légale pour LinkedIn (pages) et pour la vérification d'entreprise de Meta, une politique de confidentialité publique et des vidéos de démonstration.
@@ -75,7 +75,7 @@ Vérifié sur docs.x.com : 0,015 $ par post, et **0,200 $ par post contenant un 
 - **Avantages** :
   - pas d'intermédiaire, ni de coût par compte ;
   - pas de dépendance à la santé ou aux prix d'un tiers ;
-  - les données ne transitent que par Pann (un argument RGPD) ;
+  - les données ne transitent que par Glimr (un argument RGPD) ;
   - tout le détail de chaque API est accessible (langue du post, mentions, réponses).
 - **Inconvénients** :
   - validations longues et incertaines chez Meta et LinkedIn ;
@@ -95,15 +95,15 @@ Vérifié sur docs.x.com : 0,015 $ par post, et **0,200 $ par post contenant un 
   - des webhooks quand un compte se déconnecte ;
   - des fonctions annexes possibles plus tard (statistiques, commentaires).
 - **Inconvénients** :
-  - un coût par compte porté par Pann, à répercuter dans le prix ;
+  - un coût par compte porté par Glimr, à répercuter dans le prix ;
   - une dépendance à un tiers (prix, disponibilité, conditions) ;
   - les données des clients transitent par Zernio (contrat de sous-traitance RGPD à prévoir) ;
-  - une clé « plateforme » détenue par Pann, contraire à la règle actuelle (« clés par espace ») : décision à inscrire dans DECISIONS ;
+  - une clé « plateforme » détenue par Glimr, contraire à la règle actuelle (« clés par espace ») : décision à inscrire dans DECISIONS ;
   - une facturation à mettre en place (Stripe).
 
 ### Zernio avec une clé par espace (l'existant)
 
-- Parfait pour toi et les utilisateurs avancés : zéro coût pour Pann, rien à valider.
+- Parfait pour toi et les utilisateurs avancés : zéro coût pour Glimr, rien à valider.
 - Bloquant pour un SaaS grand public : créer un compte Zernio, connecter ses réseaux et copier une clé, c'est trop de friction.
 
 ## Recommandation
@@ -112,8 +112,8 @@ Vérifié sur docs.x.com : 0,015 $ par post, et **0,200 $ par post contenant un 
    - passer Bluesky et Discord en direct (gratuits, ouverts, un à deux jours de travail), comme Mastodon ;
    - garder Zernio pour LinkedIn, et pour Facebook et X si tu les utilises ;
    - décider ce qu'on fait des liens sur X, vu le prix.
-2. **Quand le SaaS se précise** : ajouter un mode « comptes gérés par Pann » avec Zernio en plateforme pour LinkedIn, Facebook, Threads et X, à côté du mode « j'apporte ma clé », qui reste là. Prévoir la facturation, le contrat avec Zernio et l'entrée dans DECISIONS.
-3. **Ne pas intégrer en direct** les réseaux à revue Meta ou à pages LinkedIn, tant que Pann n'a pas une structure légale et un volume qui justifient des semaines de validation.
+2. **Quand le SaaS se précise** : ajouter un mode « comptes gérés par Glimr » avec Zernio en plateforme pour LinkedIn, Facebook, Threads et X, à côté du mode « j'apporte ma clé », qui reste là. Prévoir la facturation, le contrat avec Zernio et l'entrée dans DECISIONS.
+3. **Ne pas intégrer en direct** les réseaux à revue Meta ou à pages LinkedIn, tant que Glimr n'a pas une structure légale et un volume qui justifient des semaines de validation.
 
 ## Sources
 

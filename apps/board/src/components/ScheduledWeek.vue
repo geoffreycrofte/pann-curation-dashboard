@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { addDays, dailySlots, startOfWeek, zonedDay, zonedTimeToUtc } from '@pann/shared'
+import { addDays, dailySlots, startOfWeek, zonedDay, zonedTimeToUtc } from '@glimr/shared'
 import { useQuery } from '@pinia/colada'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Icon from './Icon.vue'
-import type { Lang } from '@pann/shared'
+import type { Lang } from '@glimr/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import {
   AlertDialogAction,

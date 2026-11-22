@@ -1,4 +1,4 @@
-import type { NewsletterProvider } from '@pann/shared'
+import type { NewsletterProvider } from '@glimr/shared'
 import { sendBrevoCampaign } from './brevo'
 import { sendSendfoxCampaign } from './sendfox'
 

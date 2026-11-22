@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
  * The reply suggested by the AI for a conversation to reply to. The person reads it,
- * adapts it (saved as they type), copies it and posts it themself: Pann posts nothing.
+ * adapts it (saved as they type), copies it and posts it themself: Glimr posts nothing.
  */
-import type { Conversation } from '@pann/shared'
+import type { Conversation } from '@glimr/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'

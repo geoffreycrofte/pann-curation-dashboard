@@ -79,7 +79,7 @@ describe('social credentials', () => {
         { _id: 'a1', platform: 'linkedin', username: 'geoffrey', isActive: true },
         { _id: 'a2', platform: 'instagram', username: 'x' },
         { _id: 'a3', platform: 'twitter', username: 'gcrofte' },
-        { _id: 'a4', platform: 'facebook', username: 'Pann' },
+        { _id: 'a4', platform: 'facebook', username: 'Glimr' },
         // Published directly now: not taken from Zernio.
         { _id: 'a5', platform: 'bluesky', username: 'me.bsky.social' },
       ],
@@ -88,7 +88,7 @@ describe('social credentials', () => {
     expect(check.status).toBe('ok')
     expect(check.meta?.accounts).toEqual([
       { id: 'a1', platform: 'linkedin', username: 'geoffrey', active: true },
-      { id: 'a4', platform: 'facebook', username: 'Pann', active: true },
+      { id: 'a4', platform: 'facebook', username: 'Glimr', active: true },
     ])
     expect(calls[0]).toBe('https://zernio.com/api/v1/accounts')
   })

@@ -3,7 +3,7 @@ import {
   type BrevoSender,
   type CredentialMeta,
   type NewsletterProvider,
-} from '@pann/shared'
+} from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { readBrevoAccount } from './brevo'
 import { readSendfoxAccount } from './sendfox'

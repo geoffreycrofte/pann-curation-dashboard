@@ -6,7 +6,7 @@ import {
   NEWSLETTER_PROVIDERS,
   uiLangFor,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'

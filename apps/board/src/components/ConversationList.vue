@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { communityOf, type Conversation, type ItemTopicStatus } from '@pann/shared'
+import { communityOf, type Conversation, type ItemTopicStatus } from '@glimr/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'

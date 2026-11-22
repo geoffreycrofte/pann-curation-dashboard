@@ -1,4 +1,4 @@
-import type { SearchSourceType } from '@pann/shared'
+import type { SearchSourceType } from '@glimr/shared'
 
 /** Form state of a search source: plain strings and numbers, one domain per line. */
 export interface SearchDraft {

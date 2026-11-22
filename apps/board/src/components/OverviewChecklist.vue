@@ -4,7 +4,7 @@
  * (keys, sources, accounts, items sorted…), never ticked by hand, so it cannot lie. It
  * can be folded (per topic, in this browser); folded, a one-line summary stays.
  */
-import { newsletterReady } from '@pann/shared'
+import { newsletterReady } from '@glimr/shared'
 import { useQuery } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -157,7 +157,7 @@ const doneCount = computed(() => lines.value.filter((l) => l.done).length)
 const allDone = computed(() => lines.value.length > 0 && doneCount.value === lines.value.length)
 
 // Folded or not, per topic, in this browser only (a convenience, not a setting).
-const storageKey = () => `pann.checklist.${props.topicId}`
+const storageKey = () => `glimr.checklist.${props.topicId}`
 const folded = ref(false)
 watch(
   () => props.topicId,

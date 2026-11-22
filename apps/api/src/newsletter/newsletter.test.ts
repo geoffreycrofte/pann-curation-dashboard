@@ -1,4 +1,4 @@
-import { parseTopicConfig, type Lang } from '@pann/shared'
+import { parseTopicConfig, type Lang } from '@glimr/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readBrevoAccount, sendBrevoCampaign } from './brevo'
 import { sendDigests, type DigestStore, type IssueRow } from './digest'
@@ -190,7 +190,7 @@ describe('SendFox API', () => {
   it('creates a draft campaign for the list, then sends it', async () => {
     const requests = respond([201, { id: 12 }], [200, { id: 12 }])
     const result = await sendSendfoxCampaign('sf-token', {
-      name: 'Pann a11y fr',
+      name: 'Glimr a11y fr',
       subject: 'Lede',
       senderId: null,
       listId: 5,
@@ -203,7 +203,7 @@ describe('SendFox API', () => {
     ])
     expect(new Headers(requests[0]!.init.headers).get('Authorization')).toBe('Bearer sf-token')
     expect(JSON.parse(requests[0]!.init.body as string)).toMatchObject({
-      title: 'Pann a11y fr',
+      title: 'Glimr a11y fr',
       subject: 'Lede',
       lists: [5],
       web_publish: false,
@@ -258,7 +258,7 @@ describe('Brevo API', () => {
   it('creates the campaign for the list, then sends it now', async () => {
     const requests = respond([201, { id: 42 }], [204, null])
     const result = await sendBrevoCampaign('xkeysib-1', {
-      name: 'Pann a11y fr',
+      name: 'Glimr a11y fr',
       subject: 'Lede',
       senderId: 3,
       listId: 10,
@@ -271,7 +271,7 @@ describe('Brevo API', () => {
     ])
     expect(new Headers(requests[0]!.init.headers).get('api-key')).toBe('xkeysib-1')
     expect(JSON.parse(requests[0]!.init.body as string)).toEqual({
-      name: 'Pann a11y fr',
+      name: 'Glimr a11y fr',
       subject: 'Lede',
       sender: { id: 3 },
       htmlContent: '<p>Hello, world</p>',

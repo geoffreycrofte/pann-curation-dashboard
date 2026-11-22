@@ -1,4 +1,4 @@
-import { IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_IMAGE_SIDE } from '@pann/shared'
+import { IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_IMAGE_SIDE } from '@glimr/shared'
 
 export interface PreparedImage {
   blob: Blob

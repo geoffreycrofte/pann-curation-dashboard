@@ -1,9 +1,16 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "pann",
+  "name": "glimr",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
+
+  // Public address: Cloudflare creates the DNS record and the certificate on deploy. The
+  // glimr.cc zone must be active in this Cloudflare account first, or the deploy fails.
+  // www.glimr.cc is redirected to glimr.cc by a Redirect Rule of the zone (docs/deploy.md).
+  "routes": [{ "pattern": "glimr.cc", "custom_domain": true }],
+  // The *.workers.dev address stays on, as a fallback.
+  "workers_dev": true,
 
   // The board (apps/board) is served as static assets by this same Worker.
   // Only /api/*, the public feeds (/feeds/*) and the MCP server (/mcp and its OAuth
@@ -29,15 +36,15 @@
   "triggers": { "crons": ["7 * * * *", "*/5 * * * *"] },
 
   // Background jobs (jobs/queue.ts). Simulated locally by "wrangler dev"; in production,
-  // create them once: wrangler queues create pann-jobs && wrangler queues create pann-jobs-dlq
+  // create them once: wrangler queues create glimr-jobs && wrangler queues create glimr-jobs-dlq
   "queues": {
-    "producers": [{ "binding": "JOBS", "queue": "pann-jobs" }],
+    "producers": [{ "binding": "JOBS", "queue": "glimr-jobs" }],
     "consumers": [
       {
-        "queue": "pann-jobs",
+        "queue": "glimr-jobs",
         "max_batch_size": 1,
         "max_retries": 2,
-        "dead_letter_queue": "pann-jobs-dlq",
+        "dead_letter_queue": "glimr-jobs-dlq",
       },
     ],
   },

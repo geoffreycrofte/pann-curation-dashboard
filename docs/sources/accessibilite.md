@@ -2,7 +2,7 @@
 
 Recherche du 01/10/2026. **Aucune URL de flux n'a pu être vérifiée** : le réseau de l'environnement de développement bloquait ces domaines. Les adresses ci-dessous sont des **pages** dont l'existence est attestée par les résultats de recherche.
 
-Pour les ajouter : board, onglet **Sources**, « Ajouter un flux RSS », coller l'adresse de la page. Pann récupère la page, trouve le flux qu'elle déclare (`<link rel="alternate">`), le vérifie, et propose un choix s'il y en a plusieurs. Si une page ne déclare aucun flux, chercher l'adresse du flux sur le site et la coller directement.
+Pour les ajouter : board, onglet **Sources**, « Ajouter un flux RSS », coller l'adresse de la page. Glimr récupère la page, trouve le flux qu'elle déclare (`<link rel="alternate">`), le vérifie, et propose un choix s'il y en a plusieurs. Si une page ne déclare aucun flux, chercher l'adresse du flux sur le site et la coller directement.
 
 Colonne « Type » : type de contenu principal à choisir à l'ajout (il fixe la fréquence de collecte).
 

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Pann : outil de marketing par thème. Un thème est un produit ou un sujet à faire connaître, avec deux outils activables (`topics.config.modules`) : curation de veille et engagement (conversations où aider). Contexte produit : `docs/CONTEXT.md`. Choix techniques : `docs/DECISIONS.md` (ajouter une entrée pour toute décision structurante).
+Glimr : outil de marketing par thème. Un thème est un produit ou un sujet à faire connaître, avec deux outils activables (`topics.config.modules`) : curation de veille et engagement (conversations où aider). Contexte produit : `docs/CONTEXT.md`. Choix techniques : `docs/DECISIONS.md` (ajouter une entrée pour toute décision structurante).
 
 ## Commandes
 
@@ -17,7 +17,7 @@ Pann : outil de marketing par thème. Un thème est un produit ou un sujet à fa
 - Tout libellé d'interface passe par `apps/board/src/i18n/fr.ts` et `en.ts` (FR est la référence de typage).
 - Multi-tenant : toute nouvelle table exposée aux utilisateurs a la RLS activée et une politique basée sur `private.is_member` / `private.can_access_topic`.
 - Les jobs utilisent la clé secrète ; les requêtes utilisateur, jamais directement. Une requête utilisateur peut déclencher un job (`waitUntil`) après avoir prouvé, via la RLS, que l'utilisateur a accès à la ressource.
-- Les clés des services externes sont par workspace, réglées dans l'app (page Connexions, Supabase Vault). Seule exception : les clés de Pann (IA de l'onboarding, offres où Pann fournit l'IA, Zernio en mode plateforme), réglées dans l'espace d'admin et stockées aussi dans le Vault. Jamais de clé de service dans les variables d'environnement : seules les clés Supabase y figurent (`pnpm configure`).
+- Les clés des services externes sont par workspace, réglées dans l'app (page Connexions, Supabase Vault). Seule exception : les clés de Glimr (IA de l'onboarding, offres où Glimr fournit l'IA, Zernio en mode plateforme), réglées dans l'espace d'admin et stockées aussi dans le Vault. Jamais de clé de service dans les variables d'environnement : seules les clés Supabase y figurent (`pnpm configure`).
 - Les erreurs renvoyées par l'API et stockées en base sont des codes (`packages/shared/src/providers.ts`), traduits par le board (`errors.*`).
 - Toute modification des transitions de statut se fait à la fois dans `packages/shared/src/status.ts` et dans le trigger SQL `private.check_item_topic_transition`.
 - Migrations : nouveau fichier horodaté dans `supabase/migrations/`, ne jamais modifier une migration déjà appliquée en production.

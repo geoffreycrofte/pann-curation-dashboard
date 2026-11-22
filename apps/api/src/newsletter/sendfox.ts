@@ -1,4 +1,4 @@
-import { errorCode, type NewsletterList } from '@pann/shared'
+import { errorCode, type NewsletterList } from '@glimr/shared'
 import { USER_AGENT } from '../lib/fetch-text'
 import type { Campaign, CampaignResult } from './send'
 
@@ -88,7 +88,7 @@ export async function sendSendfoxCampaign(
         subject: campaign.subject,
         html: campaign.html,
         lists: [campaign.listId],
-        // The issue goes by email only; Pann's public feeds publish on the web.
+        // The issue goes by email only; Glimr's public feeds publish on the web.
         web_publish: false,
       }),
     })

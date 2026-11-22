@@ -1,4 +1,4 @@
-import { errorCode, type BrevoList, type BrevoSender } from '@pann/shared'
+import { errorCode, type BrevoList, type BrevoSender } from '@glimr/shared'
 import { USER_AGENT } from '../lib/fetch-text'
 import type { Campaign, CampaignResult } from './send'
 

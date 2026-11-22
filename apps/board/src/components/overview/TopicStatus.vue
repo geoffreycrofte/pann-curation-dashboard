@@ -4,7 +4,7 @@
  * and the switch to pause it or resume it. Paused: nothing is collected, sorted, drafted
  * by itself or published; scheduled posts wait and go out once the topic is resumed.
  */
-import { backlogLimitOf, isBacklogFull } from '@pann/shared'
+import { backlogLimitOf, isBacklogFull } from '@glimr/shared'
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'

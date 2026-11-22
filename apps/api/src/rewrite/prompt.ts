@@ -4,7 +4,7 @@ import {
   langSchema,
   type DraftChannel,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes. Stored with the usage of each rewrite. */

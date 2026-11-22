@@ -3,10 +3,10 @@ import AdminPlans from '../components/admin/AdminPlans.vue'
 import AdminWorkspacePlan from '../components/admin/AdminWorkspacePlan.vue'
 import Icon from '../components/Icon.vue'
 /**
- * Administration of Pann (platform admins only): the keys Pann pays for itself and the
+ * Administration of Glimr (platform admins only): the keys Glimr pays for itself and the
  * cost centre of that spending. The API answers 404 to anyone else.
  */
-import { PLATFORM_PROVIDERS, type PlatformProvider } from '@pann/shared'
+import { PLATFORM_PROVIDERS, type PlatformProvider } from '@glimr/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -81,7 +81,7 @@ async function removeKey(provider: PlatformProvider) {
   }
 }
 
-// Cost centre: limits of what Pann pays, and what it paid in a month.
+// Cost centre: limits of what Glimr pays, and what it paid in a month.
 const { data: settings } = useQuery({ key: ['admin', 'settings'], query: api.adminSettings })
 const credit = ref(0)
 const cap = ref(0)
@@ -124,7 +124,7 @@ const { data: usage, isPending: usagePending } = useQuery({
   enabled: () => /^\d{4}-\d{2}$/.test(month.value),
 })
 const total = computed(() => (usage.value ?? []).reduce((sum, r) => sum + Number(r.cost_usd), 0))
-// Per workspace: everything it spent (its keys or Pann's) and what it produced, to price
+// Per workspace: everything it spent (its keys or Glimr's) and what it produced, to price
 // the offers from real figures.
 const { data: stats } = useQuery({
   key: () => ['admin', 'workspace-stats', month.value],
@@ -163,7 +163,7 @@ async function handle(request: AccessRequest, status: AccessRequestStatus) {
   }
 }
 
-// Requests from the product: networks Pann does not publish to yet, coming tools.
+// Requests from the product: networks Glimr does not publish to yet, coming tools.
 const { data: featureRequests } = useQuery({
   key: ['admin', 'feature-requests'],
   query: api.adminFeatureRequests,
@@ -179,7 +179,7 @@ async function setFeatureStatus(request: FeatureRequest, status: FeatureRequestS
   }
 }
 
-// Workspaces whose LinkedIn and Facebook go through Pann's Zernio (platform mode).
+// Workspaces whose LinkedIn and Facebook go through Glimr's Zernio (platform mode).
 const { data: workspaces } = useQuery({ key: ['admin', 'workspaces'], query: api.adminWorkspaces })
 async function setPlatform(workspace: AdminWorkspace, enabled: boolean) {
   try {
@@ -499,7 +499,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
           autocomplete="off"
           spellcheck="false"
           maxlength="200"
-          placeholder="Pann <noreply@example.org>"
+          placeholder="Glimr <noreply@example.org>"
           :aria-describedby="`${id}-from-hint`"
         />
         <p :id="`${id}-from-hint`" class="hint">{{ t('admin.emailFromHint') }}</p>
@@ -584,7 +584,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
               <th scope="col">{{ t('admin.colPlan') }}</th>
               <th scope="col" class="num">{{ t('admin.colTopics') }}</th>
               <th scope="col" class="num">{{ t('admin.colCost') }}</th>
-              <th scope="col" class="num">{{ t('admin.colPaidByPann') }}</th>
+              <th scope="col" class="num">{{ t('admin.colPaidByGlimr') }}</th>
               <th scope="col" class="num">{{ t('admin.colPerDay') }}</th>
               <th scope="col" class="num">{{ t('admin.colPublished') }}</th>
               <th scope="col" class="num">{{ t('admin.colPerPost') }}</th>

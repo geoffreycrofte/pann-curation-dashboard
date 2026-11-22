@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { feedPath, PUBLIC_FEED_FORMATS, type Lang, type TopicConfig } from '@pann/shared'
+import { feedPath, PUBLIC_FEED_FORMATS, type Lang, type TopicConfig } from '@glimr/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import {
   AlertDialogAction,

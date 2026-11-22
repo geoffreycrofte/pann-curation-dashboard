@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PROVIDER_INFO, type Provider, type WorkspaceCredential } from '@pann/shared'
+import { PROVIDER_INFO, type Provider, type WorkspaceCredential } from '@glimr/shared'
 import { useMutation, useQueryCache } from '@pinia/colada'
 import {
   AlertDialogAction,

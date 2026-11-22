@@ -7,7 +7,7 @@ import {
   type DraftChannel,
   type Lang,
   type TopicConfig,
-} from '@pann/shared'
+} from '@glimr/shared'
 import type { UsageEntry } from '../collect/types'
 import { longestSignature } from '../draft/draft'
 import type { TokenUsage } from '../draft/model'
@@ -83,7 +83,7 @@ export interface ComposeStore {
   ): Promise<void>
   monthCostUsd(topicId: string): Promise<number>
   key(workspaceId: string, provider: 'anthropic' | 'exa'): Promise<string | undefined>
-  /** Why there is no key (quota used up on plans where Pann provides the AI). */
+  /** Why there is no key (quota used up on plans where Glimr provides the AI). */
   missingKeyError?(workspaceId: string, provider: string): Promise<string>
   logUsage(composition: CompositionRow, entry: UsageEntry): Promise<void>
 }
