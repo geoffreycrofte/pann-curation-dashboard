@@ -40,6 +40,13 @@ export const router = createRouter({
       meta: { public: true },
     },
     {
+      // The offers and their prices, open to everyone.
+      path: '/pricing',
+      name: 'pricing',
+      component: () => import('./views/PricingView.vue'),
+      meta: { public: true },
+    },
+    {
       // Sign-up stays on invitation: people without an account ask for one here.
       path: '/request-access',
       name: 'request-access',

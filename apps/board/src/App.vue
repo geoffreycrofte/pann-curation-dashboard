@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BillingBanner from './components/BillingBanner.vue'
 import { useQuery } from '@pinia/colada'
 import {
   computed,
@@ -246,6 +247,7 @@ watch(
     </header>
 
     <main id="main" tabindex="-1" :inert="menuOpen && isNarrow">
+      <BillingBanner />
       <RouterView />
     </main>
   </div>

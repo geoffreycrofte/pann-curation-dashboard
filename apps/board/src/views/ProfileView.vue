@@ -250,7 +250,10 @@ async function signOutEverywhere() {
           <span class="workspace-name">{{ membership.workspace.name }}</span>
           <span class="badge">{{ t(`profile.roles.${membership.role}`) }}</span>
         </p>
-        <WorkspacePlan :workspace-id="membership.workspace.id" />
+        <WorkspacePlan
+          :workspace-id="membership.workspace.id"
+          :is-owner="membership.role === 'owner'"
+        />
       </div>
       <p role="status" class="message" :class="{ error: workspaceError }">
         {{ workspaceMessage }}

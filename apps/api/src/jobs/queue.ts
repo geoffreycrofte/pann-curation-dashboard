@@ -7,6 +7,7 @@ import { supabaseDraftStore } from '../draft/store'
 import { draft } from '../draft/draft'
 import { claudeEngagementModel } from '../engagement/model'
 import { supabaseEngagementStore } from '../engagement/store'
+import { runBillingRequest } from '../billing/billing'
 import { runReplyDraft } from '../engagement/reply'
 import { triageConversations } from '../engagement/triage'
 import type { Lang } from '@pann/shared'
@@ -69,6 +70,8 @@ export type JobMessage =
   | { type: 'analyze-voice'; analysisId: string }
   /** Plan of a series of posts (Création). */
   | { type: 'plan-series'; seriesId: string }
+  /** Payment: opens the Stripe page asked from the board (table billing_requests). */
+  | { type: 'billing'; requestId: string }
   /** Reply to a conversation, drafted on request (the person posts it themself). */
   | { type: 'engagement-reply'; topicId: string; itemId: string }
   /** Zernio in platform mode: a connection link, or the accounts listed again. */
@@ -196,6 +199,10 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     }
     case 'rewrite': {
       await runRewrite(db, message.rewriteId, claudeRewriteModel)
+      return
+    }
+    case 'billing': {
+      await runBillingRequest(db, message.requestId)
       return
     }
     case 'engagement-reply': {

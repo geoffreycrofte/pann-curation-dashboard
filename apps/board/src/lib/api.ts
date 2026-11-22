@@ -21,6 +21,8 @@ import type {
   Plan,
   PlanLimits,
   WorkspacePlan,
+  PublicPlan,
+  BillingInterval,
 } from '@pann/shared'
 import { supabase } from './supabase'
 
@@ -405,6 +407,11 @@ export interface TopicUsage {
 /** Admin space: an offer and its limits. */
 export interface AdminPlan extends PlanLimits {
   key: Plan
+  price_month_eur: number | null
+  price_year_eur: number | null
+  stripe_price_month: string
+  stripe_price_year: string
+  trial_tokens: number | null
   updated_at: string
 }
 
@@ -455,8 +462,30 @@ export const api = {
     request<WorkspaceStats[]>(`/admin/workspace-stats?month=${month}`),
   /** The workspace's plan, its limits and its tokens this month. */
   workspacePlan: (workspaceId: string) => request<WorkspacePlan>(`/workspaces/${workspaceId}/plan`),
+  /** The offers and their prices (no sign-in needed). */
+  publicPlans: () => request<PublicPlan[]>('/plans'),
+  choosePlan: (workspaceId: string, plan: Plan) =>
+    request<{ plan: Plan }>(`/workspaces/${workspaceId}/plan-choice`, json('PUT', { plan })),
+  /** Asks for a Stripe page; a job prepares it (billingRequest gives its address). */
+  requestBilling: (
+    workspaceId: string,
+    input:
+      | { kind: 'checkout'; plan: Plan; interval: BillingInterval; return_path: string }
+      | { kind: 'portal'; return_path: string },
+  ) =>
+    request<{ id: string; status: string }>(
+      `/workspaces/${workspaceId}/billing`,
+      json('POST', input),
+    ),
+  billingRequest: (workspaceId: string, requestId: string) =>
+    request<{
+      id: string
+      status: 'pending' | 'ready' | 'failed'
+      url: string | null
+      error: string | null
+    }>(`/workspaces/${workspaceId}/billing/${requestId}`),
   adminPlans: () => request<AdminPlan[]>('/admin/plans'),
-  adminUpdatePlan: (key: Plan, limits: PlanLimits) =>
+  adminUpdatePlan: (key: Plan, limits: Omit<AdminPlan, 'key' | 'updated_at'>) =>
     request<AdminPlan>(`/admin/plans/${key}`, json('PATCH', limits)),
   adminSetWorkspacePlan: (workspaceId: string, plan: Plan, limits: Partial<PlanLimits> = {}) =>
     request<{ plan: Plan }>(`/admin/workspaces/${workspaceId}/plan`, json('PUT', { plan, limits })),

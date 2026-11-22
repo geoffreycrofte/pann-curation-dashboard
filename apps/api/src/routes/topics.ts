@@ -185,8 +185,8 @@ export const topics = new Hono<AppEnv>()
       if (error?.code === '23505') continue
       if (error?.code === '42501') throw new HTTPException(403, { message: 'Not a member' })
       // The plan allows no more topics (database trigger).
-      if (error?.message === 'plan_topic_limit')
-        throw new HTTPException(409, { message: 'plan_topic_limit' })
+      if (error?.message === 'plan_topic_limit' || error?.message === 'billing_inactive')
+        throw new HTTPException(409, { message: error.message })
       if (error) throw error
       if (body.requests.length) {
         const { error: requestError } = await c.var.db.from('feature_requests').insert(

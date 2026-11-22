@@ -6,8 +6,9 @@
  * summary at any moment. Nothing is saved before "Create the topic"; the board then
  * rebuilds around the new topic. The draft lives in the session (survives a reload).
  */
-import { useQuery } from '@pinia/colada'
-import { computed } from 'vue'
+import type { Plan } from '@pann/shared'
+import { useQuery, useQueryCache } from '@pinia/colada'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import FullScreen from '../components/onboarding/FullScreen.vue'
@@ -15,6 +16,9 @@ import OnboardingRecap from '../components/onboarding/OnboardingRecap.vue'
 import OnboardingThread from '../components/onboarding/OnboardingThread.vue'
 import HeroProspector from '../components/HeroProspector.vue'
 import { api } from '../lib/api'
+import { describeError } from '../lib/errors'
+import { toast } from '../lib/toast'
+import PlanPicker from '../components/PlanPicker.vue'
 import { provideOnboardingDraft, threadSteps, useOnboardingDraft } from '../lib/onboarding'
 import { useWorkspace } from '../lib/workspace'
 
@@ -37,6 +41,31 @@ const atLimit = computed(
   () =>
     !!plan.value && plan.value.max_topics !== null && plan.value.topics >= plan.value.max_topics,
 )
+// A new workspace starts its trial by picking an offer; one that no longer runs must pay.
+const mustChoose = computed(
+  () => plan.value?.billing_status === 'trialing' && !plan.value.plan_chosen_at,
+)
+const inactive = computed(() => plan.value?.active === false)
+const { data: plans } = useQuery({
+  key: ['public-plans'],
+  query: api.publicPlans,
+  enabled: () => mustChoose.value,
+})
+const queryCache = useQueryCache()
+const choosing = ref(false)
+async function choose(planKey: Plan) {
+  if (!workspaceId.value) return
+  choosing.value = true
+  try {
+    await api.choosePlan(workspaceId.value, planKey)
+    await queryCache.invalidateQueries({ key: ['workspace-plan'] })
+    toast(t('onboarding.plan.chosen', { plan: t(`plans.names.${planKey}`) }))
+  } catch (err) {
+    toast(describeError((err as Error).message, t).text)
+  } finally {
+    choosing.value = false
+  }
+}
 const { data: assistant } = useQuery({
   key: () => ['onboarding-available', workspaceId.value ?? ''],
   query: () => api.onboardingAvailable(workspaceId.value!),
@@ -88,7 +117,28 @@ function quit() {
       </button>
     </template>
 
-    <template v-if="atLimit && plan">
+    <template v-if="inactive">
+      <h1 tabindex="-1">{{ t('onboarding.inactive.title') }}</h1>
+      <p class="notice notice-inline" data-tone="danger" role="note">
+        <span>
+          {{ t('errors.billing_inactive') }}
+          <RouterLink :to="{ name: 'profile' }">{{ t('billing.banner.link') }}</RouterLink>
+        </span>
+      </p>
+    </template>
+    <template v-else-if="mustChoose">
+      <h1 tabindex="-1">{{ t('onboarding.plan.title') }}</h1>
+      <p class="lead">{{ t('onboarding.plan.lead') }}</p>
+      <PlanPicker
+        v-if="plans"
+        :plans="plans"
+        mode="trial"
+        :busy="choosing"
+        :heading-level="2"
+        @choose="(p) => choose(p)"
+      />
+    </template>
+    <template v-else-if="atLimit && plan">
       <h1 tabindex="-1">{{ t('onboarding.limit.title') }}</h1>
       <p class="notice" role="note">
         {{

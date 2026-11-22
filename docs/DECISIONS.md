@@ -518,3 +518,15 @@ Une tâche prévient ensuite les administrateurs par e-mail avec **Resend**, cho
 **Limites.** Le nombre de thèmes est vérifié par un trigger à la création (`plan_topic_limit`) ; la page « Nouveau thème » le dit avant que la personne ne commence. Les espaces existants qui ont déjà plus de thèmes que leur offre les gardent. Les comptes LinkedIn et Facebook ne sont pas encore limités.
 
 **Affichage.** Le Profil montre l'offre, les thèmes utilisés et, quand Pann fournit l'IA, les tokens du mois. Le Budget d'un thème passe alors en tokens : jamais de dollars sur ces offres.
+
+## 2026-11-22 : paiement, essai et page de tarifs
+
+**Prix (décision de Geoffrey).** Clés personnelles : 2 € par mois, à l'année seulement (24 €). Intermédiaire : 19 € par mois, ou 15 € par mois à l'année (180 €). Supérieure : 49 €, ou 39 € à l'année (468 €). Taxes comprises. Réglables dans l'admin avec les identifiants de prix Stripe (`plans.price_*`, `plans.stripe_price_*`).
+
+**Essai.** Un nouvel espace a 14 jours d'essai sur l'offre qu'il choisit au début de l'onboarding ; pendant l'essai d'une offre où Pann fournit l'IA, 1 million de tokens au lieu du quota du mois (`plans.trial_tokens`). Ensuite, il faut payer pour continuer. Les espaces créés avant ce changement passent en `legacy` : ils gardent leur accès tant que Geoffrey n'a pas décidé.
+
+**Quand un espace ne paie plus** (essai fini, abonnement arrêté et période écoulée) : ses thèmes sont mis en pause, avec la pause qui existe déjà (collecte, tri, rédaction, publication), marqués `paused_by_billing` ; la personne ne peut pas les relancer, le paiement les relance. Pas de nouveau thème non plus. Un paiement en échec (`past_due`) laisse tourner l'espace pendant que Stripe relance. Vérifié chaque heure (`sync_billing_pauses_for_jobs`) et à chaque évènement Stripe.
+
+**Stripe.** Par son API REST, sans SDK (fetch et Web Crypto, compatibles Workers). Les clés (secrète et secret de signature du webhook) sont des clés de Pann, dans le Vault, réglées dans l'admin. Payer ou gérer son abonnement : la requête de la personne est enregistrée avec la RLS (propriétaire seulement), puis un job ouvre la page Stripe (Checkout ou portail client) avec la clé de Pann ; le board attend l'adresse et y envoie la personne. Payer pendant l'essai garde les jours d'essai restants. Le webhook (`/api/stripe/webhook`, public, signature vérifiée) applique l'offre (déduite du prix, donc aussi après un changement dans le portail) et l'état de l'abonnement.
+
+**Page de tarifs** publique (`/pricing`) : les trois offres, puis « sans Pann, avec Pann » à la façon d'Odoo (Publer, Feedly, Syften, environ 86 $ par mois, contre 15 €), avec « tarifs relevés en novembre 2026, à titre indicatif ».

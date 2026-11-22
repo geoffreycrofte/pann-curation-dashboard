@@ -5,6 +5,7 @@ import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { checkCredential } from '../lib/check-credential'
 import { checkResendKey } from '../lib/resend'
+import { checkStripeKey } from '../billing/stripe'
 import { parseJson } from '../lib/validation'
 
 const KEY_COLUMNS = 'provider, hint, status, status_detail, checked_at, updated_at'
@@ -34,6 +35,15 @@ const limitsBody = z.object({
   max_social_accounts: z.number().int().min(1).max(1000).nullable(),
   monthly_tokens: z.number().int().min(1).max(10_000_000_000).nullable(),
 })
+const planBody = limitsBody.extend({
+  price_month_eur: z.number().min(0).max(100_000).nullable(),
+  price_year_eur: z.number().min(0).max(1_000_000).nullable(),
+  stripe_price_month: z.union([z.string().regex(/^price_[A-Za-z0-9]+$/), z.literal('')]),
+  stripe_price_year: z.union([z.string().regex(/^price_[A-Za-z0-9]+$/), z.literal('')]),
+  trial_tokens: z.number().int().min(1).max(10_000_000_000).nullable(),
+})
+const PLAN_COLUMNS =
+  'key, max_topics, max_social_accounts, monthly_tokens, price_month_eur, price_year_eur, stripe_price_month, stripe_price_year, trial_tokens, updated_at'
 const workspacePlanBody = z.object({
   plan: z.enum(PLANS),
   /** Only for the custom plan. */
@@ -71,7 +81,14 @@ export const admin = new Hono<AppEnv>()
     const provider = platformProvider(c.req.param('provider'))
     const { secret } = await parseJson(keyBody, c.req.raw)
     const check =
-      provider === 'resend' ? await checkResendKey(secret) : await checkCredential(provider, secret)
+      provider === 'resend'
+        ? await checkResendKey(secret)
+        : provider === 'stripe'
+          ? await checkStripeKey(secret)
+          : provider === 'stripe_webhook'
+            ? // A signing secret has nothing to call: it proves itself on the first event.
+              { status: 'unchecked' as const, detail: 'no_free_check' }
+            : await checkCredential(provider, secret)
     if (check.status === 'invalid')
       throw new HTTPException(422, { message: `invalid_credential:${provider}` })
     const { error } = await c.var.db.rpc('set_platform_credential', {
@@ -150,9 +167,7 @@ export const admin = new Hono<AppEnv>()
 
   /** The offers and their limits. */
   .get('/plans', async (c) => {
-    const { data, error } = await c.var.db
-      .from('plans')
-      .select('key, max_topics, max_social_accounts, monthly_tokens, updated_at')
+    const { data, error } = await c.var.db.from('plans').select(PLAN_COLUMNS)
     if (error) throw error
     return c.json(PLANS.map((key) => data.find((p) => p.key === key)).filter(Boolean))
   })
@@ -162,12 +177,12 @@ export const admin = new Hono<AppEnv>()
     const key = c.req.param('key')
     if (!(PLANS as readonly string[]).includes(key) || key === 'custom')
       throw new HTTPException(404, { message: 'Plan not found' })
-    const body = await parseJson(limitsBody, c.req.raw)
+    const body = await parseJson(planBody, c.req.raw)
     const { data, error } = await c.var.db
       .from('plans')
       .update({ ...body, updated_at: new Date().toISOString(), updated_by: c.var.user.id })
       .eq('key', key)
-      .select('key, max_topics, max_social_accounts, monthly_tokens, updated_at')
+      .select(PLAN_COLUMNS)
       .maybeSingle()
     if (error) throw error
     // RLS: only platform admins update plans; anyone else updates nothing.
