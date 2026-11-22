@@ -67,12 +67,11 @@ img {
   mask-composite: intersect;
 }
 
-/* Cut-out: the ground shadow went with the background, a drop shadow replaces it. */
+/* Cut-out: shown as it is, without a shadow. */
 [data-variant='cut'] img {
   width: auto;
   max-width: 100%;
   max-height: var(--cut-max-height, 28rem);
   margin-inline: auto;
-  filter: drop-shadow(0 1.25rem 1.5rem rgb(0 0 0 / 0.35));
 }
 </style>

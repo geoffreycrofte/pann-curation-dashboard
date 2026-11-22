@@ -265,7 +265,7 @@ export const topics = new Hono<AppEnv>()
         .select('id', { count: 'exact', head: true })
         .eq('topic_id', topicId)
         .gte(column, monthStart)
-      if (published) request = request.eq('status', 'published')
+      if (published) request = request.eq('status', 'sent')
       return request
     }
     const [
