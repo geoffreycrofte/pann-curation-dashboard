@@ -16,7 +16,7 @@ import AccountMenu from './components/AccountMenu.vue'
 import PublicFooter from './components/PublicFooter.vue'
 import PublicHeader from './components/PublicHeader.vue'
 import Toaster from './components/Toaster.vue'
-import GlimrMark from './components/GlimrMark.vue'
+import GlimrLogo from './components/GlimrLogo.vue'
 import { api } from './lib/api'
 import { session } from './lib/session'
 import { pageDetail } from './lib/page-title'
@@ -146,9 +146,8 @@ watch(
       <div class="sidebar-inner">
         <div ref="topBar" class="sidebar-top">
           <RouterLink to="/" class="brand">
-            <GlimrMark :size="44" />
             <span class="brand-text">
-              <span class="brand-name">{{ t('app.name') }}</span>
+              <GlimrLogo :height="36" />
               <span class="brand-tagline">{{ t('app.tagline') }}</span>
             </span>
           </RouterLink>
@@ -331,14 +330,7 @@ watch(
 .brand-text {
   display: flex;
   flex-direction: column;
-}
-
-.brand-name {
-  font-family: var(--font-display);
-  font-size: 1.625rem;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  gap: var(--space-1);
 }
 
 .brand-tagline {

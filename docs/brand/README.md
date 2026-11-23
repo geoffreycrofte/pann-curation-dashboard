@@ -1,4 +1,4 @@
-# Identité de Pann
+# Identité de Glimr
 
 ## Logo
 
@@ -6,23 +6,23 @@
 
 Sources et exports dans `logo/` :
 
-| Fichier                                    | Usage                                                                     |
-| ------------------------------------------ | ------------------------------------------------------------------------- |
-| `pann-mark.svg`, `pann-mark-512.png`       | Symbole seul, fond transparent, éclat encre : sur fond clair              |
-| `pann-mark-dark.svg`, `-dark-512.png`      | Symbole seul, éclat crème : sur fond sombre                               |
-| `pann-logo.svg`, `pann-logo.png`           | Logo complet (symbole + « Pann » vectorisé), encre : sur fond clair       |
-| `pann-logo-dark.svg`, `pann-logo-dark.png` | Logo complet, texte crème : sur fond sombre                               |
-| `pann-icon.svg`, `pann-icon-1024.png`      | Icône d'app, tuile encre (version par défaut)                             |
-| `pann-icon-light.svg`, `-light-1024.png`   | Icône d'app, tuile sable                                                  |
-| `pann-icon-square.svg`                     | Tuile pleine sans arrondi, pour iOS (le système arrondit)                 |
-| `pann-icon-maskable.svg`                   | Tuile pleine, contenu réduit à la zone sûre (Android, `maskable`)         |
-| `pann-favicon.svg`                         | Favicon : pépite agrandie, trois facettes, sans éclat (illisible à 16 px) |
+| Fichier                                  | Usage                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------- |
+| `pann-mark.svg`, `pann-mark-512.png`     | Symbole seul, fond transparent, éclat encre : sur fond clair              |
+| `pann-mark-dark.svg`, `-dark-512.png`    | Symbole seul, éclat crème : sur fond sombre                               |
+| `glimr-logo.svg`                         | Logo complet (symbole + « Glimr » vectorisé), encre : sur fond clair      |
+| `glimr-logo-dark.svg`                    | Logo complet, texte blanc et éclat crème : sur fond sombre                |
+| `pann-icon.svg`, `pann-icon-1024.png`    | Icône d'app, tuile encre (version par défaut)                             |
+| `pann-icon-light.svg`, `-light-1024.png` | Icône d'app, tuile sable                                                  |
+| `pann-icon-square.svg`                   | Tuile pleine sans arrondi, pour iOS (le système arrondit)                 |
+| `pann-icon-maskable.svg`                 | Tuile pleine, contenu réduit à la zone sûre (Android, `maskable`)         |
+| `pann-favicon.svg`                       | Favicon : pépite agrandie, trois facettes, sans éclat (illisible à 16 px) |
 
-Le mot « Pann » des logos complets est vectorisé depuis Bricolage Grotesque 800, interlettrage -0,035 em : aucun besoin de la police pour les afficher.
+Le mot « Glimr » du logo complet (2026-11-23) est vectorisé : aucun besoin de la police pour l'afficher. Dans l'app, le composant `GlimrLogo.vue` le reprend, le mot et l'éclat en `currentColor` (encre en clair, crème en sombre ou sur la barre latérale), avec « Glimr » pour nom accessible. Il remplace le symbole suivi du nom en texte dans la barre latérale, l'en-tête et le pied de page publics.
 
 Dans l'app (`apps/board/public/`) : `favicon.svg` et `favicon.ico` (16, 32 et 48 px), `apple-touch-icon.png` (180 px, tuile pleine), `icon-192.png` et `icon-512.png` (tuile arrondie), `icon-maskable-512.png`, déclarées dans `index.html` et `manifest.webmanifest`. Les PNG sont rendus depuis les SVG avec Chromium.
 
-- Composant `apps/board/src/components/PannMark.vue` (décoratif, `aria-hidden`), toujours accompagné du nom « Pann » en texte. L'éclat prend la couleur du texte (`currentColor`) : encre en clair, crème en sombre ou sur la barre latérale.
+- Composant `apps/board/src/components/GlimrMark.vue` (décoratif, `aria-hidden`), pour le symbole seul (onboarding, écran de paiement) : toujours accompagné du nom. L'éclat prend la couleur du texte (`currentColor`) : encre en clair, crème en sombre ou sur la barre latérale.
 - Or réservé à la pépite.
 - Nom : Bricolage Grotesque, graisse 800, interlettrage serré.
 

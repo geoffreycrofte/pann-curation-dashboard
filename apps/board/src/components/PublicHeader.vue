@@ -9,7 +9,7 @@
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import GlimrMark from './GlimrMark.vue'
+import GlimrLogo from './GlimrLogo.vue'
 import LangSwitcher from './LangSwitcher.vue'
 import ThemeToggle from './ThemeToggle.vue'
 
@@ -61,8 +61,7 @@ onBeforeUnmount(() => setBehind(false))
   <header class="public-header" @keydown.esc="close">
     <div class="bar-row">
       <RouterLink to="/" class="brand">
-        <GlimrMark :size="40" />
-        <span class="brand-name">{{ t('app.name') }}</span>
+        <GlimrLogo :height="34" />
       </RouterLink>
 
       <!-- Wide screens: the links and the theme in the bar. -->
@@ -162,13 +161,6 @@ onBeforeUnmount(() => setBehind(false))
   margin-inline-end: auto;
   color: var(--color-text);
   text-decoration: none;
-}
-
-.brand-name {
-  font-family: var(--font-display);
-  font-size: 1.625rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
 }
 
 .public-nav ul {
@@ -322,10 +314,10 @@ onBeforeUnmount(() => setBehind(false))
     display: inline-flex;
     align-items: center;
     gap: var(--space-3);
-    min-height: 3.5rem;
+    min-height: 3rem;
     color: var(--color-on-ink);
     font-family: var(--font-display);
-    font-size: clamp(1.875rem, 8.5vw, 2.75rem);
+    font-size: clamp(1.5rem, 7vw, 2.25rem);
     font-weight: 800;
     letter-spacing: -0.03em;
     text-decoration: none;
