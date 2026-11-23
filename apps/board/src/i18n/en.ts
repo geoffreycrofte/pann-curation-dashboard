@@ -376,6 +376,8 @@ export default {
     errors: { subject: 'Enter the subject of the series.' },
   },
   zernioPlatform: {
+    limit: 'Connected accounts: {n} of the {max} your offer allows.',
+    limitReached: 'To add more, you need a higher offer.',
     title: 'LinkedIn and Facebook, through Glimr',
     intro:
       'No key to enter: connect your accounts on the screen of Zernio, the service that publishes for Glimr, then come back here. Glimr never sees your passwords.',
@@ -627,6 +629,10 @@ export default {
       'All your sessions end, on this device and the others, and the access given to Claude through the MCP server will need to be granted again. You can sign in again with a new link.',
   },
   connections: {
+    affiliate: {
+      link: 'No account yet? Create a {provider} account',
+      disclosure: 'Affiliate link: Glimr may earn a commission, at no extra cost to you.',
+    },
     title: 'Service connections',
     intro:
       'Glimr uses external services to collect and sort content. Each service needs a key, specific to your workspace.',
@@ -858,6 +864,8 @@ export default {
       'Stripe refused to open the payment page (code: {detail}). Try again in a moment; if it goes on, contact Glimr.',
     token_quota_reached:
       'This month’s tokens are used up: AI and search resume on the 1st of next month.',
+    plan_account_limit:
+      'Your offer allows no other LinkedIn or Facebook account connected through Glimr. To add one, you need a higher offer, or your own Zernio key.',
     plan_topic_limit:
       'Your offer allows no other topic. To add one, you need a higher offer or a custom one.',
     budget_exceeded: 'Monthly cap of the topic reached: drafting paused until next month.',
@@ -998,6 +1006,12 @@ export default {
     started: 'Drafting of the missing posts started.',
   },
   admin: {
+    affiliates: {
+      title: 'Affiliate links',
+      intro:
+        'The sign-up address Glimr recommends for each service, with an affiliate programme. The Connections page offers it while the service is not connected, marked as an affiliate link. Empty: no link.',
+      saved: 'Affiliate links saved.',
+    },
     tabsLabel: 'Administration sections',
     tabs: {
       workspaces: 'Workspaces',
@@ -1081,6 +1095,9 @@ export default {
     cap: 'Monthly cap for Glimr (in US dollars)',
     capHint: 'All workspaces together, per calendar month. Beyond it, Glimr stops using its keys.',
     emailFrom: 'Sender of the service emails',
+    siteUrl: 'Site address',
+    siteUrlHint:
+      'Used in the links of e-mails sent by scheduled jobs (warning before an inactive account is deleted). No trailing slash.',
     emailFromHint:
       "Name and address on a domain verified in Resend, for instance “Glimr <noreply{'@'}example.org>”.",
     requestsTitle: 'Access requests',
@@ -1383,6 +1400,9 @@ export default {
       'AI triage is waiting: no Anthropic key is set. Items arrive without a relevance score.',
     topics: 'Topics',
     noTopic: 'No topic yet.',
+    scheduledInCalendar:
+      'Once scheduled, items leave this list: they wait for their slot in the calendar.',
+    openCalendar: 'Open the calendar',
     statusFilter: 'Filter by status',
     empty: 'Nothing in this list.',
     loading: 'Loading…',

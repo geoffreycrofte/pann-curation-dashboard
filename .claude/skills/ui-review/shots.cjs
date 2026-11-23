@@ -436,6 +436,15 @@ const routes = {
       workspace: { name: 'Agence' },
     },
   ],
+  '/api/affiliate-links': { exa: 'https://example.org/exa?ref=glimr' },
+  '/api/admin/settings': {
+    onboarding_credit_usd: 0.5,
+    monthly_cap_usd: 20,
+    email_from: 'Glimr <support@example.org>',
+    site_url: 'https://glimr.cc',
+    affiliate_links: { exa: 'https://example.org/exa?ref=glimr' },
+    updated_at: '2026-11-23',
+  },
   '/api/admin/workspaces': [
     {
       id: 'w3',
@@ -628,6 +637,7 @@ async function shoot(page, name, path, opts = {}) {
     ['admin-requests', '/admin?tab=requests'],
     ['admin-costs', '/admin?tab=costs'],
     ['admin-offers', '/admin?tab=offers'],
+    ['admin-keys', '/admin?tab=keys'],
     ['out-home', '/?signedout'],
     ['out-pricing', '/pricing?signedout'],
     ['out-how', '/how-it-works?signedout'],

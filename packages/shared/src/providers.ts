@@ -184,6 +184,7 @@ export const ERROR_CODES = [
   'budget_exceeded',
   'token_quota_reached', // plans where Glimr provides the AI: the month's tokens are used up
   'plan_topic_limit', // the plan allows no more topics
+  'plan_account_limit', // the plan allows no more LinkedIn or Facebook accounts through Glimr
   'billing_inactive', // trial over or subscription stopped: pay to go on
   'billing_not_configured', // Stripe keys or prices not set in the admin space
   'subscribed', // the offer of a paying workspace changes through Stripe

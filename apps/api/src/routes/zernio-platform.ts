@@ -34,6 +34,23 @@ export const zernioPlatform = new Hono<AppEnv>()
       c.req.raw,
     )
     const workspaceId = c.req.param('workspaceId')
+    // The plan caps the LinkedIn and Facebook accounts connected through Glimr's Zernio.
+    const [plan, link] = await Promise.all([
+      c.var.db.rpc('workspace_plan', { p_workspace_id: workspaceId }).maybeSingle(),
+      c.var.db
+        .from('zernio_platform_links')
+        .select('accounts')
+        .eq('workspace_id', workspaceId)
+        .maybeSingle<{ accounts: { active: boolean }[] }>(),
+    ])
+    if (plan.error?.code === '42501')
+      throw new HTTPException(404, { message: 'Workspace not found' })
+    if (plan.error) throw plan.error
+    if (link.error) throw link.error
+    const max = (plan.data as { max_social_accounts: number | null } | null)?.max_social_accounts
+    const connected = (link.data?.accounts ?? []).filter((a) => a.active !== false).length
+    if (max !== null && max !== undefined && connected >= max)
+      throw new HTTPException(409, { message: 'plan_account_limit' })
     const redirect = `${new URL(c.req.url).origin}/connections?zernio=connected`
     const { data, error } = await c.var.db.rpc('request_zernio_platform', {
       p_workspace_id: workspaceId,

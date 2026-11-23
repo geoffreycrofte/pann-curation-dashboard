@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PROVIDER_INFO, type Provider, type WorkspaceCredential } from '@glimr/shared'
-import { useMutation, useQueryCache } from '@pinia/colada'
+import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import {
   AlertDialogAction,
   AlertDialogCancel,
@@ -32,6 +32,9 @@ const id = useId()
 const queryCache = useQueryCache()
 
 const info = computed(() => PROVIDER_INFO[props.provider])
+// Sign-up link recommended by Glimr (affiliate), shown while the service is not connected.
+const { data: affiliates } = useQuery({ key: ['affiliate-links'], query: api.affiliateLinks })
+const affiliate = computed(() => affiliates.value?.[props.provider])
 const name = computed(() => t(`connections.providers.${props.provider}.name`))
 const steps = computed(() =>
   (tm(`connections.providers.${props.provider}.steps`) as unknown[]).map((s) => rt(s as string)),
@@ -308,6 +311,13 @@ const { mutate: remove } = useMutation({
         </p>
       </template>
 
+      <p v-if="affiliate && !credential" class="affiliate">
+        <a :href="affiliate" target="_blank" rel="noopener noreferrer sponsored">
+          {{ t('connections.affiliate.link', { provider: name }) }}
+        </a>
+        <span class="hint">{{ t('connections.affiliate.disclosure') }}</span>
+      </p>
+
       <details class="how-to">
         <summary>{{ t('connections.howTo') }}</summary>
         <ol>
@@ -562,5 +572,14 @@ const { mutate: remove } = useMutation({
   .chevron {
     transition: none;
   }
+}
+.affiliate {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.affiliate a {
+  font-weight: 650;
 }
 </style>

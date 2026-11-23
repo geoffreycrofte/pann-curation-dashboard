@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AdminAffiliates from '../components/admin/AdminAffiliates.vue'
 import AdminPlans from '../components/admin/AdminPlans.vue'
 import AdminWorkspacePlan from '../components/admin/AdminWorkspacePlan.vue'
 import Icon from '../components/Icon.vue'
@@ -105,6 +106,7 @@ const { data: settings } = useQuery({ key: ['admin', 'settings'], query: api.adm
 const credit = ref(0)
 const cap = ref(0)
 const emailFrom = ref('')
+const siteUrl = ref('')
 watch(
   settings,
   (value) => {
@@ -112,6 +114,7 @@ watch(
     credit.value = Number(value.onboarding_credit_usd)
     cap.value = Number(value.monthly_cap_usd)
     emailFrom.value = value.email_from
+    siteUrl.value = value.site_url
   },
   { immediate: true },
 )
@@ -125,6 +128,7 @@ async function saveSettings() {
       onboarding_credit_usd: credit.value,
       monthly_cap_usd: cap.value,
       email_from: emailFrom.value.trim(),
+      site_url: siteUrl.value.trim().replace(/\/+$/, ''),
     })
     toast(t('common.saved'))
     await queryCache.invalidateQueries({ key: ['admin', 'settings'] })
@@ -548,6 +552,22 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
             />
             <p :id="`${id}-from-hint`" class="hint">{{ t('admin.emailFromHint') }}</p>
           </div>
+          <div class="form-row wide">
+            <label :for="`${id}-site`">{{ t('admin.siteUrl') }}</label>
+            <input
+              :id="`${id}-site`"
+              v-model="siteUrl"
+              class="field"
+              type="url"
+              autocomplete="off"
+              spellcheck="false"
+              maxlength="200"
+              placeholder="https://glimr.cc"
+              required
+              :aria-describedby="`${id}-site-hint`"
+            />
+            <p :id="`${id}-site-hint`" class="hint">{{ t('admin.siteUrlHint') }}</p>
+          </div>
           <div class="section-actions">
             <button type="submit" class="button" data-variant="primary" :disabled="savingSettings">
               {{ savingSettings ? t('common.saving') : t('common.save') }}
@@ -747,6 +767,7 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
           </li>
         </ul>
       </section>
+      <AdminAffiliates />
     </TabsContent>
   </TabsRoot>
 </template>

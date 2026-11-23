@@ -19,7 +19,6 @@ Décidée le 2026-11-16, arbitrée le 2026-11-17 : **tout d'un coup**, sans ver
 
 ## Idées
 
-- **Comptes inactifs** (décidé le 2026-11-22, annoncé dans la politique de confidentialité et les conditions générales) : un compte sans connexion depuis un an est supprimé, après un e-mail d'avertissement envoyé un mois avant. À faire : tâche planifiée qui repère les comptes inactifs, envoie l'avertissement (Resend), puis supprime le compte et ses espaces dont il est le seul propriétaire.
 - **Offres et page de tarifs** (modèle du 2026-11-17, remplace celui du 2026-11-12 ; résumé aussi dans `docs/CONTEXT.md`, section 12) :
   1. **Offre « clés personnelles »**, environ 2 € par mois avec engagement d'un an : l'utilisateur apporte ses propres clés (IA, Zernio, Exa…) et règle ses budgets en dollars, comme aujourd'hui.
   2. **Offre intermédiaire**, au mois ou à l'année : Glimr fournit l'IA et les services. On parle de budget en **tokens**, jamais en dollars, pour effacer la comparaison avec le coût d'achat. Nombre de réseaux limité.
