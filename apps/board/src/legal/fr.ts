@@ -639,4 +639,50 @@ export default {
       },
     ],
   },
+  affiliates: {
+    title: 'Liens affiliés',
+    lead: 'Pourquoi certains liens d’inscription de la page Connexions sont des liens affiliés, et ce que cela change pour vous.',
+    updated: '23 novembre 2026',
+    sections: [
+      {
+        id: 'what',
+        title: 'De quoi s’agit-il',
+        blocks: [
+          {
+            p: 'Avec l’offre « Clés personnelles », vous ouvrez vous-même vos comptes chez les services que Glimr utilise (IA, recherche, publication, newsletter). Pour certains d’entre eux, la page Connexions propose un lien d’inscription marqué « lien affilié ».',
+          },
+          {
+            p: 'Si vous créez votre compte par ce lien, le service peut verser une commission à Crofte Studio S.à r.l.-S, qui édite Glimr.',
+          },
+        ],
+      },
+      {
+        id: 'you',
+        title: 'Ce que cela change pour vous',
+        blocks: [
+          {
+            list: [
+              'Rien sur le prix : vous payez le service au même tarif, sans surcoût.',
+              'Rien sur le choix : vous pouvez créer votre compte sans passer par le lien, Glimr fonctionne de la même façon.',
+              'Aucune donnée de vos thèmes n’est transmise au service par le lien : il sait seulement que vous venez de Glimr.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'choice',
+        title: 'Comment les services sont choisis',
+        blocks: [
+          {
+            p: 'Glimr ne propose de lien que pour les services qu’il sait utiliser et qu’il utilise lui-même. Une commission ne décide jamais de l’ajout d’un service : un service est proposé parce qu’il fonctionne avec Glimr, pas parce qu’il rapporte.',
+          },
+        ],
+      },
+      {
+        id: 'contact',
+        title: 'Une question',
+        blocks: [{ p: 'Écrivez à {email}.' }],
+      },
+    ],
+  },
 } satisfies LegalDocs

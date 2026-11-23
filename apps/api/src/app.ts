@@ -58,6 +58,12 @@ app.post('/stripe/webhook', async (c) => {
   if (result.outcome !== 'ignored') console.log(JSON.stringify({ stripe: result.outcome }))
   return c.json({ received: result.status === 200, outcome: result.outcome }, result.status as 200)
 })
+/** Sign-up links Glimr recommends for the services a workspace pays itself (affiliate). */
+app.get('/affiliate-links', async (c) => {
+  const { data, error } = await c.var.db.rpc('affiliate_links')
+  if (error) throw error
+  return c.json(data ?? {})
+})
 app.route('/me', me)
 app.route('/account', account)
 app.route('/admin', admin)

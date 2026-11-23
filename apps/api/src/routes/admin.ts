@@ -1,4 +1,4 @@
-import { PLANS, PLATFORM_PROVIDERS, type PlatformProvider } from '@glimr/shared'
+import { PLANS, PLATFORM_PROVIDERS, PROVIDERS, type PlatformProvider } from '@glimr/shared'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
@@ -9,7 +9,8 @@ import { checkStripeKey } from '../billing/stripe'
 import { parseJson } from '../lib/validation'
 
 const KEY_COLUMNS = 'provider, hint, status, status_detail, checked_at, updated_at'
-const SETTINGS_COLUMNS = 'onboarding_credit_usd, monthly_cap_usd, email_from, updated_at'
+const SETTINGS_COLUMNS =
+  'onboarding_credit_usd, monthly_cap_usd, email_from, site_url, affiliate_links, updated_at'
 const REQUEST_COLUMNS =
   'id, name, email, motivation, lang, status, notified_at, notify_error, handled_at, created_at'
 
@@ -27,6 +28,23 @@ const settingsBody = z
         .max(200)
         .regex(/^[^<>]*<?[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+>?$/),
     ]),
+    /** Address of the board, for the links of the e-mails sent by scheduled jobs. */
+    site_url: z
+      .string()
+      .trim()
+      .regex(/^https?:\/\/[^/]+$/),
+    /** Affiliate sign-up link per service ('' : none). */
+    affiliate_links: z.partialRecord(
+      z.enum(PROVIDERS),
+      z.union([
+        z.literal(''),
+        z
+          .string()
+          .trim()
+          .max(500)
+          .regex(/^https:\/\/\S+$/),
+      ]),
+    ),
   })
   .partial()
 const handleBody = z.object({ status: z.enum(['new', 'accepted', 'declined']) })

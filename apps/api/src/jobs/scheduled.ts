@@ -1,3 +1,4 @@
+import { INACTIVITY_HOUR_UTC, runInactivity } from '../accounts/inactivity'
 import { adapters } from '../collect/adapters'
 import { collect } from '../collect/collect'
 import { supabaseCollectStore } from '../collect/store'
@@ -47,6 +48,11 @@ export async function runScheduled(controller: ScheduledController, env: Env): P
         model: claudeEngagementModel,
       })
       console.log(JSON.stringify({ job: 'engagement-triage', report: conversations }))
+      // Once a day: inactive accounts are warned, then deleted a month later.
+      if (new Date(controller.scheduledTime).getUTCHours() === INACTIVITY_HOUR_UTC) {
+        const inactivity = await runInactivity(db)
+        console.log(JSON.stringify({ job: 'inactivity', report: inactivity }))
+      }
       return
     }
     case PUBLISH_CRON: {

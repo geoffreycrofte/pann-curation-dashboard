@@ -31,7 +31,7 @@ export interface LegalDoc {
   outro?: LegalBlock[]
 }
 
-export const LEGAL_DOCS = ['legal', 'terms', 'privacy', 'accessibility'] as const
+export const LEGAL_DOCS = ['legal', 'terms', 'privacy', 'accessibility', 'affiliates'] as const
 export type LegalDocKey = (typeof LEGAL_DOCS)[number]
 export type LegalDocs = Record<LegalDocKey, LegalDoc>
 

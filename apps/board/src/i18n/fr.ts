@@ -28,6 +28,7 @@ export default {
     terms: 'Conditions générales',
     privacy: 'Confidentialité et cookies',
     accessibility: 'Accessibilité',
+    affiliates: 'Liens affiliés',
   },
   public: {
     navLabel: 'Pages publiques',
@@ -49,6 +50,7 @@ export default {
         terms: 'Conditions générales',
         privacy: 'Confidentialité et cookies',
         accessibility: 'Accessibilité',
+        affiliates: 'Liens affiliés',
         contact: 'Contact',
       },
       copyright: '© {year} Glimr.',
@@ -375,6 +377,8 @@ export default {
     errors: { subject: 'Indiquez le sujet de la série.' },
   },
   zernioPlatform: {
+    limit: 'Comptes connectés : {n} sur {max} permis par votre offre.',
+    limitReached: 'Pour en ajouter, il faut une offre plus élevée.',
     title: 'LinkedIn et Facebook, via Glimr',
     intro:
       'Pas de clé à saisir : connectez vos comptes sur l’écran de Zernio, le service qui publie pour Glimr, puis revenez ici. Glimr ne voit jamais vos mots de passe.',
@@ -630,6 +634,10 @@ export default {
       'Toutes vos sessions se terminent, sur cet appareil comme sur les autres, et les accès donnés à Claude par le serveur MCP devront être renouvelés. Vous pourrez vous reconnecter avec un nouveau lien.',
   },
   connections: {
+    affiliate: {
+      link: 'Créer un compte {provider}',
+      note: 'lien affilié',
+    },
     title: 'Connexions aux services',
     intro:
       'Glimr utilise des services externes pour collecter et trier la veille. Chaque service demande une clé, propre à votre workspace.',
@@ -866,6 +874,8 @@ export default {
       'Stripe a refusé d’ouvrir la page de paiement (code : {detail}). Réessayez dans un instant ; si cela continue, contactez Glimr.',
     token_quota_reached:
       'Les tokens du mois sont épuisés : l’IA et la recherche reprennent le 1er du mois prochain.',
+    plan_account_limit:
+      'Votre offre ne permet pas d’autre compte LinkedIn ou Facebook connecté par Glimr. Pour en ajouter, il faut une offre plus élevée, ou votre propre clé Zernio.',
     plan_topic_limit:
       'Votre offre ne permet pas d’autre thème. Pour en ajouter, il faut une offre plus élevée ou une offre sur mesure.',
     budget_exceeded:
@@ -1009,6 +1019,12 @@ export default {
     started: 'Rédaction des posts manquants lancée.',
   },
   admin: {
+    affiliates: {
+      title: 'Liens affiliés',
+      intro:
+        'L’adresse d’inscription que Glimr recommande pour chaque service, avec un programme d’affiliation. La page Connexions la propose tant que le service n’est pas connecté, avec la mention « lien affilié ». Vide : aucun lien.',
+      saved: 'Liens affiliés enregistrés.',
+    },
     tabsLabel: 'Sections de l’administration',
     tabs: {
       workspaces: 'Espaces de travail',
@@ -1038,9 +1054,10 @@ export default {
     },
     workspacesTitle: 'Espaces de travail',
     workspacesIntro:
-      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme) : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
+      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme), activé automatiquement dès qu’un espace paie l’offre Intermédiaire ou Supérieure ; le décocher le désactive à la main, quelle que soit l’offre : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
     colPlatform: 'Zernio de Glimr',
     platformLabel: 'Activé ({n} comptes)',
+    platformOffByAdmin: 'Désactivé à la main : reste désactivé quelle que soit l’offre.',
     platformOn: 'Zernio de Glimr activé pour {name}',
     platformOff: 'Zernio de Glimr désactivé pour {name}',
     title: 'Administration de Glimr',
@@ -1095,6 +1112,9 @@ export default {
     cap: 'Plafond mensuel de Glimr (en dollars US)',
     capHint: 'Tous espaces confondus, par mois civil. Au-delà, Glimr n’utilise plus ses clés.',
     emailFrom: 'Expéditeur des e-mails du service',
+    siteUrl: 'Adresse du site',
+    siteUrlHint:
+      'Utilisée dans les liens des e-mails envoyés par les tâches planifiées (avertissement avant la suppression d’un compte inactif). Sans barre oblique finale.',
     emailFromHint:
       "Nom et adresse sur un domaine vérifié dans Resend, par exemple « Glimr <noreply{'@'}exemple.org> ».",
     requestsTitle: 'Demandes d’accès',
@@ -1406,6 +1426,9 @@ export default {
       'Le tri par IA est en attente : aucune clé Anthropic n’est configurée. Les éléments arrivent sans score de pertinence.',
     topics: 'Thèmes',
     noTopic: "Aucun thème pour l'instant.",
+    scheduledInCalendar:
+      'Une fois programmés, les articles quittent cette liste : ils attendent leur créneau dans le calendrier.',
+    openCalendar: 'Ouvrir le calendrier',
     statusFilter: 'Filtrer par statut',
     empty: 'Aucun élément dans cette liste.',
     loading: 'Chargement…',

@@ -261,6 +261,8 @@ export interface AdminWorkspace {
   name: string
   created_at: string
   zernio_platform: boolean
+  /** Turned off by hand: stays off whatever the offer. */
+  zernio_off_by_admin: boolean
   accounts: number
   owner_email: string | null
   plan: Plan
@@ -303,6 +305,10 @@ export interface PlatformSettings {
   monthly_cap_usd: number
   /** Sender of the service emails, on a domain verified in Resend. */
   email_from: string
+  /** Address of the board, for the links of the e-mails sent by scheduled jobs. */
+  site_url: string
+  /** Affiliate sign-up link per service ('' or absent: none). */
+  affiliate_links: Partial<Record<Provider, string>>
   updated_at: string
 }
 
@@ -438,6 +444,8 @@ export interface WorkspaceStats {
 
 export const api = {
   me: () => request<Me>('/me'),
+  /** Affiliate sign-up links recommended by Glimr, per service (absent: none). */
+  affiliateLinks: () => request<Partial<Record<Provider, string>>>('/affiliate-links'),
   /** Without sign-in: a person without an account asks for one. */
   requestAccess: (input: {
     name: string

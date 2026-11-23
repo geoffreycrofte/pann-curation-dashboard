@@ -95,6 +95,13 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
         </TabsTrigger>
       </TabsList>
       <TabsContent v-for="s in ITEM_TOPIC_STATUSES" :key="s" :value="s" class="panel">
+        <!-- Scheduled items leave this list: they wait in the calendar. -->
+        <p v-if="s === 'validated'" class="calendar-hint">
+          {{ t('board.scheduledInCalendar') }}
+          <RouterLink :to="{ name: 'calendar', params: { topicId } }">{{
+            t('board.openCalendar')
+          }}</RouterLink>
+        </p>
         <ItemList :topic-id="topicId" :status="s" @announce="announcement = $event" />
       </TabsContent>
     </TabsRoot>
@@ -143,5 +150,9 @@ const curationOff = computed(() => topic.value?.config.modules.curation === fals
   .tab[data-state='active'] {
     border: 3px solid Highlight;
   }
+}
+.calendar-hint {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
 }
 </style>

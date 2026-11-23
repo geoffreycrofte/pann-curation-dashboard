@@ -552,3 +552,17 @@ Les prix des offres sont **hors taxes** (Glimr s'adresse d'abord à des professi
 **Comment ça marche** (`/how-it-works`) : les trois outils (veille, conversations, Création), ce que chacun apporte, ses étapes et l'outil séparé qu'il remplace (Feedly Pro+, Syften Standard, Publer Business), puis la comparaison « sans Glimr, avec Glimr » de la page de tarifs (composant `ToolsCompare`, données dans `lib/competitors.ts`). L'accueil résume les trois outils en cartes et dit ce que l'on garde en main (budget, concurrents, validation, voix). Le style des pages marketing vit dans `styles/marketing.css`, sous la classe `.marketing`.
 
 **Litiges** : solution amiable d'abord, puis tribunaux de Luxembourg-Ville, sous réserve des règles qui protègent les consommateurs. Pas d'arbitrage : trop coûteux au regard des montants, et inopposable aux consommateurs.
+
+## 2026-11-23 : comptes inactifs, limite de comptes, liens affiliés
+
+**Comptes inactifs** : une tâche quotidienne (3 h UTC, dans le cron horaire) avertit par e-mail, en français et en anglais, les comptes sans connexion depuis 11 mois, puis supprime ceux qui ne sont pas revenus 30 jours après (même suppression que depuis le Profil). Se reconnecter annule l'avertissement. Jamais concernés : les administrateurs de Glimr et les propriétaires d'un espace qui paie un abonnement. Sans clé Resend ni expéditeur, personne n'est averti, donc personne n'est supprimé. L'adresse du site utilisée dans l'e-mail se règle dans l'admin (`platform_settings.site_url`).
+
+**Limite de comptes LinkedIn et Facebook** : appliquée aux comptes connectés par le Zernio de Glimr (mode plateforme), d'après `max_social_accounts` de l'offre. Au-delà, la connexion est refusée (`plan_account_limit`) et la carte Zernio affiche « n sur max ». Avec sa propre clé Zernio, pas de limite : l'espace paie Zernio lui-même.
+
+**Liens affiliés** : une adresse d'inscription par service, réglée dans l'admin (onglet Clés), proposée discrètement sur la page Connexions tant que le service n'est pas connecté (« Créer un compte X », suivi d'une petite mention « lien affilié » qui mène à la page `/affiliation`, et `rel="sponsored"`). La page explique le principe une fois pour toutes. Aucune adresse n'est fournie par défaut.
+
+**Espaces `legacy`** : vérifié le 2026-11-23, il n'en reste qu'un, celui de Geoffrey, qui garde ce statut. Les nouveaux espaces démarrent en essai.
+
+**Veille** : l'onglet « Validés » rappelle que les articles programmés attendent dans le calendrier, avec un lien.
+
+**Zernio de Glimr et offres** : le mode plateforme s'active dès qu'un espace paie l'offre Intermédiaire ou Supérieure (webhook Stripe) et se coupe s'il passe à l'offre « clés personnelles ». Un administrateur garde la main : décocher dans l'admin le désactive à la main (abus), et il reste désactivé quelle que soit l'offre jusqu'à ce qu'il soit recoché.

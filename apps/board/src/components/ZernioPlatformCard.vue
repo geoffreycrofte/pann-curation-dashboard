@@ -6,7 +6,7 @@
  * opens Zernio. Back with ?zernio=connected, the accounts are listed again.
  */
 import { useQuery, useQueryCache } from '@pinia/colada'
-import { onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Icon from './Icon.vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -21,6 +21,19 @@ const route = useRoute()
 const router = useRouter()
 const queryCache = useQueryCache()
 const key = () => ['zernio-platform', props.workspaceId]
+
+// The plan caps the accounts connected through Glimr's Zernio (same query as the Profile).
+const { data: plan } = useQuery({
+  key: () => ['workspace-plan', props.workspaceId],
+  query: () => api.workspacePlan(props.workspaceId),
+})
+const connectedCount = computed(
+  () => (fresh.value?.accounts ?? []).filter((a) => a.active !== false).length,
+)
+const maxAccounts = computed(() => plan.value?.max_social_accounts ?? null)
+const atLimit = computed(
+  () => maxAccounts.value !== null && connectedCount.value >= maxAccounts.value,
+)
 
 const waitingFor = ref<'connect' | 'refresh' | null>(null)
 const message = ref('')
@@ -110,6 +123,10 @@ watch(
       </li>
     </ul>
     <p v-else>{{ t('zernioPlatform.none') }}</p>
+    <p v-if="maxAccounts !== null" class="hint" :id="`${id}-limit`">
+      {{ t('zernioPlatform.limit', { n: connectedCount, max: maxAccounts }) }}
+      <template v-if="atLimit">{{ t('zernioPlatform.limitReached') }}</template>
+    </p>
     <p v-if="fresh?.refreshed_at" class="hint">
       {{
         t('zernioPlatform.listedOn', {
@@ -123,7 +140,8 @@ watch(
         type="button"
         class="button"
         data-size="small"
-        :disabled="!!waitingFor"
+        :disabled="!!waitingFor || atLimit"
+        :aria-describedby="maxAccounts !== null ? `${id}-limit` : undefined"
         @click="connect('linkedin')"
       >
         <Icon name="linkedin" />
@@ -133,7 +151,8 @@ watch(
         type="button"
         class="button"
         data-size="small"
-        :disabled="!!waitingFor"
+        :disabled="!!waitingFor || atLimit"
+        :aria-describedby="maxAccounts !== null ? `${id}-limit` : undefined"
         @click="connect('facebook')"
       >
         <Icon name="facebook" />
