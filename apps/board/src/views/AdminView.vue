@@ -333,6 +333,9 @@ const usd = (value: number) => n(value, { style: 'currency', currency: 'USD' })
                       {{ t('admin.platformLabel', { n: workspace.accounts }) }}
                     </label>
                   </div>
+                  <p v-if="workspace.zernio_off_by_admin" class="ws-meta">
+                    {{ t('admin.platformOffByAdmin') }}
+                  </p>
                 </td>
               </tr>
             </tbody>

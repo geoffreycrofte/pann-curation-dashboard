@@ -261,6 +261,8 @@ export interface AdminWorkspace {
   name: string
   created_at: string
   zernio_platform: boolean
+  /** Turned off by hand: stays off whatever the offer. */
+  zernio_off_by_admin: boolean
   accounts: number
   owner_email: string | null
   plan: Plan

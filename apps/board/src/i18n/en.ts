@@ -1038,9 +1038,10 @@ export default {
     },
     workspacesTitle: 'Workspaces',
     workspacesIntro:
-      "Each workspace with its owner, its offer (editable here) and where its billing stands. The last column routes LinkedIn and Facebook through Glimr's Zernio key (platform mode): its members connect their accounts without a key. A workspace with its own Zernio key keeps it. Two workspaces can share a name (taken from the start of the e-mail address): the owner's address tells them apart.",
+      "Each workspace with its owner, its offer (editable here) and where its billing stands. The last column routes LinkedIn and Facebook through Glimr's Zernio key (platform mode), turned on automatically once a workspace pays the Intermediate or Superior offer; unticking it turns it off by hand, whatever the offer: its members connect their accounts without a key. A workspace with its own Zernio key keeps it. Two workspaces can share a name (taken from the start of the e-mail address): the owner's address tells them apart.",
     colPlatform: "Glimr's Zernio",
     platformLabel: 'On ({n} accounts)',
+    platformOffByAdmin: 'Turned off by hand: stays off whatever the offer.',
     platformOn: "Glimr's Zernio on for {name}",
     platformOff: "Glimr's Zernio off for {name}",
     title: 'Glimr administration',

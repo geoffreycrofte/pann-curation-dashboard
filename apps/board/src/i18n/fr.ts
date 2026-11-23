@@ -1052,9 +1052,10 @@ export default {
     },
     workspacesTitle: 'Espaces de travail',
     workspacesIntro:
-      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme) : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
+      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme), activé automatiquement dès qu’un espace paie l’offre Intermédiaire ou Supérieure ; le décocher le désactive à la main, quelle que soit l’offre : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
     colPlatform: 'Zernio de Glimr',
     platformLabel: 'Activé ({n} comptes)',
+    platformOffByAdmin: 'Désactivé à la main : reste désactivé quelle que soit l’offre.',
     platformOn: 'Zernio de Glimr activé pour {name}',
     platformOff: 'Zernio de Glimr désactivé pour {name}',
     title: 'Administration de Glimr',

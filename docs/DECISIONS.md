@@ -562,3 +562,5 @@ Les prix des offres sont **hors taxes** (Glimr s'adresse d'abord à des professi
 **Liens affiliés** : une adresse d'inscription par service, réglée dans l'admin (onglet Clés), proposée sur la page Connexions tant que le service n'est pas connecté, avec la mention « lien affilié » et `rel="sponsored"`. Aucune adresse n'est fournie par défaut.
 
 **Veille** : l'onglet « Validés » rappelle que les articles programmés attendent dans le calendrier, avec un lien.
+
+**Zernio de Glimr et offres** : le mode plateforme s'active dès qu'un espace paie l'offre Intermédiaire ou Supérieure (webhook Stripe) et se coupe s'il passe à l'offre « clés personnelles ». Un administrateur garde la main : décocher dans l'admin le désactive à la main (abus), et il reste désactivé quelle que soit l'offre jusqu'à ce qu'il soit recoché.
