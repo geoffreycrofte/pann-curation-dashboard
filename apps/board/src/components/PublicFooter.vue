@@ -7,7 +7,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { setLang } from '../i18n'
 import { OPERATOR } from '../legal/types'
-import GlimrMark from './GlimrMark.vue'
+import GlimrLogo from './GlimrLogo.vue'
 
 const { t, locale } = useI18n()
 const otherLang = computed(() => (locale.value === 'fr' ? 'en' : 'fr'))
@@ -33,8 +33,7 @@ const INFORMATION = [
     <div class="foot-grid">
       <div class="foot-about">
         <RouterLink to="/" class="foot-brand">
-          <GlimrMark :size="32" />
-          <span>{{ t('app.name') }}</span>
+          <GlimrLogo :height="30" />
         </RouterLink>
         <p>{{ t('public.footer.about') }}</p>
         <button
