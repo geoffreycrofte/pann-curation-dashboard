@@ -30,6 +30,7 @@ export default {
     terms: 'Terms',
     privacy: 'Privacy and cookies',
     accessibility: 'Accessibility',
+    affiliates: 'Affiliate links',
   },
   public: {
     navLabel: 'Public pages',
@@ -51,6 +52,7 @@ export default {
         terms: 'Terms',
         privacy: 'Privacy and cookies',
         accessibility: 'Accessibility',
+        affiliates: 'Affiliate links',
         contact: 'Contact',
       },
       copyright: '© {year} Glimr.',
@@ -630,8 +632,8 @@ export default {
   },
   connections: {
     affiliate: {
-      link: 'No account yet? Create a {provider} account',
-      disclosure: 'Affiliate link: Glimr may earn a commission, at no extra cost to you.',
+      link: 'Create a {provider} account',
+      note: 'affiliate link',
     },
     title: 'Service connections',
     intro:

@@ -559,7 +559,9 @@ Les prix des offres sont **hors taxes** (Glimr s'adresse d'abord à des professi
 
 **Limite de comptes LinkedIn et Facebook** : appliquée aux comptes connectés par le Zernio de Glimr (mode plateforme), d'après `max_social_accounts` de l'offre. Au-delà, la connexion est refusée (`plan_account_limit`) et la carte Zernio affiche « n sur max ». Avec sa propre clé Zernio, pas de limite : l'espace paie Zernio lui-même.
 
-**Liens affiliés** : une adresse d'inscription par service, réglée dans l'admin (onglet Clés), proposée sur la page Connexions tant que le service n'est pas connecté, avec la mention « lien affilié » et `rel="sponsored"`. Aucune adresse n'est fournie par défaut.
+**Liens affiliés** : une adresse d'inscription par service, réglée dans l'admin (onglet Clés), proposée discrètement sur la page Connexions tant que le service n'est pas connecté (« Créer un compte X », suivi d'une petite mention « lien affilié » qui mène à la page `/affiliation`, et `rel="sponsored"`). La page explique le principe une fois pour toutes. Aucune adresse n'est fournie par défaut.
+
+**Espaces `legacy`** : vérifié le 2026-11-23, il n'en reste qu'un, celui de Geoffrey, qui garde ce statut. Les nouveaux espaces démarrent en essai.
 
 **Veille** : l'onglet « Validés » rappelle que les articles programmés attendent dans le calendrier, avec un lien.
 

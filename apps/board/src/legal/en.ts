@@ -619,4 +619,50 @@ export default {
       },
     ],
   },
+  affiliates: {
+    title: 'Affiliate links',
+    lead: 'Why some sign-up links of the Connections page are affiliate links, and what it changes for you.',
+    updated: '23 November 2026',
+    sections: [
+      {
+        id: 'what',
+        title: 'What it is',
+        blocks: [
+          {
+            p: 'With the "Own keys" offer, you open your own accounts with the services Glimr uses (AI, search, publishing, newsletter). For some of them, the Connections page offers a sign-up link marked "affiliate link".',
+          },
+          {
+            p: 'If you create your account through that link, the service may pay a commission to Crofte Studio S.à r.l.-S, which publishes Glimr.',
+          },
+        ],
+      },
+      {
+        id: 'you',
+        title: 'What it changes for you',
+        blocks: [
+          {
+            list: [
+              'Nothing on the price: you pay the service the same rate, at no extra cost.',
+              'Nothing on the choice: you can create your account without the link, Glimr works the same way.',
+              'No data from your topics goes to the service through the link: it only knows you come from Glimr.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'choice',
+        title: 'How services are chosen',
+        blocks: [
+          {
+            p: 'Glimr only offers links for services it knows how to use and uses itself. A commission never decides whether a service is added: a service is offered because it works with Glimr, not because it pays.',
+          },
+        ],
+      },
+      {
+        id: 'contact',
+        title: 'A question',
+        blocks: [{ p: 'Write to {email}.' }],
+      },
+    ],
+  },
 } satisfies LegalDocs

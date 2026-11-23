@@ -315,7 +315,9 @@ const { mutate: remove } = useMutation({
         <a :href="affiliate" target="_blank" rel="noopener noreferrer sponsored">
           {{ t('connections.affiliate.link', { provider: name }) }}
         </a>
-        <span class="hint">{{ t('connections.affiliate.disclosure') }}</span>
+        <RouterLink :to="{ name: 'affiliates' }" class="affiliate-note">{{
+          t('connections.affiliate.note')
+        }}</RouterLink>
       </p>
 
       <details class="how-to">
@@ -574,12 +576,17 @@ const { mutate: remove } = useMutation({
   }
 }
 .affiliate {
-  display: grid;
-  gap: var(--space-1);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
   margin: 0;
+  font-size: 0.875rem;
 }
 
-.affiliate a {
-  font-weight: 650;
+/* The disclosure, small and muted: what it means is on its own page. */
+.affiliate-note {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
 }
 </style>

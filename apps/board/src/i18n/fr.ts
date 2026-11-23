@@ -28,6 +28,7 @@ export default {
     terms: 'Conditions générales',
     privacy: 'Confidentialité et cookies',
     accessibility: 'Accessibilité',
+    affiliates: 'Liens affiliés',
   },
   public: {
     navLabel: 'Pages publiques',
@@ -49,6 +50,7 @@ export default {
         terms: 'Conditions générales',
         privacy: 'Confidentialité et cookies',
         accessibility: 'Accessibilité',
+        affiliates: 'Liens affiliés',
         contact: 'Contact',
       },
       copyright: '© {year} Glimr.',
@@ -633,8 +635,8 @@ export default {
   },
   connections: {
     affiliate: {
-      link: 'Pas encore de compte ? Créer un compte {provider}',
-      disclosure: 'Lien affilié : Glimr peut toucher une commission, sans surcoût pour vous.',
+      link: 'Créer un compte {provider}',
+      note: 'lien affilié',
     },
     title: 'Connexions aux services',
     intro:

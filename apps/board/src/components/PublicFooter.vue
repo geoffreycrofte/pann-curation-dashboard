@@ -25,6 +25,7 @@ const INFORMATION = [
   { to: { name: 'terms' }, key: 'terms' },
   { to: { name: 'privacy' }, key: 'privacy' },
   { to: { name: 'accessibility' }, key: 'accessibility' },
+  { to: { name: 'affiliates' }, key: 'affiliates' },
 ] as const
 </script>
 
