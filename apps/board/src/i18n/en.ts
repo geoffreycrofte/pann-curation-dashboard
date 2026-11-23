@@ -163,7 +163,7 @@ export default {
     navLabel: 'Topic adjustment',
     quit: 'Back to settings',
     unavailable:
-      'The assistant is not available right now (assistant credit used up or service paused). You can change everything in the settings.',
+      'The assistant is not available right now: its credit is used up and your workspace has no tokens or AI key left. You can change everything in the settings.',
     toSettings: 'Open the settings',
     compareTitle: 'Proposed changes',
     compareIntro:
@@ -297,6 +297,16 @@ export default {
       updated: 'edited on {date}',
     },
     calendar: { scheduled: 'Create, scheduled', published: 'Create, published' },
+    questions: {
+      title: 'Recurring questions',
+      hint: 'The questions that keep coming back in the conversations of this topic: as many useful posts to write. Finding them uses your workspace’s AI.',
+      find: 'Find recurring questions',
+      again: 'Look again',
+      pending: 'Reading the conversations…',
+      none: 'No question comes back in the recent conversations.',
+      generatedOn: 'Found on {date}',
+      count: 'Comes up in {n} conversation | Comes up in {n} conversations',
+    },
     ideas: {
       title: 'Ideas',
       hint: 'Kept in the news watch and the conversations: material for a post of your own.',
@@ -852,7 +862,8 @@ export default {
     email_sender_missing: 'No sender set for the service emails (Administration).',
     no_platform_admin: 'No administrator to notify.',
     onboarding_unavailable: 'The assistant is not available right now.',
-    onboarding_credit_exhausted: 'The assistant credit is used up for this workspace.',
+    onboarding_credit_exhausted:
+      'The assistant credit is used up, and your workspace has no tokens or AI key left.',
     alt_missing: 'An image has no text alternative in {lang}.',
     too_many_images: 'Four images at most per post.',
     provider_error: 'The AI service could not answer. It will retry automatically.',
@@ -1403,9 +1414,6 @@ export default {
       'AI triage is waiting: no Anthropic key is set. Items arrive without a relevance score.',
     topics: 'Topics',
     noTopic: 'No topic yet.',
-    scheduledInCalendar:
-      'Once scheduled, items leave this list: they wait for their slot in the calendar.',
-    openCalendar: 'Open the calendar',
     statusFilter: 'Filter by status',
     empty: 'Nothing in this list.',
     loading: 'Loading…',
@@ -1419,6 +1427,8 @@ export default {
     scheduledFor: 'Scheduled for {date}',
   },
   scheduled: {
+    tab: 'Scheduled',
+    of: ': {title}',
     views: 'Display of scheduled items',
     list: 'List',
     week: 'Week',

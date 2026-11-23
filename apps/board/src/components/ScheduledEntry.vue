@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { useMutation, useQueryCache } from '@pinia/colada'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { CompositionSummary, QueueItem } from '../lib/api'
+import { api, type CompositionSummary, type QueueItem } from '../lib/api'
 import { describeError } from '../lib/errors'
+import { toast } from '../lib/toast'
 import { contentLangName } from '../lib/langs'
 import Icon from './Icon.vue'
 
@@ -20,8 +22,26 @@ const props = defineProps<{
   time: string
   /** Compact: in a column of the week planning. */
   compact?: boolean
+  /** Direct control: the item can be taken out of the queue from here. */
+  controls?: boolean
 }>()
 const { t } = useI18n()
+const queryCache = useQueryCache()
+
+// Back to the validated items, its posts drafts again (same as on its page).
+const waiting = computed(() => !!props.entry?.posts.some((p) => p.status === 'scheduled'))
+const {
+  mutate: unschedule,
+  isLoading: unscheduling,
+  error: unscheduleError,
+} = useMutation({
+  mutation: () => api.unschedule(props.topicId, props.entry!.item_id),
+  async onSuccess() {
+    toast(t('diffusion.unscheduled'))
+    await queryCache.invalidateQueries({ key: ['queue', props.topicId] })
+    await queryCache.invalidateQueries({ key: ['items', props.topicId] })
+  },
+})
 
 const TONES = { scheduled: 'accent', sent: 'success', failed: 'danger' } as const
 const failed = computed(() => props.entry?.posts.filter((p) => p.status === 'failed') ?? [])
@@ -91,6 +111,22 @@ const at = computed(() => props.entry?.publish_at ?? props.composition?.publish_
     <p v-for="post in failed" :key="post.id" class="notice notice-inline" data-tone="danger">
       <Icon name="alert-circle" />
       <span>{{ describeError(post.last_error ?? '', t).text }}</span>
+    </p>
+    <div v-if="controls && entry && waiting && !compact" class="entry-actions">
+      <button
+        type="button"
+        class="button"
+        data-size="small"
+        :disabled="unscheduling"
+        @click="unschedule()"
+      >
+        {{ t('diffusion.unschedule')
+        }}<span class="visually-hidden">{{ t('scheduled.of', { title: entry.item.title }) }}</span>
+      </button>
+    </div>
+    <p v-if="unscheduleError" class="notice notice-inline" data-tone="danger" role="alert">
+      <Icon name="alert-circle" />
+      <span>{{ describeError(unscheduleError.message, t).text }}</span>
     </p>
   </article>
 </template>
@@ -171,5 +207,11 @@ const at = computed(() => props.entry?.publish_at ?? props.composition?.publish_
 
 .badge abbr {
   text-decoration: none;
+}
+
+.entry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 </style>

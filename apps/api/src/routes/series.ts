@@ -26,6 +26,34 @@ const planSchema = z
  * series; its posts then become compositions, drafted from their angle by jobs.
  */
 export const series = new Hono<AppEnv>()
+  /** Recurring questions of the conversations, ideas for posts (RLS: members read). */
+  .get('/:topicId/question-ideas', async (c) => {
+    const { data, error } = await c.var.db
+      .from('question_ideas')
+      .select('status, ideas, error, generated_at')
+      .eq('topic_id', c.req.param('topicId'))
+      .maybeSingle()
+    if (error) throw error
+    return c.json(data ?? { status: 'idle', ideas: [], error: null, generated_at: null })
+  })
+
+  /** Asks the job to look for them again (in the language of the interface). */
+  .post('/:topicId/question-ideas', async (c) => {
+    const { ui_lang } = await parseJson(
+      z.object({ ui_lang: z.enum(['fr', 'en']).default('fr') }),
+      c.req.raw,
+    )
+    const topicId = c.req.param('topicId')
+    const { data, error } = await c.var.db.rpc('request_question_ideas', {
+      p_topic_id: topicId,
+      p_ui_lang: ui_lang,
+    })
+    if (error?.code === '42501') throw new HTTPException(404, { message: 'Topic not found' })
+    if (error) throw error
+    if (data) await c.env.JOBS.send({ type: 'question-ideas', topicId })
+    return c.json({ queued: data === true }, 202)
+  })
+
   .post('/:topicId/series', async (c) => {
     const body = await parseJson(newSeries, c.req.raw)
     const { data, error } = await c.var.db

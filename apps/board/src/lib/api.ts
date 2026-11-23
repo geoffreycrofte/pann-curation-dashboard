@@ -226,6 +226,19 @@ export interface SeriesPost {
   angle: string
 }
 
+/** Recurring questions of the conversations, ideas for posts (Création). */
+export interface QuestionIdeas {
+  status: 'idle' | 'pending' | 'failed'
+  ideas: {
+    question: string
+    angle: string
+    count: number
+    examples: { title: string; url: string }[]
+  }[]
+  error: string | null
+  generated_at: string | null
+}
+
 export interface Series {
   id: string
   topic_id: string
@@ -636,6 +649,9 @@ export const api = {
     },
   ) => request<Series>(`/topics/${topicId}/series`, json('POST', input)),
   series: (topicId: string, id: string) => request<Series>(`/topics/${topicId}/series/${id}`),
+  questionIdeas: (topicId: string) => request<QuestionIdeas>(`/topics/${topicId}/question-ideas`),
+  requestQuestionIdeas: (topicId: string, ui_lang: 'fr' | 'en') =>
+    request<{ queued: boolean }>(`/topics/${topicId}/question-ideas`, json('POST', { ui_lang })),
   updateSeriesPlan: (topicId: string, id: string, plan: SeriesPost[]) =>
     request<Series>(`/topics/${topicId}/series/${id}`, json('PATCH', { plan })),
   createSeriesCompositions: (topicId: string, id: string) =>

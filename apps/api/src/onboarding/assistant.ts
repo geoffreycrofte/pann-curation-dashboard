@@ -218,6 +218,39 @@ export const claudeAssistantModel: AssistantModel = async ({ apiKey, system, mes
   }
 }
 
+/**
+ * Which AI answers: Glimr's key on the onboarding credit, else the workspace's own AI
+ * (its Anthropic key, or Glimr's key on the tokens of its offer). None: the assistant stops.
+ */
+export async function assistantFunding(
+  db: SupabaseClient,
+  workspaceId: string,
+): Promise<{ source: 'credit' | 'workspace'; apiKey: string } | null> {
+  const { data: budget, error: budgetError } = await db
+    .rpc('onboarding_budget', { p_workspace_id: workspaceId })
+    .single<{ workspace_onboarding: number; month_total: number; credit: number; cap: number }>()
+  if (budgetError) throw budgetError
+  if (
+    Number(budget.workspace_onboarding) < Number(budget.credit) &&
+    Number(budget.month_total) < Number(budget.cap)
+  ) {
+    const { data: keys, error: keysError } = await db.rpc('platform_credentials_for_jobs')
+    if (keysError) throw keysError
+    const key = ((keys ?? []) as { provider: string; secret: string }[]).find(
+      (k) => k.provider === 'anthropic',
+    )?.secret
+    if (key) return { source: 'credit', apiKey: key }
+  }
+  const { data: own, error: ownError } = await db.rpc('workspace_credentials_for_jobs', {
+    p_workspace_id: workspaceId,
+  })
+  if (ownError) throw ownError
+  const key = ((own ?? []) as { provider: string; secret: string }[]).find(
+    (k) => k.provider === 'anthropic',
+  )?.secret
+  return key ? { source: 'workspace', apiKey: key } : null
+}
+
 interface SessionRow {
   id: string
   workspace_id: string
@@ -227,8 +260,10 @@ interface SessionRow {
 }
 
 /**
- * Job: answers the last message of an onboarding session, on Glimr's key, within the
- * onboarding credit of the workspace and Glimr's monthly cap. `db` uses the secret key.
+ * Job: answers the last message of an onboarding session. On Glimr's key while the
+ * onboarding credit of the workspace and Glimr's monthly cap allow; past them, on the
+ * workspace's own AI (its Anthropic key, or the tokens of an offer where Glimr provides the
+ * AI). `db` uses the secret key.
  */
 export async function runOnboarding(
   db: SupabaseClient,
@@ -251,27 +286,14 @@ export async function runOnboarding(
     if (updateError) throw updateError
   }
 
-  // Limits of what Glimr pays: past them, the review opens with what is there.
-  const { data: budget, error: budgetError } = await db
-    .rpc('onboarding_budget', { p_workspace_id: session.workspace_id })
-    .single<{ workspace_onboarding: number; month_total: number; credit: number; cap: number }>()
-  if (budgetError) throw budgetError
-  if (
-    Number(budget.workspace_onboarding) >= Number(budget.credit) ||
-    Number(budget.month_total) >= Number(budget.cap)
-  ) {
+  // Glimr's credit first; past it, the workspace's own AI; with neither, the review opens
+  // with what is there.
+  const funding = await assistantFunding(db, session.workspace_id)
+  if (!funding) {
     await finish({ status: 'done', error: 'onboarding_credit_exhausted' })
     return 'credit_exhausted'
   }
-  const { data: keys, error: keysError } = await db.rpc('platform_credentials_for_jobs')
-  if (keysError) throw keysError
-  const apiKey = ((keys ?? []) as { provider: string; secret: string }[]).find(
-    (k) => k.provider === 'anthropic',
-  )?.secret
-  if (!apiKey) {
-    await finish({ status: 'failed', error: 'onboarding_unavailable' })
-    return 'no_key'
-  }
+  const { apiKey } = funding
 
   // The site is read once, for the first answer only.
   let siteText: string | null = null
@@ -307,7 +329,9 @@ export async function runOnboarding(
       topic_id: null,
       provider: 'anthropic',
       model: result.model ?? ONBOARDING_MODEL,
-      operation: 'onboarding',
+      // 'onboarding' draws on Glimr's credit; 'assistant' on the workspace's own AI (the
+      // usage_log trigger bills it to Glimr's tokens on an offer that provides the AI).
+      operation: funding.source === 'credit' ? 'onboarding' : 'assistant',
       units: {
         input_tokens: result.usage.input_tokens,
         output_tokens: result.usage.output_tokens,
@@ -319,7 +343,7 @@ export async function runOnboarding(
         cache_read_input_tokens: result.usage.cache_read_input_tokens ?? 0,
         cache_creation_input_tokens: result.usage.cache_creation_input_tokens ?? 0,
       }),
-      billed_to: 'platform',
+      billed_to: funding.source === 'credit' ? 'platform' : 'workspace',
     })
     if (logError) throw logError
   }
