@@ -428,11 +428,15 @@ legend {
 .dialog-overlay {
   position: fixed;
   inset: 0;
+  /* Above the page, including what it stacks itself (the AI halo of the fields, z-index 1),
+   * the mobile menu (30) and dropdown menus (40); under the drawer (50) and toasts (60). */
+  z-index: 45;
   background: rgb(10 10 10 / 0.55);
 }
 
 .dialog {
   position: fixed;
+  z-index: 46;
   top: 50%;
   left: 50%;
   width: min(32rem, calc(100vw - 2rem));

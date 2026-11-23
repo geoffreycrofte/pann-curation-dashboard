@@ -198,9 +198,17 @@ async function submit() {
     gap: var(--space-2);
   }
 
-  /* The form stays near the top: a smaller nugget. */
+  /* The form stays near the top: a smaller nugget, name and tagline. */
   .nugget {
-    width: 9rem;
+    width: 7rem;
+  }
+
+  .brand {
+    font-size: 2.5rem;
+  }
+
+  .tagline {
+    font-size: 1.0625rem;
   }
 }
 </style>
