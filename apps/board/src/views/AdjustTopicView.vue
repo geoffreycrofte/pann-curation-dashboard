@@ -4,7 +4,8 @@ import Icon from '../components/Icon.vue'
  * "Adjust with the assistant": the same assistant as at creation, on an existing topic.
  * It knows the current settings and proposes changes; the person then sees each change
  * next to the current value, edits it if needed, and applies only those they keep.
- * Nothing changes before "Apply". Runs on Glimr's assistant credit, like the creation.
+ * Nothing changes before "Apply". Runs on Glimr's assistant credit, like the creation, then on
+ * the workspace's own AI (its key, or the tokens of its offer).
  */
 import { canonicalLang, MAX_OUTPUT_LANGS, type TopicConfig } from '@glimr/shared'
 import { useQuery, useQueryCache } from '@pinia/colada'

@@ -436,6 +436,26 @@ const routes = {
       workspace: { name: 'Agence' },
     },
   ],
+  '/api/topics/t1/question-ideas': {
+    status: 'idle',
+    error: null,
+    generated_at: '2026-11-23T10:00:00Z',
+    ideas: [
+      {
+        question: 'Comment tester un site avec un lecteur d’écran quand on débute ?',
+        angle:
+          'Une méthode en trois temps : parcours critiques, navigation au clavier, puis lecteur d’écran avec les raccourcis de base.',
+        count: 4,
+        examples: [{ title: 'Ask HN: How do you audit accessibility?', url: 'https://e.org/1' }],
+      },
+      {
+        question: 'Les WCAG 2.2 sont-elles obligatoires en Europe ?',
+        angle: 'Ce que disent l’EAA et la norme EN 301 549, et ce qui change en 2026.',
+        count: 3,
+        examples: [{ title: 'EAA and WCAG 2.2', url: 'https://e.org/2' }],
+      },
+    ],
+  },
   '/api/affiliate-links': { exa: 'https://example.org/exa?ref=glimr' },
   '/api/admin/settings': {
     onboarding_credit_usd: 0.5,
@@ -595,6 +615,7 @@ async function shoot(page, name, path, opts = {}) {
     ['overview', '/t/t1'],
     ['curation', '/t/t1/curation'],
     ['curation-validated', '/t/t1/curation?status=validated'],
+    ['curation-scheduled', '/t/t1/curation?status=scheduled'],
     ['item', '/t/t1/items/i1'],
     ['item-new', '/t/t1/items/i0'],
     ['engagement', '/t/t1/engagement'],

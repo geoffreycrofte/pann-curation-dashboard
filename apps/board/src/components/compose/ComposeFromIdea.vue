@@ -12,7 +12,8 @@ import { api } from '../../lib/api'
 import { describeError } from '../../lib/errors'
 import Icon from '../Icon.vue'
 
-const props = defineProps<{ topicId: string; title: string; url: string; notes?: string }>()
+/** No url: an idea without a page (a recurring question), written from the notes. */
+const props = defineProps<{ topicId: string; title: string; url?: string; notes?: string }>()
 const { t } = useI18n()
 const router = useRouter()
 
@@ -27,13 +28,18 @@ async function start() {
   busy.value = true
   error.value = ''
   try {
-    const created = await api.createComposition(props.topicId, {
-      subject: props.title.slice(0, 300),
-      mode: 'links',
-      notes: props.notes ?? '',
-      link: props.url,
-      sources: [{ url: props.url, title: props.title.slice(0, 300), selected: true }],
-    })
+    const created = await api.createComposition(
+      props.topicId,
+      props.url
+        ? {
+            subject: props.title.slice(0, 300),
+            mode: 'links',
+            notes: props.notes ?? '',
+            link: props.url,
+            sources: [{ url: props.url, title: props.title.slice(0, 300), selected: true }],
+          }
+        : { subject: props.title.slice(0, 300), mode: 'notes', notes: props.notes ?? '' },
+    )
     await router.push({
       name: 'composition',
       params: { topicId: props.topicId, compositionId: created.id },

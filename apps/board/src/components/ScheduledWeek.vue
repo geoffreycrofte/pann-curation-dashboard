@@ -9,7 +9,8 @@ import { useNow } from '../lib/now'
 import { middayOf, zonedTime } from '../lib/zoned'
 import ScheduledEntry from './ScheduledEntry.vue'
 
-const props = defineProps<{ topicId: string; topic: TopicWithConfig }>()
+/** itemsOnly: the news watch's own tab, without the posts of Création. */
+const props = defineProps<{ topicId: string; topic: TopicWithConfig; itemsOnly?: boolean }>()
 const { t, d } = useI18n()
 const route = useRoute()
 const router = useRouter()
@@ -46,7 +47,7 @@ const { data, isPending, error } = useQuery({
 const { data: compositions } = useQuery({
   key: () => ['compositions', props.topicId],
   query: () => api.compositions(props.topicId),
-  enabled: () => props.topic.config.modules.compose,
+  enabled: () => props.topic.config.modules.compose && !props.itemsOnly,
 })
 
 type Slot =
@@ -70,7 +71,7 @@ const planning = computed(() => {
   const taken = new Map<string, Set<string>>(
     [...byDay].map(([day, list]) => [day, new Set(list.map((s) => s.time))]),
   )
-  if (props.topic.config.modules.compose)
+  if (props.topic.config.modules.compose && !props.itemsOnly)
     for (const c of compositions.value ?? []) {
       if (c.status !== 'scheduled' || !c.publish_at) continue
       byDay.get(zonedDay(new Date(c.publish_at), timeZone.value))?.push({

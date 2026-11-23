@@ -11,7 +11,8 @@ import { middayOf, zonedTime } from '../lib/zoned'
 import ScheduledEntry from './ScheduledEntry.vue'
 import ScheduledWeek from './ScheduledWeek.vue'
 
-const props = defineProps<{ topicId: string }>()
+/** itemsOnly: the news watch's own tab, without the posts of Création. */
+const props = defineProps<{ topicId: string; itemsOnly?: boolean }>()
 const { t, d } = useI18n()
 const route = useRoute()
 const router = useRouter()
@@ -59,7 +60,7 @@ const days = computed(() => {
     ...(queue.value ?? [])
       .filter((entry) => entry.posts.some((p) => p.status === 'scheduled'))
       .map((entry) => ({ key: `i-${entry.item_id}`, at: entry.publish_at, entry })),
-    ...(topic.value?.config.modules.compose ? (compositions.value ?? []) : [])
+    ...(topic.value?.config.modules.compose && !props.itemsOnly ? (compositions.value ?? []) : [])
       .filter((c) => c.status === 'scheduled' && c.publish_at)
       .map((c) => ({ key: `c-${c.id}`, at: c.publish_at!, composition: c })),
   ].sort((a, b) => a.at.localeCompare(b.at))
@@ -114,6 +115,7 @@ const dayTitle = (day: string) => {
                 :entry="'entry' in item ? item.entry : undefined"
                 :composition="'composition' in item ? item.composition : undefined"
                 :time="zonedTime(item.at, timeZone)"
+                :controls="itemsOnly"
               />
             </li>
           </ol>
@@ -122,7 +124,7 @@ const dayTitle = (day: string) => {
     </TabsContent>
 
     <TabsContent value="week" class="subpanel">
-      <ScheduledWeek v-if="topic" :topic-id="topicId" :topic="topic" />
+      <ScheduledWeek v-if="topic" :topic-id="topicId" :topic="topic" :items-only="itemsOnly" />
       <p v-else role="status">{{ t('common.loading') }}</p>
     </TabsContent>
   </TabsRoot>

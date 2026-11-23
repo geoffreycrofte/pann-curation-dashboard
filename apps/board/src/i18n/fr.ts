@@ -161,7 +161,7 @@ export default {
     navLabel: 'Ajustement du thème',
     quit: 'Retour aux réglages',
     unavailable:
-      'L’assistant n’est pas disponible pour le moment (crédit de l’assistant épuisé ou service en pause). Vous pouvez tout modifier dans les réglages.',
+      'L’assistant n’est pas disponible pour le moment : son crédit est épuisé et votre espace n’a plus de tokens ni de clé IA disponible. Vous pouvez tout modifier dans les réglages.',
     toSettings: 'Ouvrir les réglages',
     compareTitle: 'Changements proposés',
     compareIntro:
@@ -296,6 +296,16 @@ export default {
       updated: 'modifié le {date}',
     },
     calendar: { scheduled: 'Création, programmés', published: 'Création, publiés' },
+    questions: {
+      title: 'Questions récurrentes',
+      hint: 'Les questions qui reviennent dans les conversations de ce thème : autant de posts utiles à écrire. Les repérer utilise l’IA de votre espace.',
+      find: 'Repérer les questions récurrentes',
+      again: 'Chercher à nouveau',
+      pending: 'Lecture des conversations…',
+      none: 'Aucune question ne revient dans les conversations récentes.',
+      generatedOn: 'Repérées le {date}',
+      count: 'Revient dans {n} conversation | Revient dans {n} conversations',
+    },
     ideas: {
       title: 'Idées',
       hint: 'Gardé dans la veille et les conversations : de quoi écrire votre propre post.',
@@ -859,7 +869,8 @@ export default {
       'Aucune adresse d’expédition réglée pour les e-mails du service (Administration).',
     no_platform_admin: 'Aucun administrateur à prévenir.',
     onboarding_unavailable: 'L’assistant n’est pas disponible pour le moment.',
-    onboarding_credit_exhausted: 'Le crédit de l’assistant est épuisé pour cet espace.',
+    onboarding_credit_exhausted:
+      'Le crédit de l’assistant est épuisé, et votre espace n’a plus de tokens ni de clé IA disponible.',
     alt_missing: 'Une image n’a pas de texte alternatif en {lang}.',
     too_many_images: 'Quatre images au plus par post.',
     provider_error: 'Le service d’IA n’a pas pu répondre. Nouvel essai automatique.',
@@ -1426,9 +1437,6 @@ export default {
       'Le tri par IA est en attente : aucune clé Anthropic n’est configurée. Les éléments arrivent sans score de pertinence.',
     topics: 'Thèmes',
     noTopic: "Aucun thème pour l'instant.",
-    scheduledInCalendar:
-      'Une fois programmés, les articles quittent cette liste : ils attendent leur créneau dans le calendrier.',
-    openCalendar: 'Ouvrir le calendrier',
     statusFilter: 'Filtrer par statut',
     empty: 'Aucun élément dans cette liste.',
     loading: 'Chargement…',
@@ -1442,6 +1450,8 @@ export default {
     scheduledFor: 'Programmé le {date}',
   },
   scheduled: {
+    tab: 'Programmés',
+    of: ' : {title}',
     views: 'Affichage des éléments programmés',
     list: 'Liste',
     week: 'Semaine',

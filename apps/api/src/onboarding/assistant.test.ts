@@ -44,6 +44,7 @@ interface FakeState {
   }
   budget: { workspace_onboarding: number; month_total: number; credit: number; cap: number }
   keys: { provider: string; secret: string }[]
+  own: { provider: string; secret: string }[]
   updates: Record<string, unknown>[]
   usage: Record<string, unknown>[]
 }
@@ -64,6 +65,7 @@ function fakeDb(state: FakeState): SupabaseClient {
     },
     rpc(name: string) {
       if (name === 'onboarding_budget') return { single: () => ok(state.budget) }
+      if (name === 'workspace_credentials_for_jobs') return ok(state.own)
       return ok(state.keys)
     },
   } as unknown as SupabaseClient
@@ -81,6 +83,7 @@ function state(overrides: Partial<FakeState['session']> = {}): FakeState {
     },
     budget: { workspace_onboarding: 0, month_total: 0, credit: 0.5, cap: 20 },
     keys: [{ provider: 'anthropic', secret: 'sk-test' }],
+    own: [],
     updates: [],
     usage: [],
   }
@@ -210,11 +213,21 @@ describe('runOnboarding', () => {
     expect(await runOnboarding(fakeDb(s), 's1', answering())).toBe('credit_exhausted')
   })
 
-  it('fails without Glimr key', async () => {
+  it('stops without Glimr key nor a key of the workspace', async () => {
     const s = state()
     s.keys = []
-    expect(await runOnboarding(fakeDb(s), 's1', answering())).toBe('no_key')
-    expect(s.updates[0]).toMatchObject({ status: 'failed', error: 'onboarding_unavailable' })
+    expect(await runOnboarding(fakeDb(s), 's1', answering())).toBe('credit_exhausted')
+  })
+
+  it('goes on past the credit on the workspace’s own AI, billed to the workspace', async () => {
+    const s = state()
+    s.budget.workspace_onboarding = 0.5
+    s.own = [{ provider: 'anthropic', secret: 'sk-own' }]
+    let usedKey = ''
+    const model: AssistantModel = async (call) => ((usedKey = call.apiKey), answering()(call))
+    expect(await runOnboarding(fakeDb(s), 's1', model)).toBe('answered')
+    expect(usedKey).toBe('sk-own')
+    expect(s.usage[0]).toMatchObject({ billed_to: 'workspace', operation: 'assistant' })
   })
 
   it('records the error code of a failed call', async () => {

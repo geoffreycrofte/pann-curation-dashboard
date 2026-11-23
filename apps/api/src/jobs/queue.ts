@@ -26,6 +26,7 @@ import { jobClient } from './client'
 import { notifyAccessRequest } from '../access/notify'
 import { runOnboarding } from '../onboarding/assistant'
 import { runVoiceAnalysis } from '../voice/analyze'
+import { runQuestionIdeas } from '../engagement/questions'
 import { runSeriesPlan } from '../series/plan'
 import { runZernioPlatform } from '../publish/platform'
 import { claudeComposeModel } from '../compose/model'
@@ -68,6 +69,8 @@ export type JobMessage =
   | { type: 'describe-media'; mediaId: string }
   /** Voice rules proposed from past posts (Settings, voice). */
   | { type: 'analyze-voice'; analysisId: string }
+  /** Recurring questions of the conversations, as ideas for Création. */
+  | { type: 'question-ideas'; topicId: string }
   /** Plan of a series of posts (Création). */
   | { type: 'plan-series'; seriesId: string }
   /** Payment: opens the Stripe page asked from the board (table billing_requests). */
@@ -180,6 +183,11 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     case 'zernio-platform': {
       const result = await runZernioPlatform(db, message.workspaceId)
       console.log(JSON.stringify({ job: 'zernio-platform', result }))
+      return
+    }
+    case 'question-ideas': {
+      const result = await runQuestionIdeas(db, message.topicId, claudeComposeModel)
+      console.log(JSON.stringify({ job: 'question-ideas', result }))
       return
     }
     case 'plan-series': {

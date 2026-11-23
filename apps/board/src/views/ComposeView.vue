@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ComposeFromIdea from '../components/compose/ComposeFromIdea.vue'
+import QuestionIdeas from '../components/compose/QuestionIdeas.vue'
 import ContentCard from '../components/ContentCard.vue'
 import Icon from '../components/Icon.vue'
 import { api, type CompositionSummary } from '../lib/api'
@@ -189,6 +190,9 @@ async function create() {
         </ul>
       </section>
     </div>
+
+    <!-- The questions that come back in the conversations: ideas the topic suggests. -->
+    <QuestionIdeas v-if="topic?.config.modules.engagement" :topic-id="topicId" />
 
     <p v-if="!compositions?.length" class="empty">{{ t('compose.list.empty') }}</p>
     <section

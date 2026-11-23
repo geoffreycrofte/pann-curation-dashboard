@@ -566,3 +566,11 @@ Les prix des offres sont **hors taxes** (Glimr s'adresse d'abord à des professi
 **Veille** : l'onglet « Validés » rappelle que les articles programmés attendent dans le calendrier, avec un lien.
 
 **Zernio de Glimr et offres** : le mode plateforme s'active dès qu'un espace paie l'offre Intermédiaire ou Supérieure (webhook Stripe) et se coupe s'il passe à l'offre « clés personnelles ». Un administrateur garde la main : décocher dans l'admin le désactive à la main (abus), et il reste désactivé quelle que soit l'offre jusqu'à ce qu'il soit recoché.
+
+## 2026-11-23 : onglet Programmés, assistant au-delà du crédit, questions récurrentes
+
+**Onglet « Programmés » dans la veille** (demande de Geoffrey) : il revient après « Validés », malgré le doublon avec le calendrier, pour agir directement : les articles de la veille qui attendent leur créneau, en liste ou en semaine, chacun avec « Retirer de la file ». Le calendrier garde la vue complète, avec la Création.
+
+**Assistant au-delà du crédit** : le crédit d'onboarding, payé par Glimr, passe d'abord ; une fois épuisé, l'assistant (nouveau thème, « Ajuster avec l'assistant ») tourne sur l'IA de l'espace : sa clé Anthropic (offre « clés personnelles ») ou les tokens de son offre (offres où Glimr fournit l'IA). Opération `assistant` dans `usage_log`, distincte de `onboarding` qui seule entame le crédit. Sans crédit ni IA disponible, le bouton disparaît comme avant.
+
+**Questions récurrentes** : dans Création, à la demande, une tâche lit les conversations des 60 derniers jours du thème (80 au plus) et en tire au plus 5 questions posées dans au moins deux conversations, chacune avec un angle de post. « Écrire un post à partir de ceci » ouvre une création en mode notes, avec l'angle et les conversations d'origine. Modèle de tri (Haiku), sur l'IA de l'espace et dans le budget du thème. À la demande plutôt qu'automatique : la personne décide de la dépense.
