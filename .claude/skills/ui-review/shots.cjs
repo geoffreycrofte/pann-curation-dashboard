@@ -631,6 +631,11 @@ async function shoot(page, name, path, opts = {}) {
     ['out-home', '/?signedout'],
     ['out-pricing', '/pricing?signedout'],
     ['out-how', '/how-it-works?signedout'],
+    [
+      'out-menu',
+      '/how-it-works?signedout',
+      { click: 'button.burger', viewport: true, mobileOnly: true },
+    ],
     ['out-login', '/login?signedout'],
     ['out-legal', '/legal?signedout'],
     ['out-terms', '/terms?signedout'],
@@ -744,7 +749,11 @@ async function shoot(page, name, path, opts = {}) {
         body = p.includes('newsletter') ? { next_at: null, previews: [], issues: [] } : []
       r.fulfill({ status: 200, body: JSON.stringify(body), contentType: 'application/json' })
     })
-    for (const [name, path, opts] of pages) await shoot(page, `${name}-${label}`, path, opts)
+    for (const [name, path, opts] of pages) {
+      // A shot of something only small screens have (the burger menu).
+      if (opts?.mobileOnly && label !== 'mob') continue
+      await shoot(page, `${name}-${label}`, path, opts)
+    }
     if (errors.length)
       console.log(label, 'errors', JSON.stringify([...new Set(errors)].slice(0, 5)))
     await ctx.close()

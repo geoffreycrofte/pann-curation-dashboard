@@ -2,6 +2,7 @@
 import {
   accountFor,
   canTransition,
+  channelLangs,
   DRAFT_CHANNELS,
   missingPosts,
   POST_LIMITS,
@@ -232,7 +233,19 @@ const limitOf = (channel: DraftChannel) =>
 const hasAccount = (post: PostDraft) =>
   !!topic.value && !!post.lang && !!accountFor(topic.value.config, post.channel, post.lang)
 
-const posts = computed(() => detail.value?.posts ?? [])
+/**
+ * Posts shown: a draft in a language no account of its network publishes in is left out
+ * (drafted before the languages were set); scheduled, sent or failed posts always show.
+ */
+const posts = computed(() =>
+  (detail.value?.posts ?? []).filter(
+    (p) =>
+      !topic.value ||
+      p.status !== 'draft' ||
+      !p.lang ||
+      channelLangs(topic.value.config, p.channel).includes(p.lang),
+  ),
+)
 /**
  * Languages shown, in a stable order: those of the topic first, then any other language
  * the item still has a summary or a post in (a language removed from the topic since).
@@ -768,7 +781,7 @@ usePageDetail(() => detail.value?.item.title)
       <p class="hint">{{ t('missingPosts.hint') }}</p>
     </section>
 
-    <section v-if="detail.posts.length" class="block" aria-labelledby="posts">
+    <section v-if="posts.length" class="block" aria-labelledby="posts">
       <h2 id="posts">{{ t('draft.posts') }}</h2>
       <section
         v-for="channel in postChannels"

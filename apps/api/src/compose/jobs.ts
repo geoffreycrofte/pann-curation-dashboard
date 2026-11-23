@@ -1,5 +1,6 @@
 import {
   claudeCostUsd,
+  channelLangs,
   draftChannels,
   errorCode,
   DRAFT_CHANNELS,
@@ -218,8 +219,11 @@ export async function runComposeDraft(deps: ComposeDeps, compositionId: string) 
   const hasMaterial = composition.notes.trim() || read.some((s) => s.text.trim())
   if (!hasMaterial) return fail('insufficient_content')
 
-  const channels = compositionChannels(config, composition.channels)
-  const langs = config.output_langs
+  // Each network in the languages its accounts publish in: no tokens for the others.
+  const targets = compositionChannels(config, composition.channels)
+    .map((channel) => ({ channel, langs: channelLangs(config, channel) }))
+    .filter((target) => target.langs.length > 0)
+  const channels = targets.map((target) => target.channel)
   const model = config.ai.draft_model
   const result = await deps.model<ComposeOutput>({
     apiKey,
@@ -236,14 +240,14 @@ export async function runComposeDraft(deps: ComposeDeps, compositionId: string) 
       channels,
       { linkedin: longestSignature(config) },
     ),
-    schema: composeOutputSchema(channels, langs),
+    schema: composeOutputSchema(targets),
   })
   const usage = usageEntry('compose', COMPOSE_PROMPT_VERSION, result, model)
   if (usage) await store.logUsage(composition, usage)
   if (!result.ok) return fail(result.error)
   if (result.output.insufficient_material) return fail('insufficient_content')
 
-  const posts = channels.flatMap((channel) =>
+  const posts = targets.flatMap(({ channel, langs }) =>
     langs.flatMap((lang) => {
       const body = result.output.posts[channel]?.[lang]?.trim()
       return body ? [{ channel, lang, body }] : []
