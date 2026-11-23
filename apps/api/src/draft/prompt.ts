@@ -3,6 +3,7 @@ import {
   langName,
   SOURCE_NATURES_LIST,
   type DraftChannel,
+  type DraftTarget,
   type Lang,
   type TopicConfig,
 } from '@glimr/shared'
@@ -27,10 +28,11 @@ const byLang = (langs: readonly Lang[], what: string) =>
 
 /**
  * Output of a drafting call, in the languages of the topic (any language). Posts are asked
- * only for the channels of the topic (draftChannels): a topic that does not publish to a
- * network gets no post for it, and pays for none.
+ * only for the channels of the topic, each in the languages its accounts publish in
+ * (draftTargets): a network or a language the topic does not publish gets no post, and
+ * costs nothing.
  */
-export function draftOutputSchema(channels: readonly DraftChannel[], langs: readonly Lang[]) {
+export function draftOutputSchema(targets: readonly DraftTarget[], langs: readonly Lang[]) {
   return z.object({
     insufficient_content: z
       .boolean()
@@ -40,7 +42,8 @@ export function draftOutputSchema(channels: readonly DraftChannel[], langs: read
       .string()
       .describe('Verbatim quote of at most 25 words, in the language of the source'),
     source_type: z.enum(SOURCE_NATURES_LIST),
-    posts: z.object(Object.fromEntries(channels.map((c) => [c, byLang(langs, 'Post')]))),
+    // Each channel only in the languages its accounts publish in.
+    posts: z.object(Object.fromEntries(targets.map((t) => [t.channel, byLang(t.langs, 'Post')]))),
   })
 }
 

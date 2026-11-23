@@ -117,6 +117,33 @@ export function draftChannels(config: TopicConfig): DraftChannel[] {
   return DRAFT_CHANNELS.filter((c) => used.has(c))
 }
 
+/** A channel and the languages its posts are written in. */
+export interface DraftTarget {
+  channel: DraftChannel
+  langs: Lang[]
+}
+
+/**
+ * Languages a channel is written in: those its accounts publish in, when it has accounts;
+ * every language of the topic otherwise (a channel drafted before any account is chosen).
+ */
+export function channelLangs(config: TopicConfig, channel: DraftChannel): Lang[] {
+  const accounts = config.channels.filter((c) => c.channel === channel)
+  if (!accounts.length) return [...config.output_langs]
+  const published = new Set(accounts.flatMap((a) => a.langs))
+  return config.output_langs.filter((lang) => published.has(lang))
+}
+
+/**
+ * Posts drafted for an item: each channel of draftChannels with its languages. A language
+ * no account of the channel publishes in is not written (no tokens spent on it).
+ */
+export function draftTargets(config: TopicConfig): DraftTarget[] {
+  return draftChannels(config)
+    .map((channel) => ({ channel, langs: channelLangs(config, channel) }))
+    .filter((target) => target.langs.length > 0)
+}
+
 // ---------------------------------------------------------------------------
 // Slots
 // ---------------------------------------------------------------------------

@@ -1,12 +1,13 @@
 import {
   claudeCostUsd,
   DRAFT_CHANNELS,
-  draftChannels,
+  draftTargets,
   missingPosts,
   postLength,
   postSignature,
   SOURCE_TEXT_MIN,
   type DraftChannel,
+  type DraftTarget,
   type Lang,
   type TopicConfig,
 } from '@glimr/shared'
@@ -94,7 +95,7 @@ export interface DraftReport {
 export function toDraftWrite(
   output: DraftOutput,
   model: string,
-  channels: readonly DraftChannel[],
+  targets: readonly DraftTarget[],
   langs: readonly Lang[],
 ): DraftWrite {
   // A language the model left out is skipped rather than saved empty.
@@ -107,8 +108,8 @@ export function toDraftWrite(
     }),
     key_excerpt: output.key_excerpt.trim(),
     source_nature: output.source_type,
-    posts: channels.flatMap((channel) =>
-      langs.flatMap((lang) => {
+    posts: targets.flatMap(({ channel, langs: postLangs }) =>
+      postLangs.flatMap((lang) => {
         const body = output.posts[channel]?.[lang]?.trim()
         return body ? [{ channel, lang, body }] : []
       }),
@@ -180,16 +181,24 @@ export async function draft(deps: {
     }
 
     const requestedModel = item.topic_config.ai.draft_model
-    const channels = missing
-      ? DRAFT_CHANNELS.filter((c) => missing.some((m) => m.channel === c))
-      : draftChannels(item.topic_config)
-    // Missing posts: only their languages are asked for.
+    // Each channel in the languages its accounts publish in; missing posts: only those.
+    const targets: DraftTarget[] = missing
+      ? DRAFT_CHANNELS.flatMap((channel) => {
+          const langs = item.topic_config.output_langs.filter((lang) =>
+            missing.some((m) => m.channel === channel && m.lang === lang),
+          )
+          return langs.length ? [{ channel, langs }] : []
+        })
+      : draftTargets(item.topic_config)
+    const channels = targets.map((t) => t.channel)
+    // Summaries: in every language of the topic (missing posts: only their languages).
     const langs = missing
       ? item.topic_config.output_langs.filter((lang) => missing.some((m) => m.lang === lang))
       : item.topic_config.output_langs
     const result = await deps.model({
       channels,
       langs,
+      targets,
       apiKey,
       model: requestedModel,
       effort: item.topic_config.ai.draft_effort,
@@ -207,16 +216,14 @@ export async function draft(deps: {
         report.failed++
         continue
       }
-      const write = toDraftWrite(result.output, result.model, channels, langs)
+      const write = toDraftWrite(result.output, result.model, targets, langs)
       await deps.store.saveDraft(
         item,
         missing
           ? {
               ...write,
               posts_only: true,
-              posts: write.posts.filter((p) =>
-                missing.some((m) => m.channel === p.channel && m.lang === p.lang),
-              ),
+              posts: write.posts,
             }
           : write,
       )

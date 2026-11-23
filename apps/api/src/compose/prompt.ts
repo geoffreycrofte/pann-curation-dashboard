@@ -3,6 +3,7 @@ import {
   langName,
   type ComposeMode,
   type DraftChannel,
+  type DraftTarget,
   type Lang,
   type TopicConfig,
 } from '@glimr/shared'
@@ -23,12 +24,13 @@ const byLang = (langs: readonly Lang[]) =>
     ),
   )
 
-export function composeOutputSchema(channels: readonly DraftChannel[], langs: readonly Lang[]) {
+/** Each channel only in the languages its accounts publish in (draftTargets). */
+export function composeOutputSchema(targets: readonly DraftTarget[]) {
   return z.object({
     insufficient_material: z
       .boolean()
       .describe('true when the notes and sources give nothing to write a post from'),
-    posts: z.object(Object.fromEntries(channels.map((c) => [c, byLang(langs)]))),
+    posts: z.object(Object.fromEntries(targets.map((t) => [t.channel, byLang(t.langs)]))),
   })
 }
 

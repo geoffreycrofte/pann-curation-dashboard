@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   accountFor,
+  channelLangs,
+  draftTargets,
   bodyLimit,
   composePost,
   dailySlots,
@@ -220,5 +222,25 @@ describe('target channels', () => {
       'facebook',
       'discord',
     ])
+  })
+})
+
+describe('draftTargets', () => {
+  it('writes a channel with accounts only in their languages', () => {
+    const config = parseTopicConfig({
+      output_langs: ['fr', 'en'],
+      channels: [{ channel: 'linkedin', account_id: 'li', langs: ['fr'] }],
+    })
+    expect(channelLangs(config, 'linkedin')).toEqual(['fr'])
+    expect(channelLangs(config, 'bluesky')).toEqual(['fr', 'en'])
+    expect(draftTargets(config)[0]).toEqual({ channel: 'linkedin', langs: ['fr'] })
+  })
+
+  it('leaves out a channel whose accounts publish in no language of the topic', () => {
+    const config = parseTopicConfig({
+      output_langs: ['fr'],
+      channels: [{ channel: 'discord', account_id: 'd', langs: ['en'] }],
+    })
+    expect(draftTargets(config).map((t) => t.channel)).not.toContain('discord')
   })
 })

@@ -154,11 +154,37 @@ describe('draft prompt', () => {
     const write = toDraftWrite(
       output,
       'claude-sonnet-5-5',
-      ['linkedin', 'bluesky', 'mastodon'],
+      (['linkedin', 'bluesky', 'mastodon'] as const).map((channel) => ({
+        channel,
+        langs: ['fr', 'en'],
+      })),
       ['fr', 'en'],
     )
     expect(write.posts[0]).toEqual({ channel: 'linkedin', lang: 'fr', body: 'LI fr' })
     expect(write.posts).toHaveLength(6)
+  })
+
+  it('writes a channel only in the languages its accounts publish in', async () => {
+    const asked: unknown[] = []
+    const model: DraftModel = async (call) => {
+      asked.push(call.targets)
+      return { ok: true, output, usage, model: 'claude-sonnet-5-5' }
+    }
+    const frenchLinkedIn = parseTopicConfig({
+      ...config,
+      channels: [{ channel: 'linkedin', account_id: 'li', langs: ['fr'] }],
+    })
+    const { store, saved } = memoryStore([item('a', { topic_config: frenchLinkedIn })])
+    await draft({ store, model })
+    expect(asked).toEqual([
+      [
+        { channel: 'linkedin', langs: ['fr'] },
+        { channel: 'bluesky', langs: ['fr', 'en'] },
+        { channel: 'mastodon', langs: ['fr', 'en'] },
+      ],
+    ])
+    const linkedin = saved.a?.posts.filter((p) => p.channel === 'linkedin')
+    expect(linkedin).toEqual([{ channel: 'linkedin', lang: 'fr', body: 'LI fr' }])
   })
 
   it('asks for X, Facebook or Discord posts only when the topic publishes there', async () => {
