@@ -456,6 +456,12 @@ const routes = {
       },
     ],
   },
+  '/api/topics/t1/streak': { weeks: 4, this_week: true, scheduled: false, paused: false },
+  '/api/topics/t2/streak': { weeks: 2, this_week: false, scheduled: false, paused: false },
+  '/api/workspaces/w1/members': [
+    { user_id: 'u1', email: 'g@example.org', role: 'owner', is_me: true },
+    { user_id: 'u2', email: 'alex@example.org', role: 'editor', is_me: false },
+  ],
   '/api/affiliate-links': { exa: 'https://example.org/exa?ref=glimr' },
   '/api/admin/settings': {
     onboarding_credit_usd: 0.5,

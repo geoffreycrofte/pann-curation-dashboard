@@ -4,6 +4,7 @@ import { useQuery } from '@pinia/colada'
 import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import StreakFlame from '../components/StreakFlame.vue'
 import TopicSummary from '../components/TopicSummary.vue'
 import { api } from '../lib/api'
 
@@ -50,17 +51,31 @@ watch(
       class="topic"
       :aria-labelledby="`today-${topic.id}`"
     >
-      <h2 :id="`today-${topic.id}`">
-        <RouterLink :to="{ name: 'overview', params: { topicId: topic.id } }">
-          {{ locale === 'fr' ? topic.name_fr : topic.name_en }}
-        </RouterLink>
-      </h2>
+      <div class="topic-head">
+        <h2 :id="`today-${topic.id}`">
+          <RouterLink :to="{ name: 'overview', params: { topicId: topic.id } }">
+            {{ locale === 'fr' ? topic.name_fr : topic.name_en }}
+          </RouterLink>
+        </h2>
+        <StreakFlame :topic-id="topic.id" compact />
+      </div>
       <TopicSummary :topic-id="topic.id" collapse-idle />
     </section>
   </template>
 </template>
 
 <style scoped>
+.topic-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.topic-head h2 {
+  margin: 0;
+}
+
 .empty {
   display: grid;
   gap: var(--space-3);

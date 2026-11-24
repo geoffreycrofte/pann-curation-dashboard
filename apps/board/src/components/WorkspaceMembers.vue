@@ -61,9 +61,7 @@ async function transfer() {
     <h3 :id="`${id}-title`" class="members-title">{{ t('members.title') }}</h3>
     <ul class="member-list" :aria-labelledby="`${id}-title`">
       <li v-for="m in members" :key="m.user_id">
-        <span
-          >{{ m.email }}<template v-if="m.is_me"> {{ t('members.you') }}</template></span
-        >
+        <span>{{ m.is_me ? `${m.email} ${t('members.you')}` : m.email }}</span>
         <span class="badge">{{ t(`profile.roles.${m.role}`) }}</span>
       </li>
     </ul>
@@ -113,6 +111,7 @@ async function transfer() {
 .members {
   display: grid;
   gap: var(--space-3);
+  margin-top: var(--space-4);
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border-subtle);
 }

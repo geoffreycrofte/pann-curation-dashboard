@@ -640,6 +640,15 @@ export default {
     signOutEverywhereText:
       'All your sessions end, on this device and the others, and the access given to Claude through the MCP server will need to be granted again. You can sign in again with a new link.',
   },
+  streak: {
+    weeks: '{n} week in a row | {n} weeks in a row',
+    lit: 'Published this week: the streak goes on.',
+    atRisk: 'Publish by Sunday to keep the streak.',
+    scheduled: 'A post is scheduled this week: the streak holds.',
+    start: 'Publish this week to start a streak.',
+    startScheduled: 'A post is scheduled this week: the streak starts.',
+    paused: 'Topic paused: the streak waits for you.',
+  },
   members: {
     title: 'Members',
     you: '(you)',

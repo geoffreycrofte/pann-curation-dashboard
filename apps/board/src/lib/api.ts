@@ -655,6 +655,10 @@ export const api = {
     },
   ) => request<Series>(`/topics/${topicId}/series`, json('POST', input)),
   series: (topicId: string, id: string) => request<Series>(`/topics/${topicId}/series/${id}`),
+  topicStreak: (topicId: string) =>
+    request<{ weeks: number; this_week: boolean; scheduled: boolean; paused: boolean }>(
+      `/topics/${topicId}/streak`,
+    ),
   questionIdeas: (topicId: string) => request<QuestionIdeas>(`/topics/${topicId}/question-ideas`),
   requestQuestionIdeas: (topicId: string, ui_lang: 'fr' | 'en') =>
     request<{ queued: boolean }>(`/topics/${topicId}/question-ideas`, json('POST', { ui_lang })),

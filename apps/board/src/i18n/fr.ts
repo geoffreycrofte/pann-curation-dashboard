@@ -643,6 +643,15 @@ export default {
     signOutEverywhereText:
       'Toutes vos sessions se terminent, sur cet appareil comme sur les autres, et les accès donnés à Claude par le serveur MCP devront être renouvelés. Vous pourrez vous reconnecter avec un nouveau lien.',
   },
+  streak: {
+    weeks: '{n} semaine de suite | {n} semaines de suite',
+    lit: 'Publié cette semaine : la série continue.',
+    atRisk: 'Publiez d’ici dimanche pour garder la série.',
+    scheduled: 'Un post est programmé cette semaine : la série tient.',
+    start: 'Publiez cette semaine pour lancer une série.',
+    startScheduled: 'Un post est programmé cette semaine : la série démarre.',
+    paused: 'Thème en pause : la série attend votre retour.',
+  },
   members: {
     title: 'Membres',
     you: '(vous)',

@@ -56,6 +56,8 @@ const PAIRS = [
   ['color-success', 'color-surface', 4.5],
   ['color-danger', 'color-surface', 4.5],
   ['color-success', 'color-bg', 4.5],
+  // Streak flame (decorative, the text says it): visible on the card around it.
+  ['color-flame', 'color-surface', 3],
   // Status discs (overview): the disc against the card (3:1), its icon against the disc.
   ['color-success-fill', 'color-surface', 3],
   ['color-on-success', 'color-success-fill', 4.5],

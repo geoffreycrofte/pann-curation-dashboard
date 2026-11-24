@@ -1,5 +1,6 @@
 import { INACTIVITY_HOUR_UTC, runInactivity } from '../accounts/inactivity'
 import { adapters } from '../collect/adapters'
+import { sendStreakWarnings } from '../streak/warnings'
 import { collect } from '../collect/collect'
 import { supabaseCollectStore } from '../collect/store'
 import { claudeDraftModel } from '../draft/model'
@@ -48,6 +49,10 @@ export async function runScheduled(controller: ScheduledController, env: Env): P
         model: claudeEngagementModel,
       })
       console.log(JSON.stringify({ job: 'engagement-triage', report: conversations }))
+      // Friday warnings: the publication streak of a topic breaks on Sunday otherwise.
+      const streaks = await sendStreakWarnings(db)
+      if (streaks.sent || streaks.failed)
+        console.log(JSON.stringify({ job: 'streak-warnings', report: streaks }))
       // Once a day: inactive accounts are warned, then deleted a month later.
       if (new Date(controller.scheduledTime).getUTCHours() === INACTIVITY_HOUR_UTC) {
         const inactivity = await runInactivity(db)
