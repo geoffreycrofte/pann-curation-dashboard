@@ -517,6 +517,12 @@ export const api = {
     request<AdminPlan>(`/admin/plans/${key}`, json('PATCH', limits)),
   adminSetWorkspacePlan: (workspaceId: string, plan: Plan, limits: Partial<PlanLimits> = {}) =>
     request<{ plan: Plan }>(`/admin/workspaces/${workspaceId}/plan`, json('PUT', { plan, limits })),
+  workspaceMembers: (workspaceId: string) =>
+    request<{ user_id: string; email: string; role: 'owner' | 'editor'; is_me: boolean }[]>(
+      `/workspaces/${workspaceId}/members`,
+    ),
+  transferWorkspace: (workspaceId: string, userId: string) =>
+    request<void>(`/workspaces/${workspaceId}/transfer`, json('POST', { user_id: userId })),
   renameWorkspace: (workspaceId: string, name: string) =>
     request<{ id: string; name: string }>(`/workspaces/${workspaceId}`, json('PATCH', { name })),
   /** Queues the deletion of the account; the email typed by the person confirms it. */

@@ -6,17 +6,17 @@
 
 Sources et exports dans `logo/` :
 
-| Fichier                                  | Usage                                                                     |
-| ---------------------------------------- | ------------------------------------------------------------------------- |
-| `pann-mark.svg`, `pann-mark-512.png`     | Symbole seul, fond transparent, éclat encre : sur fond clair              |
-| `pann-mark-dark.svg`, `-dark-512.png`    | Symbole seul, éclat crème : sur fond sombre                               |
-| `glimr-logo.svg`                         | Logo complet (symbole + « Glimr » vectorisé), encre : sur fond clair      |
-| `glimr-logo-dark.svg`                    | Logo complet, texte blanc et éclat crème : sur fond sombre                |
-| `pann-icon.svg`, `pann-icon-1024.png`    | Icône d'app, tuile encre (version par défaut)                             |
-| `pann-icon-light.svg`, `-light-1024.png` | Icône d'app, tuile sable                                                  |
-| `pann-icon-square.svg`                   | Tuile pleine sans arrondi, pour iOS (le système arrondit)                 |
-| `pann-icon-maskable.svg`                 | Tuile pleine, contenu réduit à la zone sûre (Android, `maskable`)         |
-| `pann-favicon.svg`                       | Favicon : pépite agrandie, trois facettes, sans éclat (illisible à 16 px) |
+| Fichier                                   | Usage                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------- |
+| `glimr-mark.svg`, `glimr-mark-512.png`    | Symbole seul, fond transparent, éclat encre : sur fond clair              |
+| `glimr-mark-dark.svg`, `-dark-512.png`    | Symbole seul, éclat crème : sur fond sombre                               |
+| `glimr-logo.svg`                          | Logo complet (symbole + « Glimr » vectorisé), encre : sur fond clair      |
+| `glimr-logo-dark.svg`                     | Logo complet, texte blanc et éclat crème : sur fond sombre                |
+| `glimr-icon.svg`, `glimr-icon-1024.png`   | Icône d'app, tuile encre (version par défaut)                             |
+| `glimr-icon-light.svg`, `-light-1024.png` | Icône d'app, tuile sable                                                  |
+| `glimr-icon-square.svg`                   | Tuile pleine sans arrondi, pour iOS (le système arrondit)                 |
+| `glimr-icon-maskable.svg`                 | Tuile pleine, contenu réduit à la zone sûre (Android, `maskable`)         |
+| `glimr-favicon.svg`                       | Favicon : pépite agrandie, trois facettes, sans éclat (illisible à 16 px) |
 
 Le mot « Glimr » du logo complet (2026-11-23) est vectorisé : aucun besoin de la police pour l'afficher. Dans l'app, le composant `GlimrLogo.vue` le reprend, le mot et l'éclat en `currentColor` (encre en clair, crème en sombre ou sur la barre latérale), avec « Glimr » pour nom accessible. Il remplace le symbole suivi du nom en texte dans la barre latérale, l'en-tête et le pied de page publics.
 
@@ -26,7 +26,7 @@ Dans l'app (`apps/board/public/`) : `favicon.svg` et `favicon.ico` (16, 32 et 48
 - Or réservé à la pépite.
 - Nom : Bricolage Grotesque, graisse 800, interlettrage serré.
 
-Historique : la batée vue de dessus (2026-10-02, `logo-explorations.png`, `pann-brand-sheet.png`) a été remplacée, trop détaillée et pas assez imagée. Pistes écartées en 2026-11 : la pépite dans un écrin, sur un présentoir, en trait d'encre, enfoncée dans un coussin.
+Historique : la batée vue de dessus (2026-10-02, `logo-explorations.png`, `glimr-brand-sheet.png`) a été remplacée, trop détaillée et pas assez imagée. Pistes écartées en 2026-11 : la pépite dans un écrin, sur un présentoir, en trait d'encre, enfoncée dans un coussin.
 
 ## Couleurs
 

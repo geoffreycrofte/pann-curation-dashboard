@@ -1,6 +1,6 @@
 # Brief illustrations 3D : univers de l'orpaillage
 
-Pour la page marketing de Pann. Brief à utiliser dans un générateur d'images (OpenAI gpt-image / ChatGPT, Midjourney, Recraft, Ideogram…). Les prompts sont en anglais : les générateurs les suivent mieux.
+Pour la page marketing de Glimr. Brief à utiliser dans un générateur d'images (OpenAI gpt-image / ChatGPT, Midjourney, Recraft, Ideogram…). Les prompts sont en anglais : les générateurs les suivent mieux.
 
 ## 1. Analyse des références
 
@@ -62,7 +62,7 @@ Une scène par idée clé de l'outil. Chaque prompt = constantes de style (secti
 
 | Section         | Idée                      | Description de la scène (en anglais)                                                                                                                                                     |
 | --------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Héros           | Pann trouve l'essentiel   | The prospector proudly lifts a shallow wide gold-panning dish; inside, wet sand swirls and one large irregular gold nugget shines with sparkles; a few grains of sand fall from the rim. |
+| Héros           | Glimr trouve l'essentiel  | The prospector proudly lifts a shallow wide gold-panning dish; inside, wet sand swirls and one large irregular gold nugget shines with sparkles; a few grains of sand fall from the rim. |
 | Collecte        | Beaucoup d'entrées        | Several small wooden pipes and chutes pour streams of sand and water into one big wooden sluice box; tiny glints of gold mixed in the sand.                                              |
 | Tri par IA      | Séparer le sable de l'or  | A small wooden sluice with ridges: sand washes away to the left, a few gold nuggets stay caught behind the ridges; a tiny friendly robot-shaped brass lantern helps sorting.             |
 | Validation      | Garder les pépites        | The prospector carefully places a gold nugget into a small glass display jar already holding a few nuggets; rejected pebbles sit in a little pile on the side.                           |

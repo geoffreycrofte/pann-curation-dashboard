@@ -640,6 +640,20 @@ export default {
     signOutEverywhereText:
       'All your sessions end, on this device and the others, and the access given to Claude through the MCP server will need to be granted again. You can sign in again with a new link.',
   },
+  members: {
+    title: 'Members',
+    you: '(you)',
+    transferTo: 'Transfer ownership to',
+    choose: 'Choose a member',
+    transferHint:
+      'The chosen person becomes the owner: they manage the offer, payment, keys and members. You stay a member, as an editor.',
+    transfer: 'Transfer ownership',
+    confirmTitle: 'Transfer ownership?',
+    confirmText:
+      '{email} will become the owner of this workspace. You will no longer manage the offer, payment, keys or members, unless they give ownership back.',
+    confirm: 'Transfer',
+    transferred: '{email} is now the owner of the workspace.',
+  },
   connections: {
     affiliate: {
       link: 'Create a {provider} account',
@@ -900,9 +914,10 @@ export default {
     invalid_config: 'Invalid source configuration.',
     unexpected: 'Unexpected error.',
     feed_exists: 'This feed is already a source of this topic.',
+    not_a_member: 'This person is not a member of the workspace.',
     owner_only: 'Only the owner of the workspace can make this change.',
     workspace_has_members:
-      'You own a workspace other people use: remove them first, or ask them to keep their data elsewhere.',
+      'You own a workspace other people use: first transfer its ownership to one of them (Profile, Workspace).',
     confirmation_mismatch: 'The address typed does not match the account’s.',
     fixInConnections: 'Set up in Connections',
     providerErrorNamed: '{provider} did not respond. It will be retried automatically.',

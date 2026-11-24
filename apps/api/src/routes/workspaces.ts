@@ -28,6 +28,29 @@ const billingBody = z.discriminatedUnion('kind', [
 
 /** Mounted under /workspaces. RLS: only an owner can update a workspace. */
 export const workspaces = new Hono<AppEnv>()
+  /** The people of the workspace, with their address (members only). */
+  .get('/:workspaceId/members', async (c) => {
+    const { data, error } = await c.var.db.rpc('workspace_members_list', {
+      p_workspace_id: c.req.param('workspaceId'),
+    })
+    if (error?.code === '42501') throw new HTTPException(404, { message: 'Workspace not found' })
+    if (error) throw error
+    return c.json(data ?? [])
+  })
+
+  /** The owner hands the workspace to another member, and stays as an editor. */
+  .post('/:workspaceId/transfer', async (c) => {
+    const { user_id } = await parseJson(z.object({ user_id: z.uuid() }), c.req.raw)
+    const { error } = await c.var.db.rpc('transfer_workspace_ownership', {
+      p_workspace_id: c.req.param('workspaceId'),
+      p_new_owner: user_id,
+    })
+    if (error?.code === '42501') throw new HTTPException(403, { message: 'owner_only' })
+    if (error?.code === '22023') throw new HTTPException(409, { message: 'not_a_member' })
+    if (error) throw error
+    return c.body(null, 204)
+  })
+
   /** The workspace's plan, its limits and its tokens this month (members only). */
   .get('/:workspaceId/plan', async (c) => {
     const { data, error } = await c.var.db

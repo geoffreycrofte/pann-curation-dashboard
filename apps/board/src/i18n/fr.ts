@@ -643,6 +643,20 @@ export default {
     signOutEverywhereText:
       'Toutes vos sessions se terminent, sur cet appareil comme sur les autres, et les accès donnés à Claude par le serveur MCP devront être renouvelés. Vous pourrez vous reconnecter avec un nouveau lien.',
   },
+  members: {
+    title: 'Membres',
+    you: '(vous)',
+    transferTo: 'Transférer la propriété à',
+    choose: 'Choisir un membre',
+    transferHint:
+      'La personne choisie devient propriétaire : elle gère l’offre, le paiement, les clés et les membres. Vous restez membre, en éditeur.',
+    transfer: 'Transférer la propriété',
+    confirmTitle: 'Transférer la propriété ?',
+    confirmText:
+      '{email} deviendra propriétaire de cet espace. Vous ne pourrez plus gérer l’offre, le paiement, les clés ni les membres, sauf si cette personne vous rend la propriété.',
+    confirm: 'Transférer',
+    transferred: '{email} est maintenant propriétaire de l’espace.',
+  },
   connections: {
     affiliate: {
       link: 'Créer un compte {provider}',
@@ -909,9 +923,10 @@ export default {
     invalid_config: 'Configuration de la source invalide.',
     unexpected: 'Erreur inattendue.',
     feed_exists: 'Ce flux est déjà une source de ce thème.',
+    not_a_member: 'Cette personne n’est pas membre de l’espace de travail.',
     owner_only: 'Seul le propriétaire de l’espace de travail peut faire cette modification.',
     workspace_has_members:
-      'Vous êtes propriétaire d’un espace de travail que d’autres personnes utilisent : retirez-les d’abord, ou demandez-leur de récupérer leurs données.',
+      'Vous êtes propriétaire d’un espace de travail que d’autres personnes utilisent : transférez-en d’abord la propriété à l’une d’elles (Profil, Espace de travail).',
     confirmation_mismatch: 'L’adresse saisie ne correspond pas à celle du compte.',
     fixInConnections: 'Configurer dans Connexions',
     providerErrorNamed: 'Le service {provider} n’a pas pu répondre. Nouvel essai automatique.',

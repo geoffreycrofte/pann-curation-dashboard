@@ -24,6 +24,7 @@ import { session } from '../lib/session'
 import { supabase } from '../lib/supabase'
 import { chosenTheme, setTheme, type Theme } from '../lib/theme'
 import { useWorkspace } from '../lib/workspace'
+import WorkspaceMembers from '../components/WorkspaceMembers.vue'
 import WorkspacePlan from '../components/WorkspacePlan.vue'
 import { toast } from '../lib/toast'
 
@@ -293,6 +294,10 @@ async function signOutEverywhere() {
             <span class="badge">{{ t(`profile.roles.${membership.role}`) }}</span>
           </p>
           <WorkspacePlan
+            :workspace-id="membership.workspace.id"
+            :is-owner="membership.role === 'owner'"
+          />
+          <WorkspaceMembers
             :workspace-id="membership.workspace.id"
             :is-owner="membership.role === 'owner'"
           />
