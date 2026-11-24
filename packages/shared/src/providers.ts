@@ -9,6 +9,7 @@ export const PROVIDERS = [
   'mastodon',
   'bluesky',
   'discord',
+  'telegram',
   'brevo',
   'sendfox',
 ] as const
@@ -22,7 +23,7 @@ export interface WorkspaceCredential {
   provider: Provider
   /**
    * Which account of the service: the handle (Bluesky), user@instance (Mastodon), the
-   * webhook id (Discord). Empty for the other services, which have one key per workspace.
+   * webhook id (Discord), the channel id (Telegram). Empty for the other services, which have one key per workspace.
    */
   account: string
   hint: string
@@ -36,7 +37,7 @@ export interface WorkspaceCredential {
 
 /**
  * Glimr channels published through Zernio, with Zernio's name for each platform: the
- * networks whose API needs an approved app. Bluesky, Mastodon and Discord are direct.
+ * networks whose API needs an approved app. Bluesky, Mastodon, Discord and Telegram are direct.
  */
 export const ZERNIO_PLATFORMS = {
   linkedin: 'linkedin',
@@ -70,6 +71,11 @@ export interface CredentialMeta {
   webhook_name?: string
   guild_id?: string
   channel_id?: string
+  /** telegram: the channel the bot posts to (its id, title, public name) and the bot. */
+  chat_id?: string
+  chat_title?: string
+  chat_username?: string
+  bot_username?: string
   /** brevo, sendfox: contact lists (and Brevo senders), to choose them in the topic settings. */
   lists?: NewsletterList[]
   senders?: BrevoSender[]
@@ -93,7 +99,7 @@ export const PLATFORM_PROVIDERS = [
 ] as const
 export type PlatformProvider = (typeof PLATFORM_PROVIDERS)[number]
 
-export const MULTI_ACCOUNT_PROVIDERS = ['mastodon', 'bluesky', 'discord'] as const
+export const MULTI_ACCOUNT_PROVIDERS = ['mastodon', 'bluesky', 'discord', 'telegram'] as const
 export type MultiAccountProvider = (typeof MULTI_ACCOUNT_PROVIDERS)[number]
 
 export function isMultiAccount(provider: Provider): provider is MultiAccountProvider {
@@ -148,6 +154,8 @@ export const PROVIDER_INFO: Record<Provider, ProviderInfo> = {
     need: 'diffusion',
     url: 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks',
   },
+  // Checked 2026-11-25: BotFather creates the bot and gives its token.
+  telegram: { need: 'diffusion', url: 'https://core.telegram.org/bots/features#botfather' },
   // Checked 2026-10-02 (help.brevo.com).
   brevo: {
     need: 'newsletter',

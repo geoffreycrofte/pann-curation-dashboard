@@ -9,6 +9,7 @@ export const PUBLISH_CHANNELS: readonly DraftChannel[] = [
   'bluesky',
   'mastodon',
   'discord',
+  'telegram',
 ]
 /** Where the conversations tool listens (engagement sources). */
 export const LISTEN_PLATFORMS = ['hackernews', 'bluesky'] as const

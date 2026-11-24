@@ -315,3 +315,193 @@ export async function publishToDiscord(
         : null,
   }
 }
+
+// ---------------------------------------------------------------------------
+// Telegram
+// ---------------------------------------------------------------------------
+
+/** Bot API (core.telegram.org/bots/api, checked 2026-11-25). */
+const TELEGRAM_API = 'https://api.telegram.org'
+
+/** A channel the bot posts to: its id, and its public name when it has one (for links). */
+export interface TelegramChannel {
+  token: string
+  chat_id: string
+  username?: string
+}
+
+/**
+ * The channel as typed: @name, name, a t.me link, or a numeric id (-100…). Returns @name or
+ * the id, or null.
+ */
+export function telegramChat(input: string): string | null {
+  const value = input.trim()
+  if (/^-?\d{5,20}$/.test(value)) return value
+  const name = value
+    .replace(/^https?:\/\/(?:www\.)?(?:t|telegram)\.me\//i, '')
+    .replace(/^@/, '')
+    .replace(/\/$/, '')
+  return /^[A-Za-z][A-Za-z0-9_]{3,31}$/.test(name) ? `@${name}` : null
+}
+
+interface TelegramReply<T> {
+  ok: boolean
+  result?: T
+  error_code?: number
+  description?: string
+  parameters?: { retry_after?: number }
+}
+
+/** A Bot API call; null when Telegram could not be reached. */
+async function telegram<T>(
+  token: string,
+  method: string,
+  init: RequestInit,
+): Promise<{ status: number; body: TelegramReply<T> } | null> {
+  // The token is only ever sent to api.telegram.org.
+  if (!/^\d+:[\w-]+$/.test(token)) return { status: 401, body: { ok: false } }
+  const res = await send(`${TELEGRAM_API}/bot${token}/${method}`, init)
+  if (!res) return null
+  const body = (await res.json().catch(() => ({ ok: false }))) as TelegramReply<T>
+  return { status: res.status, body }
+}
+
+export type TelegramCheck =
+  | { ok: true; chat_id: string; title: string; username: string | null; bot: string }
+  | { ok: false; invalid: boolean; reason?: 'not_admin' }
+
+/**
+ * Checks the bot (getMe), the channel (getChat) and that the bot may post there
+ * (getChatMember: an administrator with can_post_messages).
+ */
+export async function checkTelegram(token: string, chat: string): Promise<TelegramCheck> {
+  const me = await telegram<{ id: number; username?: string }>(token, 'getMe', json({}))
+  if (!me) return { ok: false, invalid: false }
+  if (me.status === 401 || me.status === 404) return { ok: false, invalid: true }
+  if (!me.body.ok || !me.body.result) return { ok: false, invalid: false }
+  const bot = me.body.result
+
+  const found = await telegram<{ id: number; title?: string; username?: string; type: string }>(
+    token,
+    'getChat',
+    json({ chat_id: chat }),
+  )
+  if (!found) return { ok: false, invalid: false }
+  // Unknown channel, or one the bot is not in.
+  if (!found.body.ok || !found.body.result) return { ok: false, invalid: true, reason: 'not_admin' }
+  const channel = found.body.result
+
+  const member = await telegram<{ status: string; can_post_messages?: boolean }>(
+    token,
+    'getChatMember',
+    json({ chat_id: channel.id, user_id: bot.id }),
+  )
+  if (!member) return { ok: false, invalid: false }
+  const status = member.body.result?.status
+  const canPost =
+    status === 'creator' ||
+    (status === 'administrator' &&
+      (channel.type !== 'channel' || member.body.result?.can_post_messages === true))
+  if (!canPost) return { ok: false, invalid: true, reason: 'not_admin' }
+  return {
+    ok: true,
+    chat_id: String(channel.id),
+    title: channel.title ?? chat,
+    username: channel.username ?? null,
+    bot: bot.username ?? '',
+  }
+}
+
+/** Telegram's limit for the caption of a photo (the post goes as a message above it). */
+const TELEGRAM_CAPTION_MAX = 1024
+
+/** Link to a message: public channels by name, private ones by id (t.me/c/…). */
+function telegramMessageUrl(channel: TelegramChannel, messageId: number): string | null {
+  if (channel.username) return `https://t.me/${channel.username}/${messageId}`
+  const id = channel.chat_id.replace(/^-100/, '')
+  return id !== channel.chat_id ? `https://t.me/c/${id}/${messageId}` : null
+}
+
+/**
+ * Posts in the channel: the text as a message (with the link's preview), the images as a
+ * photo or an album. A short post goes as the caption of the photos; a longer one is sent
+ * first, the photos after it. Telegram has no text alternative for images.
+ */
+export async function publishToTelegram(
+  channel: TelegramChannel,
+  request: PublishRequest,
+): Promise<PublishResult> {
+  const images = (request.images ?? []).slice(0, 10)
+  const fail = (reply: { status: number; body: TelegramReply<unknown> } | null) => {
+    if (!reply) return failure(errorCode('provider_error', 'telegram'), true)
+    // Token revoked, bot removed from the channel or no longer allowed to post.
+    if (reply.status === 401 || reply.status === 403)
+      return failure(errorCode('invalid_credential', 'telegram'), false, true)
+    if (reply.status === 429) return failure(errorCode('rate_limited', 'telegram'), true)
+    if (reply.status === 400) return failure(errorCode('post_rejected', 'telegram'), false)
+    return failure(errorCode('provider_error', 'telegram'), true)
+  }
+  const captioned = images.length > 0 && request.content.length <= TELEGRAM_CAPTION_MAX
+
+  let first: number | undefined
+  if (!captioned) {
+    const sent = await telegram<{ message_id: number }>(
+      channel.token,
+      'sendMessage',
+      json({ chat_id: channel.chat_id, text: request.content }),
+    )
+    if (!sent?.body.ok || !sent.body.result) return fail(sent)
+    first = sent.body.result.message_id
+  }
+
+  if (images.length) {
+    const form = new FormData()
+    form.append('chat_id', channel.chat_id)
+    const extension = (mime: string) => mime.split('/')[1] ?? 'jpg'
+    const caption = captioned ? { caption: request.content } : {}
+    for (const [index, image] of images.entries())
+      form.append(
+        `photo${index}`,
+        new Blob([await image.load()], { type: image.mime }),
+        `image-${index + 1}.${extension(image.mime)}`,
+      )
+    let reply
+    if (images.length === 1) {
+      form.append('photo', form.get('photo0')!)
+      form.delete('photo0')
+      if (captioned) form.append('caption', request.content)
+      reply = await telegram<{ message_id: number }>(channel.token, 'sendPhoto', {
+        method: 'POST',
+        body: form,
+      })
+    } else {
+      form.append(
+        'media',
+        JSON.stringify(
+          images.map((_, index) => ({
+            type: 'photo',
+            media: `attach://photo${index}`,
+            ...(index === 0 ? caption : {}),
+          })),
+        ),
+      )
+      reply = await telegram<{ message_id: number }[]>(channel.token, 'sendMediaGroup', {
+        method: 'POST',
+        body: form,
+      })
+    }
+    // The text went out already: the post counts as sent, without its images.
+    if (!reply?.body.ok || !reply.body.result) {
+      if (first === undefined) return fail(reply)
+    } else if (first === undefined) {
+      const result = reply.body.result
+      first = Array.isArray(result) ? result[0]?.message_id : result.message_id
+    }
+  }
+
+  return {
+    ok: true,
+    external_id: first !== undefined ? String(first) : null,
+    url: first !== undefined ? telegramMessageUrl(channel, first) : null,
+  }
+}

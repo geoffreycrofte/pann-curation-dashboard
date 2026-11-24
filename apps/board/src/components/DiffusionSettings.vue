@@ -110,8 +110,15 @@ const accounts = computed<AccountRow[]>(() => {
         ? `@${c.meta.handle ?? c.account}`
         : c.provider === 'discord'
           ? (c.meta.webhook_name ?? 'Discord')
-          : c.account
-    if (c.provider === 'bluesky' || c.provider === 'mastodon' || c.provider === 'discord')
+          : c.provider === 'telegram'
+            ? (c.meta.chat_title ?? c.account)
+            : c.account
+    if (
+      c.provider === 'bluesky' ||
+      c.provider === 'mastodon' ||
+      c.provider === 'discord' ||
+      c.provider === 'telegram'
+    )
       rows.push({
         key: `${c.provider}/${c.account}`,
         channel: c.provider,

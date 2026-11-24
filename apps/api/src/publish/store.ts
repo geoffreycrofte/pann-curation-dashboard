@@ -110,7 +110,7 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
           .from('workspace_credentials')
           .select('provider, account, meta')
           .eq('workspace_id', workspaceId)
-          .in('provider', ['zernio', 'mastodon', 'bluesky', 'discord']),
+          .in('provider', ['zernio', 'mastodon', 'bluesky', 'discord', 'telegram']),
       ])
       if (secrets.error) throw secrets.error
       if (rows.error) throw rows.error
@@ -120,6 +120,7 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         mastodon: {},
         bluesky: {},
         discord: {},
+        telegram: {},
       }
       // No Zernio key of its own: Glimr's, in platform mode, limited to its own profile.
       if (!result.zernio) {
@@ -161,6 +162,12 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
           }
         if (row.provider === 'discord')
           result.discord[account] = { url: secret, guild_id: meta.guild_id }
+        if (row.provider === 'telegram' && meta.chat_id)
+          result.telegram[account] = {
+            token: secret,
+            chat_id: meta.chat_id,
+            ...(meta.chat_username ? { username: meta.chat_username } : {}),
+          }
       }
       return result
     },

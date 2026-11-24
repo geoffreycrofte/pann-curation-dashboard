@@ -14,7 +14,7 @@ import type { Lang } from '@glimr/shared'
 import { sendDigests } from '../newsletter/digest'
 import { sendCampaign } from '../newsletter/send'
 import { refreshNewsletterAccount, supabaseDigestStore } from '../newsletter/store'
-import { publishToBluesky, publishToDiscord } from '../publish/direct'
+import { publishToBluesky, publishToDiscord, publishToTelegram } from '../publish/direct'
 import { publishWithZernio, publishToMastodon } from '../publish/networks'
 import { publish } from '../publish/publish'
 import { refreshZernioAccounts, supabasePublishStore } from '../publish/store'
@@ -88,6 +88,7 @@ export const networks = {
   mastodon: publishToMastodon,
   bluesky: publishToBluesky,
   discord: publishToDiscord,
+  telegram: publishToTelegram,
 }
 
 export async function runJob(message: JobMessage, env: Env): Promise<void> {

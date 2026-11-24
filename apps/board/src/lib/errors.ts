@@ -18,6 +18,7 @@ const OTHER_CODES = [
   'already_invited',
   'owner_stays',
   'invite_failed',
+  'telegram_not_admin',
   'workspace_has_members',
   'confirmation_mismatch',
 ] as const

@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { CredentialMeta, CredentialStatus, Provider } from '@glimr/shared'
 import { readBrevoAccount } from '../newsletter/brevo'
 import { readSendfoxAccount } from '../newsletter/sendfox'
-import { checkBluesky, checkDiscordWebhook } from '../publish/direct'
+import { checkBluesky, checkDiscordWebhook, checkTelegram } from '../publish/direct'
 import { checkMastodon, listZernioAccounts } from '../publish/networks'
 import { PRIVATE_HOST, USER_AGENT } from './fetch-text'
 
@@ -38,7 +38,7 @@ export function mastodonInstance(input: string): string | null {
 export async function checkCredential(
   provider: Provider,
   secret: string,
-  options: { instance?: string; handle?: string } = {},
+  options: { instance?: string; handle?: string; chat?: string } = {},
 ): Promise<CredentialCheck> {
   try {
     if (provider === 'zernio') {
@@ -95,6 +95,25 @@ export async function checkCredential(
       return result.invalid
         ? { status: 'invalid', detail: 'invalid_key' }
         : { status: 'unchecked', detail: 'provider_unreachable', meta: { handle: options.handle } }
+    }
+    if (provider === 'telegram') {
+      const result = await checkTelegram(secret, options.chat ?? '')
+      if (result.ok)
+        return {
+          status: 'ok',
+          detail: null,
+          meta: {
+            chat_id: result.chat_id,
+            chat_title: result.title,
+            ...(result.username ? { chat_username: result.username } : {}),
+            bot_username: result.bot,
+          },
+        }
+      // The bot works but cannot post in the channel: said as such, not as a bad token.
+      if (result.reason === 'not_admin') return { status: 'invalid', detail: 'telegram_not_admin' }
+      return result.invalid
+        ? { status: 'invalid', detail: 'invalid_key' }
+        : { status: 'unchecked', detail: 'provider_unreachable', meta: {} }
     }
     if (provider === 'discord') {
       const result = await checkDiscordWebhook(secret)

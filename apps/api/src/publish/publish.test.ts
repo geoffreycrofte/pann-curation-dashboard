@@ -1,6 +1,14 @@
 import { parseTopicConfig } from '@glimr/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { blueskyHandle, discordWebhookUrl, publishToBluesky, publishToDiscord } from './direct'
+import {
+  blueskyHandle,
+  checkTelegram,
+  discordWebhookUrl,
+  publishToBluesky,
+  publishToDiscord,
+  publishToTelegram,
+  telegramChat,
+} from './direct'
 import {
   publishToMastodon,
   publishWithZernio,
@@ -53,6 +61,7 @@ function fakeStore(posts: DuePost[], keys = { zernio: 'sk_x', mastodon: true }) 
         : {},
       bluesky: {},
       discord: {},
+      telegram: {},
     }),
     markSent: async (p, r) => void log.push(`sent ${p.id} ${r.url}`),
     markFailed: async (p, error, final, retryAt) =>
@@ -80,6 +89,7 @@ describe('publish', () => {
       mastodon: async (account, request) => (calls.push([account.instance, request]), ok),
       bluesky: async () => ok,
       discord: async () => ok,
+      telegram: async () => ok,
     }
     const { store, log } = fakeStore([post(), post({ id: 'p2', channel: 'mastodon' })])
     expect(await publish({ store, networks, now })).toEqual({ sent: 2, failed: 0, retried: 0 })
@@ -111,6 +121,7 @@ describe('publish', () => {
       mastodon: async (_account, request) => (requests.push(request), ok),
       bluesky: async () => ok,
       discord: async () => ok,
+      telegram: async () => ok,
     }
     const { store } = fakeStore([
       post({ topic_config: linkedin }),
@@ -137,6 +148,7 @@ describe('publish', () => {
       mastodon: async () => ok,
       bluesky: async () => ok,
       discord: async () => ok,
+      telegram: async () => ok,
     }
     const { store, log } = fakeStore([post({ channel: 'mastodon', lang: 'en' })])
     await publish({ store, networks, now })
@@ -149,6 +161,7 @@ describe('publish', () => {
       mastodon: async () => ok,
       bluesky: async () => ok,
       discord: async () => ok,
+      telegram: async () => ok,
     }
     const { store, log } = fakeStore([post()], { zernio: '', mastodon: true })
     await publish({ store, networks, now })
@@ -161,6 +174,7 @@ describe('publish', () => {
       mastodon: async () => ok,
       bluesky: async () => ok,
       discord: async () => ok,
+      telegram: async () => ok,
     }
     const first = fakeStore([post()])
     await publish({ store: first.store, networks, now })
@@ -182,6 +196,7 @@ describe('publish', () => {
       mastodon: async () => ok,
       bluesky: async () => ok,
       discord: async () => ok,
+      telegram: async () => ok,
     }
     const { store, log } = fakeStore([post(), post({ id: 'p2', lang: 'en' })])
     await publish({ store, networks, now })
@@ -338,6 +353,117 @@ describe('networks', () => {
     ).toMatchObject({ ok: false, error: 'invalid_credential:bluesky', invalidCredential: true })
   })
 
+  it('posts to the Telegram channel as a message, with a link to it', async () => {
+    const requests = respond(200, { ok: true, result: { message_id: 42 } })
+    const result = await publishToTelegram(
+      { token: '123:abc', chat_id: '-1001234567', username: 'veille_a11y' },
+      { ...request, channel: 'telegram' },
+    )
+    expect(result).toEqual({
+      ok: true,
+      external_id: '42',
+      url: 'https://t.me/veille_a11y/42',
+    })
+    expect(requests[0]!.url).toBe('https://api.telegram.org/bot123:abc/sendMessage')
+    expect(JSON.parse(requests[0]!.init.body as string)).toEqual({
+      chat_id: '-1001234567',
+      text: request.content,
+    })
+  })
+
+  it('links to a message of a private Telegram channel by its id', async () => {
+    respond(200, { ok: true, result: { message_id: 7 } })
+    const result = await publishToTelegram(
+      { token: '123:abc', chat_id: '-1001234567' },
+      { ...request, channel: 'telegram' },
+    )
+    expect(result).toMatchObject({ ok: true, url: 'https://t.me/c/1234567/7' })
+  })
+
+  it('puts a short post under its photo, as its caption', async () => {
+    const requests = respond(200, { ok: true, result: { message_id: 9 } })
+    const result = await publishToTelegram(
+      { token: '123:abc', chat_id: '-1001234567' },
+      {
+        ...request,
+        channel: 'telegram',
+        images: [
+          {
+            url: 'https://img.example/1.png',
+            mime: 'image/png',
+            width: 10,
+            height: 10,
+            alt: 'Un graphique',
+            load: async () => new Uint8Array([1, 2, 3]),
+          },
+        ],
+      },
+    )
+    expect(result).toMatchObject({ ok: true, external_id: '9' })
+    expect(requests).toHaveLength(1)
+    expect(requests[0]!.url).toBe('https://api.telegram.org/bot123:abc/sendPhoto')
+    const form = requests[0]!.init.body as FormData
+    expect(form.get('caption')).toBe(request.content)
+    expect(form.get('photo')).toBeInstanceOf(Blob)
+  })
+
+  it('reports a bot removed from the channel as a bad key', async () => {
+    respond(403, { ok: false, error_code: 403, description: 'Forbidden: bot is not a member' })
+    expect(
+      await publishToTelegram(
+        { token: '123:abc', chat_id: '-1001234567' },
+        { ...request, channel: 'telegram' },
+      ),
+    ).toMatchObject({ ok: false, error: 'invalid_credential:telegram', invalidCredential: true })
+  })
+
+  it('never sends a malformed Telegram token anywhere', async () => {
+    const requests = respond(200, { ok: true, result: { message_id: 1 } })
+    const result = await publishToTelegram(
+      { token: 'evil.example/x', chat_id: '-1001234567' },
+      { ...request, channel: 'telegram' },
+    )
+    expect(result).toMatchObject({ ok: false, invalidCredential: true })
+    expect(requests).toHaveLength(0)
+  })
+
+  it('reads a Telegram channel as typed', () => {
+    expect(telegramChat('@veille_a11y')).toBe('@veille_a11y')
+    expect(telegramChat('https://t.me/veille_a11y')).toBe('@veille_a11y')
+    expect(telegramChat('veille_a11y')).toBe('@veille_a11y')
+    expect(telegramChat('-1001234567')).toBe('-1001234567')
+    expect(telegramChat('https://evil.example/x')).toBeNull()
+    expect(telegramChat('a b')).toBeNull()
+  })
+
+  it('accepts a Telegram bot only when it may post in the channel', async () => {
+    const replies: Record<string, unknown> = {
+      getMe: { ok: true, result: { id: 5, username: 'glimr_bot' } },
+      getChat: {
+        ok: true,
+        result: { id: -1001234567, type: 'channel', title: 'Veille', username: 'veille_a11y' },
+      },
+      getChatMember: { ok: true, result: { status: 'administrator', can_post_messages: true } },
+    }
+    vi.stubGlobal('fetch', async (url: string) => {
+      const method = url.split('/').pop()!
+      return new Response(JSON.stringify(replies[method]), { status: 200 })
+    })
+    expect(await checkTelegram('123:abc', '@veille_a11y')).toEqual({
+      ok: true,
+      chat_id: '-1001234567',
+      title: 'Veille',
+      username: 'veille_a11y',
+      bot: 'glimr_bot',
+    })
+    replies.getChatMember = { ok: true, result: { status: 'member' } }
+    expect(await checkTelegram('123:abc', '@veille_a11y')).toEqual({
+      ok: false,
+      invalid: true,
+      reason: 'not_admin',
+    })
+  })
+
   it('posts to the Discord webhook without pinging anyone', async () => {
     const requests = respond(200, { id: 'm1', channel_id: 'c1' })
     const result = await publishToDiscord(
@@ -429,6 +555,7 @@ describe('images of composed posts', () => {
       mastodon: async () => ok,
       bluesky: async () => ok,
       discord: async () => ok,
+      telegram: async () => ok,
     }
     const { store, log } = fakeStore([
       post({
@@ -539,6 +666,7 @@ describe('Zernio in platform mode', () => {
       mastodon: async () => ok,
       bluesky: async () => ok,
       discord: async () => ok,
+      telegram: async () => ok,
     }
     const { store, log } = fakeStore([post(), post({ id: 'p2', lang: 'en' })])
     const credentials = store.credentials

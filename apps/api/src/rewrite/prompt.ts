@@ -42,6 +42,7 @@ const CHANNEL_NAMES: Record<DraftChannel, string> = {
   mastodon: 'Mastodon',
   facebook: 'Facebook',
   discord: 'Discord',
+  telegram: 'Telegram',
 }
 
 /**

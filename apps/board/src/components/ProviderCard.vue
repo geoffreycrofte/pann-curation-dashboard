@@ -47,6 +47,7 @@ const accountLabel = computed(() => {
   if (props.provider === 'bluesky' && meta.handle) return `@${meta.handle}`
   if (props.provider === 'mastodon') return meta.acct ?? ''
   if (props.provider === 'discord') return meta.webhook_name ?? ''
+  if (props.provider === 'telegram') return meta.chat_title ?? ''
   return ''
 })
 
@@ -78,6 +79,11 @@ const secretInput = ref<HTMLInputElement>()
 const secret = ref('')
 const instance = ref(props.credential?.meta.instance?.replace(/^https:\/\//, '') ?? '')
 const handle = ref(props.credential?.meta.handle ?? '')
+const chat = ref(
+  props.credential?.meta.chat_username
+    ? `@${props.credential.meta.chat_username}`
+    : (props.credential?.meta.chat_id ?? ''),
+)
 const message = ref('')
 const isError = ref(false)
 
@@ -90,6 +96,7 @@ const { mutate: save, isLoading: saving } = useMutation({
     api.setCredential(props.workspaceId, props.provider, secret.value, {
       instance: props.provider === 'mastodon' ? instance.value : undefined,
       handle: props.provider === 'bluesky' ? handle.value : undefined,
+      chat: props.provider === 'telegram' ? chat.value : undefined,
     }),
   async onSuccess(credential) {
     secret.value = ''
@@ -301,6 +308,14 @@ const { mutate: remove } = useMutation({
       <p v-if="provider === 'bluesky' && credential?.meta.handle">
         {{ t('connections.blueskyAccount', { handle: credential.meta.handle }) }}
       </p>
+      <p v-if="provider === 'telegram' && credential?.meta.chat_title">
+        {{
+          t('connections.telegramChannel', {
+            title: credential.meta.chat_title,
+            bot: credential.meta.bot_username ?? '',
+          })
+        }}
+      </p>
       <p v-if="provider === 'discord' && credential?.meta.webhook_name">
         {{ t('connections.discordWebhook', { name: credential.meta.webhook_name }) }}
       </p>
@@ -349,6 +364,20 @@ const { mutate: remove } = useMutation({
           />
           <p :id="`${id}-handle-hint`" class="hint">{{ t('connections.handleHint') }}</p>
         </div>
+        <div v-if="provider === 'telegram'" class="form-row">
+          <label :for="`${id}-chat`">{{ t('connections.chatLabel') }}</label>
+          <input
+            :id="`${id}-chat`"
+            v-model="chat"
+            class="field"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            required
+            :aria-describedby="`${id}-chat-hint`"
+          />
+          <p :id="`${id}-chat-hint`" class="hint">{{ t('connections.chatHint') }}</p>
+        </div>
         <div v-if="provider === 'mastodon'" class="form-row">
           <label :for="`${id}-instance`">{{ t('connections.instanceLabel') }}</label>
           <input
@@ -371,9 +400,11 @@ const { mutate: remove } = useMutation({
                 ? t('connections.appPasswordLabel')
                 : provider === 'discord'
                   ? t('connections.webhookLabel')
-                  : credential
-                    ? t('connections.keyLabelReplace', { provider: name })
-                    : t('connections.keyLabel', { provider: name })
+                  : provider === 'telegram'
+                    ? t('connections.botTokenLabel')
+                    : credential
+                      ? t('connections.keyLabelReplace', { provider: name })
+                      : t('connections.keyLabel', { provider: name })
             }}
           </label>
           <input
