@@ -58,6 +58,20 @@ const PAIRS = [
   ['color-success', 'color-bg', 4.5],
   // Streak flame (decorative, the text says it): visible on the card around it.
   ['color-flame', 'color-surface', 3],
+  // Network logos (decorative, the name is beside them): brand colours, set by each network.
+  // Telegram's blue is the lightest (2.6:1 on white): still a recognisable shape.
+  ['color-brand-linkedin', 'color-surface', 2.5],
+  ['color-brand-linkedin', 'color-surface-2', 2.5],
+  ['color-brand-facebook', 'color-surface', 2.5],
+  ['color-brand-facebook', 'color-surface-2', 2.5],
+  ['color-brand-bluesky', 'color-surface', 2.5],
+  ['color-brand-bluesky', 'color-surface-2', 2.5],
+  ['color-brand-mastodon', 'color-surface', 2.5],
+  ['color-brand-mastodon', 'color-surface-2', 2.5],
+  ['color-brand-discord', 'color-surface', 2.5],
+  ['color-brand-discord', 'color-surface-2', 2.5],
+  ['color-brand-telegram', 'color-surface', 2.5],
+  ['color-brand-telegram', 'color-surface-2', 2.5],
   // Status discs (overview): the disc against the card (3:1), its icon against the disc.
   ['color-success-fill', 'color-surface', 3],
   ['color-on-success', 'color-success-fill', 4.5],

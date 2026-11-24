@@ -789,7 +789,11 @@ usePageDetail(() => detail.value?.item.title)
         class="network"
         :aria-labelledby="`posts-${channel}`"
       >
-        <h3 :id="`posts-${channel}`">{{ t(`draft.channels.${channel}`) }}</h3>
+        <h3 :id="`posts-${channel}`">
+          <Icon :name="channel" :size="20" class="network-logo" />{{
+            t(`draft.channels.${channel}`)
+          }}
+        </h3>
         <div class="pair">
           <div v-for="post in postsOf(channel)" :key="post.id" class="post">
             <!-- Where the post stands, before its text. -->

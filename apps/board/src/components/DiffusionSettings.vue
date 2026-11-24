@@ -280,7 +280,7 @@ function submit() {
         <li v-for="row in accounts" :key="row.key">
           <fieldset class="account">
             <legend class="account-name">
-              {{
+              <Icon :name="row.channel" class="network-logo" />{{
                 t('settings.accountLangs', {
                   account: t('connections.accountLine', {
                     network: t(`draft.channels.${row.channel}`),

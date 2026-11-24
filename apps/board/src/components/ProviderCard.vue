@@ -18,6 +18,7 @@ import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
 import { toast } from '../lib/toast'
 import Icon from './Icon.vue'
+import { isNetworkLogo } from '../lib/network-logos'
 
 const props = defineProps<{
   provider: Provider
@@ -169,7 +170,9 @@ const { mutate: remove } = useMutation({
   >
     <div class="provider-title">
       <h3 :id="`${id}-name`">
-        {{ adding ? t('connections.addAccountTitle', { provider: name }) : name }}
+        <Icon v-if="isNetworkLogo(provider)" :name="provider" :size="20" class="network-logo" />{{
+          adding ? t('connections.addAccountTitle', { provider: name }) : name
+        }}
         <span v-if="accountLabel" class="account">{{ accountLabel }}</span>
       </h3>
       <span v-if="!adding" class="badge" data-dot :data-tone="statusTone">

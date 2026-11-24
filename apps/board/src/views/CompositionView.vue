@@ -546,7 +546,11 @@ usePageDetail(() =>
                 :value="channel"
                 :disabled="readonly"
               />
-              <span>{{ t(`draft.channels.${channel}`) }}</span>
+              <span
+                ><Icon :name="channel" class="network-logo" />{{
+                  t(`draft.channels.${channel}`)
+                }}</span
+              >
             </label>
           </div>
           <p :id="`${id}-networks-hint`" class="hint">{{ t('compose.networksHint') }}</p>
@@ -727,7 +731,11 @@ usePageDetail(() =>
         class="network"
         :aria-labelledby="`${id}-posts-${channel}`"
       >
-        <h3 :id="`${id}-posts-${channel}`">{{ t(`draft.channels.${channel}`) }}</h3>
+        <h3 :id="`${id}-posts-${channel}`">
+          <Icon :name="channel" :size="20" class="network-logo" />{{
+            t(`draft.channels.${channel}`)
+          }}
+        </h3>
         <div class="pair">
           <div v-for="post in postsOf(channel)" :key="post.id" class="post">
             <p class="post-status">
