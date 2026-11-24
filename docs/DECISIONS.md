@@ -606,6 +606,7 @@ Premier réseau de l'étude `docs/studies/nouveaux-reseaux.md`, publié sans Zer
 W (wsocial.eu), réseau européen de personnes vérifiées, repose sur l'AT Protocol : serveur PDS standard (`pds.wsocial.network`), mêmes enregistrements que Bluesky (`app.bsky.feed.post`), mot de passe d'application. Glimr le publie avec le connecteur de Bluesky, sous son propre nom (canal `w`, fournisseur `w`) : on peut relier un compte Bluesky et un compte W. Limite de 300 caractères, comme Bluesky ; lien vers le post sur wsocial.eu.
 
 Trois améliorations valent aussi pour Bluesky :
+
 - l'identifiant se résout par `/.well-known/atproto-did` quand l'AppView de Bluesky ne le connaît pas (cas des comptes W) ;
 - les hashtags deviennent des tags cliquables (facettes `#tag`) ;
 - un post sans image montre le lien en carte (titre, description et image de la page), comme les applications.
