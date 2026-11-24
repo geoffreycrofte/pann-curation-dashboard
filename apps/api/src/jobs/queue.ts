@@ -24,6 +24,7 @@ import { supabaseTriageStore } from '../triage/store'
 import { triage } from '../triage/triage'
 import { jobClient } from './client'
 import { notifyAccessRequest } from '../access/notify'
+import { runInvitation } from '../team/invite'
 import { runOnboarding } from '../onboarding/assistant'
 import { runVoiceAnalysis } from '../voice/analyze'
 import { runQuestionIdeas } from '../engagement/questions'
@@ -79,6 +80,8 @@ export type JobMessage =
   | { type: 'engagement-reply'; topicId: string; itemId: string }
   /** Zernio in platform mode: a connection link, or the accounts listed again. */
   | { type: 'zernio-platform'; workspaceId: string }
+  /** Team: an invitation sent by a workspace's owner (table workspace_invitations). */
+  | { type: 'invite-member'; invitationId: string }
 
 export const networks = {
   zernio: publishWithZernio,
@@ -211,6 +214,11 @@ export async function runJob(message: JobMessage, env: Env): Promise<void> {
     }
     case 'billing': {
       await runBillingRequest(db, message.requestId)
+      return
+    }
+    case 'invite-member': {
+      const result = await runInvitation(db, message.invitationId)
+      console.log(JSON.stringify({ job: 'invite-member', result }))
       return
     }
     case 'engagement-reply': {

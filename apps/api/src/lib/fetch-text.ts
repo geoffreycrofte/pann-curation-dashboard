@@ -1,7 +1,6 @@
 import { errorCode, type ErrorCode } from '@glimr/shared'
 
-export const USER_AGENT =
-  'PannBot/0.1 (content curation; +https://github.com/geoffreycrofte/pann-curation-dashboard)'
+export const USER_AGENT = 'GlimrBot/0.1 (content curation; +https://glimr.cc)'
 
 /** `message` is the full error code from @glimr/shared (timeout, unreachable, http:404…). */
 export class FetchTextError extends Error {

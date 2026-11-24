@@ -52,6 +52,7 @@ const limitsBody = z.object({
   max_topics: z.number().int().min(1).max(1000).nullable(),
   max_social_accounts: z.number().int().min(1).max(1000).nullable(),
   monthly_tokens: z.number().int().min(1).max(10_000_000_000).nullable(),
+  max_members: z.number().int().min(1).max(1000).nullable(),
 })
 const planBody = limitsBody.extend({
   price_month_eur: z.number().min(0).max(100_000).nullable(),
@@ -61,7 +62,7 @@ const planBody = limitsBody.extend({
   trial_tokens: z.number().int().min(1).max(10_000_000_000).nullable(),
 })
 const PLAN_COLUMNS =
-  'key, max_topics, max_social_accounts, monthly_tokens, price_month_eur, price_year_eur, stripe_price_month, stripe_price_year, trial_tokens, updated_at'
+  'key, max_topics, max_social_accounts, monthly_tokens, max_members, price_month_eur, price_year_eur, stripe_price_month, stripe_price_year, trial_tokens, updated_at'
 const workspacePlanBody = z.object({
   plan: z.enum(PLANS),
   /** Only for the custom plan. */

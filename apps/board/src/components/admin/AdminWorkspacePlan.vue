@@ -25,6 +25,7 @@ const selected = ref<Plan>(props.plan)
 const custom = reactive({
   max_topics: props.limits.max_topics ?? ('' as number | ''),
   max_social_accounts: props.limits.max_social_accounts ?? ('' as number | ''),
+  max_members: props.limits.max_members ?? ('' as number | ''),
   monthly_tokens: props.limits.monthly_tokens ?? ('' as number | ''),
 })
 const saving = ref(false)
@@ -40,6 +41,7 @@ async function save() {
         ? {
             max_topics: value(custom.max_topics),
             max_social_accounts: value(custom.max_social_accounts),
+            max_members: value(custom.max_members),
             monthly_tokens: value(custom.monthly_tokens),
           }
         : {},
@@ -85,6 +87,14 @@ async function save() {
       <input
         :id="`${id}-accounts`"
         v-model.number="custom.max_social_accounts"
+        class="field"
+        type="number"
+        min="1"
+      />
+      <label :for="`${id}-members`">{{ t('admin.plans.maxMembers') }}</label>
+      <input
+        :id="`${id}-members`"
+        v-model.number="custom.max_members"
         class="field"
         type="number"
         min="1"

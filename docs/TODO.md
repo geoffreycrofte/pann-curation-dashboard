@@ -27,11 +27,9 @@ Décidée le 2026-11-16, arbitrée le 2026-11-17 : **tout d'un coup**, sans ver
   - **Analyse de la concurrence faite** (2026-11-21) : `docs/studies/tarifs-concurrence.md`. Reste à fixer les prix et les quotas ; thèmes par offre proposés par Geoffrey : 2, 3 et 5, sur mesure au-delà. Page de tarifs : comparaison « sans Glimr / avec Glimr » à la façon d'Odoo, concurrents nommés en exemple, « tarifs relevés en 2026 » en petit.
   - **Fait (2026-11-21 et 22)** : offre par espace et limites (admin), tokens pondérés, IA et recherche fournies par Glimr avec quota, limite de thèmes, prix, essai de 14 jours, paiement Stripe (Checkout, portail, webhook), page de tarifs. **Reste** : passer Stripe en production (clé, secret du webhook, prix).
   - **Liens affiliés** (idée de Geoffrey, 2026-11-21) : surtout pour l'offre « clés personnelles », où la personne ouvre ses propres comptes. Conseiller les services que Glimr sait utiliser (Zernio, Brevo, SendFox, et Mailchimp ou d'autres services d'envoi s'ils sont ajoutés) avec un lien affilié, sur la page Connexions et dans l'onboarding : une offre peu chère, et un revenu en recommandant ces services. À vérifier pour chacun : existence d'un programme, commission, conditions (mention obligatoire du lien affilié). Mailchimp n'est pas encore pris en charge par Glimr.
-- **Streak de publication** : compter les semaines d'affilée avec au moins une publication, l'afficher, et prévenir quand la semaine en cours n'a encore rien de programmé (« vous êtes sur le point de casser votre streak, choisissez des éléments à publier »). Préciser le canal de la notification (dans le board, par e-mail).
 
 ## Déjà évoqué
 
 - **Zernio en mode plateforme** pour un produit SaaS : une clé Glimr, un profil Zernio par espace, boutons « Connecter » dans les réglages, facturation au compte connecté (voir zernio.com/use-cases/saas-platforms).
 - **Fiche source partagée** : les résumés d'une source réutilisés d'un thème à l'autre.
-- **Transfert de propriété** d'un espace de travail (aujourd'hui, un propriétaire avec d'autres membres ne peut pas supprimer son compte).
 - **Inscription à la newsletter** depuis une page publique de Glimr (double confirmation chez le service d'envoi).

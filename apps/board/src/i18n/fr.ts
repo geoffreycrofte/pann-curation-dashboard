@@ -117,6 +117,7 @@ export default {
     signOut: 'Se déconnecter',
   },
   nav: {
+    workspace: 'Espace actif',
     compose: 'Création',
     accountMenu: 'Compte et préférences',
     overview: 'Aperçu',
@@ -535,6 +536,7 @@ export default {
     ownKeys: 'Vos propres clés : IA, recherche et publication',
     tokens: 'IA et recherche fournies : {tokens} tokens par mois',
     accounts: '{n} compte LinkedIn ou Facebook | {n} comptes LinkedIn ou Facebook',
+    members: 'Seul dans l’espace | {n} personnes dans l’espace',
     everything: 'Veille, conversations, Création, calendrier, newsletter et flux',
     ask: 'Demander un accès',
     fromProfile: 'Choisir dans mon profil',
@@ -562,7 +564,7 @@ export default {
       versus: 'ou',
       with: 'Avec Glimr',
       withSub: 'Un seul outil, tout est relié',
-      withNote: 'Offre Intermédiaire, facturée à l’année, hors taxes.',
+      withNote: 'Offre Essential, facturée à l’année, hors taxes.',
       included: {
         publish: 'Publication sur LinkedIn, Bluesky, Mastodon, Facebook et Discord',
         watch: 'Veille triée par IA, posts rédigés depuis vos sources',
@@ -577,9 +579,9 @@ export default {
   plans: {
     label: 'Offre',
     names: {
-      own_keys: 'Clés personnelles',
-      essential: 'Intermédiaire',
-      pro: 'Supérieure',
+      own_keys: 'Perso',
+      essential: 'Essential',
+      pro: 'Pro',
       custom: 'Sur mesure',
     },
     topics: 'Thèmes : {used} sur {max}',
@@ -598,10 +600,11 @@ export default {
       profile: 'Profil',
       preferences: 'Préférences',
       workspace: 'Espace de travail',
+      team: 'Mon équipe',
       account: 'Sécurité et compte',
     },
     title: 'Profil',
-    intro: 'Votre compte Glimr : identité, préférences, espace de travail et sessions.',
+    intro: 'Votre compte Glimr : identité, préférences, espace de travail, équipe et sessions.',
     identity: 'Identité',
     name: 'Nom affiché',
     nameHint: 'Affiché dans le menu, à la place de votre adresse e-mail.',
@@ -642,6 +645,59 @@ export default {
     signOutEverywhereTitle: 'Se déconnecter partout ?',
     signOutEverywhereText:
       'Toutes vos sessions se terminent, sur cet appareil comme sur les autres, et les accès donnés à Claude par le serveur MCP devront être renouvelés. Vous pourrez vous reconnecter avec un nouveau lien.',
+  },
+  streak: {
+    weeks: '{n} semaine de suite | {n} semaines de suite',
+    lit: 'Publié cette semaine : la série continue.',
+    atRisk: 'Publiez d’ici dimanche pour garder la série.',
+    scheduled: 'Un post est programmé cette semaine : la série tient.',
+    start: 'Publiez cette semaine pour lancer une série.',
+    startScheduled: 'Un post est programmé cette semaine : la série démarre.',
+    paused: 'Thème en pause : la série attend votre retour.',
+  },
+  team: {
+    title: 'Équipe de l’espace « {name} »',
+    hint: 'Les membres travaillent sur tous les thèmes de l’espace. Seul le propriétaire gère l’offre, le paiement, les clés et l’équipe.',
+    seats: '{used} sur {max} places prises, invitations en attente comprises',
+    inviteLabel: 'Inviter une personne (adresse e-mail)',
+    inviteHint:
+      'Une personne qui a déjà un compte Glimr rejoint l’espace tout de suite et reçoit un e-mail. Sinon, elle reçoit une invitation à créer son compte.',
+    invite: 'Inviter',
+    invited: 'Invitation envoyée à {email}.',
+    full: 'Toutes les places de l’offre sont prises.',
+    pending: 'Invitation en attente',
+    cancel: 'Annuler l’invitation',
+    cancelled: 'Invitation de {email} annulée.',
+    remove: 'Retirer',
+    removeTitle: 'Retirer {email} ?',
+    removeText:
+      '{email} n’aura plus accès aux thèmes de cet espace. Ce que cette personne a fait reste.',
+    removed: '{email} ne fait plus partie de l’espace.',
+    leave: 'Quitter l’espace',
+    leaveTitle: 'Quitter cet espace ?',
+    leaveText:
+      'Vous n’aurez plus accès à ses thèmes, sauf si le propriétaire vous invite à nouveau.',
+    left: 'Vous avez quitté l’espace.',
+    ownerManages: 'Seul le propriétaire de l’espace invite et retire des membres.',
+    lockedHint: '(offre Pro)',
+    lockedText:
+      'Travailler à plusieurs dans un espace est réservé à l’offre {plan} : invitez une personne, partagez vos thèmes et gardez une seule facture.',
+    upgrade: 'Passer à l’offre {plan}',
+    askOwner: 'Le propriétaire de l’espace peut changer d’offre.',
+  },
+  members: {
+    title: 'Membres',
+    you: '(vous)',
+    transferTo: 'Transférer la propriété à',
+    choose: 'Choisir un membre',
+    transferHint:
+      'La personne choisie devient propriétaire : elle gère l’offre, le paiement, les clés et les membres. Vous restez membre, en éditeur.',
+    transfer: 'Transférer la propriété',
+    confirmTitle: 'Transférer la propriété ?',
+    confirmText:
+      '{email} deviendra propriétaire de cet espace. Vous ne pourrez plus gérer l’offre, le paiement, les clés ni les membres, sauf si cette personne vous rend la propriété.',
+    confirm: 'Transférer',
+    transferred: '{email} est maintenant propriétaire de l’espace.',
   },
   connections: {
     affiliate: {
@@ -909,9 +965,16 @@ export default {
     invalid_config: 'Configuration de la source invalide.',
     unexpected: 'Erreur inattendue.',
     feed_exists: 'Ce flux est déjà une source de ce thème.',
+    not_a_member: 'Cette personne n’est pas membre de l’espace de travail.',
     owner_only: 'Seul le propriétaire de l’espace de travail peut faire cette modification.',
+    member_limit:
+      'Toutes les places de l’offre sont prises : retirez un membre ou changez d’offre.',
+    already_member: 'Cette personne fait déjà partie de l’espace.',
+    already_invited: 'Cette personne est déjà invitée.',
+    owner_stays: 'Le propriétaire ne peut pas quitter l’espace : transférez d’abord la propriété.',
+    invite_failed: 'L’invitation n’a pas pu partir. Annulez-la et réessayez.',
     workspace_has_members:
-      'Vous êtes propriétaire d’un espace de travail que d’autres personnes utilisent : retirez-les d’abord, ou demandez-leur de récupérer leurs données.',
+      'Vous êtes propriétaire d’un espace de travail que d’autres personnes utilisent : transférez-en d’abord la propriété à l’une d’elles (Profil, Espace de travail).',
     confirmation_mismatch: 'L’adresse saisie ne correspond pas à celle du compte.',
     fixInConnections: 'Configurer dans Connexions',
     providerErrorNamed: 'Le service {provider} n’a pas pu répondre. Nouvel essai automatique.',
@@ -1065,7 +1128,7 @@ export default {
     },
     workspacesTitle: 'Espaces de travail',
     workspacesIntro:
-      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme), activé automatiquement dès qu’un espace paie l’offre Intermédiaire ou Supérieure ; le décocher le désactive à la main, quelle que soit l’offre : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
+      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme), activé automatiquement dès qu’un espace paie l’offre Essential ou Pro ; le décocher le désactive à la main, quelle que soit l’offre : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
     colPlatform: 'Zernio de Glimr',
     platformLabel: 'Activé ({n} comptes)',
     platformOffByAdmin: 'Désactivé à la main : reste désactivé quelle que soit l’offre.',
@@ -1190,6 +1253,7 @@ export default {
       notPayable: 'Prix Stripe manquants',
       maxTopics: 'Thèmes au maximum',
       maxAccounts: 'Comptes LinkedIn et Facebook',
+      maxMembers: 'Membres de l’espace',
       monthlyTokens: 'Tokens par mois',
       stripeHint:
         'Identifiants des prix créés dans Stripe (price_…). Sans eux, l’offre ne peut pas être payée dans cette période.',

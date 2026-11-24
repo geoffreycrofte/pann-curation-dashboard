@@ -456,6 +456,16 @@ export const topics = new Hono<AppEnv>()
     return c.body(null, 204)
   })
 
+  /** Publication streak: weeks in a row with a post published (paused weeks do not break it). */
+  .get('/:topicId/streak', async (c) => {
+    const { data, error } = await c.var.db
+      .rpc('topic_streak', { p_topic_id: c.req.param('topicId') })
+      .maybeSingle()
+    if (error?.code === '42501') throw new HTTPException(404, { message: 'Topic not found' })
+    if (error) throw error
+    return c.json(data ?? { weeks: 0, this_week: false, scheduled: false, paused: false })
+  })
+
   /** Number of items per status, for the board tabs (archived items are not counted). */
   .get('/:topicId/counts', async (c) => {
     const topicId = c.req.param('topicId')

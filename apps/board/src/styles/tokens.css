@@ -36,6 +36,8 @@
   /* Off or not set up: a grey fill, with its own icon color. */
   --color-neutral-fill: light-dark(#6e695d, #8f897c);
   --color-on-neutral: light-dark(#ffffff, #141414);
+  /* Publication streak: the outer flame, with --color-accent-fill inside (3:1 on cards). */
+  --color-flame: light-dark(#d9690b, #f28c1e);
   /* AI at work: colors of the animated halo, with --color-accent-fill (3:1 on the backgrounds). */
   --color-ai-violet: light-dark(#6d4aff, #b3a1ff);
   --color-ai-teal: light-dark(#0b7f86, #4fd1c5);

@@ -11,6 +11,7 @@ import OverviewChecklist from '../components/OverviewChecklist.vue'
 import TopicStatus from '../components/overview/TopicStatus.vue'
 import ContentCard from '../components/ContentCard.vue'
 import Icon from '../components/Icon.vue'
+import StreakFlame from '../components/StreakFlame.vue'
 import TopicSummary from '../components/TopicSummary.vue'
 import { api, type QueueItem } from '../lib/api'
 import { contentLangName } from '../lib/langs'
@@ -68,7 +69,10 @@ const formatDate = (value: string) =>
 </script>
 
 <template>
-  <h1 tabindex="-1">{{ topicName }}</h1>
+  <div class="overview-head">
+    <h1 tabindex="-1">{{ topicName }}</h1>
+    <StreakFlame :topic-id="topicId" />
+  </div>
   <p role="status" class="start" :class="{ empty: !startMessage }">{{ startMessage }}</p>
   <TopicStatus :topic-id="topicId" />
   <OverviewChecklist :topic-id="topicId" />
@@ -129,6 +133,19 @@ const formatDate = (value: string) =>
 </template>
 
 <style scoped>
+/* The topic's name, its streak beside it (under it on a narrow screen). */
+.overview-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.overview-head h1 {
+  margin: 0;
+}
+
 .start {
   margin: 0 0 var(--space-4);
 }

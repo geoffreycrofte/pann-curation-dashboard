@@ -20,6 +20,8 @@ import GlimrLogo from './components/GlimrLogo.vue'
 import { api } from './lib/api'
 import { session } from './lib/session'
 import { pageDetail } from './lib/page-title'
+import { setCurrentWorkspace, useWorkspace, useWorkspaceTopics } from './lib/workspace'
+import WorkspaceSwitcher from './components/WorkspaceSwitcher.vue'
 
 const LandingView = defineAsyncComponent(() => import('./views/LandingView.vue'))
 
@@ -34,11 +36,8 @@ const { data: me } = useQuery({
   enabled: () => !!session.value,
 })
 
-const { data: topics } = useQuery({
-  key: ['topics'],
-  query: api.topics,
-  enabled: () => !!session.value,
-})
+const { data: topics } = useWorkspaceTopics(() => !!session.value)
+const { workspaceId } = useWorkspace()
 
 // The current topic shows its tools under its name: curation, engagement (the ones
 // that are on) and the settings of the topic. Same query as its pages: shared cache.
@@ -49,6 +48,11 @@ const { data: currentTopic } = useQuery({
   key: () => ['topic', currentTopicId.value ?? ''],
   query: () => api.topic(currentTopicId.value!),
   enabled: () => !!session.value && !!currentTopicId.value,
+})
+// A topic of another workspace (a link, an e-mail): its workspace becomes the current one.
+watch(currentTopic, (topic) => {
+  if (topic && workspaceId.value && topic.workspace_id !== workspaceId.value)
+    setCurrentWorkspace(topic.workspace_id)
 })
 // Document title, from the most specific to the most general: what the page shows (an
 // item, a tab), the page, the topic, Glimr. The marketing page sets its own.
@@ -178,6 +182,7 @@ watch(
           @keydown.esc="closeMenu"
         >
           <nav :aria-label="t('nav.label')">
+            <WorkspaceSwitcher />
             <p id="nav-topics" class="nav-label">{{ t('nav.topics') }}</p>
             <ul aria-labelledby="nav-topics">
               <li v-for="topic in topics" :key="topic.id">
