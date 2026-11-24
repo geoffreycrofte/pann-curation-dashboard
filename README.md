@@ -1,102 +1,126 @@
-# Glimr
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/logo/glimr-logo-dark.svg">
+    <img src="docs/brand/logo/glimr-logo.svg" alt="Glimr" width="220">
+  </picture>
+</p>
 
-Outil de curation de veille multi-thèmes : collecter, trier, valider, diffuser.
-Content curation tool: collect, triage, validate, publish.
+<p align="center">
+  <strong>Make your product or your expertise known, without spending your days on it.</strong><br>
+  Open source news watch, conversation finder and social publishing, driven by AI and validated by you.
+</p>
 
-Le contexte produit complet est dans [`docs/CONTEXT.md`](docs/CONTEXT.md), les choix techniques dans [`docs/DECISIONS.md`](docs/DECISIONS.md).
+<p align="center">
+  <a href="https://glimr.cc">Glimr Cloud</a> ·
+  <a href="https://glimr.cc/how-it-works">How it works</a> ·
+  <a href="https://glimr.cc/pricing">Pricing</a> ·
+  <a href="#self-hosting">Self-hosting</a> ·
+  <a href="ACCESSIBILITY.md">Accessibility</a>
+</p>
 
-## Structure
+---
+
+Glimr follows the news of your subject, spots the conversations where you can help, and prepares your posts and newsletter, in your languages. AI does the reading, the sorting and the first drafts; nothing goes out without your approval.
+
+## What it does
+
+- **News watch.** RSS feeds, web search (Exa) and GitHub, per topic. Each item gets a relevance score out of 100 against the criteria you wrote, with the reason. Below your threshold it is archived, so you only read what matters.
+- **Drafts in your voice.** When you validate an item, Glimr writes its summaries and one post per network and language, following your own style rules. Rewrite shorter, longer or in another tone in one click.
+- **Publishing on your slots.** LinkedIn, Facebook, Bluesky, W, Mastodon, Discord and Telegram, one post per language, on the time slots you chose, with a calendar of what is scheduled.
+- **Conversations.** Glimr finds discussions about your subject (Hacker News, Bluesky) where your help is welcome, and drafts a reply you post yourself.
+- **Create.** Start from an article, a conversation or a blank page: Glimr researches sources and writes a post, or a whole series, for all your networks.
+- **Newsletter and feeds.** A weekly newsletter per language (Brevo or SendFox), and public RSS and JSON feeds of what you shared.
+- **Claude integration.** An MCP server lets you sort and draft from a conversation with Claude, with your account and permissions.
+- **You stay in control.** A spending cap per topic, usage tracked call by call, competitors' sites excluded in one click, and every post approved or scheduled by you.
+
+## Glimr Cloud or self-hosted
+
+Glimr is the same software in both cases. The code is open under the [AGPL-3.0](LICENSE.md): you can read it, run it and change it.
+
+|                           | **[Glimr Cloud](https://glimr.cc)**                                                                    | **Self-hosted**                                              |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Setup                     | Sign in and create your first topic                                                                    | Your own Supabase project and Cloudflare account             |
+| AI and web search         | Included in the Essential and Pro offers, within a monthly quota; or bring your own keys (Perso offer) | Your own keys (Anthropic, Exa)                               |
+| LinkedIn and Facebook     | Included in the paid offers: Glimr's publishing partner, no app review on your side                    | Your own Zernio key, or an app approved by LinkedIn and Meta |
+| Updates, backups, e-mails | Done for you                                                                                           | Up to you                                                    |
+| Hosting                   | In the EU (Supabase in Paris, Cloudflare)                                                              | Wherever you choose                                          |
+| Team                      | Up to two people on the Pro offer                                                                      | As you like                                                  |
+| Price                     | 14-day free trial, then [see the offers](https://glimr.cc/pricing)                                     | Free; you pay the services you connect                       |
+
+Glimr Cloud funds the development of Glimr. If you can host it yourself and prefer to, you are welcome to: the self-hosted version is not a demo.
+
+## Self-hosting
+
+You need [Node.js 22](https://nodejs.org) or later, a [Supabase](https://supabase.com) project (cloud or self-hosted) and, to put it online, a [Cloudflare](https://cloudflare.com) account (Workers and Queues).
+
+### Run it locally
+
+```sh
+corepack enable     # once: turns on pnpm, shipped with Node.js
+pnpm install
+pnpm configure      # once: three questions about your Supabase project
+pnpm dev            # starts the API and the board
+```
+
+Open http://127.0.0.1:5173 and sign in with your e-mail address (magic link). In Supabase (Authentication, URL Configuration), the site URL and the redirect URLs must include `http://127.0.0.1:5173`. `pnpm configure` explains where to find each value.
+
+For a fully local Supabase (Docker): `pnpm db:start`, then `pnpm configure` with `http://127.0.0.1:54321` and the keys shown by `pnpm exec supabase status`. The test user is `dev@glimr.local`; its sign-in link arrives in Mailpit.
+
+### Everything else is set in the app
+
+- **Connections**: the keys of the services you use (Anthropic, Exa, GitHub, the networks, the newsletter), each with where to create it. Keys are encrypted in Supabase Vault and never shown again.
+- **Topics**: sources, relevance criteria, style rules, networks, slots and budget, per topic.
+
+No service key ever goes in an environment variable: only the Supabase ones do.
+
+### Make your instance yours
+
+Glimr Cloud's billing is built in. On your own instance, once you have signed in for the first time, run this in the SQL editor of Supabase to give your workspace lasting access and the admin space:
+
+```sql
+update public.workspaces set billing_status = 'legacy', plan = 'own_keys';
+insert into private.platform_admins (user_id)
+  select id from auth.users where email = 'you@example.org';
+```
+
+### Deploy
+
+The `Deploy` workflow (GitHub Actions) runs the migrations, builds the board and deploys the Cloudflare Worker after each green CI on `main`. It needs a `production` environment with these secrets: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_SECRET_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`; and these variables: `SUPABASE_PROJECT_REF`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Set your own domain in `apps/api/wrangler.jsonc`.
+
+## How it is built
 
 ```
 apps/
-  api/        Worker Cloudflare (Hono) : API sous /api/*, crons et queues à venir.
-              Sert aussi le board en assets statiques (une seule origine).
-  board/      Board de tri (Vue 3, Vite, Reka UI, Pinia Colada, vue-i18n FR/EN).
+  api/        Cloudflare Worker (Hono): the API under /api/*, scheduled jobs and queues.
+              Also serves the board as static assets (a single origin).
+  board/      The interface (Vue 3, Vite, Reka UI, Pinia Colada, vue-i18n in English and French).
 packages/
-  shared/     Types de domaine, schéma de config d'un topic, normalisation d'URL,
-              règles de transition de statut. Utilisé par l'API et le board.
+  shared/     Domain types, topic settings schema, URL normalization, status rules.
 supabase/
-  migrations/ Schéma Postgres multi-tenant + RLS + garde-fous de curation.
-  seed.sql    Données locales : utilisateur dev@glimr.local, topic « accessibilité ».
+  migrations/ Multi-tenant Postgres schema with row level security.
 ```
 
-## Démarrer en local
+- **Multi-tenant by design**: every table people reach has row level security; background jobs alone use the secret key.
+- **Accessible**: the interface aims at WCAG 2.2 AA, with colour contrast checked on every change, in light and dark mode. See [ACCESSIBILITY.md](ACCESSIBILITY.md).
+- **AI with guardrails**: prompts only carry how the tool works; tone, style and topic rules are your own settings.
 
-Prérequis : [Node.js 22](https://nodejs.org) ou plus récent. Ensuite, dans un terminal, à la racine du projet :
-
-```sh
-corepack enable     # une seule fois : active pnpm, fourni avec Node.js
-pnpm install        # installe les dépendances
-pnpm configure      # une seule fois : 3 questions sur votre projet Supabase
-pnpm dev            # démarre l'app
-```
-
-Ouvrez ensuite http://127.0.0.1:5173 et connectez-vous avec votre adresse e-mail (lien magique).
-
-`pnpm configure` explique où trouver chaque information dans le tableau de bord Supabase. Côté Supabase (Authentication, URL Configuration), l'URL du site et les URL de redirection doivent contenir `http://127.0.0.1:5173`.
-
-**Tout le reste se règle dans l'app :**
-
-- **Connexions** : les clés Anthropic, Exa et GitHub, avec pour chacune l'explication de l'endroit où la créer. Les clés sont chiffrées dans Supabase (Vault) et ne sont jamais réaffichées.
-- **Sources** (dans chaque thème) : ajout de flux RSS, et bouton « Collecter maintenant » pour voir le résultat tout de suite, sans attendre le passage automatique.
-- **Réglages** (dans chaque thème) : fréquence de collecte par type de contenu.
-
-### Pour aller plus loin
-
-- Stack Supabase entièrement locale (Docker) : `pnpm db:start`, puis `pnpm configure` avec l'adresse `http://127.0.0.1:54321` et les clés affichées par `pnpm exec supabase status`. Utilisateur de test : `dev@glimr.local` (lien de connexion dans Mailpit, adresse donnée par `supabase status`).
-- Passage automatique de collecte (toutes les heures en production) déclenché à la main : `pnpm --filter @glimr/api collect:local` pendant que `pnpm dev` tourne.
-
-## Vérifications
+### Checks
 
 ```sh
 pnpm typecheck
-pnpm test          # tests unitaires + contrôle des contrastes des tokens de couleur
+pnpm test          # unit tests, plus the contrast of the colour tokens
 pnpm format:check
-pnpm db:reset      # rejoue toutes les migrations et le seed
+pnpm db:reset      # replays every migration and the seed (local Supabase)
 ```
 
-## MCP Supabase (poste local)
+## Contributing
 
-`.mcp.json` déclare le serveur MCP Supabase du projet. Dans un terminal : `claude /mcp`, choisir `supabase`, puis « Authenticate ».
+Issues and pull requests are welcome. For anything larger than a fix, open an issue first so we can agree on the approach. Accessibility problems are treated as bugs.
 
-## Déploiement
+## License
 
-Workflow `Deploy` (GitHub Actions), lancé automatiquement après chaque CI réussie sur `main`, ou à la main (onglet Actions, puis « Run workflow ») : migrations (`supabase db push`), build du board, files de tâches (créées au premier passage), `wrangler deploy`, puis secrets du Worker.
-À configurer une fois, dans GitHub (Settings, Environments, `production`) :
+Glimr is free software, released under the [GNU Affero General Public License v3.0 or later](LICENSE.md). If you run a modified version for other people over a network, the AGPL asks you to offer them its source code.
 
-- Secrets : `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_SECRET_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
-- Variables : `SUPABASE_PROJECT_REF`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
-- Jeton Cloudflare : modèle « Edit Cloudflare Workers », plus la permission Queues en écriture sur le compte.
-- Les clés des services (Anthropic, Exa, Zernio…) ne vont jamais ici : elles se règlent dans l'app (Connexions).
-- Supabase Auth (projet distant) : désactiver les inscriptions publiques, inviter son adresse, définir l'URL du site et les URLs de redirection.
-- Serveur MCP (Claude) : dans Supabase, Authentication, puis OAuth Server : activer le serveur OAuth, activer l'enregistrement dynamique des clients, et régler l'Authorization Path sur `/oauth/consent`. L'URL du site (Authentication, URL Configuration) doit être celle de Glimr en ligne : la page de consentement s'y trouve. Dans Claude : Paramètres, Connecteurs, connecteur personnalisé, adresse `https://<glimr>/mcp`.
+The Glimr name and logo are not covered by the license: please use another name for your own service built on this code.
 
-### Domaine glimr.cc
-
-Le Worker répond sur `https://glimr.cc` (`routes` de `apps/api/wrangler.jsonc`) ; l'adresse `*.workers.dev` reste active en secours. Mise en place, dans l'ordre :
-
-1. **Zone Cloudflare** : ajouter `glimr.cc` au compte Cloudflare du Worker (offre gratuite), puis remplacer chez le registraire les serveurs DNS par les deux serveurs donnés par Cloudflare. Attendre que la zone soit « active » (de quelques minutes à quelques heures).
-2. **Jeton de déploiement** : ajouter au jeton `CLOUDFLARE_API_TOKEN` les permissions de zone « Workers Routes : Edit » et « DNS : Edit » sur `glimr.cc`. Le déploiement crée alors l'enregistrement DNS et le certificat.
-3. **Déployer** (fusion sur `main`) : le déploiement échoue tant que la zone n'est pas active.
-4. **www** : dans la zone, Rules, Redirect Rules, modèle « Redirect from WWW to root » (301 vers `https://glimr.cc`), avec un enregistrement DNS `www` proxifié (AAAA `100::`).
-5. **Supabase Auth** : URL du site `https://glimr.cc` ; URLs de redirection `https://glimr.cc/**` (garder l'ancienne adresse le temps de la bascule).
-6. **Services externes** : webhook Stripe sur `https://glimr.cc/api/stripe/webhook` ; domaine d'envoi `glimr.cc` vérifié dans Resend (enregistrements DNS à ajouter dans la zone) et expéditeur réglé dans l'admin ; connecteur MCP dans Claude sur `https://glimr.cc/mcp`.
-
-Le Worker s'appelle `glimr` depuis le 2026-11-22 (ancien nom `pann`) : le premier déploiement crée un nouveau Worker et ses files `glimr-jobs`. **Supprimer ensuite le Worker `pann`** (Workers et Pages, `pann`, Paramètres, Supprimer) : tant qu'il existe, ses tâches planifiées tournent en double (collecte, publication).
-
-## Avancement (plan de `docs/CONTEXT.md`, section 9)
-
-- [x] 1. Socle : monorepo, schéma, topic accessibilité, Worker Hono, auth, board squelette, CI
-- [x] Saisie manuelle : flux RSS (avec auto-découverte), articles et outils ; fréquence de collecte par type de contenu et par source
-- [x] 2. Collecte : adaptateurs RSS, Exa, GitHub ; déduplication ; cron horaire ; « Collecter maintenant »
-- [x] Connexions : clés des services par workspace, réglées dans l'app (Supabase Vault)
-- [x] 3. Tri IA (Haiku) : pertinence, type, contenu promotionnel, explication ; archivage sous le seuil
-- [x] 4. Rédaction IA (Sonnet) : résumés FR/EN, extrait, brouillons de posts modifiables ; plafond de coût mensuel
-- [ ] 5. Publication CheckFox
-- [x] 6. Diffusion sociale : LinkedIn et Bluesky (Zernio), Mastodon ; créneaux, un post par langue
-- [x] 7. Newsletter (Brevo) : une campagne par langue, envoi manuel ou hebdomadaire
-- [x] Flux publics RSS et JSON Feed par thème et par langue
-- [ ] 8. Second topic
-- [x] Thème = produit à faire connaître : outils curation et engagement activables, fiche produit
-- [ ] Engagement : sources de conversations, tri et réponses à publier à la main
-- [x] 9. Serveur MCP de curation, pour Claude, connexion OAuth (Supabase Auth)
+Glimr is made by [Crofte Studio](https://glimr.cc/legal), in Luxembourg.

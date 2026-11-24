@@ -612,3 +612,9 @@ Trois améliorations valent aussi pour Bluesky :
 - un post sans image montre le lien en carte (titre, description et image de la page), comme les applications.
 
 Testé le 2026-11-25 par un vrai post sur le compte W de Geoffrey, visible sur W et sur Bluesky. Les conditions de W (article 8) interdisent l'accès automatisé sauf accord écrit : demande d'accord à faire avant de mettre W en avant.
+
+## 2026-11-25 : README public, licence AGPL
+
+Le README présente le projet en anglais, pour un public open source : ce que fait Glimr, Glimr Cloud face à l'auto-hébergement (sur le modèle des outils open source qui financent leur développement par une offre hébergée), l'installation et les vérifications. Les notes d'exploitation de l'instance glimr.cc (déploiement, domaine, ancien Worker `pann`) passent dans `docs/deploy.md`, en français comme les autres documents internes ; l'avancement vit dans `docs/TODO.md`.
+
+**Licence** : AGPL-3.0-or-later (`LICENSE.md`), plutôt que la GPL de Smash It : pour un service en ligne, la GPL n'oblige pas à partager une version modifiée qu'on fait tourner pour d'autres sans la distribuer ; l'AGPL, si. Le nom et le logo Glimr restent hors licence. `ACCESSIBILITY.md` reprend la forme de celui de Smash It (ce qui marche, comment c'est vérifié, ce qui ne l'est pas encore, comment signaler un problème).

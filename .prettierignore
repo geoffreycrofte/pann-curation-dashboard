@@ -3,3 +3,5 @@ docs/CONTEXT.md
 supabase/migrations/
 # Generated (apps/api/src/lib/supabase-templates.ts), pasted in Supabase as is.
 docs/emails/
+# The license text, kept exactly as the Free Software Foundation publishes it.
+LICENSE.md
