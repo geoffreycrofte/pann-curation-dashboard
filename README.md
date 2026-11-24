@@ -37,15 +37,15 @@ Glimr follows the news of your subject, spots the conversations where you can he
 
 Glimr is the same software in both cases. The code is open under the [AGPL-3.0](LICENSE.md): you can read it, run it and change it.
 
-|                           | **[Glimr Cloud](https://glimr.cc)**                                                                    | **Self-hosted**                                              |
-| ------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| Setup                     | Sign in and create your first topic                                                                    | Your own Supabase project and Cloudflare account             |
-| AI and web search         | Included in the Essential and Pro offers, within a monthly quota; or bring your own keys (Perso offer) | Your own keys (Anthropic, Exa)                               |
-| LinkedIn and Facebook     | Included in the paid offers: Glimr's publishing partner, no app review on your side                    | Your own Zernio key, or an app approved by LinkedIn and Meta |
-| Updates, backups, e-mails | Done for you                                                                                           | Up to you                                                    |
-| Hosting                   | In the EU (Supabase in Paris, Cloudflare)                                                              | Wherever you choose                                          |
-| Team                      | Up to two people on the Pro offer                                                                      | As you like                                                  |
-| Price                     | 14-day free trial, then [see the offers](https://glimr.cc/pricing)                                     | Free; you pay the services you connect                       |
+|                           | **[Glimr Cloud](https://glimr.cc)**                                                                    | **Self-hosted**                                  |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| Setup                     | [Request access](https://glimr.cc/request-access), then create your first topic                        | Your own Supabase project and Cloudflare account |
+| AI and web search         | Included in the Essential and Pro offers, within a monthly quota; or bring your own keys (Perso offer) | Your own keys (Anthropic, Exa)                   |
+| LinkedIn and Facebook     | Included in the paid offers: Glimr's publishing partner, no app review on your side                    | Your own Zernio key                              |
+| Updates, backups, e-mails | Done for you                                                                                           | Up to you                                        |
+| Hosting                   | In the EU (Supabase in Paris, Cloudflare)                                                              | Wherever you choose                              |
+| Team                      | Up to two people on the Pro offer                                                                      | As you like                                      |
+| Price                     | 14-day free trial, then [see the offers](https://glimr.cc/pricing)                                     | Free; you pay the services you connect           |
 
 Glimr Cloud funds the development of Glimr. If you can host it yourself and prefer to, you are welcome to: the self-hosted version is not a demo.
 
