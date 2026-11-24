@@ -1,41 +1,53 @@
-import { escapeHtml } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import {
+  emailLangs,
+  langsOf,
+  renderEmail,
+  type EmailContent,
+  type EmailLang,
+} from '../lib/email-layout'
 import { sendResendEmail, type SendResult, type ServiceEmail } from '../lib/resend'
 
 /** UTC hour of the daily run, inside the hourly collection cron. */
 export const INACTIVITY_HOUR_UTC = 3
 
-/**
- * Warning before an inactive account is deleted. In French and in English: the language
- * of the interface is kept in the person's browser, not on the server.
- */
+/** Warning before an inactive account is deleted, in its language (both when unknown). */
 export function inactivityEmail(
   user: { user_id: string; email: string },
   from: string,
   siteUrl: string,
   today: string,
+  lang?: string | null,
 ): ServiceEmail {
   const login = `${siteUrl}/login`
-  const fr = [
-    'Bonjour,',
-    'Vous ne vous êtes pas connecté à Glimr depuis près d’un an. Comme l’annoncent nos conditions générales, un compte inactif depuis un an est supprimé, avec ses thèmes et ses réglages.',
-    'Pour le garder, il suffit de vous connecter dans les 30 prochains jours :',
-  ]
-  const en = [
-    'Hello,',
-    'You have not signed in to Glimr for almost a year. As our terms say, an account inactive for a year is deleted, with its topics and settings.',
-    'To keep it, simply sign in within the next 30 days:',
-  ]
-  const text = [...fr, login, '', '---', '', ...en, login].join('\n\n')
-  const block = (lang: string, lines: string[]) =>
-    `<div lang="${lang}">${lines.map((l) => `<p style="margin:0 0 12px;">${escapeHtml(l)}</p>`).join('')}<p style="margin:0 0 24px;"><a href="${escapeHtml(login)}" style="color:#5c4300;">${escapeHtml(login)}</a></p></div>`
+  const contents: Record<EmailLang, EmailContent> = {
+    fr: {
+      subject: 'Votre compte Glimr sera supprimé dans 30 jours',
+      heading: 'Votre compte sera supprimé dans 30 jours',
+      paragraphs: [
+        'Vous ne vous êtes pas connecté à Glimr depuis près d’un an. Comme l’annoncent nos conditions générales, un compte inactif depuis un an est supprimé, avec ses thèmes et ses réglages.',
+        'Pour le garder, il suffit de vous connecter dans les 30 prochains jours.',
+      ],
+      button: { label: 'Me connecter', url: login },
+    },
+    en: {
+      subject: 'Your Glimr account will be deleted in 30 days',
+      heading: 'Your account will be deleted in 30 days',
+      paragraphs: [
+        'You have not signed in to Glimr for almost a year. As our terms say, an account inactive for a year is deleted, with its topics and settings.',
+        'To keep it, simply sign in within the next 30 days.',
+      ],
+      button: { label: 'Sign in', url: login },
+    },
+  }
+  const email = renderEmail(
+    siteUrl,
+    Object.fromEntries(emailLangs(lang).map((l) => [l, contents[l]])),
+  )
   return {
     from,
     to: [user.email],
-    subject:
-      'Votre compte Glimr sera supprimé dans 30 jours / Your Glimr account will be deleted in 30 days',
-    text,
-    html: `<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#141414;">${block('fr', fr)}<hr style="border:0;border-top:1px solid #ddd;margin:24px 0;">${block('en', en)}</div>`,
+    ...email,
     idempotencyKey: `glimr-inactivity-${user.user_id}-${today}`,
   }
 }
@@ -77,6 +89,13 @@ export async function runInactivity(
     (k) => k.provider === 'resend',
   )?.secret
   const today = now.toISOString().slice(0, 10)
+  const langs =
+    key && settings.data.email_from
+      ? await langsOf(
+          db,
+          accounts.filter((a) => a.action === 'warn').map((a) => a.email),
+        )
+      : new Map<string, string | null>()
 
   for (const account of accounts) {
     if (account.action === 'warn') {
@@ -86,7 +105,13 @@ export async function runInactivity(
       }
       const sent = await send(
         key,
-        inactivityEmail(account, settings.data.email_from, settings.data.site_url, today),
+        inactivityEmail(
+          account,
+          settings.data.email_from,
+          settings.data.site_url,
+          today,
+          langs.get(account.email.toLowerCase()),
+        ),
       )
       if (!sent.ok) {
         report.failed++

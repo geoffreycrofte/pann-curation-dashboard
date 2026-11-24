@@ -27,7 +27,7 @@ describe('access request email', () => {
   it('escapes what the person typed in the HTML version', () => {
     expect(email.html).not.toContain('<script>')
     expect(email.html).toContain('Alex &lt;script&gt;')
-    expect(email.html).toContain('<p style="margin:0 0 12px;">Deux thèmes au moins.</p>')
+    expect(email.html).toMatch(/<p style="[^"]*">Deux thèmes au moins\.<\/p>/)
     expect(email.text).toContain('Je publie une veille')
   })
 })

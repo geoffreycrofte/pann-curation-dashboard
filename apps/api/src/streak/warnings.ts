@@ -1,5 +1,11 @@
-import { escapeHtml } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import {
+  emailLangs,
+  langsOf,
+  renderEmail,
+  type EmailContent,
+  type EmailLang,
+} from '../lib/email-layout'
 import { sendResendEmail, type SendResult, type ServiceEmail } from '../lib/resend'
 
 export interface StreakWarning {
@@ -13,28 +19,43 @@ export interface StreakWarning {
 
 /**
  * Friday warning: the streak of a topic breaks on Sunday unless something is published.
- * In French and in English: the interface language is kept in the browser, not here.
+ * In the owners' language (both when unknown).
  */
-export function streakEmail(warning: StreakWarning, from: string, siteUrl: string): ServiceEmail {
+export function streakEmail(
+  warning: StreakWarning,
+  from: string,
+  siteUrl: string,
+  lang?: string | null,
+): ServiceEmail {
   const link = `${siteUrl}/t/${warning.topic_id}/calendar`
   const n = warning.weeks
-  const fr = [
-    `Votre série de ${n} semaine${n > 1 ? 's' : ''} de publication sur « ${warning.name_fr} » s’arrête dimanche soir : rien n’est publié ni programmé cette semaine.`,
-    'Programmez au moins un post d’ici là pour la garder :',
-  ]
-  const en = [
-    `Your ${n}-week publishing streak on “${warning.name_en}” ends on Sunday night: nothing is published or scheduled this week.`,
-    'Schedule at least one post by then to keep it:',
-  ]
-  const block = (lang: string, lines: string[]) =>
-    `<div lang="${lang}">${lines.map((l) => `<p style="margin:0 0 12px;">${escapeHtml(l)}</p>`).join('')}<p style="margin:0 0 24px;"><a href="${escapeHtml(link)}" style="color:#5c4300;">${escapeHtml(link)}</a></p></div>`
+  const langs = emailLangs(lang)
+  const contents: Partial<Record<EmailLang, EmailContent>> = {
+    fr: {
+      subject: `🔥 ${n} semaine${n > 1 ? 's' : ''} : votre série s’arrête dimanche`,
+      heading: `Votre série de ${n} semaine${n > 1 ? 's' : ''} s’arrête dimanche`,
+      paragraphs: [
+        `Rien n’est publié ni programmé cette semaine sur « ${warning.name_fr} ».`,
+        'Programmez au moins un post d’ici dimanche soir pour garder votre série.',
+      ],
+      button: { label: 'Ouvrir le calendrier', url: link },
+    },
+    en: {
+      subject: `🔥 ${n} week${n > 1 ? 's' : ''}: your streak ends on Sunday`,
+      heading: `Your ${n}-week streak ends on Sunday`,
+      paragraphs: [
+        `Nothing is published or scheduled this week on “${warning.name_en}”.`,
+        'Schedule at least one post by Sunday night to keep your streak.',
+      ],
+      button: { label: 'Open the calendar', url: link },
+    },
+  }
+  const email = renderEmail(siteUrl, Object.fromEntries(langs.map((l) => [l, contents[l]])))
   return {
     from,
     to: warning.emails,
-    subject: `🔥 ${n} semaine${n > 1 ? 's' : ''} : votre série s’arrête dimanche / Your streak ends on Sunday`,
-    text: [...fr, link, '', '---', '', ...en, link].join('\n\n'),
-    html: `<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#141414;">${block('fr', fr)}<hr style="border:0;border-top:1px solid #ddd;margin:24px 0;">${block('en', en)}</div>`,
-    idempotencyKey: `glimr-streak-${warning.topic_id}-${warning.week_start.slice(0, 10)}`,
+    ...email,
+    idempotencyKey: `glimr-streak-${warning.topic_id}-${warning.week_start.slice(0, 10)}${lang ? `-${lang}` : ''}`,
   }
 }
 
@@ -70,16 +91,27 @@ export async function sendStreakWarnings(
     return report
   }
 
+  const langs = await langsOf(db, [...new Set(warnings.flatMap((w) => w.emails))])
   for (const warning of warnings) {
     if (!warning.emails.length) {
       report.skipped++
       continue
     }
-    const result = await send(
-      key,
-      streakEmail(warning, settings.data.email_from, settings.data.site_url),
-    )
-    if (!result.ok) {
+    // One e-mail per language of the owners (one owner: one e-mail).
+    const groups = new Map<string | null, string[]>()
+    for (const email of warning.emails) {
+      const lang = langs.get(email.toLowerCase()) ?? null
+      groups.set(lang, [...(groups.get(lang) ?? []), email])
+    }
+    let ok = true
+    for (const [lang, emails] of groups) {
+      const result = await send(
+        key,
+        streakEmail({ ...warning, emails }, settings.data.email_from, settings.data.site_url, lang),
+      )
+      if (!result.ok) ok = false
+    }
+    if (!ok) {
       report.failed++
       continue
     }

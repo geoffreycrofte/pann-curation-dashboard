@@ -588,3 +588,9 @@ Les prix des offres sont **hors taxes** (Glimr s'adresse d'abord à des professi
 L'invitation est enregistrée avec la RLS (propriétaire seulement), puis une tâche : une personne qui a déjà un compte rejoint l'espace tout de suite et reçoit un e-mail (Resend, clé de Glimr) ; sinon, Supabase lui envoie l'invitation à créer son compte (l'inscription reste sur invitation), et `handle_new_user` l'ajoute à l'espace à sa création, sans espace personnel. Les invités sont éditeurs. Une personne dans plusieurs espaces choisit l'espace courant en haut du menu (gardé sur l'appareil) ; les thèmes affichés sont ceux de cet espace, et ouvrir un thème d'un autre espace bascule sur le sien.
 
 **Noms des offres** : Perso, Essential, Pro (et Sur mesure), dans les deux langues, au plus près des clés (`own_keys`, `essential`, `pro`). Ils remplacent Clés personnelles, Intermédiaire et Supérieure.
+
+## 2026-11-24 : mise en page des e-mails, langue du compte
+
+**Mise en page commune** (`apps/api/src/lib/email-layout.ts`) : logo Glimr à gauche (PNG servi par le board, `/email/glimr-logo.png`, les clients mail ne lisent pas le SVG), titre, texte, bouton doré, pied de page foncé (devise, adresse du site, exploitant). Tableaux et styles en ligne, ce que lisent les clients mail. Tous les e-mails de Glimr l'utilisent (streak, inactivité, équipe, demande d'accès).
+
+**Langue** : le board range la langue de l'interface dans le compte (`user_metadata.lang`) ; les tâches écrivent dans cette langue (`user_langs_for_jobs`), en français puis anglais quand elle est inconnue. Une invitation d'équipe reprend la langue de la personne qui invite. Les modèles de Supabase (connexion, invitation, changement d'adresse) suivent la même mise en page et la même règle : générés depuis le code dans `docs/emails/supabase`, à coller dans le tableau de bord Supabase. Leur sujet, en texte simple, reste bilingue.

@@ -1,5 +1,5 @@
-import { escapeHtml } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { renderEmail } from '../lib/email-layout'
 import { sendResendEmail, type SendResult, type ServiceEmail } from '../lib/resend'
 
 export interface AccessRequest {
@@ -21,33 +21,23 @@ export function accessRequestEmail(
   to: string[],
   adminUrl: string,
 ): ServiceEmail {
-  const subject = `Demande d’accès à Glimr : ${request.name}`
-  const lines = [
-    `${request.name} <${request.email}> demande un accès à Glimr.`,
-    '',
-    'Motivation :',
-    request.motivation,
-    '',
-    `Langue de l’interface : ${request.lang}`,
-    `Demandes d’accès : ${adminUrl}`,
-    '',
-    'Répondre à cet e-mail écrit directement à la personne.',
-  ]
-  const html = `<div lang="fr" style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#141414;">
-<p><strong>${escapeHtml(request.name)}</strong> &lt;${escapeHtml(request.email)}&gt; demande un accès à Glimr.</p>
-<h2 style="font-size:18px;margin:24px 0 8px;">Motivation</h2>
-${request.motivation
-  .split(/\n{2,}/)
-  .map((p) => `<p style="margin:0 0 12px;">${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
-  .join('\n')}
-<p style="margin:24px 0 0;font-size:14px;color:#5f5a4e;">Langue de l’interface : ${escapeHtml(request.lang)}. <a href="${escapeHtml(adminUrl)}" style="color:#5c4300;">Voir les demandes d’accès</a>. Répondre à cet e-mail écrit directement à la personne.</p>
-</div>`
+  const email = renderEmail(new URL(adminUrl).origin, {
+    fr: {
+      subject: `Demande d’accès à Glimr : ${request.name}`,
+      heading: `Demande d’accès : ${request.name}`,
+      paragraphs: [
+        `${request.name} <${request.email}> demande un accès à Glimr. Sa motivation :`,
+        ...request.motivation.split(/\n{2,}/),
+        `Langue de l’interface : ${request.lang}`,
+      ],
+      button: { label: 'Voir les demandes d’accès', url: adminUrl },
+      note: 'Répondre à cet e-mail écrit directement à la personne.',
+    },
+  })
   return {
     from,
     to,
-    subject,
-    text: lines.join('\n'),
-    html,
+    ...email,
     replyTo: request.email,
     idempotencyKey: `glimr-access-request-${request.id}`,
   }
