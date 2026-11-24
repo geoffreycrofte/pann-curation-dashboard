@@ -564,7 +564,7 @@ export default {
       versus: 'ou',
       with: 'Avec Glimr',
       withSub: 'Un seul outil, tout est relié',
-      withNote: 'Offre Intermédiaire, facturée à l’année, hors taxes.',
+      withNote: 'Offre Essential, facturée à l’année, hors taxes.',
       included: {
         publish: 'Publication sur LinkedIn, Bluesky, Mastodon, Facebook et Discord',
         watch: 'Veille triée par IA, posts rédigés depuis vos sources',
@@ -579,9 +579,9 @@ export default {
   plans: {
     label: 'Offre',
     names: {
-      own_keys: 'Clés personnelles',
-      essential: 'Intermédiaire',
-      pro: 'Supérieure',
+      own_keys: 'Perso',
+      essential: 'Essential',
+      pro: 'Pro',
       custom: 'Sur mesure',
     },
     topics: 'Thèmes : {used} sur {max}',
@@ -679,7 +679,7 @@ export default {
       'Vous n’aurez plus accès à ses thèmes, sauf si le propriétaire vous invite à nouveau.',
     left: 'Vous avez quitté l’espace.',
     ownerManages: 'Seul le propriétaire de l’espace invite et retire des membres.',
-    lockedHint: '(offre Supérieure)',
+    lockedHint: '(offre Pro)',
     lockedText:
       'Travailler à plusieurs dans un espace est réservé à l’offre {plan} : invitez une personne, partagez vos thèmes et gardez une seule facture.',
     upgrade: 'Passer à l’offre {plan}',
@@ -1128,7 +1128,7 @@ export default {
     },
     workspacesTitle: 'Espaces de travail',
     workspacesIntro:
-      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme), activé automatiquement dès qu’un espace paie l’offre Intermédiaire ou Supérieure ; le décocher le désactive à la main, quelle que soit l’offre : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
+      'Chaque espace avec son propriétaire, son offre (modifiable ici) et l’état de sa facturation. La dernière colonne fait passer LinkedIn et Facebook par la clé Zernio de Glimr (mode plateforme), activé automatiquement dès qu’un espace paie l’offre Essential ou Pro ; le décocher le désactive à la main, quelle que soit l’offre : ses membres connectent leurs comptes sans clé. Un espace qui a sa propre clé Zernio la garde. Deux espaces peuvent porter le même nom (pris dans le début de l’adresse e-mail) : l’adresse du propriétaire les distingue.',
     colPlatform: 'Zernio de Glimr',
     platformLabel: 'Activé ({n} comptes)',
     platformOffByAdmin: 'Désactivé à la main : reste désactivé quelle que soit l’offre.',

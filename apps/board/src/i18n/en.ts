@@ -562,7 +562,7 @@ export default {
       versus: 'or',
       with: 'With Glimr',
       withSub: 'One tool, everything connected',
-      withNote: 'Intermediate offer, billed yearly, excluding VAT.',
+      withNote: 'Essential offer, billed yearly, excluding VAT.',
       included: {
         publish: 'Publishing to LinkedIn, Bluesky, Mastodon, Facebook and Discord',
         watch: 'News watch sorted by AI, posts drafted from your sources',
@@ -577,9 +577,9 @@ export default {
   plans: {
     label: 'Offer',
     names: {
-      own_keys: 'Own keys',
-      essential: 'Intermediate',
-      pro: 'Higher',
+      own_keys: 'Perso',
+      essential: 'Essential',
+      pro: 'Pro',
       custom: 'Custom',
     },
     topics: 'Topics: {used} of {max}',
@@ -674,7 +674,7 @@ export default {
     leaveText: 'You will no longer reach its topics, unless the owner invites you again.',
     left: 'You left the workspace.',
     ownerManages: 'Only the owner of the workspace invites and removes members.',
-    lockedHint: '(Higher offer)',
+    lockedHint: '(Pro offer)',
     lockedText:
       'Working together in a workspace comes with the {plan} offer: invite a person, share your topics and keep a single bill.',
     upgrade: 'Move to the {plan} offer',
@@ -1111,7 +1111,7 @@ export default {
     },
     workspacesTitle: 'Workspaces',
     workspacesIntro:
-      "Each workspace with its owner, its offer (editable here) and where its billing stands. The last column routes LinkedIn and Facebook through Glimr's Zernio key (platform mode), turned on automatically once a workspace pays the Intermediate or Superior offer; unticking it turns it off by hand, whatever the offer: its members connect their accounts without a key. A workspace with its own Zernio key keeps it. Two workspaces can share a name (taken from the start of the e-mail address): the owner's address tells them apart.",
+      "Each workspace with its owner, its offer (editable here) and where its billing stands. The last column routes LinkedIn and Facebook through Glimr's Zernio key (platform mode), turned on automatically once a workspace pays the Essential or Pro offer; unticking it turns it off by hand, whatever the offer: its members connect their accounts without a key. A workspace with its own Zernio key keeps it. Two workspaces can share a name (taken from the start of the e-mail address): the owner's address tells them apart.",
     colPlatform: "Glimr's Zernio",
     platformLabel: 'On ({n} accounts)',
     platformOffByAdmin: 'Turned off by hand: stays off whatever the offer.',

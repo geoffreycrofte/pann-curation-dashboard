@@ -129,7 +129,7 @@ export default {
           {
             list: [
               'Offres où Glimr fournit l’IA et la recherche : un quota mensuel de tokens est inclus. Quand il est atteint, les tâches d’IA s’arrêtent jusqu’au mois suivant, sauf si vous ajoutez vos propres clés.',
-              'Offre « Clés personnelles » : vous utilisez vos propres clés (IA, recherche, publication). Vous payez ces services directement, selon leurs propres conditions.',
+              'Offre « Perso » : vous utilisez vos propres clés (IA, recherche, publication). Vous payez ces services directement, selon leurs propres conditions.',
             ],
           },
         ],
@@ -649,7 +649,7 @@ export default {
         title: 'De quoi s’agit-il',
         blocks: [
           {
-            p: 'Avec l’offre « Clés personnelles », vous ouvrez vous-même vos comptes chez les services que Glimr utilise (IA, recherche, publication, newsletter). Pour certains d’entre eux, la page Connexions propose un lien d’inscription marqué « lien affilié ».',
+            p: 'Avec l’offre « Perso », vous ouvrez vous-même vos comptes chez les services que Glimr utilise (IA, recherche, publication, newsletter). Pour certains d’entre eux, la page Connexions propose un lien d’inscription marqué « lien affilié ».',
           },
           {
             p: 'Si vous créez votre compte par ce lien, le service peut verser une commission à Crofte Studio S.à r.l.-S, qui édite Glimr.',

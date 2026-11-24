@@ -129,7 +129,7 @@ export default {
           {
             list: [
               'Offers where Glimr provides AI and search: a monthly token quota is included. Once it is reached, AI tasks stop until the next month, unless you add your own keys.',
-              '"Own keys" offer: you use your own keys (AI, search, publishing). You pay those services directly, under their own terms.',
+              '"Perso" offer: you use your own keys (AI, search, publishing). You pay those services directly, under their own terms.',
             ],
           },
         ],
@@ -629,7 +629,7 @@ export default {
         title: 'What it is',
         blocks: [
           {
-            p: 'With the "Own keys" offer, you open your own accounts with the services Glimr uses (AI, search, publishing, newsletter). For some of them, the Connections page offers a sign-up link marked "affiliate link".',
+            p: 'With the "Perso" offer, you open your own accounts with the services Glimr uses (AI, search, publishing, newsletter). For some of them, the Connections page offers a sign-up link marked "affiliate link".',
           },
           {
             p: 'If you create your account through that link, the service may pay a commission to Crofte Studio S.à r.l.-S, which publishes Glimr.',
