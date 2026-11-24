@@ -110,7 +110,7 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
           .from('workspace_credentials')
           .select('provider, account, meta')
           .eq('workspace_id', workspaceId)
-          .in('provider', ['zernio', 'mastodon', 'bluesky', 'discord', 'telegram']),
+          .in('provider', ['zernio', 'mastodon', 'bluesky', 'w', 'discord', 'telegram']),
       ])
       if (secrets.error) throw secrets.error
       if (rows.error) throw rows.error
@@ -119,6 +119,7 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         zernio: keys.find((k) => k.provider === 'zernio')?.secret,
         mastodon: {},
         bluesky: {},
+        w: {},
         discord: {},
         telegram: {},
       }
@@ -153,8 +154,13 @@ export function supabasePublishStore(db: SupabaseClient): PublishStore {
         const { meta, account } = row
         if (row.provider === 'mastodon' && meta.instance)
           result.mastodon[account] = { token: secret, instance: meta.instance }
-        if (row.provider === 'bluesky' && meta.did && meta.pds && meta.handle)
-          result.bluesky[account] = {
+        if (
+          (row.provider === 'bluesky' || row.provider === 'w') &&
+          meta.did &&
+          meta.pds &&
+          meta.handle
+        )
+          result[row.provider][account] = {
             password: secret,
             did: meta.did,
             pds: meta.pds,

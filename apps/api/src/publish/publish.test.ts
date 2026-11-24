@@ -2,7 +2,10 @@ import { parseTopicConfig } from '@glimr/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   blueskyHandle,
+  checkBluesky,
   checkTelegram,
+  hashtagFacets,
+  publishToW,
   discordWebhookUrl,
   publishToBluesky,
   publishToDiscord,
@@ -62,6 +65,7 @@ function fakeStore(posts: DuePost[], keys = { zernio: 'sk_x', mastodon: true }) 
       bluesky: {},
       discord: {},
       telegram: {},
+      w: {},
     }),
     markSent: async (p, r) => void log.push(`sent ${p.id} ${r.url}`),
     markFailed: async (p, error, final, retryAt) =>
@@ -90,6 +94,7 @@ describe('publish', () => {
       bluesky: async () => ok,
       discord: async () => ok,
       telegram: async () => ok,
+      w: async () => ok,
     }
     const { store, log } = fakeStore([post(), post({ id: 'p2', channel: 'mastodon' })])
     expect(await publish({ store, networks, now })).toEqual({ sent: 2, failed: 0, retried: 0 })
@@ -122,6 +127,7 @@ describe('publish', () => {
       bluesky: async () => ok,
       discord: async () => ok,
       telegram: async () => ok,
+      w: async () => ok,
     }
     const { store } = fakeStore([
       post({ topic_config: linkedin }),
@@ -149,6 +155,7 @@ describe('publish', () => {
       bluesky: async () => ok,
       discord: async () => ok,
       telegram: async () => ok,
+      w: async () => ok,
     }
     const { store, log } = fakeStore([post({ channel: 'mastodon', lang: 'en' })])
     await publish({ store, networks, now })
@@ -162,6 +169,7 @@ describe('publish', () => {
       bluesky: async () => ok,
       discord: async () => ok,
       telegram: async () => ok,
+      w: async () => ok,
     }
     const { store, log } = fakeStore([post()], { zernio: '', mastodon: true })
     await publish({ store, networks, now })
@@ -175,6 +183,7 @@ describe('publish', () => {
       bluesky: async () => ok,
       discord: async () => ok,
       telegram: async () => ok,
+      w: async () => ok,
     }
     const first = fakeStore([post()])
     await publish({ store: first.store, networks, now })
@@ -197,6 +206,7 @@ describe('publish', () => {
       bluesky: async () => ok,
       discord: async () => ok,
       telegram: async () => ok,
+      w: async () => ok,
     }
     const { store, log } = fakeStore([post(), post({ id: 'p2', lang: 'en' })])
     await publish({ store, networks, now })
@@ -341,6 +351,88 @@ describe('networks', () => {
     // "Été accessible" is 14 characters but 16 bytes: facets count bytes.
     expect(record.facets[0]!.index).toEqual({ byteStart: 18, byteEnd: 18 + 21 })
     expect(record.facets[0]!.features[0]!.uri).toBe('https://example.org/a')
+  })
+
+  it('finds a W account through its handle, when the Bluesky AppView does not know it', async () => {
+    const urls: string[] = []
+    vi.stubGlobal('fetch', async (url: string) => {
+      urls.push(url)
+      if (url.includes('resolveHandle')) return new Response('{}', { status: 400 })
+      if (url === 'https://me.wsocial.eu/.well-known/atproto-did')
+        return new Response('did:plc:abc\n', { status: 200 })
+      if (url === 'https://plc.directory/did:plc:abc')
+        return Response.json({
+          service: [{ id: '#atproto_pds', serviceEndpoint: 'https://pds.wsocial.network' }],
+        })
+      if (url.endsWith('createSession')) return Response.json({ accessJwt: 'jwt' })
+      return new Response('{}', { status: 404 })
+    })
+    expect(await checkBluesky('me.wsocial.eu', 'app-pass', 'w')).toEqual({
+      ok: true,
+      did: 'did:plc:abc',
+      pds: 'https://pds.wsocial.network',
+      handle: 'me.wsocial.eu',
+    })
+    expect(urls).toContain('https://pds.wsocial.network/xrpc/com.atproto.server.createSession')
+  })
+
+  it('posts to W with the link as a card, the hashtags as tags, and links to the post on W', async () => {
+    const records: Record<string, unknown>[] = []
+    vi.stubGlobal('fetch', async (input: string | URL, init?: RequestInit) => {
+      const url = String(input)
+      if (url.endsWith('createSession')) return Response.json({ accessJwt: 'jwt' })
+      if (url === 'https://example.org/a')
+        return new Response(
+          '<html><head><meta property="og:title" content="Un article &amp; plus"><meta property="og:description" content="Résumé"></head></html>',
+          { status: 200, headers: { 'Content-Type': 'text/html' } },
+        )
+      if (url.endsWith('createRecord')) {
+        records.push(JSON.parse(init!.body as string).record)
+        return Response.json({ uri: 'at://did:plc:abc/app.bsky.feed.post/3kxyz' })
+      }
+      return new Response('{}', { status: 404 })
+    })
+    const result = await publishToW(
+      {
+        did: 'did:plc:abc',
+        pds: 'https://pds.wsocial.network',
+        password: 'x',
+        handle: 'me.wsocial.eu',
+      },
+      {
+        channel: 'w',
+        lang: 'en',
+        content: 'Read this. #WCAG\n\nhttps://example.org/a',
+        url: 'https://example.org/a',
+        idempotencyKey: 'k',
+      },
+    )
+    expect(result).toMatchObject({
+      ok: true,
+      url: 'https://wsocial.eu/profile/me.wsocial.eu/post/3kxyz',
+    })
+    expect(records[0]!.embed).toEqual({
+      $type: 'app.bsky.embed.external',
+      external: { uri: 'https://example.org/a', title: 'Un article & plus', description: 'Résumé' },
+    })
+    const facets = records[0]!.facets as { features: { $type: string }[] }[]
+    expect(facets.map((f) => f.features[0]!.$type)).toEqual([
+      'app.bsky.richtext.facet#link',
+      'app.bsky.richtext.facet#tag',
+    ])
+  })
+
+  it('reads hashtags as tags, with byte offsets, and leaves anchors and numbers alone', () => {
+    expect(hashtagFacets('Été #Accessibilité et #WCAG22, pas#ici ni #2026')).toEqual([
+      {
+        index: { byteStart: 6, byteEnd: 21 },
+        features: [{ $type: 'app.bsky.richtext.facet#tag', tag: 'Accessibilité' }],
+      },
+      {
+        index: { byteStart: 25, byteEnd: 32 },
+        features: [{ $type: 'app.bsky.richtext.facet#tag', tag: 'WCAG22' }],
+      },
+    ])
   })
 
   it('reports a refused Bluesky app password as a bad key', async () => {
@@ -556,6 +648,7 @@ describe('images of composed posts', () => {
       bluesky: async () => ok,
       discord: async () => ok,
       telegram: async () => ok,
+      w: async () => ok,
     }
     const { store, log } = fakeStore([
       post({
@@ -667,6 +760,7 @@ describe('Zernio in platform mode', () => {
       bluesky: async () => ok,
       discord: async () => ok,
       telegram: async () => ok,
+      w: async () => ok,
     }
     const { store, log } = fakeStore([post(), post({ id: 'p2', lang: 'en' })])
     const credentials = store.credentials

@@ -9,7 +9,9 @@
  *   discord.com/branding, telegram.org);
  * - LinkedIn: traced from the "In" logo LinkedIn publishes (brand.linkedin.com, downloads),
  *   since Simple Icons no longer carries it. Reversed (white) on dark backgrounds, as
- *   LinkedIn's guidelines ask.
+ *   LinkedIn's guidelines ask;
+ * - W: the logo of wsocial.news (logo-LM.svg, 48 by 48), three colours; its dark part turns
+ *   white on dark backgrounds, like W's own dark variant (logo.svg).
  */
 export const NETWORK_LOGOS = {
   linkedin:
@@ -25,8 +27,38 @@ export const NETWORK_LOGOS = {
   telegram:
     'M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z',
 } as const
-export type NetworkLogo = keyof typeof NETWORK_LOGOS
+
+/** Logos in several colours: their own box, each part with its colour token. */
+export const MULTI_COLOUR_LOGOS = {
+  w: {
+    viewBox: '0 0 48 48',
+    parts: [
+      {
+        d: 'M24.1699 24.9074L30.5546 24.3222L35.5124 7.59448H43.8762L30.5546 39.6164L24.1699 24.9074Z',
+        color: 'w-shade',
+      },
+      {
+        d: 'M14.1912 11.3293H6.10352L18.1364 39.5376L22.4893 32.1403L14.1912 11.3293Z',
+        color: 'w-ink',
+      },
+      {
+        d: 'M25.7227 24.7693L29.7929 24.3945C30.2532 24.3551 30.6411 24.0329 30.7726 23.5923L35.6055 7.63396C35.7501 7.15396 36.1841 6.8252 36.6838 6.8252H42.5162C43.3184 6.8252 43.8641 7.64054 43.5551 8.38355L30.8449 38.9129C30.5293 39.6822 29.9573 39.6099 29.1025 39.6099L24.789 26.3342C24.48 25.6307 24.9534 24.8351 25.7227 24.7627V24.7693Z',
+        color: 'w-shade',
+      },
+      {
+        d: 'M20.1055 18.5096L22.5909 14.5776C23.5509 13.0587 25.8523 13.3611 26.3849 15.0839L29.1071 23.954L32.7762 11.3293H40.5877L29.1071 39.6165L20.112 18.5096H20.1055Z',
+        color: 'w-ink',
+      },
+      {
+        d: 'M22.7148 24.5523L24.6809 21.4422C25.6474 19.9167 27.962 20.2257 28.488 21.9485L29.0995 23.9474L34.0573 6.8186H42.4211L29.0995 39.6098L22.7148 24.5457V24.5523Z',
+        color: 'w',
+      },
+    ],
+  },
+} as const
+
+export type NetworkLogo = keyof typeof NETWORK_LOGOS | keyof typeof MULTI_COLOUR_LOGOS
 
 export function isNetworkLogo(name: string): name is NetworkLogo {
-  return name in NETWORK_LOGOS
+  return name in NETWORK_LOGOS || name in MULTI_COLOUR_LOGOS
 }

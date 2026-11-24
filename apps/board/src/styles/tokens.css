@@ -46,6 +46,10 @@
   --color-brand-mastodon: #6364ff;
   --color-brand-discord: #5865f2;
   --color-brand-telegram: #26a5e4;
+  /* W: three colours; the dark part turns white on dark backgrounds, like W's dark logo. */
+  --color-brand-w: #1df2ba;
+  --color-brand-w-shade: #61a38b;
+  --color-brand-w-ink: light-dark(#1c1427, #ffffff);
   /* AI at work: colors of the animated halo, with --color-accent-fill (3:1 on the backgrounds). */
   --color-ai-violet: light-dark(#6d4aff, #b3a1ff);
   --color-ai-teal: light-dark(#0b7f86, #4fd1c5);

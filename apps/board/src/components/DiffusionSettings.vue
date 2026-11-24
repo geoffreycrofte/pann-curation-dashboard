@@ -106,7 +106,7 @@ const accounts = computed<AccountRow[]>(() => {
   for (const c of credentials.value ?? []) {
     if (!c.account) continue
     const name =
-      c.provider === 'bluesky'
+      c.provider === 'bluesky' || c.provider === 'w'
         ? `@${c.meta.handle ?? c.account}`
         : c.provider === 'discord'
           ? (c.meta.webhook_name ?? 'Discord')
@@ -115,6 +115,7 @@ const accounts = computed<AccountRow[]>(() => {
             : c.account
     if (
       c.provider === 'bluesky' ||
+      c.provider === 'w' ||
       c.provider === 'mastodon' ||
       c.provider === 'discord' ||
       c.provider === 'telegram'

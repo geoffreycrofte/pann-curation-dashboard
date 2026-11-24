@@ -600,3 +600,15 @@ L'invitation est enregistrée avec la RLS (propriétaire seulement), puis une t�
 Premier réseau de l'étude `docs/studies/nouveaux-reseaux.md`, publié sans Zernio comme Discord : API Bot ouverte, gratuite, sans validation. La clé est le jeton d'un bot créé avec BotFather, administrateur d'un canal avec le droit de publier ; le compte est l'identifiant du canal (plusieurs canaux par espace). À l'enregistrement, Glimr vérifie le bot (`getMe`), le canal (`getChat`) et le droit de publier (`getChatMember`) ; sinon il le dit (`telegram_not_admin`). Le post part en message (4 096 caractères, aperçu du lien) ; les images en photo ou en album, avec le post en légende s'il tient en 1 024 caractères, sinon après lui. Telegram n'a pas de texte alternatif pour les images. Le jeton n'est envoyé qu'à api.telegram.org.
 
 **Logos officiels des réseaux** : chaque réseau s'affiche avec son logo officiel, dans sa couleur, devant son nom (posts d'un élément et de Création, calendrier, Connexions, réglages de diffusion), pour un repère que les gens connaissent déjà. Tracés de Simple Icons (CC0, repris des ressources de marque de chaque réseau), sauf LinkedIn, retiré de Simple Icons à sa demande : tracé depuis le logo « In » que publie LinkedIn, blanc sur fond sombre comme ses règles le demandent. Couleurs en jetons (`--color-brand-*`), décoratives : le nom est toujours à côté. Le bleu de Telegram reste sous 3:1 sur blanc, seuil accepté pour un logo décoratif (2,5:1 dans le contrôle).
+
+## 2026-11-25 : W en direct
+
+W (wsocial.eu), réseau européen de personnes vérifiées, repose sur l'AT Protocol : serveur PDS standard (`pds.wsocial.network`), mêmes enregistrements que Bluesky (`app.bsky.feed.post`), mot de passe d'application. Glimr le publie avec le connecteur de Bluesky, sous son propre nom (canal `w`, fournisseur `w`) : on peut relier un compte Bluesky et un compte W. Limite de 300 caractères, comme Bluesky ; lien vers le post sur wsocial.eu.
+
+Trois améliorations valent aussi pour Bluesky :
+
+- l'identifiant se résout par `/.well-known/atproto-did` quand l'AppView de Bluesky ne le connaît pas (cas des comptes W) ;
+- les hashtags deviennent des tags cliquables (facettes `#tag`) ;
+- un post sans image montre le lien en carte (titre, description et image de la page), comme les applications.
+
+Testé le 2026-11-25 par un vrai post sur le compte W de Geoffrey, visible sur W et sur Bluesky. Les conditions de W (article 8) interdisent l'accès automatisé sauf accord écrit : demande d'accord à faire avant de mettre W en avant.

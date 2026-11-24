@@ -1,10 +1,10 @@
 import { errorCode } from '@glimr/shared'
-import { PRIVATE_HOST, USER_AGENT } from '../lib/fetch-text'
+import { fetchText, PRIVATE_HOST, USER_AGENT } from '../lib/fetch-text'
 import type { PublishImage, PublishRequest, PublishResult } from './networks'
 
 /**
  * Networks published without a go-between, because their API is open and free:
- * Bluesky (AT Protocol, app password) and Discord (channel webhook). Mastodon is in
+ * Bluesky and W (AT Protocol, app password), Discord (channel webhook), Telegram (bot). Mastodon is in
  * networks.ts. Checked 2026-11-12.
  */
 
@@ -69,13 +69,32 @@ export function blueskyHandle(input: string): string | null {
   return /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/.test(value) ? value : null
 }
 
-/** Handle to DID (public AppView), then DID document to the PDS that hosts it. */
-async function resolveAccount(handle: string): Promise<{ did: string; pds: string } | null> {
+/**
+ * Handle to DID: Bluesky's public AppView first, then the handle's own
+ * /.well-known/atproto-did (AT Protocol handle resolution over HTTPS), which the AppView
+ * does not always know (W handles, checked 2026-11-25).
+ */
+async function resolveDid(handle: string): Promise<string | null> {
   const res = await send(
     `https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle?handle=${encodeURIComponent(handle)}`,
   )
-  if (!res?.ok) return null
-  const { did } = (await res.json().catch(() => ({}))) as { did?: string }
+  if (res?.ok) {
+    const { did } = (await res.json().catch(() => ({}))) as { did?: string }
+    if (did) return did
+  }
+  const host = publicOrigin(`https://${handle}`)
+  if (!host) return null
+  const wellKnown = await send(`${host}/.well-known/atproto-did`, {
+    headers: { Accept: 'text/plain' },
+  })
+  if (!wellKnown?.ok) return null
+  const did = (await wellKnown.text().catch(() => '')).trim()
+  return /^did:(plc|web):[\w.:%-]+$/.test(did) ? did : null
+}
+
+/** Handle to DID, then DID document to the PDS that hosts it. */
+async function resolveAccount(handle: string): Promise<{ did: string; pds: string } | null> {
+  const did = await resolveDid(handle)
   let docUrl: string | null = null
   if (did?.startsWith('did:plc:')) docUrl = `https://plc.directory/${did}`
   else if (did?.startsWith('did:web:')) {
@@ -97,34 +116,48 @@ async function resolveAccount(handle: string): Promise<{ did: string; pds: strin
 
 type Session = { ok: true; accessJwt: string } | { ok: false; result: PublishResult }
 
+/** Networks on the AT Protocol Glimr publishes to: same records, their own app. */
+export type AtNetwork = 'bluesky' | 'w'
+
+/** Where a post can be read: the network's own app (W's follows Bluesky's addresses). */
+const POST_APP: Record<AtNetwork, string> = {
+  bluesky: 'https://bsky.app',
+  w: 'https://wsocial.eu',
+}
+
 /** Opens a session with the app password; the access token lasts long enough for a post. */
 async function createSession(
   account: Pick<BlueskyAccount, 'pds' | 'did' | 'password'>,
+  network: AtNetwork = 'bluesky',
 ): Promise<Session> {
   const stop = (result: PublishResult): Session => ({ ok: false, result })
   const res = await send(
     `${account.pds}/xrpc/com.atproto.server.createSession`,
     json({ identifier: account.did, password: account.password }),
   )
-  if (!res) return stop(failure(errorCode('provider_error', 'bluesky'), true))
+  if (!res) return stop(failure(errorCode('provider_error', network), true))
   if (res.status === 401 || res.status === 400)
-    return stop(failure(errorCode('invalid_credential', 'bluesky'), false, true))
-  if (res.status === 429) return stop(failure(errorCode('rate_limited', 'bluesky'), true))
-  if (!res.ok) return stop(failure(errorCode('provider_error', 'bluesky'), true))
+    return stop(failure(errorCode('invalid_credential', network), false, true))
+  if (res.status === 429) return stop(failure(errorCode('rate_limited', network), true))
+  if (!res.ok) return stop(failure(errorCode('provider_error', network), true))
   const body = (await res.json().catch(() => ({}))) as { accessJwt?: string }
   return body.accessJwt
     ? { ok: true, accessJwt: body.accessJwt }
-    : stop(failure(errorCode('provider_response', 'bluesky'), true))
+    : stop(failure(errorCode('provider_response', network), true))
 }
 
 export type BlueskyCheck =
   { ok: true; did: string; pds: string; handle: string } | { ok: false; invalid: boolean }
 
 /** Finds the account behind the handle and proves the app password by opening a session. */
-export async function checkBluesky(handle: string, password: string): Promise<BlueskyCheck> {
+export async function checkBluesky(
+  handle: string,
+  password: string,
+  network: AtNetwork = 'bluesky',
+): Promise<BlueskyCheck> {
   const account = await resolveAccount(handle)
   if (!account) return { ok: false, invalid: true }
-  const session = await createSession({ ...account, password })
+  const session = await createSession({ ...account, password }, network)
   if (session.ok) return { ok: true, ...account, handle }
   return { ok: false, invalid: !session.result.ok && session.result.invalidCredential === true }
 }
@@ -136,6 +169,99 @@ function byteRange(text: string, part: string): { byteStart: number; byteEnd: nu
   const encoder = new TextEncoder()
   const byteStart = encoder.encode(text.slice(0, index)).length
   return { byteStart, byteEnd: byteStart + encoder.encode(part).length }
+}
+
+const decodeEntities = (value: string) =>
+  value
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+
+/** A meta tag of the page (Open Graph first, then the plain one). */
+function metaContent(html: string, names: string[]): string | null {
+  for (const name of names) {
+    const tag = html.match(
+      new RegExp(`<meta[^>]+(?:property|name)=["']${name}["'][^>]*>`, 'i'),
+    )?.[0]
+    const content = tag?.match(/content=["']([^"']*)["']/i)?.[1]
+    if (content?.trim()) return decodeEntities(content.trim())
+  }
+  return null
+}
+
+/** Title, description and image of the linked page, for the card under the post. */
+export async function readLinkCard(
+  url: string,
+): Promise<{ title: string; description: string; image: string | null } | null> {
+  try {
+    const page = await fetchText(url, { timeoutMs: 8000, maxBytes: 512 * 1024 })
+    const html = page.text
+    const title =
+      metaContent(html, ['og:title', 'twitter:title']) ??
+      decodeEntities(html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() ?? '')
+    if (!title) return null
+    const description =
+      metaContent(html, ['og:description', 'twitter:description', 'description']) ?? ''
+    const image = metaContent(html, ['og:image', 'twitter:image'])
+    let imageUrl: string | null = null
+    try {
+      imageUrl = image ? new URL(image, url).toString() : null
+    } catch {
+      imageUrl = null
+    }
+    return { title: title.slice(0, 300), description: description.slice(0, 1000), image: imageUrl }
+  } catch {
+    return null
+  }
+}
+
+/** The page's image as a blob of the account (1 MB at most), or null: the card goes without. */
+async function uploadCardThumb(
+  account: BlueskyAccount,
+  accessJwt: string,
+  imageUrl: string,
+): Promise<unknown | null> {
+  const origin = publicOrigin(imageUrl)
+  if (!origin) return null
+  const res = await send(imageUrl, {
+    headers: { Accept: 'image/jpeg, image/png, image/webp;q=0.9' },
+  })
+  const mime = res?.headers.get('content-type')?.split(';')[0] ?? ''
+  if (!res?.ok || !/^image\/(jpeg|png|webp|gif)$/.test(mime)) return null
+  const bytes = new Uint8Array(await res.arrayBuffer())
+  if (bytes.length > 1_000_000) return null
+  const upload = await send(`${account.pds}/xrpc/com.atproto.repo.uploadBlob`, {
+    method: 'POST',
+    headers: { 'Content-Type': mime, Authorization: `Bearer ${accessJwt}` },
+    body: bytes,
+  })
+  if (!upload?.ok) return null
+  const body = (await upload.json().catch(() => ({}))) as { blob?: unknown }
+  return body.blob ?? null
+}
+
+/**
+ * Hashtags of a post (#WCAG), as tag facets: without one, a hashtag is plain text on the
+ * AT Protocol. Byte offsets, like the link's.
+ */
+export function hashtagFacets(text: string) {
+  const encoder = new TextEncoder()
+  const facets: {
+    index: { byteStart: number; byteEnd: number }
+    features: { $type: string; tag: string }[]
+  }[] = []
+  for (const match of text.matchAll(/(^|\s)#([\p{L}\p{N}_]*\p{L}[\p{L}\p{N}_]*)/gu)) {
+    const start = match.index + match[1]!.length
+    const byteStart = encoder.encode(text.slice(0, start)).length
+    const tag = match[2]!
+    facets.push({
+      index: { byteStart, byteEnd: byteStart + encoder.encode(`#${tag}`).length },
+      features: [{ $type: 'app.bsky.richtext.facet#tag', tag }],
+    })
+  }
+  return facets
 }
 
 /**
@@ -151,32 +277,34 @@ async function uploadBlueskyImage(
   account: BlueskyAccount,
   accessJwt: string,
   image: PublishImage,
+  network: AtNetwork,
 ): Promise<{ blob: unknown } | PublishResult> {
   const res = await send(`${account.pds}/xrpc/com.atproto.repo.uploadBlob`, {
     method: 'POST',
     headers: { 'Content-Type': image.mime, Authorization: `Bearer ${accessJwt}` },
     body: await image.load(),
   })
-  if (!res) return failure(errorCode('provider_error', 'bluesky'), true)
-  if (res.status === 401) return failure(errorCode('invalid_credential', 'bluesky'), false, true)
-  if (res.status === 429) return failure(errorCode('rate_limited', 'bluesky'), true)
+  if (!res) return failure(errorCode('provider_error', network), true)
+  if (res.status === 401) return failure(errorCode('invalid_credential', network), false, true)
+  if (res.status === 429) return failure(errorCode('rate_limited', network), true)
   if (res.status === 400 || res.status === 413)
-    return failure(errorCode('post_rejected', 'bluesky'), false)
-  if (!res.ok) return failure(errorCode('provider_error', 'bluesky'), true)
+    return failure(errorCode('post_rejected', network), false)
+  if (!res.ok) return failure(errorCode('provider_error', network), true)
   const body = (await res.json().catch(() => ({}))) as { blob?: unknown }
-  return body.blob ? { blob: body.blob } : failure(errorCode('provider_response', 'bluesky'), true)
+  return body.blob ? { blob: body.blob } : failure(errorCode('provider_response', network), true)
 }
 
 export async function publishToBluesky(
   account: BlueskyAccount,
   request: PublishRequest & { url: string },
+  network: AtNetwork = 'bluesky',
 ): Promise<PublishResult> {
-  const session = await createSession(account)
+  const session = await createSession(account, network)
   if (!session.ok) return session.result
   const images: { image: unknown; alt: string; aspectRatio: { width: number; height: number } }[] =
     []
   for (const image of (request.images ?? []).slice(0, 4)) {
-    const uploaded = await uploadBlueskyImage(account, session.accessJwt, image)
+    const uploaded = await uploadBlueskyImage(account, session.accessJwt, image, network)
     if ('ok' in uploaded) return uploaded
     images.push({
       image: uploaded.blob,
@@ -185,40 +313,68 @@ export async function publishToBluesky(
     })
   }
   const range = request.url ? byteRange(request.content, request.url) : null
+  const facets = [
+    ...(range
+      ? [
+          {
+            index: range,
+            features: [{ $type: 'app.bsky.richtext.facet#link', uri: request.url }],
+          },
+        ]
+      : []),
+    ...hashtagFacets(request.content),
+  ]
   const record = {
     $type: 'app.bsky.feed.post',
     text: request.content,
     langs: [request.lang],
     createdAt: new Date().toISOString(),
-    ...(range
-      ? {
-          facets: [
-            {
-              index: range,
-              features: [{ $type: 'app.bsky.richtext.facet#link', uri: request.url }],
-            },
-          ],
-        }
-      : {}),
-    ...(images.length ? { embed: { $type: 'app.bsky.embed.images', images } } : {}),
+    ...(facets.length ? { facets } : {}),
   }
+  // Images first; otherwise the link as a card (title, description, image of the page),
+  // like the apps show it. A page that cannot be read leaves the plain link.
+  let embed: Record<string, unknown> | null = images.length
+    ? { $type: 'app.bsky.embed.images', images }
+    : null
+  if (!embed && request.url) {
+    const card = await readLinkCard(request.url)
+    if (card) {
+      const thumb = card.image
+        ? await uploadCardThumb(account, session.accessJwt, card.image)
+        : null
+      embed = {
+        $type: 'app.bsky.embed.external',
+        external: {
+          uri: request.url,
+          title: card.title,
+          description: card.description,
+          ...(thumb ? { thumb } : {}),
+        },
+      }
+    }
+  }
+  if (embed) Object.assign(record, { embed })
   const res = await send(`${account.pds}/xrpc/com.atproto.repo.createRecord`, {
     ...json({ repo: account.did, collection: 'app.bsky.feed.post', record }),
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.accessJwt}` },
   })
-  if (!res) return failure(errorCode('provider_error', 'bluesky'), true)
-  if (res.status === 401) return failure(errorCode('invalid_credential', 'bluesky'), false, true)
-  if (res.status === 429) return failure(errorCode('rate_limited', 'bluesky'), true)
-  if (res.status === 400) return failure(errorCode('post_rejected', 'bluesky'), false)
-  if (!res.ok) return failure(errorCode('provider_error', 'bluesky'), true)
+  if (!res) return failure(errorCode('provider_error', network), true)
+  if (res.status === 401) return failure(errorCode('invalid_credential', network), false, true)
+  if (res.status === 429) return failure(errorCode('rate_limited', network), true)
+  if (res.status === 400) return failure(errorCode('post_rejected', network), false)
+  if (!res.ok) return failure(errorCode('provider_error', network), true)
   const body = (await res.json().catch(() => ({}))) as { uri?: string }
   const rkey = body.uri?.split('/').pop()
   return {
     ok: true,
     external_id: body.uri ?? null,
-    url: rkey ? `https://bsky.app/profile/${account.handle}/post/${rkey}` : null,
+    url: rkey ? `${POST_APP[network]}/profile/${account.handle}/post/${rkey}` : null,
   }
 }
+
+/** W (wsocial.eu): the AT Protocol, like Bluesky, on W's own server. */
+export const publishToW = (account: BlueskyAccount, request: PublishRequest & { url: string }) =>
+  publishToBluesky(account, request, 'w')
 
 // ---------------------------------------------------------------------------
 // Discord

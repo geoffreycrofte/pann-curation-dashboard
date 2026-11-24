@@ -566,7 +566,7 @@ export default {
       withSub: 'Un seul outil, tout est relié',
       withNote: 'Offre Essential, facturée à l’année, hors taxes.',
       included: {
-        publish: 'Publication sur LinkedIn, Bluesky, Mastodon, Facebook, Discord et Telegram',
+        publish: 'Publication sur LinkedIn, Bluesky, W, Mastodon, Facebook, Discord et Telegram',
         watch: 'Veille triée par IA, posts rédigés depuis vos sources',
         listen: 'Conversations où aider, avec une réponse proposée',
         create: 'Création, calendrier, newsletter et flux publics',
@@ -766,6 +766,8 @@ export default {
     addAccount: 'Ajouter un compte',
     addAccountTitle: 'Autre compte {provider}',
     handleLabel: 'Identifiant Bluesky',
+    wHandleLabel: 'Identifiant W',
+    wHandleHint: 'Par exemple vous.wsocial.eu.',
     handleHint:
       'Par exemple vous.bsky.social, ou votre nom de domaine si vous l’utilisez comme identifiant.',
     appPasswordLabel: 'Mot de passe d’application',
@@ -882,6 +884,18 @@ export default {
         ],
         cost: 'Gratuit.',
         link: 'Ouvrir les mots de passe d’application de Bluesky',
+      },
+      w: {
+        name: 'W',
+        purpose:
+          'Publication sur W, le réseau européen de personnes vérifiées, directement. W repose sur le même protocole que Bluesky : vos posts y sont aussi visibles.',
+        steps: [
+          'Dans les réglages de W, créez un mot de passe d’application nommé « Glimr » (s’il propose des droits, celui de publier suffit) et copiez-le.',
+          'Collez ici ce mot de passe et votre identifiant (par exemple vous.wsocial.eu). Votre mot de passe principal n’est jamais demandé.',
+          'Les conditions de W encadrent la publication automatique : Glimr publie ce que vous avez validé, aux créneaux que vous avez choisis.',
+        ],
+        cost: 'Gratuit.',
+        link: 'Centre d’aide de W',
       },
       discord: {
         name: 'Discord',
@@ -1075,6 +1089,7 @@ export default {
       facebook: 'Facebook',
       discord: 'Discord',
       telegram: 'Telegram',
+      w: 'W',
     },
     length: '{count} caractères sur {limit}',
     tooLong: 'Trop long de {over} caractères pour {channel}.',
@@ -1608,7 +1623,7 @@ export default {
         },
         publish: {
           title: 'Multi-publier',
-          text: 'LinkedIn, Facebook, Bluesky, Mastodon, Discord et Telegram, chacun à ses créneaux, visibles dans le calendrier.',
+          text: 'LinkedIn, Facebook, Bluesky, W, Mastodon, Discord et Telegram, chacun à ses créneaux, visibles dans le calendrier.',
         },
       },
       alt: 'Une pépite posée sur un coussin de velours bleu, avec une plume et une étiquette vierge.',
@@ -1663,7 +1678,7 @@ export default {
       },
       share: {
         title: 'Diffuser',
-        text: 'Les posts partent sur LinkedIn, Facebook, Bluesky, Mastodon, Discord et Telegram aux créneaux que vous avez choisis. Le planning de la semaine montre ce qui est programmé et les créneaux encore libres.',
+        text: 'Les posts partent sur LinkedIn, Facebook, Bluesky, W, Mastodon, Discord et Telegram aux créneaux que vous avez choisis. Le planning de la semaine montre ce qui est programmé et les créneaux encore libres.',
         alt: 'Des avions en papier, chacun chargé d’une pépite, s’envolent d’un wagonnet plein d’or.',
       },
     },
@@ -1930,6 +1945,7 @@ export default {
         mastodon: 'Mastodon',
         discord: 'Discord',
         telegram: 'Telegram',
+        w: 'W',
       },
       newsletter: 'Une newsletter par e-mail',
       feed: 'Un flux RSS public pour mon site',
@@ -2346,7 +2362,7 @@ export default {
     accountsHint:
       'Cochez les langues que publie chaque compte. Un seul compte par réseau et par langue.',
     noAccounts:
-      'Aucun compte disponible. Dans Connexions, ajoutez Bluesky, Mastodon, Discord, Telegram ou une clé Zernio (LinkedIn, Facebook).',
+      'Aucun compte disponible. Dans Connexions, ajoutez Bluesky, W, Mastodon, Discord, Telegram ou une clé Zernio (LinkedIn, Facebook).',
     accountLangs: 'Langues publiées par {account}',
     accountConflict: 'Deux comptes publient {channel} en {lang} : n’en gardez qu’un.',
     linkedin: {
