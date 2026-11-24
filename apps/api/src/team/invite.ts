@@ -1,5 +1,11 @@
-import { escapeHtml } from '@glimr/shared'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import {
+  emailLangs,
+  langsOf,
+  renderEmail,
+  type EmailContent,
+  type EmailLang,
+} from '../lib/email-layout'
 import { sendResendEmail, type SendResult, type ServiceEmail } from '../lib/resend'
 
 export interface JoinedNotice {
@@ -9,43 +15,66 @@ export interface JoinedNotice {
   inviter: string | null
 }
 
-/**
- * E-mail to a person who already had an account and was added to a workspace. In French and
- * in English: the interface language is kept in the browser, not here.
- */
-export function joinedEmail(notice: JoinedNotice, from: string, siteUrl: string): ServiceEmail {
+/** E-mail to a person who already had an account and was added to a workspace. */
+export function joinedEmail(
+  notice: JoinedNotice,
+  from: string,
+  siteUrl: string,
+  lang?: string | null,
+): ServiceEmail {
   const link = `${siteUrl}/`
-  const who = notice.inviter ?? 'Glimr'
-  const fr = [
-    `${who} vous a ajouté à l’espace « ${notice.workspaceName} » sur Glimr.`,
-    'Ses thèmes apparaissent dans le choix de l’espace, en haut du menu :',
-  ]
-  const en = [
-    `${who} added you to the “${notice.workspaceName}” workspace on Glimr.`,
-    'Its topics show once you pick the workspace, at the top of the menu:',
-  ]
-  const block = (lang: string, lines: string[]) =>
-    `<div lang="${lang}">${lines.map((l) => `<p style="margin:0 0 12px;">${escapeHtml(l)}</p>`).join('')}<p style="margin:0 0 24px;"><a href="${escapeHtml(link)}" style="color:#5c4300;">${escapeHtml(link)}</a></p></div>`
+  const contents: Record<EmailLang, EmailContent> = {
+    fr: {
+      subject: `Vous avez rejoint l’espace « ${notice.workspaceName} » sur Glimr`,
+      heading: `Bienvenue dans l’espace « ${notice.workspaceName} »`,
+      paragraphs: [
+        `${notice.inviter ?? 'Le propriétaire de l’espace'} vous a ajouté à son équipe sur Glimr. Vous travaillez désormais sur tous les thèmes de cet espace.`,
+        'Choisissez l’espace en haut du menu pour voir ses thèmes.',
+      ],
+      button: { label: 'Ouvrir Glimr', url: link },
+    },
+    en: {
+      subject: `You joined the “${notice.workspaceName}” workspace on Glimr`,
+      heading: `Welcome to the “${notice.workspaceName}” workspace`,
+      paragraphs: [
+        `${notice.inviter ?? 'The owner of the workspace'} added you to their team on Glimr. You now work on every topic of this workspace.`,
+        'Pick the workspace at the top of the menu to see its topics.',
+      ],
+      button: { label: 'Open Glimr', url: link },
+    },
+  }
+  const email = renderEmail(
+    siteUrl,
+    Object.fromEntries(emailLangs(lang).map((l) => [l, contents[l]])),
+  )
   return {
     from,
     to: [notice.email],
-    subject: `Espace « ${notice.workspaceName} » sur Glimr / “${notice.workspaceName}” workspace on Glimr`,
-    text: [...fr, link, '', '---', '', ...en, link].join('\n\n'),
-    html: `<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#141414;">${block('fr', fr)}<hr style="border:0;border-top:1px solid #ddd;margin:24px 0;">${block('en', en)}</div>`,
+    ...email,
     idempotencyKey: `glimr-joined-${notice.invitationId}`,
   }
 }
 
 export interface InviteDeps {
   send: (key: string, email: ServiceEmail) => Promise<SendResult>
-  /** Supabase's account invitation (secret key), back to the board. */
-  invite: (email: string, redirectTo: string) => Promise<{ error: string | null }>
+  /**
+   * Supabase's account invitation (secret key), back to the board. The language (the
+   * inviter's) goes in the new account's metadata: Supabase's template is written in it.
+   */
+  invite: (
+    email: string,
+    redirectTo: string,
+    lang: string | null,
+  ) => Promise<{ error: string | null }>
 }
 
 const supabaseDeps = (db: SupabaseClient): InviteDeps => ({
   send: sendResendEmail,
-  async invite(email, redirectTo) {
-    const { error } = await db.auth.admin.inviteUserByEmail(email, { redirectTo })
+  async invite(email, redirectTo, lang) {
+    const { error } = await db.auth.admin.inviteUserByEmail(email, {
+      redirectTo,
+      ...(lang ? { data: { lang } } : {}),
+    })
     return { error: error?.message ?? null }
   },
 })
@@ -88,8 +117,19 @@ export async function runInvitation(
   if (error) throw error
   if (data.outcome === 'gone') return 'skipped'
 
+  // The inviter: named in the e-mail; their language for a person not known yet.
+  let inviter: { email: string | null; lang: string | null } = { email: null, lang: null }
+  if (inv.invited_by) {
+    const { data: user } = await db.auth.admin.getUserById(inv.invited_by)
+    const lang = user.user?.user_metadata?.lang
+    inviter = {
+      email: user.user?.email ?? null,
+      lang: lang === 'fr' || lang === 'en' ? lang : null,
+    }
+  }
+
   if (data.outcome === 'invite') {
-    const result = await deps.invite(inv.email, settings.data.site_url)
+    const result = await deps.invite(inv.email, settings.data.site_url, inviter.lang)
     if (result.error) {
       const { error: updateError } = await db
         .from('workspace_invitations')
@@ -114,11 +154,6 @@ export async function runInvitation(
     (k) => k.provider === 'resend',
   )?.secret
   if (!key || !settings.data.email_from) return 'joined'
-  let inviter: string | null = null
-  if (inv.invited_by) {
-    const { data: user } = await db.auth.admin.getUserById(inv.invited_by)
-    inviter = user.user?.email ?? null
-  }
   const result = await deps.send(
     key,
     joinedEmail(
@@ -126,10 +161,11 @@ export async function runInvitation(
         invitationId,
         email: inv.email,
         workspaceName: inv.workspace?.name ?? '',
-        inviter,
+        inviter: inviter.email,
       },
       settings.data.email_from,
       settings.data.site_url,
+      (await langsOf(db, [inv.email])).get(inv.email),
     ),
   )
   if (!result.ok && result.retry) throw new Error(result.error)

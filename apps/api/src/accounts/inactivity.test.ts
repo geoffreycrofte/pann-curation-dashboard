@@ -12,6 +12,7 @@ function fakeDb(accounts: { user_id: string; email: string; action: string }[], 
   const db = {
     rpc: async (name: string, args?: { p_user_id: string }) => {
       if (name === 'inactive_accounts_for_jobs') return { data: accounts, error: null }
+      if (name === 'user_langs_for_jobs') return { data: [], error: null }
       if (name === 'platform_credentials_for_jobs')
         return { data: resend ? [{ provider: 'resend', secret: 're_x' }] : [], error: null }
       if (name === 'delete_account_data') {

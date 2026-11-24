@@ -1,3 +1,5 @@
 pnpm-lock.yaml
 docs/CONTEXT.md
 supabase/migrations/
+# Generated (apps/api/src/lib/supabase-templates.ts), pasted in Supabase as is.
+docs/emails/
