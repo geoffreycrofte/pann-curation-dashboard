@@ -54,6 +54,7 @@ export interface PublishCredentials {
   zernioAccounts?: string[]
   mastodon: Record<string, MastodonAccount>
   bluesky: Record<string, BlueskyAccount>
+  w: Record<string, BlueskyAccount>
   discord: Record<string, DiscordWebhook>
   telegram: Record<string, TelegramChannel>
 }
@@ -77,7 +78,7 @@ export function pickAccount<T>(accounts: Record<string, T>, accountId: string): 
 }
 
 /** Who publishes a channel: Zernio for the networks with app review, the others directly. */
-export type PublishService = 'zernio' | 'mastodon' | 'bluesky' | 'discord' | 'telegram'
+export type PublishService = 'zernio' | 'mastodon' | 'bluesky' | 'w' | 'discord' | 'telegram'
 
 export interface PublishStore {
   /** Takes the due posts; another run will not take them for 10 minutes. */
@@ -108,6 +109,7 @@ export interface Networks {
     account: BlueskyAccount,
     request: PublishRequest & { url: string },
   ): Promise<PublishResult>
+  w(account: BlueskyAccount, request: PublishRequest & { url: string }): Promise<PublishResult>
   discord(webhook: DiscordWebhook, request: PublishRequest): Promise<PublishResult>
   telegram(channel: TelegramChannel, request: PublishRequest): Promise<PublishResult>
 }
@@ -123,7 +125,11 @@ export interface PublishReport {
 }
 
 const provider = (channel: DraftChannel): PublishService =>
-  channel === 'mastodon' || channel === 'bluesky' || channel === 'discord' || channel === 'telegram'
+  channel === 'mastodon' ||
+  channel === 'bluesky' ||
+  channel === 'w' ||
+  channel === 'discord' ||
+  channel === 'telegram'
     ? channel
     : 'zernio'
 
@@ -199,6 +205,7 @@ export async function publish(deps: {
     }
     const mastodon = pickAccount(keys.mastodon, account.account_id)
     const bluesky = pickAccount(keys.bluesky, account.account_id)
+    const w = pickAccount(keys.w, account.account_id)
     const discord = pickAccount(keys.discord, account.account_id)
     const telegram = pickAccount(keys.telegram, account.account_id)
     const found =
@@ -208,9 +215,11 @@ export async function publish(deps: {
           ? mastodon
           : service === 'bluesky'
             ? bluesky
-            : service === 'discord'
-              ? discord
-              : telegram
+            : service === 'w'
+              ? w
+              : service === 'discord'
+                ? discord
+                : telegram
     if (
       service === 'zernio' &&
       keys.zernioAccounts &&
@@ -236,9 +245,11 @@ export async function publish(deps: {
           ? await deps.networks.mastodon(mastodon!, request)
           : service === 'bluesky'
             ? await deps.networks.bluesky(bluesky!, { ...request, url: post.link })
-            : service === 'discord'
-              ? await deps.networks.discord(discord!, request)
-              : await deps.networks.telegram(telegram!, request)
+            : service === 'w'
+              ? await deps.networks.w(w!, { ...request, url: post.link })
+              : service === 'discord'
+                ? await deps.networks.discord(discord!, request)
+                : await deps.networks.telegram(telegram!, request)
 
     if (result.ok) {
       await deps.store.markSent(post, result)

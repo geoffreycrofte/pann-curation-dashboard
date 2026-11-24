@@ -1,12 +1,13 @@
 import type { Lang } from './langs'
 
 /**
- * Channels Glimr can write a post for. Bluesky, Mastodon, Discord and Telegram are
+ * Channels Glimr can write a post for. Bluesky, W, Mastodon, Discord and Telegram are
  * published directly; LinkedIn and Facebook through Zernio. X is left out on purpose.
  */
 export const DRAFT_CHANNELS = [
   'linkedin',
   'bluesky',
+  'w',
   'mastodon',
   'facebook',
   'discord',
@@ -14,7 +15,7 @@ export const DRAFT_CHANNELS = [
 ] as const
 export type DraftChannel = (typeof DRAFT_CHANNELS)[number]
 
-/** Always drafted. Facebook, Discord and Telegram only when a topic publishes there. */
+/** Always drafted. W, Facebook, Discord and Telegram only when a topic publishes there. */
 export const DEFAULT_DRAFT_CHANNELS: readonly DraftChannel[] = ['linkedin', 'bluesky', 'mastodon']
 
 /**
@@ -26,6 +27,8 @@ export const DEFAULT_DRAFT_CHANNELS: readonly DraftChannel[] = ['linkedin', 'blu
 export const POST_LIMITS: Record<DraftChannel, number> = {
   linkedin: 3000,
   bluesky: 300,
+  // W runs on the AT Protocol: Bluesky's records, Bluesky's limit (checked 2026-11-25).
+  w: 300,
   mastodon: 500,
   facebook: 3000,
   discord: 2000,

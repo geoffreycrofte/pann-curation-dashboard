@@ -43,6 +43,7 @@ const CHANNEL_NAMES: Record<DraftChannel, string> = {
   facebook: 'Facebook',
   discord: 'Discord',
   telegram: 'Telegram',
+  w: 'W',
 }
 
 /**

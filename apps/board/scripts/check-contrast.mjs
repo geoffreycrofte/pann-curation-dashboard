@@ -72,6 +72,12 @@ const PAIRS = [
   ['color-brand-discord', 'color-surface-2', 2.5],
   ['color-brand-telegram', 'color-surface', 2.5],
   ['color-brand-telegram', 'color-surface-2', 2.5],
+  // W's logo: its dark part carries the shape; the two greens light it up.
+  ['color-brand-w-ink', 'color-surface', 3],
+  ['color-brand-w-ink', 'color-surface-2', 3],
+  ['color-brand-w-shade', 'color-surface', 2.5],
+  // Its bright green lights the shape up; on white it is faint, as in W's own light logo.
+  ['color-brand-w', 'color-surface', 1.3],
   // Status discs (overview): the disc against the card (3:1), its icon against the disc.
   ['color-success-fill', 'color-surface', 3],
   ['color-on-success', 'color-success-fill', 4.5],

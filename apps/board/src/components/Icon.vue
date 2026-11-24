@@ -36,7 +36,12 @@ import {
   IconTrash,
   IconWriting,
 } from '@tabler/icons-vue'
-import { isNetworkLogo, NETWORK_LOGOS, type NetworkLogo } from '../lib/network-logos'
+import {
+  isNetworkLogo,
+  MULTI_COLOUR_LOGOS,
+  NETWORK_LOGOS,
+  type NetworkLogo,
+} from '../lib/network-logos'
 
 const ICONS = {
   'alert-circle': IconAlertCircle,
@@ -78,7 +83,23 @@ const pick = (name: string) => ICONS[name as keyof typeof ICONS] ?? IconAlertCir
 
 <template>
   <svg
-    v-if="isNetworkLogo(name)"
+    v-if="name === 'w'"
+    class="icon logo"
+    :viewBox="MULTI_COLOUR_LOGOS.w.viewBox"
+    :width="size ?? 18"
+    :height="size ?? 18"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      v-for="(part, index) in MULTI_COLOUR_LOGOS.w.parts"
+      :key="index"
+      :d="part.d"
+      :fill="`var(--color-brand-${part.color})`"
+    />
+  </svg>
+  <svg
+    v-else-if="isNetworkLogo(name)"
     class="icon logo"
     viewBox="0 0 24 24"
     :width="size ?? 18"
@@ -87,7 +108,7 @@ const pick = (name: string) => ICONS[name as keyof typeof ICONS] ?? IconAlertCir
     focusable="false"
   >
     <path
-      :d="NETWORK_LOGOS[name]"
+      :d="NETWORK_LOGOS[name as keyof typeof NETWORK_LOGOS]"
       :fill="`var(--color-brand-${name})`"
       :fill-rule="name === 'linkedin' ? 'evenodd' : undefined"
     />

@@ -8,6 +8,7 @@ export const PROVIDERS = [
   'zernio',
   'mastodon',
   'bluesky',
+  'w',
   'discord',
   'telegram',
   'brevo',
@@ -37,7 +38,7 @@ export interface WorkspaceCredential {
 
 /**
  * Glimr channels published through Zernio, with Zernio's name for each platform: the
- * networks whose API needs an approved app. Bluesky, Mastodon, Discord and Telegram are direct.
+ * networks whose API needs an approved app. Bluesky, W, Mastodon, Discord and Telegram are direct.
  */
 export const ZERNIO_PLATFORMS = {
   linkedin: 'linkedin',
@@ -63,7 +64,7 @@ export interface CredentialMeta {
   acct?: string
   /** mastodon: maximum length of a post on this instance. */
   max_characters?: number
-  /** bluesky: the account (handle, DID) and the server that hosts it (PDS). */
+  /** bluesky, w: the account (handle, DID) and the server that hosts it (PDS). */
   handle?: string
   did?: string
   pds?: string
@@ -99,7 +100,7 @@ export const PLATFORM_PROVIDERS = [
 ] as const
 export type PlatformProvider = (typeof PLATFORM_PROVIDERS)[number]
 
-export const MULTI_ACCOUNT_PROVIDERS = ['mastodon', 'bluesky', 'discord', 'telegram'] as const
+export const MULTI_ACCOUNT_PROVIDERS = ['mastodon', 'bluesky', 'w', 'discord', 'telegram'] as const
 export type MultiAccountProvider = (typeof MULTI_ACCOUNT_PROVIDERS)[number]
 
 export function isMultiAccount(provider: Provider): provider is MultiAccountProvider {
@@ -150,6 +151,8 @@ export const PROVIDER_INFO: Record<Provider, ProviderInfo> = {
   mastodon: { need: 'diffusion', url: 'https://docs.joinmastodon.org/client/token/' },
   // Checked 2026-11-12: Bluesky app passwords, Discord channel webhooks.
   bluesky: { need: 'diffusion', url: 'https://bsky.app/settings/app-passwords' },
+  // Checked 2026-11-25: W's help centre (the app password is created in W's settings).
+  w: { need: 'diffusion', url: 'https://wsocial.support' },
   discord: {
     need: 'diffusion',
     url: 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks',

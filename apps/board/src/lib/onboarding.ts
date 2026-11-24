@@ -7,6 +7,7 @@ export const PUBLISH_CHANNELS: readonly DraftChannel[] = [
   'linkedin',
   'facebook',
   'bluesky',
+  'w',
   'mastodon',
   'discord',
   'telegram',

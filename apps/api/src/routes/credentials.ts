@@ -13,7 +13,7 @@ const setBody = z.object({
   secret: z.string().trim().min(8).max(500),
   /** Mastodon only: the instance of the account. */
   instance: z.string().trim().max(200).optional(),
-  /** Bluesky only: the handle of the account (the secret is an app password). */
+  /** Bluesky and W: the handle of the account (the secret is an app password). */
   handle: z.string().trim().max(300).optional(),
   /** Telegram only: the channel the bot posts to (@name, t.me link or id). */
   chat: z.string().trim().max(200).optional(),
@@ -25,7 +25,7 @@ const setBody = z.object({
  * the webhook id (Discord), the channel id (Telegram). Empty for the other services.
  */
 function accountOf(p: Provider, secret: string, meta: CredentialMeta, instance?: string) {
-  if (p === 'bluesky') return meta.handle ?? ''
+  if (p === 'bluesky' || p === 'w') return meta.handle ?? ''
   if (p === 'mastodon') return meta.acct ?? (instance ? new URL(instance).host : '')
   if (p === 'discord') return secret.match(/\/webhooks\/(\d+)\//)?.[1] ?? ''
   if (p === 'telegram') return meta.chat_id ?? ''
@@ -61,7 +61,7 @@ export const credentials = new Hono<AppEnv>()
       if (!instance) throw new HTTPException(422, { message: 'invalid_config' })
     }
     let handle: string | undefined
-    if (p === 'bluesky') {
+    if (p === 'bluesky' || p === 'w') {
       handle = blueskyHandle(body.handle ?? '') ?? undefined
       if (!handle) throw new HTTPException(422, { message: 'invalid_config' })
     }

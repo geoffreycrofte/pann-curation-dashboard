@@ -564,7 +564,7 @@ export default {
       withSub: 'One tool, everything connected',
       withNote: 'Essential offer, billed yearly, excluding VAT.',
       included: {
-        publish: 'Publishing to LinkedIn, Bluesky, Mastodon, Facebook, Discord and Telegram',
+        publish: 'Publishing to LinkedIn, Bluesky, W, Mastodon, Facebook, Discord and Telegram',
         watch: 'News watch sorted by AI, posts drafted from your sources',
         listen: 'Conversations where to help, with a suggested reply',
         create: 'Création, calendar, newsletter and public feeds',
@@ -761,6 +761,8 @@ export default {
     addAccount: 'Add an account',
     addAccountTitle: 'Another {provider} account',
     handleLabel: 'Bluesky handle',
+    wHandleLabel: 'W handle',
+    wHandleHint: 'For instance you.wsocial.eu.',
     handleHint: 'For instance you.bsky.social, or your domain name if you use it as your handle.',
     appPasswordLabel: 'App password',
     webhookLabel: 'Discord webhook URL',
@@ -874,6 +876,18 @@ export default {
         ],
         cost: 'Free.',
         link: 'Open the Bluesky app passwords',
+      },
+      w: {
+        name: 'W',
+        purpose:
+          'Posting on W, the European network of verified people, directly. W runs on the same protocol as Bluesky: your posts show there too.',
+        steps: [
+          "In W's settings, create an app password named “Glimr” (if it offers rights, posting is enough) and copy it.",
+          'Paste this password and your handle here (for instance you.wsocial.eu). Your main password is never asked for.',
+          "W's terms frame automated posting: Glimr posts what you validated, on the slots you chose.",
+        ],
+        cost: 'Free.',
+        link: 'W help centre',
       },
       discord: {
         name: 'Discord',
@@ -1061,6 +1075,7 @@ export default {
       facebook: 'Facebook',
       discord: 'Discord',
       telegram: 'Telegram',
+      w: 'W',
     },
     length: '{count} characters of {limit}',
     tooLong: '{over} characters too long for {channel}.',
@@ -1582,7 +1597,7 @@ export default {
         },
         publish: {
           title: 'Publish everywhere',
-          text: 'LinkedIn, Facebook, Bluesky, Mastodon, Discord and Telegram, each on its slots, shown in the calendar.',
+          text: 'LinkedIn, Facebook, Bluesky, W, Mastodon, Discord and Telegram, each on its slots, shown in the calendar.',
         },
       },
       alt: 'A nugget resting on a blue velvet cushion, with a quill and a blank label.',
@@ -1637,7 +1652,7 @@ export default {
       },
       share: {
         title: 'Share',
-        text: 'Posts go out on LinkedIn, Facebook, Bluesky, Mastodon, Discord and Telegram at the slots you chose. The week planning shows what is scheduled and which slots are still free.',
+        text: 'Posts go out on LinkedIn, Facebook, Bluesky, W, Mastodon, Discord and Telegram at the slots you chose. The week planning shows what is scheduled and which slots are still free.',
         alt: 'Paper planes, each carrying a nugget, fly out of a mine cart full of gold.',
       },
     },
@@ -1901,6 +1916,7 @@ export default {
         mastodon: 'Mastodon',
         discord: 'Discord',
         telegram: 'Telegram',
+        w: 'W',
       },
       newsletter: 'An email newsletter',
       feed: 'A public RSS feed for my site',
@@ -2306,7 +2322,7 @@ export default {
     accountsHint:
       'Tick the languages each account publishes. One account per network and language.',
     noAccounts:
-      'No account available. In Connections, add Bluesky, Mastodon, Discord, Telegram or a Zernio key (LinkedIn, Facebook).',
+      'No account available. In Connections, add Bluesky, W, Mastodon, Discord, Telegram or a Zernio key (LinkedIn, Facebook).',
     accountLangs: 'Languages published by {account}',
     accountConflict: 'Two accounts publish {channel} in {lang}: keep only one.',
     linkedin: {

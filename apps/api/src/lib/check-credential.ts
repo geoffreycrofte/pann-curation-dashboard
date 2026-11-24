@@ -84,8 +84,8 @@ export async function checkCredential(
         ? { status: 'unchecked', detail: 'provider_unreachable', meta: {} }
         : { status: 'invalid', detail: 'invalid_key' }
     }
-    if (provider === 'bluesky') {
-      const result = await checkBluesky(options.handle ?? '', secret)
+    if (provider === 'bluesky' || provider === 'w') {
+      const result = await checkBluesky(options.handle ?? '', secret, provider)
       if (result.ok)
         return {
           status: 'ok',

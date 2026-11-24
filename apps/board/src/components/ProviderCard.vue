@@ -45,7 +45,8 @@ const status = computed(() => props.credential?.status ?? 'none')
 const accountLabel = computed(() => {
   const meta = props.credential?.meta
   if (!meta) return ''
-  if (props.provider === 'bluesky' && meta.handle) return `@${meta.handle}`
+  if ((props.provider === 'bluesky' || props.provider === 'w') && meta.handle)
+    return `@${meta.handle}`
   if (props.provider === 'mastodon') return meta.acct ?? ''
   if (props.provider === 'discord') return meta.webhook_name ?? ''
   if (props.provider === 'telegram') return meta.chat_title ?? ''
@@ -96,7 +97,7 @@ const { mutate: save, isLoading: saving } = useMutation({
   mutation: () =>
     api.setCredential(props.workspaceId, props.provider, secret.value, {
       instance: props.provider === 'mastodon' ? instance.value : undefined,
-      handle: props.provider === 'bluesky' ? handle.value : undefined,
+      handle: props.provider === 'bluesky' || props.provider === 'w' ? handle.value : undefined,
       chat: props.provider === 'telegram' ? chat.value : undefined,
     }),
   async onSuccess(credential) {
@@ -308,7 +309,7 @@ const { mutate: remove } = useMutation({
           </button>
         </div>
       </template>
-      <p v-if="provider === 'bluesky' && credential?.meta.handle">
+      <p v-if="(provider === 'bluesky' || provider === 'w') && credential?.meta.handle">
         {{ t('connections.blueskyAccount', { handle: credential.meta.handle }) }}
       </p>
       <p v-if="provider === 'telegram' && credential?.meta.chat_title">
@@ -353,8 +354,10 @@ const { mutate: remove } = useMutation({
 
       <form v-if="showForm" :id="`${id}-form`" class="form key-form" @submit.prevent="save()">
         <!-- Who first (account, instance), then the secret: the usual order of a sign-in. -->
-        <div v-if="provider === 'bluesky'" class="form-row">
-          <label :for="`${id}-handle`">{{ t('connections.handleLabel') }}</label>
+        <div v-if="provider === 'bluesky' || provider === 'w'" class="form-row">
+          <label :for="`${id}-handle`">{{
+            provider === 'w' ? t('connections.wHandleLabel') : t('connections.handleLabel')
+          }}</label>
           <input
             :id="`${id}-handle`"
             v-model="handle"
@@ -365,7 +368,9 @@ const { mutate: remove } = useMutation({
             required
             :aria-describedby="`${id}-handle-hint`"
           />
-          <p :id="`${id}-handle-hint`" class="hint">{{ t('connections.handleHint') }}</p>
+          <p :id="`${id}-handle-hint`" class="hint">
+            {{ provider === 'w' ? t('connections.wHandleHint') : t('connections.handleHint') }}
+          </p>
         </div>
         <div v-if="provider === 'telegram'" class="form-row">
           <label :for="`${id}-chat`">{{ t('connections.chatLabel') }}</label>
@@ -399,7 +404,7 @@ const { mutate: remove } = useMutation({
         <div class="form-row">
           <label :for="`${id}-secret`">
             {{
-              provider === 'bluesky'
+              provider === 'bluesky' || provider === 'w'
                 ? t('connections.appPasswordLabel')
                 : provider === 'discord'
                   ? t('connections.webhookLabel')
