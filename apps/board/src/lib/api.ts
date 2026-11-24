@@ -552,7 +552,7 @@ export const api = {
     workspaceId: string,
     provider: Provider,
     secret: string,
-    extra: { instance?: string; handle?: string } = {},
+    extra: { instance?: string; handle?: string; chat?: string } = {},
   ) =>
     request<WorkspaceCredential>(
       `/workspaces/${workspaceId}/credentials/${provider}`,
@@ -562,7 +562,7 @@ export const api = {
     request<void>(`/workspaces/${workspaceId}/credentials/${provider}/refresh`, {
       method: 'POST',
     }),
-  /** `account`: which one, for the networks with several accounts (Bluesky, Mastodon, Discord). */
+  /** `account`: which one, for the networks with several accounts (Bluesky, Mastodon, Discord, Telegram). */
   deleteCredential: (workspaceId: string, provider: Provider, account = '') =>
     request<void>(
       `/workspaces/${workspaceId}/credentials/${provider}${account ? `?${new URLSearchParams({ account })}` : ''}`,

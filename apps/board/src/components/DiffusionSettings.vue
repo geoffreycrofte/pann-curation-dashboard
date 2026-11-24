@@ -110,8 +110,15 @@ const accounts = computed<AccountRow[]>(() => {
         ? `@${c.meta.handle ?? c.account}`
         : c.provider === 'discord'
           ? (c.meta.webhook_name ?? 'Discord')
-          : c.account
-    if (c.provider === 'bluesky' || c.provider === 'mastodon' || c.provider === 'discord')
+          : c.provider === 'telegram'
+            ? (c.meta.chat_title ?? c.account)
+            : c.account
+    if (
+      c.provider === 'bluesky' ||
+      c.provider === 'mastodon' ||
+      c.provider === 'discord' ||
+      c.provider === 'telegram'
+    )
       rows.push({
         key: `${c.provider}/${c.account}`,
         channel: c.provider,
@@ -273,7 +280,7 @@ function submit() {
         <li v-for="row in accounts" :key="row.key">
           <fieldset class="account">
             <legend class="account-name">
-              {{
+              <Icon :name="row.channel" class="network-logo" />{{
                 t('settings.accountLangs', {
                   account: t('connections.accountLine', {
                     network: t(`draft.channels.${row.channel}`),

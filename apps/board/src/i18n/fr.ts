@@ -566,7 +566,7 @@ export default {
       withSub: 'Un seul outil, tout est relié',
       withNote: 'Offre Essential, facturée à l’année, hors taxes.',
       included: {
-        publish: 'Publication sur LinkedIn, Bluesky, Mastodon, Facebook et Discord',
+        publish: 'Publication sur LinkedIn, Bluesky, Mastodon, Facebook, Discord et Telegram',
         watch: 'Veille triée par IA, posts rédigés depuis vos sources',
         listen: 'Conversations où aider, avec une réponse proposée',
         create: 'Création, calendrier, newsletter et flux publics',
@@ -770,6 +770,11 @@ export default {
       'Par exemple vous.bsky.social, ou votre nom de domaine si vous l’utilisez comme identifiant.',
     appPasswordLabel: 'Mot de passe d’application',
     webhookLabel: 'URL du webhook Discord',
+    chatLabel: 'Canal Telegram',
+    chatHint:
+      "Son nom public (par exemple {'@'}ma_veille), son lien t.me, ou son identifiant numérique pour un canal privé.",
+    botTokenLabel: 'Jeton du bot',
+    telegramChannel: "Canal : {title}, publié par {'@'}{bot}",
     blueskyAccount: "Compte : {'@'}{handle}",
     discordWebhook: 'Webhook : {name}',
     accountsTitle: 'Comptes connectés dans Zernio',
@@ -890,6 +895,18 @@ export default {
         cost: 'Gratuit.',
         link: 'Aide Discord : les webhooks',
       },
+      telegram: {
+        name: 'Telegram',
+        purpose:
+          'Publication dans un canal Telegram, par un bot qui en est administrateur. Le lien de l’article s’affiche en aperçu sous le post.',
+        steps: [
+          "Dans Telegram, ouvrez une conversation avec {'@'}BotFather, envoyez /newbot et suivez les étapes : il vous donne le jeton du bot.",
+          'Ajoutez ce bot comme administrateur de votre canal, avec le droit de publier des messages.',
+          'Collez ici le canal et le jeton : le jeton fait office de clé, ne le partagez pas.',
+        ],
+        cost: 'Gratuit.',
+        link: 'Aide Telegram : créer un bot avec BotFather',
+      },
       brevo: {
         name: 'Brevo',
         purpose:
@@ -973,6 +990,8 @@ export default {
     already_invited: 'Cette personne est déjà invitée.',
     owner_stays: 'Le propriétaire ne peut pas quitter l’espace : transférez d’abord la propriété.',
     invite_failed: 'L’invitation n’a pas pu partir. Annulez-la et réessayez.',
+    telegram_not_admin:
+      'Le bot n’a pas accès à ce canal : ajoutez-le comme administrateur, avec le droit de publier des messages, puis réessayez.',
     workspace_has_members:
       'Vous êtes propriétaire d’un espace de travail que d’autres personnes utilisent : transférez-en d’abord la propriété à l’une d’elles (Profil, Espace de travail).',
     confirmation_mismatch: 'L’adresse saisie ne correspond pas à celle du compte.',
@@ -1055,6 +1074,7 @@ export default {
       mastodon: 'Mastodon',
       facebook: 'Facebook',
       discord: 'Discord',
+      telegram: 'Telegram',
     },
     length: '{count} caractères sur {limit}',
     tooLong: 'Trop long de {over} caractères pour {channel}.',
@@ -1588,7 +1608,7 @@ export default {
         },
         publish: {
           title: 'Multi-publier',
-          text: 'LinkedIn, Facebook, Bluesky, Mastodon et Discord, chacun à ses créneaux, visibles dans le calendrier.',
+          text: 'LinkedIn, Facebook, Bluesky, Mastodon, Discord et Telegram, chacun à ses créneaux, visibles dans le calendrier.',
         },
       },
       alt: 'Une pépite posée sur un coussin de velours bleu, avec une plume et une étiquette vierge.',
@@ -1643,7 +1663,7 @@ export default {
       },
       share: {
         title: 'Diffuser',
-        text: 'Les posts partent sur LinkedIn, Facebook, Bluesky, Mastodon et Discord aux créneaux que vous avez choisis. Le planning de la semaine montre ce qui est programmé et les créneaux encore libres.',
+        text: 'Les posts partent sur LinkedIn, Facebook, Bluesky, Mastodon, Discord et Telegram aux créneaux que vous avez choisis. Le planning de la semaine montre ce qui est programmé et les créneaux encore libres.',
         alt: 'Des avions en papier, chacun chargé d’une pépite, s’envolent d’un wagonnet plein d’or.',
       },
     },
@@ -1909,6 +1929,7 @@ export default {
         bluesky: 'Bluesky',
         mastodon: 'Mastodon',
         discord: 'Discord',
+        telegram: 'Telegram',
       },
       newsletter: 'Une newsletter par e-mail',
       feed: 'Un flux RSS public pour mon site',
@@ -2325,7 +2346,7 @@ export default {
     accountsHint:
       'Cochez les langues que publie chaque compte. Un seul compte par réseau et par langue.',
     noAccounts:
-      'Aucun compte disponible. Dans Connexions, ajoutez Bluesky, Mastodon, Discord ou une clé Zernio (LinkedIn, Facebook).',
+      'Aucun compte disponible. Dans Connexions, ajoutez Bluesky, Mastodon, Discord, Telegram ou une clé Zernio (LinkedIn, Facebook).',
     accountLangs: 'Langues publiées par {account}',
     accountConflict: 'Deux comptes publient {channel} en {lang} : n’en gardez qu’un.',
     linkedin: {

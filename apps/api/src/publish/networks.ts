@@ -25,7 +25,7 @@ export interface PublishImage {
   height: number
   /** Text alternative, in the language of the post. */
   alt: string
-  /** Bytes, for the networks the image is uploaded to (Bluesky, Mastodon, Discord). */
+  /** Bytes, for the networks the image is uploaded to (Bluesky, Mastodon, Discord, Telegram). */
   load(): Promise<Uint8Array>
 }
 

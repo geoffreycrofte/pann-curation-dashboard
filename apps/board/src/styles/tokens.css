@@ -38,6 +38,14 @@
   --color-on-neutral: light-dark(#ffffff, #141414);
   /* Publication streak: the outer flame, with --color-accent-fill inside (3:1 on cards). */
   --color-flame: light-dark(#d9690b, #f28c1e);
+  /* Networks' own colours, for their logos (decorative: the name is always beside them).
+   * LinkedIn turns white on dark backgrounds, as its guidelines ask. */
+  --color-brand-linkedin: light-dark(#0a66c2, #ffffff);
+  --color-brand-facebook: #0866ff;
+  --color-brand-bluesky: #1185fe;
+  --color-brand-mastodon: #6364ff;
+  --color-brand-discord: #5865f2;
+  --color-brand-telegram: #26a5e4;
   /* AI at work: colors of the animated halo, with --color-accent-fill (3:1 on the backgrounds). */
   --color-ai-violet: light-dark(#6d4aff, #b3a1ff);
   --color-ai-teal: light-dark(#0b7f86, #4fd1c5);

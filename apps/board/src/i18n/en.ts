@@ -564,7 +564,7 @@ export default {
       withSub: 'One tool, everything connected',
       withNote: 'Essential offer, billed yearly, excluding VAT.',
       included: {
-        publish: 'Publishing to LinkedIn, Bluesky, Mastodon, Facebook and Discord',
+        publish: 'Publishing to LinkedIn, Bluesky, Mastodon, Facebook, Discord and Telegram',
         watch: 'News watch sorted by AI, posts drafted from your sources',
         listen: 'Conversations where to help, with a suggested reply',
         create: 'Création, calendar, newsletter and public feeds',
@@ -764,6 +764,11 @@ export default {
     handleHint: 'For instance you.bsky.social, or your domain name if you use it as your handle.',
     appPasswordLabel: 'App password',
     webhookLabel: 'Discord webhook URL',
+    chatLabel: 'Telegram channel',
+    chatHint:
+      "Its public name (for instance {'@'}my_watch), its t.me link, or its numeric id for a private channel.",
+    botTokenLabel: 'Bot token',
+    telegramChannel: "Channel: {title}, posted by {'@'}{bot}",
     blueskyAccount: "Account: {'@'}{handle}",
     discordWebhook: 'Webhook: {name}',
     accountsTitle: 'Accounts connected in Zernio',
@@ -882,6 +887,18 @@ export default {
         cost: 'Free.',
         link: 'Discord help: webhooks',
       },
+      telegram: {
+        name: 'Telegram',
+        purpose:
+          'Posting in a Telegram channel, through a bot that is one of its administrators. The article link shows as a preview under the post.',
+        steps: [
+          "In Telegram, open a chat with {'@'}BotFather, send /newbot and follow the steps: it gives you the bot's token.",
+          'Add this bot as an administrator of your channel, allowed to post messages.',
+          'Paste the channel and the token here: the token works as a key, do not share it.',
+        ],
+        cost: 'Free.',
+        link: 'Telegram help: create a bot with BotFather',
+      },
       brevo: {
         name: 'Brevo',
         purpose:
@@ -961,6 +978,8 @@ export default {
     already_invited: 'This person is already invited.',
     owner_stays: 'The owner cannot leave the workspace: transfer the ownership first.',
     invite_failed: 'The invitation could not be sent. Cancel it and try again.',
+    telegram_not_admin:
+      'The bot cannot reach this channel: add it as an administrator, allowed to post messages, then try again.',
     workspace_has_members:
       'You own a workspace other people use: first transfer its ownership to one of them (Profile, Workspace).',
     confirmation_mismatch: 'The address typed does not match the account’s.',
@@ -1041,6 +1060,7 @@ export default {
       mastodon: 'Mastodon',
       facebook: 'Facebook',
       discord: 'Discord',
+      telegram: 'Telegram',
     },
     length: '{count} characters of {limit}',
     tooLong: '{over} characters too long for {channel}.',
@@ -1562,7 +1582,7 @@ export default {
         },
         publish: {
           title: 'Publish everywhere',
-          text: 'LinkedIn, Facebook, Bluesky, Mastodon and Discord, each on its slots, shown in the calendar.',
+          text: 'LinkedIn, Facebook, Bluesky, Mastodon, Discord and Telegram, each on its slots, shown in the calendar.',
         },
       },
       alt: 'A nugget resting on a blue velvet cushion, with a quill and a blank label.',
@@ -1617,7 +1637,7 @@ export default {
       },
       share: {
         title: 'Share',
-        text: 'Posts go out on LinkedIn, Facebook, Bluesky, Mastodon and Discord at the slots you chose. The week planning shows what is scheduled and which slots are still free.',
+        text: 'Posts go out on LinkedIn, Facebook, Bluesky, Mastodon, Discord and Telegram at the slots you chose. The week planning shows what is scheduled and which slots are still free.',
         alt: 'Paper planes, each carrying a nugget, fly out of a mine cart full of gold.',
       },
     },
@@ -1880,6 +1900,7 @@ export default {
         bluesky: 'Bluesky',
         mastodon: 'Mastodon',
         discord: 'Discord',
+        telegram: 'Telegram',
       },
       newsletter: 'An email newsletter',
       feed: 'A public RSS feed for my site',
@@ -2285,7 +2306,7 @@ export default {
     accountsHint:
       'Tick the languages each account publishes. One account per network and language.',
     noAccounts:
-      'No account available. In Connections, add Bluesky, Mastodon, Discord or a Zernio key (LinkedIn, Facebook).',
+      'No account available. In Connections, add Bluesky, Mastodon, Discord, Telegram or a Zernio key (LinkedIn, Facebook).',
     accountLangs: 'Languages published by {account}',
     accountConflict: 'Two accounts publish {channel} in {lang}: keep only one.',
     linkedin: {

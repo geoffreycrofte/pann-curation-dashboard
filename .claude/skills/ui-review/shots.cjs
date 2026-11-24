@@ -656,6 +656,11 @@ async function shoot(page, name, path, opts = {}) {
       '/connections',
       { click: 'button.toggle[aria-expanded="false"]:has-text("Gérer")', viewport: true },
     ],
+    [
+      'connections-telegram',
+      '/connections',
+      { click: '[data-card]:has-text("Telegram") button.toggle', viewport: true },
+    ],
     ['profile', '/profile'],
     ['profile-workspace', '/profile?tab=workspace&offer=open'],
     ['profile-team-locked', '/profile?tab=team'],

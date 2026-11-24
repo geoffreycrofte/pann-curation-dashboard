@@ -872,3 +872,8 @@ a.menu-item {
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+/* A network's logo before its name (Icon with a network's name). */
+.network-logo {
+  margin-inline-end: 0.4em;
+}

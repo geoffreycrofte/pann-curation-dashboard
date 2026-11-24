@@ -4,7 +4,7 @@ import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { checkCredential, mastodonInstance } from '../lib/check-credential'
-import { blueskyHandle, discordWebhookUrl } from '../publish/direct'
+import { blueskyHandle, discordWebhookUrl, telegramChat } from '../publish/direct'
 import { parseJson } from '../lib/validation'
 
 const COLUMNS =
@@ -15,17 +15,20 @@ const setBody = z.object({
   instance: z.string().trim().max(200).optional(),
   /** Bluesky only: the handle of the account (the secret is an app password). */
   handle: z.string().trim().max(300).optional(),
+  /** Telegram only: the channel the bot posts to (@name, t.me link or id). */
+  chat: z.string().trim().max(200).optional(),
 })
 
 /**
  * Which account a key belongs to, for the networks with several accounts per workspace:
  * the handle (Bluesky), user@instance (Mastodon, the instance host if it did not answer),
- * the webhook id (Discord). Empty for the other services.
+ * the webhook id (Discord), the channel id (Telegram). Empty for the other services.
  */
 function accountOf(p: Provider, secret: string, meta: CredentialMeta, instance?: string) {
   if (p === 'bluesky') return meta.handle ?? ''
   if (p === 'mastodon') return meta.acct ?? (instance ? new URL(instance).host : '')
   if (p === 'discord') return secret.match(/\/webhooks\/(\d+)\//)?.[1] ?? ''
+  if (p === 'telegram') return meta.chat_id ?? ''
   return ''
 }
 
@@ -68,7 +71,14 @@ export const credentials = new Hono<AppEnv>()
       secret = discordWebhookUrl(body.secret) ?? ''
       if (!secret) throw new HTTPException(422, { message: 'invalid_config' })
     }
-    const check = await checkCredential(p, secret, { instance, handle })
+    let chat: string | undefined
+    if (p === 'telegram') {
+      chat = telegramChat(body.chat ?? '') ?? undefined
+      if (!chat) throw new HTTPException(422, { message: 'invalid_config' })
+    }
+    const check = await checkCredential(p, secret, { instance, handle, chat })
+    if (check.detail === 'telegram_not_admin')
+      throw new HTTPException(422, { message: 'telegram_not_admin' })
     if (check.status === 'invalid')
       throw new HTTPException(422, { message: `invalid_credential:${p}` })
     const account = accountOf(p, secret, { ...check.meta, handle }, instance)

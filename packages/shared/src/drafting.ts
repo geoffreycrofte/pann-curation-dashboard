@@ -1,19 +1,26 @@
 import type { Lang } from './langs'
 
 /**
- * Channels Glimr can write a post for. Bluesky, Mastodon and Discord are published
- * directly; LinkedIn and Facebook through Zernio. X is left out on purpose.
+ * Channels Glimr can write a post for. Bluesky, Mastodon, Discord and Telegram are
+ * published directly; LinkedIn and Facebook through Zernio. X is left out on purpose.
  */
-export const DRAFT_CHANNELS = ['linkedin', 'bluesky', 'mastodon', 'facebook', 'discord'] as const
+export const DRAFT_CHANNELS = [
+  'linkedin',
+  'bluesky',
+  'mastodon',
+  'facebook',
+  'discord',
+  'telegram',
+] as const
 export type DraftChannel = (typeof DRAFT_CHANNELS)[number]
 
-/** Always drafted. Facebook and Discord only when a topic publishes there. */
+/** Always drafted. Facebook, Discord and Telegram only when a topic publishes there. */
 export const DEFAULT_DRAFT_CHANNELS: readonly DraftChannel[] = ['linkedin', 'bluesky', 'mastodon']
 
 /**
  * Length limits of a post, in characters (graphemes for Bluesky). Mastodon: the default
  * of mastodon.social; other instances can differ. Checked 2026-10-01. Discord: 2,000 per
- * message. Facebook allows 63,206 but cuts the post at about 480 behind "See more": Glimr
+ * message. Telegram: 4,096 per message. Facebook allows 63,206 but cuts the post at about 480 behind "See more": Glimr
  * keeps the LinkedIn length.
  */
 export const POST_LIMITS: Record<DraftChannel, number> = {
@@ -22,6 +29,7 @@ export const POST_LIMITS: Record<DraftChannel, number> = {
   mastodon: 500,
   facebook: 3000,
   discord: 2000,
+  telegram: 4096,
 }
 
 /**

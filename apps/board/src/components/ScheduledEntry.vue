@@ -85,7 +85,9 @@ const at = computed(() => props.entry?.publish_at ?? props.composition?.publish_
         :data-tone="TONES[post.status as keyof typeof TONES]"
       >
         <span
-          >{{ t(`draft.channels.${post.channel}`) }}
+          ><Icon :name="post.channel" :size="16" class="network-logo" />{{
+            t(`draft.channels.${post.channel}`)
+          }}
           <abbr v-if="post.lang" :title="contentLangName(post.lang)">{{
             post.lang.toUpperCase()
           }}</abbr

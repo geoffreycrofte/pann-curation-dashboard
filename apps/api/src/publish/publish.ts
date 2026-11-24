@@ -8,7 +8,7 @@ import {
   type Lang,
   type TopicConfig,
 } from '@glimr/shared'
-import type { BlueskyAccount, DiscordWebhook } from './direct'
+import type { BlueskyAccount, DiscordWebhook, TelegramChannel } from './direct'
 import type { MastodonAccount, PublishImage, PublishRequest, PublishResult } from './networks'
 
 /** An image of a composed post, its text alternative in every language. */
@@ -55,6 +55,7 @@ export interface PublishCredentials {
   mastodon: Record<string, MastodonAccount>
   bluesky: Record<string, BlueskyAccount>
   discord: Record<string, DiscordWebhook>
+  telegram: Record<string, TelegramChannel>
 }
 
 /**
@@ -76,7 +77,7 @@ export function pickAccount<T>(accounts: Record<string, T>, accountId: string): 
 }
 
 /** Who publishes a channel: Zernio for the networks with app review, the others directly. */
-export type PublishService = 'zernio' | 'mastodon' | 'bluesky' | 'discord'
+export type PublishService = 'zernio' | 'mastodon' | 'bluesky' | 'discord' | 'telegram'
 
 export interface PublishStore {
   /** Takes the due posts; another run will not take them for 10 minutes. */
@@ -108,6 +109,7 @@ export interface Networks {
     request: PublishRequest & { url: string },
   ): Promise<PublishResult>
   discord(webhook: DiscordWebhook, request: PublishRequest): Promise<PublishResult>
+  telegram(channel: TelegramChannel, request: PublishRequest): Promise<PublishResult>
 }
 
 export const MAX_PUBLISH_ATTEMPTS = 3
@@ -121,7 +123,9 @@ export interface PublishReport {
 }
 
 const provider = (channel: DraftChannel): PublishService =>
-  channel === 'mastodon' || channel === 'bluesky' || channel === 'discord' ? channel : 'zernio'
+  channel === 'mastodon' || channel === 'bluesky' || channel === 'discord' || channel === 'telegram'
+    ? channel
+    : 'zernio'
 
 /**
  * Publishes the posts whose slot has come. One post per channel and language, sent
@@ -196,6 +200,7 @@ export async function publish(deps: {
     const mastodon = pickAccount(keys.mastodon, account.account_id)
     const bluesky = pickAccount(keys.bluesky, account.account_id)
     const discord = pickAccount(keys.discord, account.account_id)
+    const telegram = pickAccount(keys.telegram, account.account_id)
     const found =
       service === 'zernio'
         ? keys.zernio
@@ -203,7 +208,9 @@ export async function publish(deps: {
           ? mastodon
           : service === 'bluesky'
             ? bluesky
-            : discord
+            : service === 'discord'
+              ? discord
+              : telegram
     if (
       service === 'zernio' &&
       keys.zernioAccounts &&
@@ -229,7 +236,9 @@ export async function publish(deps: {
           ? await deps.networks.mastodon(mastodon!, request)
           : service === 'bluesky'
             ? await deps.networks.bluesky(bluesky!, { ...request, url: post.link })
-            : await deps.networks.discord(discord!, request)
+            : service === 'discord'
+              ? await deps.networks.discord(discord!, request)
+              : await deps.networks.telegram(telegram!, request)
 
     if (result.ok) {
       await deps.store.markSent(post, result)
