@@ -13,6 +13,11 @@ const OTHER_CODES = [
   'feed_exists',
   'owner_only',
   'not_a_member',
+  'member_limit',
+  'already_member',
+  'already_invited',
+  'owner_stays',
+  'invite_failed',
   'workspace_has_members',
   'confirmation_mismatch',
 ] as const

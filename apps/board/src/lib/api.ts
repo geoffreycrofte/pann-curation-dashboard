@@ -297,6 +297,15 @@ export type TopicPatch = Partial<
   Pick<Topic, 'monthly_budget_usd' | 'name_fr' | 'name_en' | 'active'>
 >
 
+/** A person invited to a workspace who has not joined yet. */
+export interface Invitation {
+  id: string
+  email: string
+  created_at: string
+  /** invite_failed: Supabase could not send the account invitation. */
+  error: string | null
+}
+
 export interface Me {
   user: { id: string; email?: string }
   workspaces: { role: 'owner' | 'editor'; workspace: { id: string; name: string } }[]
@@ -523,6 +532,14 @@ export const api = {
     ),
   transferWorkspace: (workspaceId: string, userId: string) =>
     request<void>(`/workspaces/${workspaceId}/transfer`, json('POST', { user_id: userId })),
+  invitations: (workspaceId: string) =>
+    request<Invitation[]>(`/workspaces/${workspaceId}/invitations`),
+  invite: (workspaceId: string, email: string) =>
+    request<Invitation>(`/workspaces/${workspaceId}/invitations`, json('POST', { email })),
+  cancelInvitation: (workspaceId: string, invitationId: string) =>
+    request<void>(`/workspaces/${workspaceId}/invitations/${invitationId}`, { method: 'DELETE' }),
+  removeMember: (workspaceId: string, userId: string) =>
+    request<void>(`/workspaces/${workspaceId}/members/${userId}`, { method: 'DELETE' }),
   renameWorkspace: (workspaceId: string, name: string) =>
     request<{ id: string; name: string }>(`/workspaces/${workspaceId}`, json('PATCH', { name })),
   /** Queues the deletion of the account; the email typed by the person confirms it. */

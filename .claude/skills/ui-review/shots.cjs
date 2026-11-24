@@ -300,7 +300,9 @@ const routes = {
     max_topics: 3,
     max_social_accounts: 3,
     monthly_tokens: 5000000,
+    max_members: 1,
     topics: 1,
+    members: 1,
     month_tokens: 410000,
     billing_status: 'trialing',
     trial_ends_at: new Date(Date.now() + 9 * 86400000).toISOString(),
@@ -656,6 +658,9 @@ async function shoot(page, name, path, opts = {}) {
     ],
     ['profile', '/profile'],
     ['profile-workspace', '/profile?tab=workspace&offer=open'],
+    ['profile-team-locked', '/profile?tab=team'],
+    ['profile-team', '/profile?tab=team', { team: true }],
+    ['today-switcher', '/', { team: true }],
     ['pricing', '/pricing'],
     ['new-topic-plan', '/topics/new'],
     ['composition', '/t/t1/compose/c1'],
@@ -784,11 +789,30 @@ async function shoot(page, name, path, opts = {}) {
             updated_at: h(-20),
           },
         ]
+      // A team on the top offer, in two workspaces (option team of a shot).
+      if (team) {
+        if (p === '/api/me')
+          body = {
+            ...body,
+            workspaces: [
+              ...body.workspaces,
+              { role: 'editor', workspace: { id: 'w2', name: 'Atelier Lumen' } },
+            ],
+          }
+        if (p === '/api/workspaces/w1/plan')
+          body = { ...body, plan: 'pro', max_members: 2, members: 1 }
+        if (p === '/api/workspaces/w1/members')
+          body = [{ user_id: 'u1', email: 'g@example.org', role: 'owner', is_me: true }]
+        if (p === '/api/workspaces/w1/invitations')
+          body = [{ id: 'i1', email: 'camille@example.org', created_at: h(-2), error: null }]
+      }
       if (body === undefined)
         body = p.includes('newsletter') ? { next_at: null, previews: [], issues: [] } : []
       r.fulfill({ status: 200, body: JSON.stringify(body), contentType: 'application/json' })
     })
+    let team = false
     for (const [name, path, opts] of pages) {
+      team = !!opts?.team
       // A shot of something only small screens have (the burger menu).
       if (opts?.mobileOnly && label !== 'mob') continue
       await shoot(page, `${name}-${label}`, path, opts)

@@ -42,7 +42,7 @@ app.get('/plans', async (c) => {
   const { data, error } = await db
     .from('plans')
     .select(
-      'key, max_topics, max_social_accounts, monthly_tokens, price_month_eur, price_year_eur, trial_tokens',
+      'key, max_topics, max_social_accounts, monthly_tokens, max_members, price_month_eur, price_year_eur, trial_tokens',
     )
   if (error) throw error
   return c.json(data)

@@ -5,6 +5,7 @@ import type { AppEnv } from '../env'
 import { parseJson } from '../lib/validation'
 
 const renameBody = z.object({ name: z.string().trim().min(1).max(100) })
+const inviteBody = z.object({ email: z.email().trim().toLowerCase().max(254) })
 const planChoiceBody = z.object({ plan: z.enum(['own_keys', 'essential', 'pro']) })
 const billingBody = z.discriminatedUnion('kind', [
   z.object({
@@ -51,6 +52,66 @@ export const workspaces = new Hono<AppEnv>()
     return c.body(null, 204)
   })
 
+  /** Pending invitations (members see them; owners send and cancel them). */
+  .get('/:workspaceId/invitations', async (c) => {
+    const { data, error } = await c.var.db
+      .from('workspace_invitations')
+      .select('id, email, created_at, error')
+      .eq('workspace_id', c.req.param('workspaceId'))
+      .order('created_at')
+    if (error) throw error
+    return c.json(data)
+  })
+
+  /**
+   * The owner invites a person by address, as an editor, within the seats of the plan. The
+   * invitation is recorded with RLS (owners only), then a job adds the person or asks
+   * Supabase to invite them.
+   */
+  .post('/:workspaceId/invitations', async (c) => {
+    const { email } = await parseJson(inviteBody, c.req.raw)
+    const { data, error } = await c.var.db
+      .from('workspace_invitations')
+      .insert({ workspace_id: c.req.param('workspaceId'), email, invited_by: c.var.user.id })
+      .select('id, email, created_at, error')
+      .single()
+    if (error?.code === '42501') throw new HTTPException(403, { message: 'owner_only' })
+    if (error?.message === 'member_limit') throw new HTTPException(409, { message: 'member_limit' })
+    if (error?.message === 'already_member')
+      throw new HTTPException(409, { message: 'already_member' })
+    if (error?.code === '23505') throw new HTTPException(409, { message: 'already_invited' })
+    if (error) throw error
+    await c.env.JOBS.send({ type: 'invite-member', invitationId: data.id })
+    return c.json(data, 202)
+  })
+
+  .delete('/:workspaceId/invitations/:invitationId', async (c) => {
+    const { data, error } = await c.var.db
+      .from('workspace_invitations')
+      .delete()
+      .eq('id', c.req.param('invitationId'))
+      .eq('workspace_id', c.req.param('workspaceId'))
+      .select('id')
+    if (error) throw error
+    if (!data.length) throw new HTTPException(403, { message: 'owner_only' })
+    return c.body(null, 204)
+  })
+
+  /** The owner removes a member; a member leaves (the owner transfers first). */
+  .delete('/:workspaceId/members/:userId', async (c) => {
+    const { error } = await c.var.db.rpc('remove_workspace_member', {
+      p_workspace_id: c.req.param('workspaceId'),
+      p_user_id: c.req.param('userId'),
+    })
+    if (error?.code === '42501') throw new HTTPException(403, { message: 'owner_only' })
+    if (error?.code === '22023')
+      throw new HTTPException(409, {
+        message: error.message === 'owner_stays' ? 'owner_stays' : 'not_a_member',
+      })
+    if (error) throw error
+    return c.body(null, 204)
+  })
+
   /** The workspace's plan, its limits and its tokens this month (members only). */
   .get('/:workspaceId/plan', async (c) => {
     const { data, error } = await c.var.db
@@ -66,7 +127,9 @@ export const workspaces = new Hono<AppEnv>()
       max_topics: num(row.max_topics),
       max_social_accounts: num(row.max_social_accounts),
       monthly_tokens: num(row.monthly_tokens),
+      max_members: num(row.max_members),
       topics: Number(row.topics),
+      members: Number(row.members),
       month_tokens: Number(row.month_tokens),
       billing_status: row.billing_status,
       trial_ends_at: row.trial_ends_at,

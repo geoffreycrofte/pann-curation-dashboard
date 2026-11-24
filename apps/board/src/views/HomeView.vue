@@ -1,15 +1,14 @@
 <script setup lang="ts">
 /** Today: what each topic needs now, across topics. A first visit starts with a topic. */
-import { useQuery } from '@pinia/colada'
 import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import StreakFlame from '../components/StreakFlame.vue'
 import TopicSummary from '../components/TopicSummary.vue'
-import { api } from '../lib/api'
+import { useWorkspaceTopics } from '../lib/workspace'
 
 const { t, locale } = useI18n()
-const { data: topics, isPending, error } = useQuery({ key: ['topics'], query: api.topics })
+const { data: topics, isPending, error } = useWorkspaceTopics()
 
 // No topic yet: the first visit of the session opens the creation conversation. Leaving
 // it comes back here, to the empty state (no loop).

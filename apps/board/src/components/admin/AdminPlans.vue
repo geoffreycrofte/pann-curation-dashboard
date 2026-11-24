@@ -30,6 +30,7 @@ watch(
       fields[p.key] = {
         max_topics: p.max_topics ?? '',
         max_social_accounts: p.max_social_accounts ?? '',
+        max_members: p.max_members ?? '',
         monthly_tokens: p.monthly_tokens ?? '',
         price_month_eur: p.price_month_eur ?? '',
         price_year_eur: p.price_year_eur ?? '',
@@ -68,6 +69,7 @@ async function save(key: Plan) {
     await api.adminUpdatePlan(key, {
       max_topics: value(f.max_topics),
       max_social_accounts: value(f.max_social_accounts),
+      max_members: value(f.max_members),
       monthly_tokens: key === 'own_keys' ? null : value(f.monthly_tokens),
       price_month_eur: value(f.price_month_eur),
       price_year_eur: value(f.price_year_eur),
@@ -122,6 +124,18 @@ async function save(key: Plan) {
                 <input
                   :id="`${id}-${p.key}-accounts`"
                   v-model.number="fields[p.key]!.max_social_accounts"
+                  class="field"
+                  type="number"
+                  min="1"
+                  step="1"
+                  :aria-describedby="`${id}-empty`"
+                />
+              </div>
+              <div class="form-row">
+                <label :for="`${id}-${p.key}-members`">{{ t('admin.plans.maxMembers') }}</label>
+                <input
+                  :id="`${id}-${p.key}-members`"
+                  v-model.number="fields[p.key]!.max_members"
                   class="field"
                   type="number"
                   min="1"

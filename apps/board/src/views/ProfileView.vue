@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from 'reka-ui'
-import { useMutation, useQueryCache } from '@pinia/colada'
+import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, reactive, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -24,7 +24,7 @@ import { session } from '../lib/session'
 import { supabase } from '../lib/supabase'
 import { chosenTheme, setTheme, type Theme } from '../lib/theme'
 import { useWorkspace } from '../lib/workspace'
-import WorkspaceMembers from '../components/WorkspaceMembers.vue'
+import WorkspaceTeam from '../components/WorkspaceTeam.vue'
 import WorkspacePlan from '../components/WorkspacePlan.vue'
 import { toast } from '../lib/toast'
 
@@ -33,13 +33,13 @@ const { t, locale } = useI18n()
 const id = useId()
 const router = useRouter()
 const queryCache = useQueryCache()
-const { data: me } = useWorkspace()
+const { data: me, workspaceId, membership } = useWorkspace()
 
 const user = computed(() => session.value?.user)
 
-// Four sections, one tab each, kept in the address (?tab=…): the trial banner links to the
+// Five sections, one tab each, kept in the address (?tab=…): the trial banner links to the
 // workspace and its offer.
-const TABS = ['profile', 'preferences', 'workspace', 'account'] as const
+const TABS = ['profile', 'preferences', 'workspace', 'team', 'account'] as const
 type Tab = (typeof TABS)[number]
 const route = useRoute()
 const tab = computed<Tab>({
@@ -53,6 +53,22 @@ const tab = computed<Tab>({
     }),
 })
 const workspaces = computed(() => me.value?.workspaces ?? [])
+
+// The team of the current workspace. Below the top offer (a single seat), the tab is
+// greyed with a crown and invites to that offer; a workspace that already has other
+// members keeps its team whatever its offer.
+const { data: plan } = useQuery({
+  key: () => ['workspace-plan', workspaceId.value ?? ''],
+  query: () => api.workspacePlan(workspaceId.value!),
+  enabled: () => !!workspaceId.value,
+})
+const teamLocked = computed(
+  () =>
+    !!plan.value &&
+    plan.value.max_members !== null &&
+    plan.value.max_members <= 1 &&
+    plan.value.members <= 1,
+)
 
 // ---------------------------------------------------------------------------
 // Identity: display name (user metadata) and email (Supabase confirms the change)
@@ -155,8 +171,18 @@ async function signOutEverywhere() {
 
   <TabsRoot v-model="tab" activation-mode="manual" class="sections">
     <TabsList :aria-label="t('profile.tabsLabel')" v-scroll-active class="subtabs tab-row">
-      <TabsTrigger v-for="name in TABS" :key="name" :value="name" class="subtab">
+      <TabsTrigger
+        v-for="name in TABS"
+        :key="name"
+        :value="name"
+        class="subtab"
+        :data-locked="(name === 'team' && teamLocked) || undefined"
+      >
         {{ t(`profile.tabs.${name}`) }}
+        <template v-if="name === 'team' && teamLocked">
+          <Icon name="crown" :size="18" class="crown" />
+          <span class="visually-hidden">{{ t('team.lockedHint') }}</span>
+        </template>
       </TabsTrigger>
     </TabsList>
     <TabsContent value="profile" class="tab-panel">
@@ -297,14 +323,38 @@ async function signOutEverywhere() {
             :workspace-id="membership.workspace.id"
             :is-owner="membership.role === 'owner'"
           />
-          <WorkspaceMembers
-            :workspace-id="membership.workspace.id"
-            :is-owner="membership.role === 'owner'"
-          />
         </div>
         <p role="status" class="message" :class="{ error: workspaceError }">
           {{ workspaceMessage }}
         </p>
+      </section>
+    </TabsContent>
+    <TabsContent value="team" class="tab-panel">
+      <section class="section-card section" :aria-labelledby="`${id}-team`">
+        <h2 :id="`${id}-team`" class="section-title">
+          {{ t('team.title', { name: membership?.workspace.name ?? '' }) }}
+        </h2>
+        <div v-if="teamLocked" class="upgrade">
+          <Icon name="crown" :size="32" class="crown" />
+          <p>{{ t('team.lockedText', { plan: t('plans.names.pro') }) }}</p>
+          <RouterLink
+            v-if="membership?.role === 'owner'"
+            :to="{ name: 'profile', query: { tab: 'workspace', offer: 'open' } }"
+            class="button"
+            data-variant="primary"
+          >
+            {{ t('team.upgrade', { plan: t('plans.names.pro') }) }}
+          </RouterLink>
+          <p v-else class="hint">{{ t('team.askOwner') }}</p>
+        </div>
+        <template v-else-if="membership && plan">
+          <p class="hint">{{ t('team.hint') }}</p>
+          <WorkspaceTeam
+            :workspace-id="membership.workspace.id"
+            :is-owner="membership.role === 'owner'"
+            :max-members="plan.max_members"
+          />
+        </template>
       </section>
     </TabsContent>
     <TabsContent value="account" class="tab-panel">
@@ -423,6 +473,30 @@ async function signOutEverywhere() {
 </template>
 
 <style scoped>
+/* Team tab below the top offer: greyed (muted, lighter, even on hover), with a gold crown
+ * (the offer that opens it). Its text keeps the contrast of the other tabs. */
+.subtab[data-locked] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 450;
+}
+
+.subtab[data-locked]:hover {
+  color: var(--color-text-muted);
+}
+
+.crown {
+  color: var(--color-accent-text);
+}
+
+.upgrade {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  max-width: 36rem;
+}
+
 /* The same width as the settings panels and Connexions. */
 .intro,
 .sections {

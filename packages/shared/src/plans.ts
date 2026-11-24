@@ -24,6 +24,8 @@ export interface PlanLimits {
   max_topics: number | null
   max_social_accounts: number | null
   monthly_tokens: number | null
+  /** People in the workspace, the owner included. */
+  max_members: number | null
 }
 
 export const BILLING_STATUSES = [
@@ -41,6 +43,7 @@ export type BillingInterval = 'month' | 'year'
 export interface WorkspacePlan extends PlanLimits {
   plan: Plan
   topics: number
+  members: number
   month_tokens: number
   /** legacy: created before billing, keeps its access. */
   billing_status: BillingStatus

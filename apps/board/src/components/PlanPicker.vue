@@ -123,6 +123,10 @@ function price(plan: PublicPlan) {
               <span>{{ t('pricing.accounts', plan.max_social_accounts) }}</span>
             </li>
           </template>
+          <li v-if="plan.max_members !== null && plan.max_members > 1">
+            <Icon name="check" :size="18" class="check" />
+            <span>{{ t('pricing.members', plan.max_members) }}</span>
+          </li>
           <li>
             <Icon name="check" :size="18" class="check" />
             <span>{{ t('pricing.everything') }}</span>
