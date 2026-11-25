@@ -612,3 +612,9 @@ Trois améliorations valent aussi pour Bluesky :
 - un post sans image montre le lien en carte (titre, description et image de la page), comme les applications.
 
 Testé le 2026-11-25 par un vrai post sur le compte W de Geoffrey, visible sur W et sur Bluesky. Les conditions de W (article 8) interdisent l'accès automatisé sauf accord écrit : demande d'accord à faire avant de mettre W en avant.
+
+## 2026-11-25 : README public, licence BSL
+
+Le README présente le projet en anglais : ce que fait Glimr, Glimr Cloud face à l'auto-hébergement (sur le modèle des outils dont une offre hébergée finance le développement), l'installation et les vérifications. Les notes d'exploitation de l'instance glimr.cc (déploiement, domaine, ancien Worker `pann`) passent dans `docs/deploy.md`, en français comme les autres documents internes ; l'avancement vit dans `docs/TODO.md`.
+
+**Licence : Business Source License 1.1** (`LICENSE.md`), « fair source ». Choix de Geoffrey : le code est public ; l'auto-hébergement est gratuit pour un usage personnel non commercial et pour l'usage interne des associations, de l'enseignement, de la recherche et des administrations ; toute utilisation par ou pour une entreprise, en interne comprise, et toute offre en service hébergé à des tiers demandent une licence commerciale, à prix fixe (sur demande pour commencer). Chaque version passe sous AGPL-3.0-or-later quatre ans après sa publication. Écartées : l'AGPL seule (n'empêche ni l'usage interne gratuit ni un concurrent), la FSL (laisse l'usage interne des entreprises gratuit), PolyForm Noncommercial (ne revient jamais à l'open source). Les contributions externes accordent à Crofte Studio une licence qui permet de les inclure dans les licences commerciales (`CONTRIBUTING.md`, case à cocher dans les PR). Texte de la licence et de l'accord à faire relire par un juriste. `ACCESSIBILITY.md` reprend la forme de celui de Smash It.

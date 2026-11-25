@@ -1,6 +1,7 @@
 {
   "name": "glimr",
   "private": true,
+  "license": "BUSL-1.1",
   "type": "module",
   "packageManager": "pnpm@10.28.0",
   "engines": {
