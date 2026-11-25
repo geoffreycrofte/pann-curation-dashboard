@@ -5,6 +5,7 @@ import {
   missingPosts,
   postLength,
   postSignature,
+  POST_LIMITS,
   SOURCE_TEXT_MIN,
   type DraftChannel,
   type DraftTarget,
@@ -117,6 +118,19 @@ export function toDraftWrite(
   }
 }
 
+/**
+ * A post the model wrote in a loop (the same words or hashtags over and over until its
+ * output ran out): far over the network's limit, or more hashtags than any network takes.
+ * A guard against a broken output, not a style rule: the person's own rules decide the
+ * length and the hashtags of a normal post.
+ */
+const RUNAWAY_LENGTH_FACTOR = 1.5
+const RUNAWAY_HASHTAGS = 30
+export function isRunawayPost(channel: DraftChannel, body: string): boolean {
+  if (postLength(body) > POST_LIMITS[channel] * RUNAWAY_LENGTH_FACTOR) return true
+  return (body.match(/(^|\s)#[\p{L}\p{N}_]+/gu) ?? []).length > RUNAWAY_HASHTAGS
+}
+
 function usageEntry(result: DraftResult, requestedModel: string): UsageEntry | null {
   if (!result.usage) return null
   const model = result.model ?? requestedModel
@@ -195,18 +209,22 @@ export async function draft(deps: {
     const langs = missing
       ? item.topic_config.output_langs.filter((lang) => missing.some((m) => m.lang === lang))
       : item.topic_config.output_langs
-    const result = await deps.model({
-      channels,
-      langs,
-      targets,
-      apiKey,
-      model: requestedModel,
-      effort: item.topic_config.ai.draft_effort,
-      system: draftSystemPrompt({ name_en: item.topic_name_en, config: item.topic_config }),
-      user: draftUserMessage({ ...item, content }, channels, {
-        linkedin: longestSignature(item.topic_config),
-      }),
-    })
+    const call = (callTargets: DraftTarget[], callLangs: readonly Lang[]) => {
+      const callChannels = callTargets.map((t) => t.channel)
+      return deps.model({
+        channels: callChannels,
+        langs: callLangs,
+        targets: callTargets,
+        apiKey,
+        model: requestedModel,
+        effort: item.topic_config.ai.draft_effort,
+        system: draftSystemPrompt({ name_en: item.topic_name_en, config: item.topic_config }),
+        user: draftUserMessage({ ...item, content }, callChannels, {
+          linkedin: longestSignature(item.topic_config),
+        }),
+      })
+    }
+    const result = await call(targets, langs)
     const usage = usageEntry(result, requestedModel)
     if (usage) await deps.store.logUsage(item, usage)
 
@@ -217,16 +235,29 @@ export async function draft(deps: {
         continue
       }
       const write = toDraftWrite(result.output, result.model, targets, langs)
+      // A post written in a loop is not saved: it is written again, alone, once.
+      const runaway = write.posts.filter((p) => isRunawayPost(p.channel, p.body))
+      const kept = write.posts.filter((p) => !runaway.includes(p))
       await deps.store.saveDraft(
         item,
-        missing
-          ? {
-              ...write,
-              posts_only: true,
-              posts: write.posts,
-            }
-          : write,
+        missing ? { ...write, posts_only: true, posts: kept } : { ...write, posts: kept },
       )
+      if (runaway.length) {
+        const retryTargets = DRAFT_CHANNELS.flatMap((channel) => {
+          const postLangs = runaway.filter((p) => p.channel === channel).map((p) => p.lang)
+          return postLangs.length ? [{ channel, langs: postLangs }] : []
+        })
+        const retryLangs = [...new Set(runaway.map((p) => p.lang))]
+        const retry = await call(retryTargets, retryLangs)
+        const retryUsage = usageEntry(retry, requestedModel)
+        if (retryUsage) await deps.store.logUsage(item, retryUsage)
+        if (retry.ok && !retry.output.insufficient_content) {
+          const posts = toDraftWrite(retry.output, retry.model, retryTargets, retryLangs).posts
+          const good = posts.filter((p) => !isRunawayPost(p.channel, p.body))
+          if (good.length)
+            await deps.store.saveDraft(item, { ...EMPTY_WRITE, posts_only: true, posts: good })
+        }
+      }
       report.drafted++
       continue
     }

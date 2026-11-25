@@ -1,6 +1,13 @@
 import { parseTopicConfig } from '@glimr/shared'
 import { describe, expect, it } from 'vitest'
-import { draft, toDraftWrite, type DraftStore, type DraftWrite, type PendingDraft } from './draft'
+import {
+  draft,
+  isRunawayPost,
+  toDraftWrite,
+  type DraftStore,
+  type DraftWrite,
+  type PendingDraft,
+} from './draft'
 import type { DraftModel } from './model'
 import type { DraftOutput } from './prompt'
 import { draftSystemPrompt } from './prompt'
@@ -276,5 +283,45 @@ describe('draft prompt', () => {
       { channel: 'linkedin', lang: 'de', body: 'LI de' },
       { channel: 'linkedin', lang: 'pt-BR', body: 'LI pt' },
     ])
+  })
+
+  it('writes again, alone, a post the model wrote in a loop, and never saves the loop', async () => {
+    const loop = `A real start. ${Array.from({ length: 200 }, (_, i) => `#Fin${i}`).join(' ')}`
+    const saves: DraftWrite[] = []
+    const { store } = memoryStore([item('a')])
+    store.saveDraft = async (_i, d) => void saves.push(d)
+    const calls: { channels: readonly string[]; langs: readonly string[] }[] = []
+    const model: DraftModel = async ({ channels, langs }) => {
+      calls.push({ channels, langs })
+      return calls.length === 1
+        ? {
+            ok: true,
+            output: { ...output, posts: { ...output.posts, mastodon: { fr: loop, en: 'MA en' } } },
+            usage,
+            model: 'claude-sonnet-5-5',
+          }
+        : {
+            ok: true,
+            output: { ...output, posts: { mastodon: { fr: 'MA fr, written again' } } },
+            usage,
+            model: 'claude-sonnet-5-5',
+          }
+    }
+    await draft({ store, model })
+    expect(calls[1]).toEqual({ channels: ['mastodon'], langs: ['fr'] })
+    expect(saves[0]!.posts.map((p) => `${p.channel}/${p.lang}`)).not.toContain('mastodon/fr')
+    expect(saves[1]).toMatchObject({
+      posts_only: true,
+      posts: [{ channel: 'mastodon', lang: 'fr', body: 'MA fr, written again' }],
+    })
+  })
+
+  it('tells a post written in a loop from a long or hashtagged one', () => {
+    expect(isRunawayPost('facebook', 'Un post. #A11y #WCAG')).toBe(false)
+    expect(isRunawayPost('bluesky', 'x'.repeat(320))).toBe(false)
+    expect(isRunawayPost('bluesky', 'x'.repeat(451))).toBe(true)
+    expect(
+      isRunawayPost('facebook', Array.from({ length: 31 }, (_, i) => `#T${i}`).join(' ')),
+    ).toBe(true)
   })
 })

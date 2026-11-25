@@ -22,9 +22,28 @@ body {
   margin: 0;
 }
 
-/* Full-screen menu open on a small screen: the page behind does not scroll. */
+/* Full-screen menu open on a small screen: the page behind does not scroll. The scrollbar's
+ * room stays reserved, so the page does not shift sideways when it goes and comes back. */
+html {
+  scrollbar-gutter: stable;
+}
+
 html.menu-open {
   overflow: hidden;
+}
+
+/* Menu / Close on one button: both words stacked in the same cell, only one shown, so the
+ * button is as wide as the longer one whatever its state. */
+.toggle-label {
+  display: inline-grid;
+}
+
+.toggle-label > span {
+  grid-area: 1 / 1;
+}
+
+.toggle-label > span:not([data-shown]) {
+  visibility: hidden;
 }
 
 h1,
