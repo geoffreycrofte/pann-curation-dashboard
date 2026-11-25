@@ -123,9 +123,20 @@ watch(menuOpen, async (open) => {
   menu.value?.querySelector<HTMLElement>('a, button')?.focus()
 })
 
+/** While the menu closes, it stays shown for its closing animation (none if reduced). */
+const menuClosing = ref(false)
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+let closingTimer: ReturnType<typeof setTimeout> | undefined
+const MENU_CLOSE_MS = 260
+
 async function closeMenu() {
   if (!menuOpen.value) return
   menuOpen.value = false
+  if (isNarrow.value && !reducedMotion.matches) {
+    menuClosing.value = true
+    clearTimeout(closingTimer)
+    closingTimer = setTimeout(() => (menuClosing.value = false), MENU_CLOSE_MS)
+  }
   await nextTick()
   toggle.value?.focus()
 }
@@ -183,6 +194,7 @@ watch(
           ref="menu"
           class="sidebar-menu"
           :data-open="menuOpen"
+          :data-closing="menuClosing || undefined"
           @keydown.esc="closeMenu"
         >
           <nav :aria-label="t('nav.label')">
@@ -528,22 +540,50 @@ main.public {
     gap: var(--space-2);
   }
 
-  .sidebar-menu:not([data-open='true']) {
+  .sidebar-menu:not([data-open='true']):not([data-closing]) {
     display: none;
   }
 
-  .sidebar-menu[data-open='true'] {
+  .sidebar-menu[data-open='true'],
+  .sidebar-menu[data-closing] {
     position: fixed;
     inset: var(--top, 4.5rem) 0 0;
     gap: 0;
     padding: var(--space-2) var(--space-4) var(--space-4);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* The ink grows as a circle from the Menu button. A scaled disc, not a clip-path: the
+   * browser moves it on the GPU instead of repainting the screen at every frame. */
+  .sidebar-menu[data-open='true']::before,
+  .sidebar-menu[data-closing]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 3rem;
+    z-index: -1;
+    width: 300vmax;
+    height: 300vmax;
+    border-radius: 50%;
     background: var(--color-ink);
-    /* Opens as a circle growing from the Menu button. */
-    animation: menu-reveal 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transform: translate(50%, -50%) scale(1);
+    will-change: transform;
+    animation: menu-disc-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* Closing: the same circle shrinks back into the button, the links fade first. */
+  .sidebar-menu[data-closing]::before {
+    animation: menu-disc-out 0.26s cubic-bezier(0.4, 0, 0.8, 0.2) forwards;
+  }
+
+  .sidebar-menu[data-closing] > * {
+    animation: menu-content-out 0.14s ease-in forwards;
   }
 
   /* Topics and settings scroll when the screen is short; the controls stay at the bottom. */
-  .sidebar-menu[data-open='true'] nav {
+  .sidebar-menu[data-open='true'] nav,
+  .sidebar-menu[data-closing] nav {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
@@ -554,7 +594,8 @@ main.public {
     animation: menu-item-in 0.35s 0.08s both cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
-  .sidebar-menu[data-open='true'] .sidebar-bottom {
+  .sidebar-menu[data-open='true'] .sidebar-bottom,
+  .sidebar-menu[data-closing] .sidebar-bottom {
     padding-top: var(--space-4);
     border-top: 1px solid rgb(255 255 255 / 0.12);
   }
@@ -593,12 +634,29 @@ main.public {
   }
 }
 
-@keyframes menu-reveal {
+@keyframes menu-disc-in {
   from {
-    clip-path: circle(0 at calc(100% - 3rem) 0);
+    transform: translate(50%, -50%) scale(0);
   }
+}
+
+@keyframes menu-disc-out {
   to {
-    clip-path: circle(150% at calc(100% - 3rem) 0);
+    transform: translate(50%, -50%) scale(0);
+  }
+}
+
+@keyframes menu-content-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Less motion asked: the menu appears and goes at once. */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-menu::before,
+  .sidebar-menu nav li {
+    animation: none !important;
   }
 }
 

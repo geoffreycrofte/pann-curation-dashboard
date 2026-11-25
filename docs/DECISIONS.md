@@ -626,3 +626,11 @@ Un post Facebook est revenu avec 7 104 caractères, dont des centaines de hashta
 Prévention, dans ce qui relève de l'outil (format et limites techniques) : chaque post du schéma de sortie rappelle la limite de son réseau et qu'il s'écrit une fois, du début à la fin ; le prompt (rédaction et Création) demande de ne jamais répéter une phrase, un mot ou un hashtag dans un post. Le nombre de hashtags reste une règle de l'utilisateur.
 
 Garde-fou en dernier recours : un post plus long que 1,5 fois la limite de son réseau, ou avec plus de 30 hashtags, n'est pas enregistré ; il est rédigé à nouveau, seul, une fois, puis laissé de côté s'il boucle encore. L'ajout de posts manquants ne double plus jamais un post existant pour le même réseau et la même langue.
+
+## 2026-11-25 : longueur et hashtags par réseau, menus animés
+
+**Réglages par réseau** : suite au post Facebook écrit en boucle, chaque réseau a une longueur visée et un nombre maximum de hashtags par défaut (`NETWORK_POST_DEFAULTS`) : LinkedIn 800 à 1 300 caractères et 3 hashtags, Facebook 300 à 800 et 3, Bluesky et W jusqu'à 280 et 2, Mastodon jusqu'à 450 et 2, Discord 200 à 800 et aucun, Telegram 300 à 1 000 et 2. Ce sont des réglages du thème (`ai.network_rules`, Réglages, Rédaction), pas des consignes cachées : un thème qui n'a rien changé a les valeurs par défaut, anciens thèmes compris (pas de migration de données). Ils sont donnés aux prompts de rédaction, de Création et de réécriture ; les règles écrites par l'utilisateur l'emportent quand elles disent autre chose. Règle ajoutée au CLAUDE.md.
+
+**Encart « Même sujet que »** : teinte bleue, bord et icône, distinct de l'analyse (dorée), pour le repérer en parcourant la liste.
+
+**Menus mobiles** : le cercle d'ouverture est un disque agrandi par transformation (calculé par la carte graphique) au lieu d'un `clip-path` qui repeignait tout l'écran à chaque image ; la fermeture rejoue le cercle à l'envers. Rien de tout cela si la personne a demandé moins d'animations.

@@ -68,6 +68,9 @@
   /* Badge backgrounds (with --color-text on them). */
   --color-neutral-soft: light-dark(#efe4cf, #2b2b30);
   --color-success-soft: light-dark(#dcefe1, #133420);
+  /* "Same story" notice of an item card: a blue tint, apart from the gold of the analysis. */
+  --color-info-soft: light-dark(#e3eefb, #172638);
+  --color-info: light-dark(#1f5fa6, #8dbcf2);
   --color-danger-soft: light-dark(#fbe1dd, #3d1a16);
   /*
    * Illustration palette (marketing page): the sand, olive and wood of the 3D scenes.

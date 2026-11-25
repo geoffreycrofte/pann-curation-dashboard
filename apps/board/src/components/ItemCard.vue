@@ -88,13 +88,16 @@ const actions = computed(() =>
       </p>
       <!-- Found at triage: the same news from another site. The person decides. -->
       <p v-if="item.same_story" class="same-story">
-        {{ t('board.sameStory') }}
-        <RouterLink
-          :to="{
-            name: 'item',
-            params: { topicId: item.topic_id, itemId: item.same_story.item_id },
-          }"
-          >{{ t('board.sameStoryTitle', { title: item.same_story.title }) }}</RouterLink
+        <Icon name="stack" :size="18" class="same-story-icon" />
+        <span
+          ><strong>{{ t('board.sameStory') }}</strong>
+          <RouterLink
+            :to="{
+              name: 'item',
+              params: { topicId: item.topic_id, itemId: item.same_story.item_id },
+            }"
+            >{{ t('board.sameStoryTitle', { title: item.same_story.title }) }}</RouterLink
+          ></span
         >
       </p>
 
@@ -284,14 +287,37 @@ const actions = computed(() =>
 
 /* The AI's reason supports the title: quieter, still fully readable. */
 .reason,
+/* Stands out from the rest of the card, analysis included (gold): a blue tint, an edge and
+ * an icon, so it is spotted at a glance while scanning the list. */
 .same-story {
   margin: 0;
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  border-inline-start: 3px solid var(--color-info);
+  border-radius: calc(var(--radius) / 2);
+  background: var(--color-info-soft);
+  color: var(--color-text);
   font-size: 0.9375rem;
-  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
 }
 
-.same-story {
-  overflow-wrap: anywhere;
+.same-story a {
+  color: var(--color-info);
+}
+
+.same-story-icon {
+  margin-top: 0.15em;
+  color: var(--color-info);
+}
+
+/* Forced colours drop the background: the edge stays, as a frame. */
+@media (forced-colors: active) {
+  .same-story {
+    border: 1px solid CanvasText;
+    border-inline-start-width: 3px;
+  }
 }
 
 .meta {

@@ -685,6 +685,16 @@ export default {
     upgrade: 'Passer à l’offre {plan}',
     askOwner: 'Le propriétaire de l’espace peut changer d’offre.',
   },
+  networkRules: {
+    title: 'Longueur et hashtags par réseau',
+    hint: 'Pour le texte de chaque post, lien non compris. Glimr part de valeurs par défaut ; vos règles pour les posts, plus haut, l’emportent si elles disent autre chose.',
+    min: 'Longueur minimale',
+    max: 'Longueur maximale',
+    hashtags: 'Hashtags au plus',
+    none: 'Aucune',
+    limit: 'Limite du réseau : {limit} caractères.',
+    reset: 'Revenir aux valeurs par défaut',
+  },
   members: {
     title: 'Membres',
     you: '(vous)',

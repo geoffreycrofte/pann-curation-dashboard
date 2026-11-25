@@ -1,7 +1,16 @@
 import { z } from 'zod'
 import { DRAFT_MODES } from './domain'
 import { langSchema, localizedText, MAX_OUTPUT_LANGS, uiLangFor, type Lang } from './langs'
-import { DRAFT_CHANNELS, FIRST_COMMENT_MAX, LINKEDIN_SIGNATURE_MAX } from './drafting'
+import {
+  DRAFT_CHANNELS,
+  FIRST_COMMENT_MAX,
+  LINKEDIN_SIGNATURE_MAX,
+  MAX_HASHTAGS_SETTING,
+  NETWORK_POST_DEFAULTS,
+  POST_LIMITS,
+  type DraftChannel,
+  type NetworkPostRule,
+} from './drafting'
 import { NEWSLETTER_PROVIDERS } from './providers'
 import { domainSchema } from './source-config'
 
@@ -192,6 +201,20 @@ export const topicConfigSchema = z.object({
       style_rules: z.string().max(4000).default(''),
       /** Conventions for social posts (hashtags, emoji, mentions…). */
       post_rules: z.string().max(4000).default(''),
+      /**
+       * Length and hashtags per network (Settings, Drafting). A network the topic never
+       * changed keeps its defaults (networkPostRule): every topic has them, old ones too.
+       */
+      network_rules: z
+        .partialRecord(
+          z.enum(DRAFT_CHANNELS),
+          z.object({
+            min_chars: z.number().int().min(0).max(10_000).nullable(),
+            max_chars: z.number().int().min(50).max(10_000),
+            max_hashtags: z.number().int().min(0).max(MAX_HASHTAGS_SETTING),
+          }),
+        )
+        .default({}),
       prompt_version: z.string().default('v1'),
     })
     .prefault({}),
@@ -454,4 +477,41 @@ export function isModuleEnabled(config: Pick<TopicConfig, 'modules'>, module: To
 
 export function isTopicKind(config: Pick<TopicConfig, 'kinds'>, key: string): boolean {
   return config.kinds.some((k) => k.key === key)
+}
+
+/**
+ * Length and hashtags of a channel's posts for this topic: its own setting, else the
+ * default; the maximum never goes past what the network takes.
+ */
+export function networkPostRule(config: TopicConfig, channel: DraftChannel): NetworkPostRule {
+  // A config read without parsing (an older topic) may not have the field yet.
+  const rule = config.ai.network_rules?.[channel] ?? NETWORK_POST_DEFAULTS[channel]
+  const max = Math.min(rule.max_chars, POST_LIMITS[channel])
+  return {
+    ...rule,
+    max_chars: max,
+    min_chars: rule.min_chars === null ? null : Math.min(rule.min_chars, max),
+  }
+}
+
+/**
+ * The length and hashtag settings of these channels, as the AI prompts read them (one line
+ * each). Settings of the person, given to the model like their written rules.
+ */
+export function networkRulesForPrompt(
+  config: TopicConfig,
+  channels: readonly DraftChannel[],
+): string {
+  return channels
+    .map((channel) => {
+      const rule = networkPostRule(config, channel)
+      const length =
+        rule.min_chars === null
+          ? `up to ${rule.max_chars} characters`
+          : `${rule.min_chars} to ${rule.max_chars} characters`
+      const hashtags =
+        rule.max_hashtags === 0 ? 'no hashtags' : `at most ${rule.max_hashtags} hashtags`
+      return `- ${channel}: ${length}, ${hashtags}`
+    })
+    .join('\n')
 }

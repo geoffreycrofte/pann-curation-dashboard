@@ -680,6 +680,16 @@ export default {
     upgrade: 'Move to the {plan} offer',
     askOwner: 'The owner of the workspace can change the offer.',
   },
+  networkRules: {
+    title: 'Length and hashtags per network',
+    hint: 'For the text of each post, link excluded. Glimr starts from defaults; your rules for the posts, above, win where they say otherwise.',
+    min: 'Minimum length',
+    max: 'Maximum length',
+    hashtags: 'Hashtags at most',
+    none: 'None',
+    limit: 'Network limit: {limit} characters.',
+    reset: 'Back to the defaults',
+  },
   members: {
     title: 'Members',
     you: '(you)',

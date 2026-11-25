@@ -2,13 +2,14 @@ import {
   DRAFT_CHANNELS,
   langName,
   langSchema,
+  networkRulesForPrompt,
   type DraftChannel,
   type TopicConfig,
 } from '@glimr/shared'
 import { z } from 'zod'
 
 /** Bump when the prompt changes. Stored with the usage of each rewrite. */
-export const REWRITE_PROMPT_VERSION = 'rewrite-v1'
+export const REWRITE_PROMPT_VERSION = 'rewrite-v2'
 
 export const REWRITE_PRESETS = ['shorter', 'longer', 'formal', 'casual', 'custom'] as const
 export type RewritePreset = (typeof REWRITE_PRESETS)[number]
@@ -64,7 +65,11 @@ export function rewriteSystemPrompt(
   return `You rewrite ${what}, for a content-curation service about: ${topic.name_en}.
 
 Follow the instruction of the user. Keep every fact, figure, name and version exactly as in the text, and never add a fact that is not in it. Write in ${langName(target.lang, 'en')}, as a native writer would.${maxChars ? ` The text must not exceed ${maxChars} characters.` : ''}
-Answer with the rewritten text only: no title, no quotation marks, no comment.${rules.trim() ? `\n\n# Rules set by the user\n${rules.trim()}` : ''}`
+Answer with the rewritten text only: no title, no quotation marks, no comment.${
+    target.kind === 'post'
+      ? `\n\n# Length and hashtags of this network (setting of the topic; the rules below win where they differ)\n${networkRulesForPrompt(topic.config, [target.channel])}`
+      : ''
+  }${rules.trim() ? `\n\n# Rules set by the user\n${rules.trim()}` : ''}`
 }
 
 export function rewriteUserMessage(request: RewriteRequest): string {

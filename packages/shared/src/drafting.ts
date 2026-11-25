@@ -99,3 +99,28 @@ export function postLength(text: string): number {
   }
   return [...text].length
 }
+
+/**
+ * Length and hashtags of a post, per network: settings of the topic (ai.network_rules),
+ * editable in Settings, Drafting. Every network has defaults, so that no post goes out
+ * without a frame: adding a network to Glimr means adding its defaults here.
+ */
+export interface NetworkPostRule {
+  /** Characters of the text, link excluded; null: no minimum. */
+  min_chars: number | null
+  max_chars: number
+  max_hashtags: number
+}
+
+export const NETWORK_POST_DEFAULTS: Record<DraftChannel, NetworkPostRule> = {
+  linkedin: { min_chars: 800, max_chars: 1300, max_hashtags: 3 },
+  facebook: { min_chars: 300, max_chars: 800, max_hashtags: 3 },
+  bluesky: { min_chars: null, max_chars: 280, max_hashtags: 2 },
+  w: { min_chars: null, max_chars: 280, max_hashtags: 2 },
+  mastodon: { min_chars: null, max_chars: 450, max_hashtags: 2 },
+  discord: { min_chars: 200, max_chars: 800, max_hashtags: 0 },
+  telegram: { min_chars: 300, max_chars: 1000, max_hashtags: 2 },
+}
+
+/** Most hashtags a setting may allow (a guard against loops counts above it). */
+export const MAX_HASHTAGS_SETTING = 10
