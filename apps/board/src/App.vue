@@ -170,7 +170,11 @@ watch(
                 <path class="bar bar-bottom" d="M4 17h16" />
               </g>
             </svg>
-            {{ menuOpen ? t('nav.close') : t('nav.menu') }}
+            <!-- Both words take the same room: the button keeps its width (no jump). -->
+            <span class="toggle-label">
+              <span :data-shown="!menuOpen || undefined">{{ t('nav.menu') }}</span>
+              <span :data-shown="menuOpen || undefined">{{ t('nav.close') }}</span>
+            </span>
           </button>
         </div>
 

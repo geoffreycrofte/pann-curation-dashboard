@@ -1,6 +1,7 @@
 import {
   bodyLimit,
   langName,
+  POST_LIMITS,
   SOURCE_NATURES_LIST,
   type DraftChannel,
   type DraftTarget,
@@ -10,7 +11,7 @@ import {
 import { z } from 'zod'
 
 /** Bump when the prompt changes. Stored with each summary (summaries.prompt_version). */
-export const DRAFT_PROMPT_VERSION = 'draft-v4'
+export const DRAFT_PROMPT_VERSION = 'draft-v5'
 
 /** Characters of the source sent for drafting. */
 export const DRAFT_CONTENT_CHARS = 24_000
@@ -43,7 +44,20 @@ export function draftOutputSchema(targets: readonly DraftTarget[], langs: readon
       .describe('Verbatim quote of at most 25 words, in the language of the source'),
     source_type: z.enum(SOURCE_NATURES_LIST),
     // Each channel only in the languages its accounts publish in.
-    posts: z.object(Object.fromEntries(targets.map((t) => [t.channel, byLang(t.langs, 'Post')]))),
+    // The network's limit stands next to each post, where the model writes it (the exact
+    // limit, which depends on the link, is in the item). The same text for every item, so
+    // the compiled schema is reused.
+    posts: z.object(
+      Object.fromEntries(
+        targets.map((t) => [
+          t.channel,
+          byLang(
+            t.langs,
+            `${t.channel} post, under ${POST_LIMITS[t.channel]} characters, written once from start to end`,
+          ),
+        ]),
+      ),
+    ),
   })
 }
 
@@ -89,7 +103,8 @@ For one source item, you produce a summary in each of these languages, a short v
 # Posts
 - Each post presents the item and why it matters. Do not include the link: it is appended after the text, separated by a blank line.
 - One post per language: each post is entirely in its language.
-- Respect the length limits given with the item for the text of each post, counting every character (they already leave room for the link).${section('Topic rules', editorial_rules)}${section('Style rules', style_rules)}${section('Post rules', post_rules)}`
+- Respect the length limits given with the item for the text of each post, counting every character (they already leave room for the link).
+- Write each post once, from start to end, then stop: never repeat a sentence, a word or a hashtag within a post.${section('Topic rules', editorial_rules)}${section('Style rules', style_rules)}${section('Post rules', post_rules)}`
 }
 
 export interface DraftSource {

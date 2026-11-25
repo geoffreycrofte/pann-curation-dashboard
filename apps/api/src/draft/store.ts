@@ -121,10 +121,19 @@ export function supabaseDraftStore(db: SupabaseClient): DraftStore {
 
     async saveDraft(item, draft) {
       if (draft.posts_only) {
-        // Missing posts only: add them, leave the rest of the drafting untouched.
-        if (draft.posts.length) {
+        // Missing posts only: add them, leave the rest of the drafting untouched. A channel
+        // and language that already has a post (edited, scheduled) keeps it.
+        const { data: present, error: presentError } = await db
+          .from('posts')
+          .select('channel, lang')
+          .eq('item_id', item.item_id)
+          .eq('topic_id', item.topic_id)
+        if (presentError) throw presentError
+        const taken = new Set((present ?? []).map((p) => `${p.channel}/${p.lang}`))
+        const fresh = draft.posts.filter((p) => !taken.has(`${p.channel}/${p.lang}`))
+        if (fresh.length) {
           const { error } = await db.from('posts').insert(
-            draft.posts.map((p) => ({
+            fresh.map((p) => ({
               item_id: item.item_id,
               topic_id: item.topic_id,
               channel: p.channel,
