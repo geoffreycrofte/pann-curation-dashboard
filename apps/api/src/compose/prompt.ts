@@ -1,6 +1,8 @@
 import {
   bodyLimit,
+  draftChannels,
   langName,
+  networkRulesForPrompt,
   type ComposeMode,
   type DraftChannel,
   type DraftTarget,
@@ -11,7 +13,7 @@ import { z } from 'zod'
 import { langList } from '../draft/prompt'
 
 /** Bump when the prompt changes. Stored in usage_log units. */
-export const COMPOSE_PROMPT_VERSION = 'compose-v2'
+export const COMPOSE_PROMPT_VERSION = 'compose-v3'
 /** Characters of each source text sent to the model. */
 export const SOURCE_CHARS = 8_000
 /** At most this many sources are read for one composition. */
@@ -72,7 +74,7 @@ ${GROUNDING[mode]}
 - Do not include a link: when there is one, it is appended after the text, separated by a blank line.
 - One post per language: each post is entirely in its language, written natively, not translated word for word.
 - Respect the length limit given for the text of each network, counting every character.
-- Write each post once, from start to end, then stop: never repeat a sentence, a word or a hashtag within a post.${section('Topic rules', editorial_rules)}${section('Style rules', style_rules)}${section('Post rules', post_rules)}`
+- Write each post once, from start to end, then stop: never repeat a sentence, a word or a hashtag within a post.${section('Topic rules', editorial_rules)}${section('Style rules', style_rules)}\n\n# Length and hashtags per network\nSettings of the topic, for the text of each post (link excluded). Where the post rules below say otherwise, follow the post rules.\n${networkRulesForPrompt(topic.config, draftChannels(topic.config))}${section('Post rules', post_rules)}`
 }
 
 export interface ComposeMaterial {

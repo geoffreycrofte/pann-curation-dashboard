@@ -1,6 +1,8 @@
 import {
   bodyLimit,
+  draftChannels,
   langName,
+  networkRulesForPrompt,
   POST_LIMITS,
   SOURCE_NATURES_LIST,
   type DraftChannel,
@@ -11,7 +13,7 @@ import {
 import { z } from 'zod'
 
 /** Bump when the prompt changes. Stored with each summary (summaries.prompt_version). */
-export const DRAFT_PROMPT_VERSION = 'draft-v5'
+export const DRAFT_PROMPT_VERSION = 'draft-v6'
 
 /** Characters of the source sent for drafting. */
 export const DRAFT_CONTENT_CHARS = 24_000
@@ -104,7 +106,7 @@ For one source item, you produce a summary in each of these languages, a short v
 - Each post presents the item and why it matters. Do not include the link: it is appended after the text, separated by a blank line.
 - One post per language: each post is entirely in its language.
 - Respect the length limits given with the item for the text of each post, counting every character (they already leave room for the link).
-- Write each post once, from start to end, then stop: never repeat a sentence, a word or a hashtag within a post.${section('Topic rules', editorial_rules)}${section('Style rules', style_rules)}${section('Post rules', post_rules)}`
+- Write each post once, from start to end, then stop: never repeat a sentence, a word or a hashtag within a post.${section('Topic rules', editorial_rules)}${section('Style rules', style_rules)}\n\n# Length and hashtags per network\nSettings of the topic, for the text of each post (link excluded). Where the post rules below say otherwise, follow the post rules.\n${networkRulesForPrompt(topic.config, draftChannels(topic.config))}${section('Post rules', post_rules)}`
 }
 
 export interface DraftSource {

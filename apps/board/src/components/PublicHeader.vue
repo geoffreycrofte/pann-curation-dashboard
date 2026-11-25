@@ -40,9 +40,17 @@ watch(open, async (value) => {
   panel.value?.querySelector<HTMLElement>('a, button')?.focus()
 })
 
+/** While the menu closes, it stays shown for its closing animation (none if reduced). */
+const closing = ref(false)
+let closingTimer: ReturnType<typeof setTimeout> | undefined
 async function close() {
   if (!open.value) return
   open.value = false
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    closing.value = true
+    clearTimeout(closingTimer)
+    closingTimer = setTimeout(() => (closing.value = false), 260)
+  }
   await nextTick()
   toggle.value?.focus()
 }
@@ -114,7 +122,13 @@ onBeforeUnmount(() => setBehind(false))
       </button>
     </div>
 
-    <div id="public-menu" ref="panel" class="menu-panel" :data-open="open || undefined">
+    <div
+      id="public-menu"
+      ref="panel"
+      class="menu-panel"
+      :data-open="open || undefined"
+      :data-closing="closing || undefined"
+    >
       <nav :aria-label="t('public.navLabel')">
         <ul class="menu-pages">
           <li v-for="(page, index) in PAGES" :key="page.key" :style="{ '--i': index }">
@@ -273,7 +287,8 @@ onBeforeUnmount(() => setBehind(false))
   }
 
   /* The menu: ink over the whole screen, its own colours for what it holds. */
-  .menu-panel[data-open] {
+  .menu-panel[data-open],
+  .menu-panel[data-closing] {
     --color-text: var(--color-on-ink);
     --color-surface: var(--color-ink);
     --color-border: var(--color-on-ink-muted);
@@ -288,10 +303,34 @@ onBeforeUnmount(() => setBehind(false))
     padding: calc(var(--space-5) + 2.75rem + var(--space-8)) clamp(1rem, 5vw, 4rem)
       calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
-    background: var(--color-ink);
+    isolation: isolate;
     color: var(--color-on-ink);
-    /* A circle of ink grows from the burger. */
-    animation: public-menu-reveal 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* A circle of ink grows from the burger: a scaled disc, moved on the GPU (a clip-path
+   * would repaint the whole screen at every frame). Closing shrinks it back. */
+  .menu-panel[data-open]::before,
+  .menu-panel[data-closing]::before {
+    content: '';
+    position: fixed;
+    top: 2.75rem;
+    right: 3.5rem;
+    z-index: -1;
+    width: 300vmax;
+    height: 300vmax;
+    border-radius: 50%;
+    background: var(--color-ink);
+    transform: translate(50%, -50%) scale(1);
+    will-change: transform;
+    animation: public-menu-disc-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .menu-panel[data-closing]::before {
+    animation: public-menu-disc-out 0.26s cubic-bezier(0.4, 0, 0.8, 0.2) forwards;
+  }
+
+  .menu-panel[data-closing] > * {
+    animation: public-menu-content-out 0.14s ease-in forwards;
   }
 
   .menu-panel :focus-visible {
@@ -362,13 +401,21 @@ onBeforeUnmount(() => setBehind(false))
   }
 }
 
-@keyframes public-menu-reveal {
+@keyframes public-menu-disc-in {
   from {
-    clip-path: circle(0 at calc(100% - 3.5rem) 2.75rem);
+    transform: translate(50%, -50%) scale(0);
   }
+}
 
+@keyframes public-menu-disc-out {
   to {
-    clip-path: circle(150% at calc(100% - 3.5rem) 2.75rem);
+    transform: translate(50%, -50%) scale(0);
+  }
+}
+
+@keyframes public-menu-content-out {
+  to {
+    opacity: 0;
   }
 }
 
@@ -380,6 +427,7 @@ onBeforeUnmount(() => setBehind(false))
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .menu-panel::before,
   .menu-panel[data-open],
   .menu-pages li,
   .menu-login,

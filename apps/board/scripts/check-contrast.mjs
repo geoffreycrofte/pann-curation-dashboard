@@ -34,6 +34,10 @@ const PAIRS = [
   ['color-text', 'color-surface', 4.5],
   ['color-text', 'color-surface-2', 4.5],
   ['color-text', 'color-accent-soft', 4.5],
+  // "Same story" notice of an item card: text and link on the blue tint, its edge and icon.
+  ['color-text', 'color-info-soft', 4.5],
+  ['color-info', 'color-info-soft', 4.5],
+  ['color-info', 'color-surface', 3],
   ['color-text-muted', 'color-bg', 4.5],
   ['color-text-muted', 'color-surface', 4.5],
   ['color-text-muted', 'color-surface-2', 4.5],

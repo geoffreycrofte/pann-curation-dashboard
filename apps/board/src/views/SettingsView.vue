@@ -19,6 +19,7 @@ import EngagementSettings from '../components/EngagementSettings.vue'
 import EngagementSources from '../components/EngagementSources.vue'
 import ComposeSettings from '../components/compose/ComposeSettings.vue'
 import VoiceFromPosts from '../components/voice/VoiceFromPosts.vue'
+import NetworkPostRules from '../components/NetworkPostRules.vue'
 import SourcesPanel from '../components/SourcesPanel.vue'
 import { api } from '../lib/api'
 import { describeError } from '../lib/errors'
@@ -335,6 +336,7 @@ usePageDetail(() => t(`settings.tabs.${tab.value}`))
               {{ t(`settings.${rule.label}Hint`) }}
             </p>
           </div>
+          <NetworkPostRules v-model="ai.network_rules" :config="topic.config" />
           <div class="form-check">
             <input
               :id="`${id}-a11y-check`"
