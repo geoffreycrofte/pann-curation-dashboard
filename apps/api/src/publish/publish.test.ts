@@ -584,6 +584,10 @@ describe('networks', () => {
       'geoffrey.bsky.social',
     )
     expect(blueskyHandle('not a handle')).toBeNull()
+    expect(blueskyHandle('geoffrey')).toBeNull()
+    expect(blueskyHandle('@GeoffreyCrofte', 'wsocial.eu')).toBe('geoffreycrofte.wsocial.eu')
+    expect(blueskyHandle('geoffrey', 'bsky.social')).toBe('geoffrey.bsky.social')
+    expect(blueskyHandle('geoffrey.fr', 'wsocial.eu')).toBe('geoffrey.fr')
   })
 
   it('treats a duplicate (409) as already published', async () => {

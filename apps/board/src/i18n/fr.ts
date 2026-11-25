@@ -777,9 +777,9 @@ export default {
     addAccountTitle: 'Autre compte {provider}',
     handleLabel: 'Identifiant Bluesky',
     wHandleLabel: 'Identifiant W',
-    wHandleHint: 'Par exemple vous.wsocial.eu.',
+    wHandleHint: 'Par exemple vous.wsocial.eu, ou simplement vous.',
     handleHint:
-      'Par exemple vous.bsky.social, ou votre nom de domaine si vous l’utilisez comme identifiant.',
+      'Par exemple vous.bsky.social (ou simplement vous), ou votre nom de domaine si vous l’utilisez comme identifiant.',
     appPasswordLabel: 'Mot de passe d’application',
     webhookLabel: 'URL du webhook Discord',
     chatLabel: 'Canal Telegram',

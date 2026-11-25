@@ -772,8 +772,9 @@ export default {
     addAccountTitle: 'Another {provider} account',
     handleLabel: 'Bluesky handle',
     wHandleLabel: 'W handle',
-    wHandleHint: 'For instance you.wsocial.eu.',
-    handleHint: 'For instance you.bsky.social, or your domain name if you use it as your handle.',
+    wHandleHint: 'For instance you.wsocial.eu, or just you.',
+    handleHint:
+      'For instance you.bsky.social (or just you), or your domain name if you use it as your handle.',
     appPasswordLabel: 'App password',
     webhookLabel: 'Discord webhook URL',
     chatLabel: 'Telegram channel',

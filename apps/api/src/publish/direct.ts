@@ -58,14 +58,26 @@ function publicOrigin(value: unknown): string | null {
   }
 }
 
-/** "@geoffrey.bsky.social", a profile URL… to a bare handle; null if it is not one. */
-export function blueskyHandle(input: string): string | null {
-  const value = input
+/**
+ * The domain a handle gets on each AT network when only the name is typed ("geoffrey"):
+ * the PDS's `availableUserDomains` (describeServer, checked 2026-11-25).
+ */
+export const AT_DEFAULT_DOMAIN = { bluesky: 'bsky.social', w: 'wsocial.eu' } as const
+
+/**
+ * "@geoffrey.bsky.social", a profile URL… to a bare handle; null if it is not one. A name
+ * without a dot gets `defaultDomain` ("geoffrey" on W is "geoffrey.wsocial.eu").
+ */
+export function blueskyHandle(input: string, defaultDomain?: string): string | null {
+  let value = input
     .trim()
-    .replace(/^https:\/\/bsky\.app\/profile\//i, '')
+    .replace(/^https:\/\/(bsky\.app|wsocial\.eu)\/profile\//i, '')
     .replace(/^@/, '')
     .replace(/\/.*$/, '')
     .toLowerCase()
+  if (defaultDomain && /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/.test(value)) {
+    value = `${value}.${defaultDomain}`
+  }
   return /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/.test(value) ? value : null
 }
 
