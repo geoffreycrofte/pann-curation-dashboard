@@ -7,7 +7,7 @@
 
 <p align="center">
   <strong>Make your product or your expertise known, without spending your days on it.</strong><br>
-  Open source news watch, conversation finder and social publishing, driven by AI and validated by you.
+  Fair source news watch, conversation finder and social publishing, driven by AI and validated by you.
 </p>
 
 <p align="center">
@@ -35,19 +35,19 @@ Glimr follows the news of your subject, spots the conversations where you can he
 
 ## Glimr Cloud or self-hosted
 
-Glimr is the same software in both cases. The code is open under the [AGPL-3.0](LICENSE.md): you can read it, run it and change it.
+Glimr is the same software in both cases. Its code is public, under the [Business Source License](LICENSE.md): you can read it, run it and change it. Self-hosting is free for personal use and for non-profits; a company that runs Glimr, even internally, buys a licence. Each version becomes open source (AGPL-3.0) four years after its release.
 
-|                           | **[Glimr Cloud](https://glimr.cc)**                                                                    | **Self-hosted**                                  |
-| ------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
-| Setup                     | [Request access](https://glimr.cc/request-access), then create your first topic                        | Your own Supabase project and Cloudflare account |
-| AI and web search         | Included in the Essential and Pro offers, within a monthly quota; or bring your own keys (Perso offer) | Your own keys (Anthropic, Exa)                   |
-| LinkedIn and Facebook     | Included in the paid offers: Glimr's publishing partner, no app review on your side                    | Your own Zernio key                              |
-| Updates, backups, e-mails | Done for you                                                                                           | Up to you                                        |
-| Hosting                   | In the EU (Supabase in Paris, Cloudflare)                                                              | Wherever you choose                              |
-| Team                      | Up to two people on the Pro offer                                                                      | As you like                                      |
-| Price                     | 14-day free trial, then [see the offers](https://glimr.cc/pricing)                                     | Free; you pay the services you connect           |
+|                           | **[Glimr Cloud](https://glimr.cc)**                                                                    | **Self-hosted**                                                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Setup                     | [Request access](https://glimr.cc/request-access), then create your first topic                        | Your own Supabase project and Cloudflare account                                                                                           |
+| AI and web search         | Included in the Essential and Pro offers, within a monthly quota; or bring your own keys (Perso offer) | Your own keys (Anthropic, Exa)                                                                                                             |
+| LinkedIn and Facebook     | Included in the paid offers: Glimr's publishing partner, no app review on your side                    | Your own Zernio key                                                                                                                        |
+| Updates, backups, e-mails | Done for you                                                                                           | Up to you                                                                                                                                  |
+| Hosting                   | In the EU (Supabase in Paris, Cloudflare)                                                              | Wherever you choose                                                                                                                        |
+| Team                      | Up to two people on the Pro offer                                                                      | As you like                                                                                                                                |
+| Price                     | 14-day free trial, then [see the offers](https://glimr.cc/pricing)                                     | Free for personal and non-profit use; a flat licence for companies, [on request](https://glimr.cc/legal). You pay the services you connect |
 
-Glimr Cloud funds the development of Glimr. If you can host it yourself and prefer to, you are welcome to: the self-hosted version is not a demo.
+Glimr Cloud and the self-hosting licences fund the development of Glimr. If you can host it yourself and prefer to, you are welcome to: the self-hosted version is not a demo.
 
 ## Self-hosting
 
@@ -115,11 +115,16 @@ pnpm db:reset      # replays every migration and the seed (local Supabase)
 
 ## Contributing
 
-Issues and pull requests are welcome. For anything larger than a fix, open an issue first so we can agree on the approach. Accessibility problems are treated as bugs.
+Issues and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). For anything larger than a fix, open an issue first so we can agree on the approach. Accessibility problems are treated as bugs.
 
 ## License
 
-Glimr is free software, released under the [GNU Affero General Public License v3.0 or later](LICENSE.md). If you run a modified version for other people over a network, the AGPL asks you to offer them its source code.
+Glimr is fair source: its code is public under the [Business Source License 1.1](LICENSE.md), with these terms.
+
+- **Free** for your own personal, non-commercial use, and for the internal use of non-profits, schools, research institutions and public administrations. Read it, run it, change it.
+- **A commercial licence** for any use by or for a company, internal use included: one flat fee, [price on request](https://glimr.cc/legal). Glimr Cloud needs none.
+- **Not as a service for others**: offering Glimr to third parties as a hosted service needs a licence too.
+- **Open source in the end**: each version becomes available under the GNU Affero General Public License v3.0 or later four years after its release.
 
 The Glimr name and logo are not covered by the license: please use another name for your own service built on this code.
 
