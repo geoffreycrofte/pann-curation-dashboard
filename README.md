@@ -124,7 +124,7 @@ Glimr is fair source: its code is public under the [Business Source License 1.1]
 - **Free** for your own personal, non-commercial use, and for the internal use of non-profits, schools, research institutions and public administrations. Read it, run it, change it.
 - **A commercial licence** for any use by or for a company, internal use included: one flat fee, [price on request](https://glimr.cc/legal). Glimr Cloud needs none.
 - **Not as a service for others**: offering Glimr to third parties as a hosted service needs a licence too.
-- **Open source in the end**: each version becomes available under the GNU Affero General Public License v3.0 or later four years after its release.
+- **Open source in the end**: each version becomes available under the GNU Affero General Public License v3.0 or later four years after its release, for everyone. This depends on time only: buying a commercial licence gives a company the right to run Glimr under the terms of its contract, not the AGPL.
 
 The Glimr name and logo are not covered by the license: please use another name for your own service built on this code.
 
