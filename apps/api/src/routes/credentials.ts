@@ -4,7 +4,12 @@ import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { checkCredential, mastodonInstance } from '../lib/check-credential'
-import { blueskyHandle, discordWebhookUrl, telegramChat } from '../publish/direct'
+import {
+  AT_DEFAULT_DOMAIN,
+  blueskyHandle,
+  discordWebhookUrl,
+  telegramChat,
+} from '../publish/direct'
 import { parseJson } from '../lib/validation'
 
 const COLUMNS =
@@ -62,7 +67,7 @@ export const credentials = new Hono<AppEnv>()
     }
     let handle: string | undefined
     if (p === 'bluesky' || p === 'w') {
-      handle = blueskyHandle(body.handle ?? '') ?? undefined
+      handle = blueskyHandle(body.handle ?? '', AT_DEFAULT_DOMAIN[p]) ?? undefined
       if (!handle) throw new HTTPException(422, { message: 'invalid_config' })
     }
     // Discord: the secret is the webhook address; only Discord's own hosts are accepted.
