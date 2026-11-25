@@ -621,4 +621,8 @@ Le README présente le projet en anglais : ce que fait Glimr, Glimr Cloud face �
 
 ## 2026-11-25 : posts écrits en boucle
 
-Il arrive que le modèle de rédaction parte en boucle sur un post (des centaines de hashtags `#Fin1`, `#Fin2`… jusqu'à la fin de sa sortie) tout en rendant un JSON valide. Garde-fou technique, pas règle de style : un post plus long que 1,5 fois la limite de son réseau, ou avec plus de 30 hashtags, n'est pas enregistré ; il est rédigé à nouveau, seul, une fois, puis laissé de côté s'il boucle encore (le bouton « Relancer la rédaction » reste possible). L'ajout de posts manquants ne double plus jamais un post existant pour le même réseau et la même langue.
+Un post Facebook est revenu avec 7 104 caractères, dont des centaines de hashtags (`#Fin1`… `#Fin500`), dans un JSON valide. Causes réunies : les règles de posts du thème bornent les hashtags de Bluesky, Mastodon et LinkedIn mais pas de Facebook, ajouté ensuite ; la limite de longueur n'était donnée qu'en tête du message, loin de l'endroit où le modèle écrit ; l'effort de rédaction du thème est « low » ; une liste de hashtags sans fin prévue s'entretient d'elle-même. Les réponses structurées de l'API n'imposent pas de longueur maximale (`maxLength` non pris en charge au décodage).
+
+Prévention, dans ce qui relève de l'outil (format et limites techniques) : chaque post du schéma de sortie rappelle la limite de son réseau et qu'il s'écrit une fois, du début à la fin ; le prompt (rédaction et Création) demande de ne jamais répéter une phrase, un mot ou un hashtag dans un post. Le nombre de hashtags reste une règle de l'utilisateur.
+
+Garde-fou en dernier recours : un post plus long que 1,5 fois la limite de son réseau, ou avec plus de 30 hashtags, n'est pas enregistré ; il est rédigé à nouveau, seul, une fois, puis laissé de côté s'il boucle encore. L'ajout de posts manquants ne double plus jamais un post existant pour le même réseau et la même langue.
