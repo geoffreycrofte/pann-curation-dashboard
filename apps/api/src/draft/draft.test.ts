@@ -296,13 +296,22 @@ describe('draft prompt', () => {
       return calls.length === 1
         ? {
             ok: true,
-            output: { ...output, posts: { ...output.posts, mastodon: { fr: loop, en: 'MA en' } } },
+            output: {
+              ...output,
+              posts: {
+                ...output.posts,
+                mastodon: { fr: loop, en: 'MA en' },
+              } as DraftOutput['posts'],
+            },
             usage,
             model: 'claude-sonnet-5-5',
           }
         : {
             ok: true,
-            output: { ...output, posts: { mastodon: { fr: 'MA fr, written again' } } },
+            output: {
+              ...output,
+              posts: { mastodon: { fr: 'MA fr, written again' } } as DraftOutput['posts'],
+            },
             usage,
             model: 'claude-sonnet-5-5',
           }
